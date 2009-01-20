@@ -4,7 +4,9 @@
 
 static IndicateListener * listener;
 static GHashTable * imHash;
+#if 0
 static GHashTable * mailHash;
+#endif
 
 typedef struct _imHash_t imHash_t;
 struct _imHash_t {
@@ -59,6 +61,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		g_hash_table_insert(imHash, hasher, menuitem);
 
 		gtk_menu_shell_prepend(menushell, menuitem);
+#if 0
 	} else if (!strcmp(propertydata, "mail")) {
 		gpointer pntr_menu_item;
 		pntr_menu_item = g_hash_table_lookup(mailHash, server);
@@ -75,6 +78,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 			MailMenuItem * menu_item = MAIL_MENU_ITEM(pntr_menu_item);
 			mail_menu_item_increment(menu_item);
 		}
+#endif
 	}
 
 	return;
@@ -99,8 +103,10 @@ get_menu_item (void)
 	listener = indicate_listener_new();
 	imHash = g_hash_table_new_full(g_direct_hash, imHash_equal,
 	                               imHash_destroy, g_object_unref);
+#if 0
 	mailHash = g_hash_table_new_full(g_direct_hash, g_direct_equal,
 	                               NULL, g_object_unref);
+#endif
 
 	GtkWidget * main = gtk_menu_item_new_with_label("Message Me");
 
