@@ -62,7 +62,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 
 		g_hash_table_insert(imHash, hasher, menuitem);
 
-		gtk_menu_shell_prepend(menushell, menuitem);
+		gtk_menu_shell_prepend(GTK_MENU_SHELL(menushell), menuitem);
 #if 0
 	} else if (!strcmp(propertydata, "mail")) {
 		gpointer pntr_menu_item;
@@ -112,8 +112,13 @@ get_menu_item (void)
 
 	GtkWidget * main = gtk_menu_item_new_with_label("Message Me");
 
-
+	GtkWidget * submenu = gtk_menu_new();
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(main), submenu);
+	gtk_widget_show(submenu);
 	gtk_widget_show(main);
+
+	g_signal_connect(listener, "indicator-added", G_CALLBACK(indicator_added), submenu);
+
 	return main;
 }
 
