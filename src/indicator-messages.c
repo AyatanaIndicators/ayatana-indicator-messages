@@ -55,7 +55,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		hasher->server = server;
 		hasher->indicator = indicator;
 
-		GtkWidget * menuitem = im_menu_item_new(listener, server, indicator);
+		GtkWidget * menuitem = GTK_WIDGET(im_menu_item_new(listener, server, indicator));
 		g_object_ref(menuitem);
 
 		g_hash_table_insert(imHash, hasher, menuitem);

@@ -4,6 +4,8 @@
 #include <glib.h>
 #include <glib-object.h>
 
+#include <libindicate/listener.h>
+
 G_BEGIN_DECLS
 
 #define IM_MENU_ITEM_TYPE            (im_menu_item_get_type ())
@@ -16,17 +18,16 @@ G_BEGIN_DECLS
 typedef struct _ImMenuItem      ImMenuItem;
 typedef struct _ImMenuItemClass ImMenuItemClass;
 
-struct _ImMenuItemClass
-{
-GtkMenuItemClass parent_class;
+struct _ImMenuItemClass {
+	GtkMenuItemClass parent_class;
 };
 
-struct _ImMenuItem
-{
-GtkMenuItem parent;
+struct _ImMenuItem {
+	GtkMenuItem parent;
 };
 
 GType im_menu_item_get_type (void);
+ImMenuItem * im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator);
 
 G_END_DECLS
 
