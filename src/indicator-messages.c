@@ -2,6 +2,8 @@
 #include <gtk/gtk.h>
 #include <libindicate/listener.h>
 
+#include "im-menu-item.h"
+
 static IndicateListener * listener;
 static GHashTable * imHash;
 #if 0
