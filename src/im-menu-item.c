@@ -2,6 +2,7 @@
 #include "config.h"
 #endif
 
+#include <gtk/gtk.h>
 #include "im-menu-item.h"
 
 typedef struct _ImMenuItemPrivate ImMenuItemPrivate;
@@ -9,7 +10,7 @@ typedef struct _ImMenuItemPrivate ImMenuItemPrivate;
 struct _ImMenuItemPrivate
 {
 	IndicateListener *           listener;
-	IndicateListenerSever *      server;
+	IndicateListenerServer *      server;
 	IndicateListenerIndicator *  indicator;
 
 	GtkHBox * hbox;
@@ -73,18 +74,18 @@ im_menu_item_init (ImMenuItem *self)
 	priv->indicator = NULL;
 
 	/* build widgets first */
-	priv->icon = gtk_image_new();
-	priv->user = gtk_label_new("");
-	priv->time = gtk_label_new("");
+	priv->icon = GTK_IMAGE(gtk_image_new());
+	priv->user = GTK_LABEL(gtk_label_new(""));
+	priv->time = GTK_LABEL(gtk_label_new(""));
 
 	if (icon_group == NULL) {
-		icon_group = gtk_size_group_new(GTK_SIZE_GROUP_MODE_HORIZONTAL);
+		icon_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	}
 	if (user_group == NULL) {
-		user_group = gtk_size_group_new(GTK_SIZE_GROUP_MODE_HORIZONTAL);
+		user_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	}
 	if (time_group == NULL) {
-		time_group = gtk_size_group_new(GTK_SIZE_GROUP_MODE_HORIZONTAL);
+		time_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	}
 	gtk_size_group_add_widget(icon_group, priv->icon);
 	gtk_size_group_add_widget(user_group, priv->user);

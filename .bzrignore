@@ -14,3 +14,4 @@ debian/indicator-messages.postrm.debhelper
 debian/indicator-messages.substvars
 debian/stamp-autotools-files
 debian/stamp-makefile-build
+libmessaging_la-im-menu-item.lo
