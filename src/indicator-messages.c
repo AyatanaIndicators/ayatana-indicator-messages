@@ -93,9 +93,10 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 static void
 indicator_added (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
 {
-	if (type != NULL || strcmp(type, "message")) {
+	if (type == NULL || strcmp(type, "message")) {
 		/* We only care about message type indicators
 		   all of the others can go to the bit bucket */
+		g_debug("Ignoreing indicator of type '%s'", type);
 		return;
 	}
 	g_debug("Got a message");
