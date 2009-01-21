@@ -131,8 +131,8 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 		return;
 	}
 
-	if (property == NULL || strcmp(property, "sender")) {
-		g_warning("Sender callback called without being send the sender.");
+	if (property == NULL || strcmp(property, "time")) {
+		g_warning("Time callback called without being sent the time.  We got '%s' with value '%s'.", property, propertydata);
 		return;
 	}
 
@@ -155,7 +155,7 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 	}
 
 	if (property == NULL || strcmp(property, "sender")) {
-		g_warning("Sender callback called without being send the sender.");
+		g_warning("Sender callback called without being sent the sender.  We got '%s' with value '%s'.", property, propertydata);
 		return;
 	}
 
