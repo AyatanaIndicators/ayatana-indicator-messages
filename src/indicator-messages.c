@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include <gtk/gtk.h>
 #include <libindicate/listener.h>
 
@@ -49,8 +50,11 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 	if (propertydata == NULL || propertydata[0] == '\0') {
 		/* It's possible that this message didn't have a subtype.  That's
 		 * okay, but we don't want to display those */
+		g_debug("No subtype");
 		return;
 	}
+
+	g_debug("Message subtype: %s", propertydata);
 
 	if (!strcmp(propertydata, "im")) {
 		imHash_t * hasher = g_new(imHash_t, 1);
@@ -94,6 +98,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 		   all of the others can go to the bit bucket */
 		return;
 	}
+	g_debug("Got a message");
 
 	indicate_listener_get_property(listener, server, indicator, "subtype", subtype_cb, data);	
 	return;
@@ -110,15 +115,15 @@ get_menu_item (void)
 	                               NULL, g_object_unref);
 #endif
 
-	GtkWidget * main = gtk_menu_item_new_with_label("Message Me");
+	GtkWidget * mainmenu = gtk_menu_item_new_with_label("Message Me");
 
 	GtkWidget * submenu = gtk_menu_new();
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(main), submenu);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(mainmenu), submenu);
 	gtk_widget_show(submenu);
-	gtk_widget_show(main);
+	gtk_widget_show(mainmenu);
 
 	g_signal_connect(listener, "indicator-added", G_CALLBACK(indicator_added), submenu);
 
-	return main;
+	return mainmenu;
 }
 

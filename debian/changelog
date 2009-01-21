@@ -1,3 +1,9 @@
+indicator-messages (0.1~ppa4) intrepid; urgency=low
+
+  * Make menu items for IM indicators
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 21 Jan 2009 14:35:33 -0600
+
 indicator-messages (0.1~ppa3) intrepid; urgency=low
 
   * Adding a build dependency on libindicate-dev
