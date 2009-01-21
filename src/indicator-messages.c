@@ -39,7 +39,11 @@ imHash_destroy (gpointer data)
 static void
 subtype_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
-	GtkMenu * menushell = GTK_MENU(data);
+	GtkMenuShell * menushell = GTK_MENU_SHELL(data);
+	if (menushell == NULL) {
+		g_error("Data in callback is not a menushell");
+		return;
+	}
 
 	if (property == NULL || strcmp(property, "subtype")) {
 		/* We should only ever get subtypes, but just in case */
@@ -61,12 +65,15 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		hasher->server = server;
 		hasher->indicator = indicator;
 
-		GtkWidget * menuitem = GTK_WIDGET(im_menu_item_new(listener, server, indicator));
-		g_object_ref(menuitem);
+		g_debug("Building IM Item");
+		ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator);
+		g_object_ref(G_OBJECT(menuitem));
 
+		g_debug("Adding to IM Hash");
 		g_hash_table_insert(imHash, hasher, menuitem);
 
-		gtk_menu_shell_prepend(GTK_MENU_SHELL(menushell), menuitem);
+		g_debug("Placing in Shell");
+		gtk_menu_shell_prepend(menushell, menuitem);
 #if 0
 	} else if (!strcmp(propertydata, "mail")) {
 		gpointer pntr_menu_item;

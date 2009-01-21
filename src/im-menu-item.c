@@ -67,6 +67,7 @@ im_menu_item_class_init (ImMenuItemClass *klass)
 static void
 im_menu_item_init (ImMenuItem *self)
 {
+	g_debug("Building new IM Menu Item");
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
 	priv->listener = NULL;
@@ -123,6 +124,7 @@ icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 static void
 time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
+	g_debug("Got Time info");
 	ImMenuItem * self = IM_MENU_ITEM(data);
 	if (self == NULL) {
 		g_error("Menu Item callback called without a menu item");
@@ -145,6 +147,7 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 static void
 sender_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
+	g_debug("Got Sender Information");
 	ImMenuItem * self = IM_MENU_ITEM(data);
 	if (self == NULL) {
 		g_error("Menu Item callback called without a menu item");
@@ -170,6 +173,7 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 ImMenuItem *
 im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator)
 {
+	g_debug("Building a new IM Menu Item");
 	ImMenuItem * self = g_object_new(IM_MENU_ITEM_TYPE, NULL);
 
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
@@ -178,10 +182,13 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	priv->server = server;
 	priv->indicator = indicator;
 
-
+	g_debug("Setting up property callbacks");
 	indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
+	g_debug("    ...sender");
 	indicate_listener_get_property(listener, server, indicator, "time",   time_cb, self);	
+	g_debug("    ...time");
 	indicate_listener_get_property(listener, server, indicator, "icon",   icon_cb, self);	
+	g_debug("    ...icon");
 
-	return;
+	return self;
 }
