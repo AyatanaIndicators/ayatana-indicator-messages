@@ -41,7 +41,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 {
 	GtkMenu * menushell = GTK_MENU(data);
 
-	if (property != NULL || strcmp(property, "subtype")) {
+	if (property == NULL || strcmp(property, "subtype")) {
 		/* We should only ever get subtypes, but just in case */
 		g_warning("Subtype callback got a property '%s'", property);
 		return;
