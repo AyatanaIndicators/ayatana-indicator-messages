@@ -93,9 +93,9 @@ im_menu_item_init (ImMenuItem *self)
 	gtk_size_group_add_widget(time_group, priv->time);
 
 	priv->hbox = gtk_hbox_new(FALSE, 3);
-	gtk_box_pack_start(GTK_BOX(priv->hbox), GTK_WIDGET(priv->time), FALSE, TRUE, 3);
-	gtk_box_pack_start(GTK_BOX(priv->hbox), GTK_WIDGET(priv->user), TRUE,  TRUE, 3);
 	gtk_box_pack_start(GTK_BOX(priv->hbox), GTK_WIDGET(priv->icon), FALSE, TRUE, 3);
+	gtk_box_pack_start(GTK_BOX(priv->hbox), GTK_WIDGET(priv->user), TRUE,  TRUE, 3);
+	gtk_box_pack_start(GTK_BOX(priv->hbox), GTK_WIDGET(priv->time), FALSE, TRUE, 3);
 	gtk_widget_show(GTK_WIDGET(priv->hbox));
 
 	gtk_container_add(GTK_CONTAINER(self), priv->hbox);
