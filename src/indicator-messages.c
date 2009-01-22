@@ -123,7 +123,7 @@ get_menu_item (void)
 	                               NULL, g_object_unref);
 #endif
 
-	GtkWidget * mainmenu = gtk_menu_item_new_with_label("Message Me");
+	GtkWidget * mainmenu = gtk_menu_item_new_with_label("Message");
 
 	GtkWidget * submenu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(mainmenu), submenu);
