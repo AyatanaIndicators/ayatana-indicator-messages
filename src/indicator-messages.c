@@ -25,7 +25,13 @@ imHash_equal (gconstpointer a, gconstpointer b)
 	pa = (imHash_t *)a;
 	pb = (imHash_t *)b;
 
-	return (pa->server == pb->server) && (pa->indicator == pb->indicator);
+	gchar * pas = (gchar *)pa->server;
+	gchar * pbs = (gchar *)pb->server;
+
+	guint pai = GPOINTER_TO_UINT(pa->indicator);
+	guint pbi = GPOINTER_TO_UINT(pb->indicator);
+
+	return (!strcmp(pas, pbs)) && (pai == pbi);
 }
 
 static void
@@ -112,6 +118,45 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 	return;
 }
 
+static void
+indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
+{
+	g_debug("Removing %s %d", (gchar*)server, (guint)indicator);
+	if (type == NULL || strcmp(type, "message")) {
+		/* We only care about message type indicators
+		   all of the others can go to the bit bucket */
+		g_debug("Ignoreing indicator of type '%s'", type);
+		return;
+	}
+
+	gboolean removed = FALSE;
+
+	/* Look in the IM Hash Table */
+	imHash_t hasher;
+	hasher.server = server;
+	hasher.indicator = indicator;
+
+	GtkWidget * menuitem = GTK_WIDGET(g_hash_table_lookup(imHash, &hasher));
+	if (!removed && menuitem != NULL) {
+		g_object_ref(menuitem);
+		g_hash_table_remove(imHash, &hasher);
+
+		gtk_widget_hide(menuitem);
+		gtk_container_remove(GTK_CONTAINER(data), menuitem);
+
+		g_object_unref(menuitem);
+		removed = TRUE;
+	}
+
+	/* TODO: Look at mail */
+
+	if (!removed) {
+		g_warning("We were asked to remove %s %d but we didn't.", (gchar*)server, (guint)indicator);
+	}
+
+	return;
+}
+
 GtkWidget *
 get_menu_item (void)
 {
@@ -131,6 +176,7 @@ get_menu_item (void)
 	gtk_widget_show(mainmenu);
 
 	g_signal_connect(listener, "indicator-added", G_CALLBACK(indicator_added), submenu);
+	g_signal_connect(listener, "indicator-removed", G_CALLBACK(indicator_removed), submenu);
 
 	return mainmenu;
 }
