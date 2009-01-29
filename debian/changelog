@@ -1,3 +1,11 @@
+indicator-messages (0.1~ppa6) intrepid; urgency=low
+
+  * Making things better, now menu items are created and
+    destroyed as they are, well, indicators are created
+    and destroyed.  Also minor cleanups.
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 29 Jan 2009 14:53:11 -0600
+
 indicator-messages (0.1~ppa5) intrepid; urgency=low
 
   * Basically now indicators show up if someone puts an IM message
