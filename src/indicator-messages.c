@@ -31,6 +31,8 @@ imHash_equal (gconstpointer a, gconstpointer b)
 	guint pai = GPOINTER_TO_UINT(pa->indicator);
 	guint pbi = GPOINTER_TO_UINT(pb->indicator);
 
+	g_debug("\tComparing (%s %d) to (%s %d)", pas, pai, pbs, pbi);
+
 	return (!strcmp(pas, pbs)) && (pai == pbi);
 }
 
