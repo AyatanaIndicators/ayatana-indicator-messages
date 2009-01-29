@@ -6,24 +6,25 @@
 #include "im-menu-item.h"
 
 static IndicateListener * listener;
-static GHashTable * imHash;
+static GList * imList;
 #if 0
 static GHashTable * mailHash;
 #endif
 
-typedef struct _imHash_t imHash_t;
-struct _imHash_t {
+typedef struct _imList_t imList_t;
+struct _imList_t {
 	IndicateListenerServer * server;
 	IndicateListenerIndicator * indicator;
+	GtkWidget * menuitem;
 };
 
 static gboolean
-imHash_equal (gconstpointer a, gconstpointer b)
+imList_equal (gconstpointer a, gconstpointer b)
 {
-	imHash_t * pa, * pb;
+	imList_t * pa, * pb;
 
-	pa = (imHash_t *)a;
-	pb = (imHash_t *)b;
+	pa = (imList_t *)a;
+	pb = (imList_t *)b;
 
 	gchar * pas = (gchar *)pa->server;
 	gchar * pbs = (gchar *)pb->server;
@@ -33,15 +34,7 @@ imHash_equal (gconstpointer a, gconstpointer b)
 
 	g_debug("\tComparing (%s %d) to (%s %d)", pas, pai, pbs, pbi);
 
-	return (!strcmp(pas, pbs)) && (pai == pbi);
-}
-
-static void
-imHash_destroy (gpointer data)
-{
-	imHash_t * hasher = (imHash_t *)data;
-
-	g_free(hasher);
+	return !((!strcmp(pas, pbs)) && (pai == pbi));
 }
 
 static void
@@ -69,19 +62,20 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 	g_debug("Message subtype: %s", propertydata);
 
 	if (!strcmp(propertydata, "im")) {
-		imHash_t * hasher = g_new(imHash_t, 1);
-		hasher->server = server;
-		hasher->indicator = indicator;
+		imList_t * listItem = g_new(imList_t, 1);
+		listItem->server = server;
+		listItem->indicator = indicator;
 
 		g_debug("Building IM Item");
 		ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator);
 		g_object_ref(G_OBJECT(menuitem));
+		listItem->menuitem = GTK_WIDGET(menuitem);
 
 		g_debug("Adding to IM Hash");
-		g_hash_table_insert(imHash, hasher, menuitem);
+		imList = g_list_append(imList, listItem);
 
 		g_debug("Placing in Shell");
-		gtk_menu_shell_prepend(menushell, menuitem);
+		gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
 #if 0
 	} else if (!strcmp(propertydata, "mail")) {
 		gpointer pntr_menu_item;
@@ -134,14 +128,19 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	gboolean removed = FALSE;
 
 	/* Look in the IM Hash Table */
-	imHash_t hasher;
-	hasher.server = server;
-	hasher.indicator = indicator;
+	imList_t listData;
+	listData.server = server;
+	listData.indicator = indicator;
 
-	GtkWidget * menuitem = GTK_WIDGET(g_hash_table_lookup(imHash, &hasher));
+	GList * listItem = g_list_find_custom(imList, &listData, imList_equal);
+	GtkWidget * menuitem = NULL;
+	if (listItem != NULL) {
+		menuitem = ((imList_t *)listItem->data)->menuitem;
+	}
+
 	if (!removed && menuitem != NULL) {
 		g_object_ref(menuitem);
-		g_hash_table_remove(imHash, &hasher);
+		imList = g_list_remove(imList, listItem->data);
 
 		gtk_widget_hide(menuitem);
 		gtk_container_remove(GTK_CONTAINER(data), menuitem);
@@ -163,8 +162,7 @@ GtkWidget *
 get_menu_item (void)
 {
 	listener = indicate_listener_new();
-	imHash = g_hash_table_new_full(g_direct_hash, imHash_equal,
-	                               imHash_destroy, g_object_unref);
+	imList = NULL;
 #if 0
 	mailHash = g_hash_table_new_full(g_direct_hash, g_direct_equal,
 	                               NULL, g_object_unref);
