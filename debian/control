@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 5.0),
                gnome-doc-utils,
                scrollkeeper,
                intltool,
-               libindicate-dev
+               libindicate-dev (>= 0.1~ppa18)
 Standards-Version: 3.8.0
 
 Package: indicator-messages

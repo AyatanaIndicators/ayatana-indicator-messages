@@ -1,3 +1,10 @@
+indicator-messages (0.1~ppa7) intrepid; urgency=low
+
+  * Adding in activate callback when the menu item is
+    clicked on.
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 30 Jan 2009 15:08:40 -0600
+
 indicator-messages (0.1~ppa6) intrepid; urgency=low
 
   * Making things better, now menu items are created and
