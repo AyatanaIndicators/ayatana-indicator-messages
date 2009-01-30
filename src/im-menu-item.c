@@ -171,6 +171,14 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 	return;
 }
 
+void
+activate_cb (ImMenuItem * self, gpointer data)
+{
+	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
+
+	indicate_listener_display(priv->listener, priv->server, priv->indicator);
+}
+
 ImMenuItem *
 im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator)
 {
@@ -190,6 +198,8 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	g_debug("    ...time");
 	indicate_listener_get_property(listener, server, indicator, "icon",   icon_cb, self);	
 	g_debug("    ...icon");
+
+	g_signal_connect(G_OBJECT(self), "activate", G_CALLBACK(activate_cb), NULL);
 
 	return self;
 }
