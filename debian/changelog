@@ -1,3 +1,10 @@
+indicator-messages (0.1~ppa9) intrepid; urgency=low
+
+  * Changed libindicate name to libindicate0, so need to have
+    another build in the PPA.
+
+ -- Ted Gould <ted@ubuntu.com>  Tue, 03 Feb 2009 11:59:36 +0100
+
 indicator-messages (0.1~ppa8) intrepid; urgency=low
 
   * Bumping for PPA
