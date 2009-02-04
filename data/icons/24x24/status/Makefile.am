@@ -1,5 +1,5 @@
 
-iconsdir = $(pkgdatadir)/icons/hicolor/24x24/panel
+iconsdir = $(datadir)/indicator-applet/icons/hicolor/24x24/panel
 
 icons_DATA =  \
 	panel-dummy.png
