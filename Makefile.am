@@ -1,4 +1,5 @@
 
 SUBDIRS = \
-	src
+	src \
+	data
 
