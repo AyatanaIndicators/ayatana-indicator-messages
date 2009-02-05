@@ -92,17 +92,17 @@ im_menu_item_init (ImMenuItem *self)
 	if (time_group == NULL) {
 		time_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	}
-	gtk_size_group_add_widget(icon_group, priv->icon);
-	gtk_size_group_add_widget(user_group, priv->user);
-	gtk_size_group_add_widget(time_group, priv->time);
+	gtk_size_group_add_widget(icon_group, GTK_WIDGET(priv->icon));
+	gtk_size_group_add_widget(user_group, GTK_WIDGET(priv->user));
+	gtk_size_group_add_widget(time_group, GTK_WIDGET(priv->time));
 
-	priv->hbox = gtk_hbox_new(FALSE, 3);
+	priv->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 3));
 	gtk_box_pack_start(GTK_BOX(priv->hbox), GTK_WIDGET(priv->icon), FALSE, TRUE, 3);
 	gtk_box_pack_start(GTK_BOX(priv->hbox), GTK_WIDGET(priv->user), TRUE,  TRUE, 3);
 	gtk_box_pack_start(GTK_BOX(priv->hbox), GTK_WIDGET(priv->time), FALSE, TRUE, 3);
 	gtk_widget_show(GTK_WIDGET(priv->hbox));
 
-	gtk_container_add(GTK_CONTAINER(self), priv->hbox);
+	gtk_container_add(GTK_CONTAINER(self), GTK_WIDGET(priv->hbox));
 
 	return;
 }
@@ -155,7 +155,7 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 		strftime(timestring, 80, _("%I:%M"), structtm);
 
 		gtk_label_set_label(priv->time, timestring);
-		gtk_widget_show(priv->time);
+		gtk_widget_show(GTK_WIDGET(priv->time));
 	}
 
 	return;
@@ -179,10 +179,10 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
 	gtk_label_set_label(priv->user, propertydata);
-	gtk_widget_show(priv->user);
+	gtk_widget_show(GTK_WIDGET(priv->user));
 
 	/* Once we have the user we'll show the menu item */
-	gtk_widget_show(self);
+	gtk_widget_show(GTK_WIDGET(self));
 
 	return;
 }
