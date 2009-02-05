@@ -2,6 +2,7 @@
 #include "config.h"
 #endif
 
+#include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include "im-menu-item.h"
 
@@ -79,6 +80,9 @@ im_menu_item_init (ImMenuItem *self)
 	priv->user = GTK_LABEL(gtk_label_new(""));
 	priv->time = GTK_LABEL(gtk_label_new(""));
 
+	gtk_misc_set_alignment(GTK_MISC(priv->user), 0.0, 0.5);
+	gtk_misc_set_alignment(GTK_MISC(priv->time), 0.0, 0.5);
+
 	if (icon_group == NULL) {
 		icon_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	}
@@ -139,8 +143,20 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
-	gtk_label_set_label(priv->time, propertydata);
-	gtk_widget_show(priv->time);
+	GTimeVal time;
+	if (g_time_val_from_iso8601(propertydata, &time)) {
+		time_t timet;
+		struct tm * structtm;
+
+		timet = time.tv_sec;
+		structtm = localtime(&timet);
+
+		gchar timestring[80];
+		strftime(timestring, 80, _("%I:%M"), structtm);
+
+		gtk_label_set_label(priv->time, timestring);
+		gtk_widget_show(priv->time);
+	}
 
 	return;
 }
