@@ -15,3 +15,4 @@ debian/indicator-messages.substvars
 debian/stamp-autotools-files
 debian/stamp-makefile-build
 libmessaging_la-im-menu-item.lo
+src/libmessaging_la-app-menu-item.lo
