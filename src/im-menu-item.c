@@ -45,6 +45,8 @@ static void icon_cb                 (IndicateListener * listener,
                                      gchar * property,
                                      gchar * propertydata,
                                      gpointer data);
+static void activate_cb             (ImMenuItem * self,
+                                     gpointer data);
 
 
 static GtkSizeGroup * icon_group = NULL;
@@ -187,7 +189,7 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 	return;
 }
 
-void
+static void
 activate_cb (ImMenuItem * self, gpointer data)
 {
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
