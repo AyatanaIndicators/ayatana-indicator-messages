@@ -13,6 +13,7 @@ struct _AppMenuItemPrivate
 	IndicateListener *            listener;
 	IndicateListenerServer *      server;
 
+	GtkWidget * name;
 };
 
 #define APP_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_MENU_ITEM_TYPE, AppMenuItemPrivate))
@@ -47,6 +48,7 @@ app_menu_item_init (AppMenuItem *self)
 
 	priv->listener = NULL;
 	priv->server = NULL;
+	priv->name = NULL;
 
 
 	return;
@@ -74,7 +76,11 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 
 	priv->listener = listener;
 	priv->server = server;
-	priv->indicator = indicator;
+
+	priv->name = gtk_label_new(INDICATE_LISTENER_SERVER_DBUS_NAME(server));
+	gtk_widget_show(GTK_WIDGET(priv->name));
+
+	gtk_container_add(GTK_CONTAINER(self), GTK_WIDGET(priv->name));
 
 	g_signal_connect(G_OBJECT(self), "activate", G_CALLBACK(activate_cb), NULL);
 
@@ -84,6 +90,6 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 static void
 activate_cb (AppMenuItem * self, gpointer data)
 {
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+	//AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
 }

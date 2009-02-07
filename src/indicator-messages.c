@@ -4,12 +4,11 @@
 #include <libindicate/listener.h>
 
 #include "im-menu-item.h"
+#include "app-menu-item.h"
 
 static IndicateListener * listener;
 static GList * imList;
-#if 0
-static GHashTable * mailHash;
-#endif
+static GHashTable * serverHash;
 
 typedef struct _imList_t imList_t;
 struct _imList_t {
@@ -26,15 +25,66 @@ imList_equal (gconstpointer a, gconstpointer b)
 	pa = (imList_t *)a;
 	pb = (imList_t *)b;
 
-	gchar * pas = (gchar *)pa->server;
-	gchar * pbs = (gchar *)pb->server;
+	gchar * pas = INDICATE_LISTENER_SERVER_DBUS_NAME(pa->server);
+	gchar * pbs = INDICATE_LISTENER_SERVER_DBUS_NAME(pb->server);
 
-	guint pai = GPOINTER_TO_UINT(pa->indicator);
-	guint pbi = GPOINTER_TO_UINT(pb->indicator);
+	guint pai = INDICATE_LISTENER_INDICATOR_ID(pa->indicator);
+	guint pbi = INDICATE_LISTENER_INDICATOR_ID(pb->indicator);
 
 	g_debug("\tComparing (%s %d) to (%s %d)", pas, pai, pbs, pbi);
 
 	return !((!strcmp(pas, pbs)) && (pai == pbi));
+}
+
+
+void 
+server_added (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
+{
+	if (type == NULL) {
+		return;
+	}
+
+	if (type[0] == '\0') {
+		return;
+	}
+
+	if (strncmp(type, "message", strlen("message"))) {
+		return;
+	}
+
+	GtkMenuShell * menushell = GTK_MENU_SHELL(data);
+	if (menushell == NULL) {
+		g_error("Data in callback is not a menushell");
+		return;
+	}
+
+	gchar * servername = g_strdup(INDICATE_LISTENER_SERVER_DBUS_NAME(server));
+	AppMenuItem * menuitem = app_menu_item_new(listener, server);
+
+	g_hash_table_insert(serverHash, servername, menuitem);
+	gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
+
+	return;
+}
+
+void 
+server_removed (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
+{
+	gpointer lookup = g_hash_table_lookup(serverHash, INDICATE_LISTENER_SERVER_DBUS_NAME(server));
+
+	if (lookup == NULL) {
+		return;
+	}
+
+	g_hash_table_remove(serverHash, INDICATE_LISTENER_SERVER_DBUS_NAME(server));
+
+	AppMenuItem * menuitem = APP_MENU_ITEM(lookup);
+	g_return_if_fail(menuitem != NULL);
+
+	gtk_widget_hide(GTK_WIDGET(menuitem));
+	gtk_container_remove(GTK_CONTAINER(data), GTK_WIDGET(menuitem));
+
+	return;
 }
 
 static void
@@ -76,24 +126,6 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 
 		g_debug("Placing in Shell");
 		gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
-#if 0
-	} else if (!strcmp(propertydata, "mail")) {
-		gpointer pntr_menu_item;
-		pntr_menu_item = g_hash_table_lookup(mailHash, server);
-		if (pntr_menu_item == NULL) {
-			/* If we don't know about it, we need a new menu item */
-			GtkWidget * menuitem = mail_menu_item_new(listener, server);
-			g_object_ref(menuitem);
-
-			g_hash_table_insert(mailHash, server, menuitem);
-
-			gtk_menu_shell_append(menushell, menuitem);
-		} else {
-			/* If we do, we need to increment the count */
-			MailMenuItem * menu_item = MAIL_MENU_ITEM(pntr_menu_item);
-			mail_menu_item_increment(menu_item);
-		}
-#endif
 	}
 
 	return;
@@ -149,8 +181,6 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 		removed = TRUE;
 	}
 
-	/* TODO: Look at mail */
-
 	if (!removed) {
 		g_warning("We were asked to remove %s %d but we didn't.", (gchar*)server, (guint)indicator);
 	}
@@ -163,10 +193,9 @@ get_menu_item (void)
 {
 	listener = indicate_listener_new();
 	imList = NULL;
-#if 0
-	mailHash = g_hash_table_new_full(g_direct_hash, g_direct_equal,
-	                               NULL, g_object_unref);
-#endif
+
+	serverHash = g_hash_table_new_full(g_str_hash, g_str_equal,
+	                                   g_free, NULL);
 
 	GtkWidget * mainmenu = gtk_menu_item_new();
 
@@ -179,8 +208,10 @@ get_menu_item (void)
 	gtk_widget_show(submenu);
 	gtk_widget_show(mainmenu);
 
-	g_signal_connect(listener, "indicator-added", G_CALLBACK(indicator_added), submenu);
-	g_signal_connect(listener, "indicator-removed", G_CALLBACK(indicator_removed), submenu);
+	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added), submenu);
+	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed), submenu);
+	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_ADDED, G_CALLBACK(server_added), submenu);
+	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), submenu);
 
 	return mainmenu;
 }
