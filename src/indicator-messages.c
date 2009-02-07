@@ -40,7 +40,7 @@ imList_equal (gconstpointer a, gconstpointer b)
 void 
 server_added (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
-	g_debug("Server Added");
+	g_debug("Server Added '%s' of type '%s'.", INDICATE_LISTENER_SERVER_DBUS_NAME(server), type);
 	if (type == NULL) {
 		return;
 	}
@@ -65,6 +65,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 
 	g_hash_table_insert(serverHash, servername, menuitem);
 	gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
+	gtk_widget_show(menuitem);
 
 	return;
 }
