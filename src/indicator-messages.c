@@ -40,6 +40,7 @@ imList_equal (gconstpointer a, gconstpointer b)
 void 
 server_added (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
+	g_debug("Server Added");
 	if (type == NULL) {
 		return;
 	}
@@ -49,12 +50,13 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	}
 
 	if (strncmp(type, "message", strlen("message"))) {
+		g_debug("\tServer type '%s' is not a message based type.", type);
 		return;
 	}
 
 	GtkMenuShell * menushell = GTK_MENU_SHELL(data);
 	if (menushell == NULL) {
-		g_error("Data in callback is not a menushell");
+		g_error("\tData in callback is not a menushell");
 		return;
 	}
 
@@ -70,9 +72,11 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 void 
 server_removed (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
+	g_debug("Removing server: %s", INDICATE_LISTENER_SERVER_DBUS_NAME(server));
 	gpointer lookup = g_hash_table_lookup(serverHash, INDICATE_LISTENER_SERVER_DBUS_NAME(server));
 
 	if (lookup == NULL) {
+		g_debug("\tUnable to find server: %s", INDICATE_LISTENER_SERVER_DBUS_NAME(server));
 		return;
 	}
 
