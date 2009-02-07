@@ -10,9 +10,8 @@ typedef struct _AppMenuItemPrivate AppMenuItemPrivate;
 
 struct _AppMenuItemPrivate
 {
-	IndicateListener *           listener;
+	IndicateListener *            listener;
 	IndicateListenerServer *      server;
-	IndicateListenerIndicator *  indicator;
 
 };
 
@@ -48,7 +47,6 @@ app_menu_item_init (AppMenuItem *self)
 
 	priv->listener = NULL;
 	priv->server = NULL;
-	priv->indicator = NULL;
 
 
 	return;
@@ -67,7 +65,7 @@ app_menu_item_finalize (GObject *object)
 }
 
 AppMenuItem *
-app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator)
+app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 {
 	g_debug("Building a new IM Menu Item");
 	AppMenuItem * self = g_object_new(APP_MENU_ITEM_TYPE, NULL);

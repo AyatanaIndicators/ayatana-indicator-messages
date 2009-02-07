@@ -27,9 +27,9 @@ struct _AppMenuItem {
 };
 
 GType app_menu_item_get_type (void);
-AppMenuItem * app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator);
+AppMenuItem * app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server);
 
 G_END_DECLS
 
-#endif
+#endif /* __APP_MENU_ITEM_H__ */
 
