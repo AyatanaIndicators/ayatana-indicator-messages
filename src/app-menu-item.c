@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
+#include <gio/gdesktopappinfo.h>
 #include "app-menu-item.h"
 
 typedef struct _AppMenuItemPrivate AppMenuItemPrivate;
@@ -36,7 +37,7 @@ struct _AppMenuItemPrivate
 	IndicateListenerServer *      server;
 	
 	gchar * type;
-	gchar * desktop;
+	GAppInfo * appinfo;
 
 	GtkWidget * name;
 };
@@ -77,7 +78,7 @@ app_menu_item_init (AppMenuItem *self)
 	priv->server = NULL;
 	priv->name = NULL;
 	priv->type = NULL;
-	priv->desktop = NULL;
+	priv->appinfo = NULL;
 
 
 	return;
@@ -140,11 +141,14 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
-	if (priv->desktop != NULL) {
-		g_free(priv->desktop);
+	if (priv->appinfo != NULL) {
+		g_object_unref(G_OBJECT(priv->appinfo));
 	}
 	
-	priv->desktop = g_strdup(value);
+	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(value));
+	g_return_if_fail(priv->appinfo != NULL);
+
+	gtk_label_set_text(GTK_LABEL(priv->name), g_app_info_get_name(priv->appinfo));
 
 	return;
 }
