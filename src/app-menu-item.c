@@ -156,6 +156,9 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 static void
 activate_cb (AppMenuItem * self, gpointer data)
 {
-	//AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
+	indicate_listener_display(priv->listener, priv->server, NULL);
+
+	return;
 }
