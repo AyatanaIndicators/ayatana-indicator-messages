@@ -58,13 +58,13 @@ static void time_cb                 (IndicateListener * listener,
                                      IndicateListenerServer * server,
                                      IndicateListenerIndicator * indicator,
                                      gchar * property,
-                                     gchar * propertydata,
+                                     GTimeVal * propertydata,
                                      gpointer data);
 static void icon_cb                 (IndicateListener * listener,
                                      IndicateListenerServer * server,
                                      IndicateListenerIndicator * indicator,
                                      gchar * property,
-                                     gchar * propertydata,
+                                     GdkPixbuf * propertydata,
                                      gpointer data);
 static void activate_cb             (ImMenuItem * self,
                                      gpointer data);
@@ -143,14 +143,21 @@ im_menu_item_finalize (GObject *object)
 }
 
 static void
-icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
+icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, GdkPixbuf * propertydata, gpointer data)
 {
+	ImMenuItem * self = IM_MENU_ITEM(data);
+	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
+	gtk_image_set_from_pixbuf(priv->icon, propertydata);
+	g_object_unref(propertydata);
 
+	gtk_widget_show(GTK_WIDGET(priv->icon));
+
+	return;
 }
 
 static void
-time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
+time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, GTimeVal * propertydata, gpointer data)
 {
 	g_debug("Got Time info");
 	ImMenuItem * self = IM_MENU_ITEM(data);
@@ -160,26 +167,24 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 	}
 
 	if (property == NULL || strcmp(property, "time")) {
-		g_warning("Time callback called without being sent the time.  We got '%s' with value '%s'.", property, propertydata);
+		g_warning("Time callback called without being sent the time.");
 		return;
 	}
 
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
-	GTimeVal time;
-	if (g_time_val_from_iso8601(propertydata, &time)) {
-		time_t timet;
-		struct tm * structtm;
+	time_t timet;
+	struct tm * structtm;
 
-		timet = time.tv_sec;
-		structtm = localtime(&timet);
+	timet = propertydata->tv_sec;
+	structtm = localtime(&timet);
 
-		gchar timestring[80];
-		strftime(timestring, 80, _("%I:%M"), structtm);
+	/* I can't imagine needing more than 80 characters */
+	gchar timestring[80];
+	strftime(timestring, 80, _("%I:%M"), structtm);
 
-		gtk_label_set_label(priv->time, timestring);
-		gtk_widget_show(GTK_WIDGET(priv->time));
-	}
+	gtk_label_set_label(priv->time, timestring);
+	gtk_widget_show(GTK_WIDGET(priv->time));
 
 	return;
 }
@@ -230,13 +235,9 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	priv->server = server;
 	priv->indicator = indicator;
 
-	g_debug("Setting up property callbacks");
 	indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
-	g_debug("    ...sender");
-	indicate_listener_get_property(listener, server, indicator, "time",   time_cb, self);	
-	g_debug("    ...time");
-	indicate_listener_get_property(listener, server, indicator, "icon",   icon_cb, self);	
-	g_debug("    ...icon");
+	indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
+	indicate_listener_get_property_icon(listener, server, indicator, "icon",   icon_cb, self);	
 
 	g_signal_connect(G_OBJECT(self), "activate", G_CALLBACK(activate_cb), NULL);
 
