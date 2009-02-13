@@ -34,6 +34,9 @@ struct _AppMenuItemPrivate
 {
 	IndicateListener *            listener;
 	IndicateListenerServer *      server;
+	
+	gchar * type;
+	gchar * desktop;
 
 	GtkWidget * name;
 };
@@ -46,6 +49,8 @@ static void app_menu_item_init       (AppMenuItem *self);
 static void app_menu_item_dispose    (GObject *object);
 static void app_menu_item_finalize   (GObject *object);
 static void activate_cb (AppMenuItem * self, gpointer data);
+static void type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
+static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
 
 
 
@@ -71,6 +76,8 @@ app_menu_item_init (AppMenuItem *self)
 	priv->listener = NULL;
 	priv->server = NULL;
 	priv->name = NULL;
+	priv->type = NULL;
+	priv->desktop = NULL;
 
 
 	return;
@@ -91,7 +98,6 @@ app_menu_item_finalize (GObject *object)
 AppMenuItem *
 app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 {
-	g_debug("Building a new IM Menu Item");
 	AppMenuItem * self = g_object_new(APP_MENU_ITEM_TYPE, NULL);
 
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
@@ -100,13 +106,47 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 	priv->server = server;
 
 	priv->name = gtk_label_new(INDICATE_LISTENER_SERVER_DBUS_NAME(server));
+	gtk_misc_set_alignment(GTK_MISC(priv->name), 0.0, 0.5);
 	gtk_widget_show(GTK_WIDGET(priv->name));
 
 	gtk_container_add(GTK_CONTAINER(self), GTK_WIDGET(priv->name));
 
+	indicate_listener_server_get_type(listener, server, type_cb, self);
+	indicate_listener_server_get_desktop(listener, server, desktop_cb, self);
+
 	g_signal_connect(G_OBJECT(self), "activate", G_CALLBACK(activate_cb), NULL);
 
 	return self;
+}
+
+static void 
+type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
+{
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	if (priv->type != NULL) {
+		g_free(priv->type);
+	}
+	
+	priv->type = g_strdup(value);
+
+	return;
+}
+
+static void 
+desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
+{
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	if (priv->desktop != NULL) {
+		g_free(priv->desktop);
+	}
+	
+	priv->desktop = g_strdup(value);
+
+	return;
 }
 
 static void
