@@ -1,3 +1,14 @@
+indicator-messages (0.1~ppa14) intrepid; urgency=low
+
+  * Adding in application menu items.  They now parse the
+    desktop file of the application provided as a property.
+  * Making the IM menu items have icons and times and
+    clean them up a bit so that they work better.  Also
+    handling property updates.
+  * Legal stuff.  On all headers and in copyright.
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 13 Feb 2009 16:40:39 -0600
+
 indicator-messages (0.1~ppa13) intrepid; urgency=low
 
   * Display the icon instead of "messages"
