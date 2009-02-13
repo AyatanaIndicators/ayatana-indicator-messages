@@ -30,6 +30,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 static IndicateListener * listener;
 static GList * imList;
 static GHashTable * serverHash;
+static GtkWidget * main_image;
 
 typedef struct _imList_t imList_t;
 struct _imList_t {
@@ -154,6 +155,10 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
 	}
 
+	if (g_list_length(imList) != 0) {
+		gtk_image_set_from_icon_name(main_image, "indicator-messages-new", GTK_ICON_SIZE_MENU);
+	}
+
 	return;
 }
 
@@ -211,6 +216,10 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 		g_warning("We were asked to remove %s %d but we didn't.", (gchar*)server, (guint)indicator);
 	}
 
+	if (g_list_length(imList) == 0) {
+		gtk_image_set_from_icon_name(main_image, "indicator-messages", GTK_ICON_SIZE_MENU);
+	}
+
 	return;
 }
 
@@ -225,7 +234,7 @@ get_menu_item (void)
 
 	GtkWidget * mainmenu = gtk_menu_item_new();
 
-	GtkWidget * image = gtk_image_new_from_icon_name("indicator-messages", GTK_ICON_SIZE_MENU);
+	main_image = gtk_image_new_from_icon_name("indicator-messages", GTK_ICON_SIZE_MENU);
 	gtk_widget_show(image);
 	gtk_container_add(GTK_CONTAINER(mainmenu), image);
 
