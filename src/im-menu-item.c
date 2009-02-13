@@ -240,8 +240,9 @@ indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * ser
 {
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
-	g_return_if_fail(INDICATE_LISTENER_INDICATOR_ID(indicator) == INDICATE_LISTENER_INDICATOR_ID(priv->indicator));
-	g_return_if_fail(!strcmp(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server)));
+	/* Not meant for us */
+	if (INDICATE_LISTENER_INDICATOR_ID(indicator) != INDICATE_LISTENER_INDICATOR_ID(priv->indicator)) return;
+	if (strcmp(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server))) return;
 
 	if (!strcmp(property, "sender")) {
 		indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
