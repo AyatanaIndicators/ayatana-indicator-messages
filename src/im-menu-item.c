@@ -148,8 +148,14 @@ icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 	ImMenuItem * self = IM_MENU_ITEM(data);
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
-	gtk_image_set_from_pixbuf(priv->icon, propertydata);
+	gint height, width;
+	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
+
+	GdkPixbuf * scaled = gdk_pixbuf_scale_simple(propertydata, width, height, GDK_INTERP_BILINEAR);
 	g_object_unref(propertydata);
+
+	gtk_image_set_from_pixbuf(priv->icon, scaled);
+	g_object_unref(scaled);
 
 	gtk_widget_show(GTK_WIDGET(priv->icon));
 
