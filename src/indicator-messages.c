@@ -156,7 +156,10 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 	}
 
 	if (g_list_length(imList) != 0) {
+		g_debug("Setting image to 'new'");
 		gtk_image_set_from_icon_name(main_image, "indicator-messages-new", GTK_ICON_SIZE_MENU);
+	} else {
+		g_debug("Hmm, still no entries");
 	}
 
 	return;
@@ -235,8 +238,8 @@ get_menu_item (void)
 	GtkWidget * mainmenu = gtk_menu_item_new();
 
 	main_image = gtk_image_new_from_icon_name("indicator-messages", GTK_ICON_SIZE_MENU);
-	gtk_widget_show(image);
-	gtk_container_add(GTK_CONTAINER(mainmenu), image);
+	gtk_widget_show(main_image);
+	gtk_container_add(GTK_CONTAINER(mainmenu), main_image);
 
 	GtkWidget * submenu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(mainmenu), submenu);
