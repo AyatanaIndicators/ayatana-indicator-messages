@@ -68,6 +68,12 @@ static void icon_cb                 (IndicateListener * listener,
                                      gpointer data);
 static void activate_cb             (ImMenuItem * self,
                                      gpointer data);
+static void indicator_modified_cb   (IndicateListener * listener,
+                                     IndicateListenerServer * server,
+                                     IndicateListenerIndicator * indicator,
+                                     gchar * type,
+                                     gchar * property,
+                                     ImMenuItem * self);
 
 
 static GtkSizeGroup * icon_group = NULL;
@@ -229,6 +235,25 @@ activate_cb (ImMenuItem * self, gpointer data)
 	indicate_listener_display(priv->listener, priv->server, priv->indicator);
 }
 
+void
+indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gchar * property, ImMenuItem * self)
+{
+	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
+
+	g_return_if_fail(INDICATE_LISTENER_INDICATOR_ID(indicator) == INDICATE_LISTENER_INDICATOR_ID(priv->indicator));
+	g_return_if_fail(!strcmp(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server)));
+
+	if (!strcmp(property, "sender")) {
+		indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
+	} else if (!strcmp(property, "time")) {
+		indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
+	} else if (!strcmp(property, "icon")) {
+		indicate_listener_get_property_icon(listener, server, indicator, "icon",   icon_cb, self);	
+	}
+	
+	return;
+}
+
 ImMenuItem *
 im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator)
 {
@@ -246,6 +271,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	indicate_listener_get_property_icon(listener, server, indicator, "icon",   icon_cb, self);	
 
 	g_signal_connect(G_OBJECT(self), "activate", G_CALLBACK(activate_cb), NULL);
+	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_MODIFIED, G_CALLBACK(indicator_modified_cb), self);
 
 	return self;
 }
