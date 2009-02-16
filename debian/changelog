@@ -1,3 +1,9 @@
+indicator-messages (0.1~ppa16) intrepid; urgency=low
+
+  * Updating to upstream release tagged 0.1
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 16 Feb 2009 12:56:07 -0600
+
 indicator-messages (0.1~ppa15) intrepid; urgency=low
 
   * Making the menu hide if there is no one around to be
