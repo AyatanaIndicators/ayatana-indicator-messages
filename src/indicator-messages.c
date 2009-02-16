@@ -31,6 +31,7 @@ static IndicateListener * listener;
 static GList * imList;
 static GHashTable * serverHash;
 static GtkWidget * main_image;
+static GtkWidget * main_menu;
 
 typedef struct _imList_t imList_t;
 struct _imList_t {
@@ -88,6 +89,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	g_hash_table_insert(serverHash, servername, menuitem);
 	gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
 	gtk_widget_show(menuitem);
+	gtk_widget_show(main_menu);
 
 	return;
 }
@@ -110,6 +112,10 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 
 	gtk_widget_hide(GTK_WIDGET(menuitem));
 	gtk_container_remove(GTK_CONTAINER(data), GTK_WIDGET(menuitem));
+
+	if (g_list_length(g_hash_table_get_keys(serverHash)) == 0 && g_list_length(imList) == 0) {
+		gtk_widget_hide(main_menu);
+	}
 
 	return;
 }
@@ -221,6 +227,9 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 
 	if (g_list_length(imList) == 0) {
 		gtk_image_set_from_icon_name(main_image, "indicator-messages", GTK_ICON_SIZE_MENU);
+		if (g_list_length(g_hash_table_get_keys(serverHash)) == 0) {
+			gtk_widget_hide(main_menu);
+		}
 	}
 
 	return;
@@ -235,22 +244,21 @@ get_menu_item (void)
 	serverHash = g_hash_table_new_full(g_str_hash, g_str_equal,
 	                                   g_free, NULL);
 
-	GtkWidget * mainmenu = gtk_menu_item_new();
+	main_menu = gtk_menu_item_new();
 
 	main_image = gtk_image_new_from_icon_name("indicator-messages", GTK_ICON_SIZE_MENU);
 	gtk_widget_show(main_image);
-	gtk_container_add(GTK_CONTAINER(mainmenu), main_image);
+	gtk_container_add(GTK_CONTAINER(main_menu), main_image);
 
 	GtkWidget * submenu = gtk_menu_new();
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(mainmenu), submenu);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(main_menu), submenu);
 	gtk_widget_show(submenu);
-	gtk_widget_show(mainmenu);
 
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added), submenu);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed), submenu);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_ADDED, G_CALLBACK(server_added), submenu);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), submenu);
 
-	return mainmenu;
+	return main_menu;
 }
 
