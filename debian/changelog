@@ -1,3 +1,10 @@
+indicator-messages (0.1~ppa15) intrepid; urgency=low
+
+  * Making the menu hide if there is no one around to be
+    in the menu.
+
+ -- Ted Gould <ted@ubuntu.com>  Sun, 15 Feb 2009 23:01:14 -0600
+
 indicator-messages (0.1~ppa14) intrepid; urgency=low
 
   * Adding in application menu items.  They now parse the
