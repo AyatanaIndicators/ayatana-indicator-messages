@@ -4,5 +4,6 @@ indicator-messages (0.1-0ubuntu1) UNRELEASED; urgency=low
     (lp:~indicator-applet-developers/indicator-applet/messages-packaging)
   * debian/control: Add Homepage:, Vcs-Bzr:, and fix package
     description.
+  * debian/copyright: Properly describe license.
 
- -- Martin Pitt <martin.pitt@ubuntu.com>  Tue, 17 Feb 2009 11:24:47 +0100
+ -- Martin Pitt <martin.pitt@ubuntu.com>  Tue, 17 Feb 2009 11:27:56 +0100
