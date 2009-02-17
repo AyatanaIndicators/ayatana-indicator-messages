@@ -1,4 +1,4 @@
-indicator-messages (0.1-0ubuntu1) UNRELEASED; urgency=low
+indicator-messages (0.1-0ubuntu1) jaunty; urgency=low
 
   * Initial release, based on DX team's PPA packaging branch.
     (lp:~indicator-applet-developers/indicator-applet/messages-packaging)
@@ -6,4 +6,4 @@ indicator-messages (0.1-0ubuntu1) UNRELEASED; urgency=low
     description.
   * debian/copyright: Properly describe license.
 
- -- Martin Pitt <martin.pitt@ubuntu.com>  Tue, 17 Feb 2009 11:27:56 +0100
+ -- Martin Pitt <martin.pitt@ubuntu.com>  Tue, 17 Feb 2009 11:35:38 +0100
