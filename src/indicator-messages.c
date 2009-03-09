@@ -33,6 +33,9 @@ static GHashTable * serverHash;
 static GtkWidget * main_image;
 static GtkWidget * main_menu;
 
+#define DESIGN_TEAM_SIZE  design_team_size
+static GtkIconSize design_team_size;
+
 typedef struct _imList_t imList_t;
 struct _imList_t {
 	IndicateListenerServer * server;
@@ -163,7 +166,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 
 	if (g_list_length(imList) != 0) {
 		g_debug("Setting image to 'new'");
-		gtk_image_set_from_icon_name(main_image, "indicator-messages-new", GTK_ICON_SIZE_MENU);
+		gtk_image_set_from_icon_name(main_image, "indicator-messages-new", DESIGN_TEAM_SIZE);
 	} else {
 		g_debug("Hmm, still no entries");
 	}
@@ -226,7 +229,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	}
 
 	if (g_list_length(imList) == 0) {
-		gtk_image_set_from_icon_name(main_image, "indicator-messages", GTK_ICON_SIZE_MENU);
+		gtk_image_set_from_icon_name(main_image, "indicator-messages", DESIGN_TEAM_SIZE);
 		if (g_list_length(g_hash_table_get_keys(serverHash)) == 0) {
 			gtk_widget_hide(main_menu);
 		}
@@ -238,6 +241,8 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 GtkWidget *
 get_menu_item (void)
 {
+	design_team_size = gtk_icon_size_register("design-team-size", 22, 22);
+
 	listener = indicate_listener_new();
 	imList = NULL;
 
@@ -246,7 +251,7 @@ get_menu_item (void)
 
 	main_menu = gtk_menu_item_new();
 
-	main_image = gtk_image_new_from_icon_name("indicator-messages", GTK_ICON_SIZE_MENU);
+	main_image = gtk_image_new_from_icon_name("indicator-messages", DESIGN_TEAM_SIZE);
 	gtk_widget_show(main_image);
 	gtk_container_add(GTK_CONTAINER(main_menu), main_image);
 
