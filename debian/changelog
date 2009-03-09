@@ -1,3 +1,9 @@
+indicator-messages (0.1-0ubuntu1+ppa1) UNRELEASED; urgency=low
+
+  * Changing the icon size.
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 09 Mar 2009 14:27:40 +0200
+
 indicator-messages (0.1-0ubuntu1) jaunty; urgency=low
 
   * Initial release, based on DX team's PPA packaging branch.
