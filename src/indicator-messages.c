@@ -33,6 +33,8 @@ static GHashTable * serverHash;
 static GtkWidget * main_image;
 static GtkWidget * main_menu;
 
+void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
+
 #define DESIGN_TEAM_SIZE  design_team_size
 static GtkIconSize design_team_size;
 
@@ -88,11 +90,58 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 
 	gchar * servername = g_strdup(INDICATE_LISTENER_SERVER_DBUS_NAME(server));
 	AppMenuItem * menuitem = app_menu_item_new(listener, server);
+	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), NULL);
 
 	g_hash_table_insert(serverHash, servername, menuitem);
 	gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
 	gtk_widget_show(menuitem);
 	gtk_widget_show(main_menu);
+
+	return;
+}
+
+void
+server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
+{
+	static gboolean showing_new_icon = FALSE;
+
+	/* Quick check for a common case */
+	if (count != 0 && showing_new_icon) {
+		return;
+	}
+
+	/* Odd that we'd get a signal in this case, but let's
+	   take it out of the mix too */
+	if (count == 0 && !showing_new_icon) {
+		return;
+	}
+
+	if (count != 0) {
+		g_debug("Setting image to 'new'");
+		showing_new_icon = TRUE;
+		gtk_image_set_from_icon_name(main_image, "indicator-messages-new", DESIGN_TEAM_SIZE);
+		return;
+	}
+
+	/* Okay, now at this point the count is zero and it
+	   might result in a switching of the icon back to being
+	   the plain one.  Let's check. */
+
+	gboolean we_have_indicators = FALSE;
+	GList * appitems = g_hash_table_get_values(serverHash);
+	for (; appitems != NULL; appitems = appitems->next) {
+		AppMenuItem * appitem = APP_MENU_ITEM(appitems->data);
+		if (app_menu_item_get_count(appitem) != 0) {
+			we_have_indicators = TRUE;
+			break;
+		}
+	}
+
+	if (!we_have_indicators) {
+		g_debug("Setting image to boring");
+		showing_new_icon = FALSE;
+		gtk_image_set_from_icon_name(main_image, "indicator-messages", DESIGN_TEAM_SIZE);
+	}
 
 	return;
 }
@@ -164,13 +213,6 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
 	}
 
-	if (g_list_length(imList) != 0) {
-		g_debug("Setting image to 'new'");
-		gtk_image_set_from_icon_name(main_image, "indicator-messages-new", DESIGN_TEAM_SIZE);
-	} else {
-		g_debug("Hmm, still no entries");
-	}
-
 	return;
 }
 
@@ -226,13 +268,6 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 
 	if (!removed) {
 		g_warning("We were asked to remove %s %d but we didn't.", (gchar*)server, (guint)indicator);
-	}
-
-	if (g_list_length(imList) == 0) {
-		gtk_image_set_from_icon_name(main_image, "indicator-messages", DESIGN_TEAM_SIZE);
-		if (g_list_length(g_hash_table_get_keys(serverHash)) == 0) {
-			gtk_widget_hide(main_menu);
-		}
 	}
 
 	return;
