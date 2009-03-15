@@ -169,6 +169,9 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 		gtk_widget_hide(main_menu);
 	}
 
+	/* Simulate a server saying zero to recalculate icon */
+	server_count_changed(NULL, 0, NULL);
+
 	return;
 }
 
