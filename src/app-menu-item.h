@@ -36,7 +36,8 @@ G_BEGIN_DECLS
 #define IS_APP_MENU_ITEM_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), APP_MENU_ITEM_TYPE))
 #define APP_MENU_ITEM_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), APP_MENU_ITEM_TYPE, AppMenuItemClass))
 
-#define APP_MENU_ITEM_SIGNAL_COUNT_CHANGED "count-changed"
+#define APP_MENU_ITEM_SIGNAL_COUNT_CHANGED  "count-changed"
+#define APP_MENU_ITEM_SIGNAL_NAME_CHANGED   "name-changed"
 
 typedef struct _AppMenuItem      AppMenuItem;
 typedef struct _AppMenuItemClass AppMenuItemClass;
@@ -45,6 +46,7 @@ struct _AppMenuItemClass {
 	GtkMenuItemClass parent_class;
 
 	void (* count_changed) (guint count);
+	void (* name_changed) (gchar * name);
 };
 
 struct _AppMenuItem {
@@ -55,6 +57,7 @@ GType app_menu_item_get_type (void);
 AppMenuItem * app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server);
 guint app_menu_item_get_count (AppMenuItem * appitem);
 IndicateListenerServer * app_menu_item_get_server (AppMenuItem * appitem);
+const gchar * app_menu_item_get_name (AppMenuItem * appitem);
 
 G_END_DECLS
 

@@ -31,6 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 enum {
 	COUNT_CHANGED,
+	NAME_CHANGED,
 	LAST_SIGNAL
 };
 
@@ -86,6 +87,13 @@ app_menu_item_class_init (AppMenuItemClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__UINT,
 	                                      G_TYPE_NONE, 1, G_TYPE_UINT);
+	signals[NAME_CHANGED] =  g_signal_new(APP_MENU_ITEM_SIGNAL_NAME_CHANGED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (AppMenuItemClass, name_changed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__STRING,
+	                                      G_TYPE_NONE, 1, G_TYPE_STRING);
 
 	return;
 }
@@ -182,6 +190,8 @@ update_label (AppMenuItem * self)
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
 	if (priv->count_on_label && !priv->unreadcount < 1) {
+		/* TRANSLATORS: This is the name of the program and the number of indicators.  So it
+		                would read something like "Mail Client (5)" */
 		gchar * label = g_strdup_printf(_("%s (%d)"), g_app_info_get_name(priv->appinfo), priv->unreadcount);
 		gtk_label_set_text(GTK_LABEL(priv->name), label);
 		g_free(label);
@@ -201,11 +211,16 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	if (priv->appinfo != NULL) {
 		g_object_unref(G_OBJECT(priv->appinfo));
 	}
+
+	if (value == NULL || value[0] == '\0') {
+		return;
+	}
 	
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(value));
 	g_return_if_fail(priv->appinfo != NULL);
 
 	update_label(self);
+	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, g_app_info_get_name(priv->appinfo), TRUE);
 
 	return;
 }
@@ -233,7 +248,7 @@ indicator_added_cb (IndicateListener * listener, IndicateListenerServer * server
 	priv->unreadcount++;
 
 	update_label(APP_MENU_ITEM(data));
-	g_signal_emit(G_OBJECT(data), signals[COUNT_CHANGED], 0, TRUE);
+	g_signal_emit(G_OBJECT(data), signals[COUNT_CHANGED], 0, priv->unreadcount, TRUE);
 
 	return;
 }
@@ -272,4 +287,16 @@ app_menu_item_get_server (AppMenuItem * appitem) {
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
 
 	return priv->server;
+}
+
+const gchar *
+app_menu_item_get_name (AppMenuItem * appitem)
+{
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
+
+	if (priv->appinfo == NULL) {
+		return INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server);
+	} else {
+		return g_app_info_get_name(priv->appinfo);
+	}
 }
