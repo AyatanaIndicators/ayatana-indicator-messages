@@ -118,6 +118,14 @@ static void
 app_menu_item_finalize (GObject *object)
 {
 	G_OBJECT_CLASS (app_menu_item_parent_class)->finalize (object);
+
+	AppMenuItem * self = APP_MENU_ITEM(object);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_added_cb), self);
+	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_removed_cb), self);
+
+	return;
 }
 
 AppMenuItem *
@@ -131,7 +139,7 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 	priv->server = server;
 
 	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added_cb), self);
-	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_added_cb), self);
+	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed_cb), self);
 
 	priv->name = gtk_label_new(INDICATE_LISTENER_SERVER_DBUS_NAME(server));
 	gtk_misc_set_alignment(GTK_MISC(priv->name), 0.0, 0.5);
