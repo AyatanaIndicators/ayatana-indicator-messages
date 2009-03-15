@@ -29,6 +29,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gio/gdesktopappinfo.h>
 #include "app-menu-item.h"
 
+enum {
+	COUNT_CHANGED,
+	LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0 };
+
 typedef struct _AppMenuItemPrivate AppMenuItemPrivate;
 
 struct _AppMenuItemPrivate
@@ -38,6 +45,7 @@ struct _AppMenuItemPrivate
 	
 	gchar * type;
 	GAppInfo * appinfo;
+	guint unreadcount;
 
 	GtkWidget * name;
 };
@@ -52,6 +60,8 @@ static void app_menu_item_finalize   (GObject *object);
 static void activate_cb (AppMenuItem * self, gpointer data);
 static void type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
 static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
+static void indicator_added_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
+static void indicator_removed_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
 
 
 
@@ -66,6 +76,16 @@ app_menu_item_class_init (AppMenuItemClass *klass)
 
 	object_class->dispose = app_menu_item_dispose;
 	object_class->finalize = app_menu_item_finalize;
+
+	signals[COUNT_CHANGED] = g_signal_new(APP_MENU_ITEM_SIGNAL_COUNT_CHANGED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (AppMenuItemClass, count_changed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__UINT,
+	                                      G_TYPE_NONE, 1, G_TYPE_UINT);
+
+	return;
 }
 
 static void
@@ -79,6 +99,7 @@ app_menu_item_init (AppMenuItem *self)
 	priv->name = NULL;
 	priv->type = NULL;
 	priv->appinfo = NULL;
+	priv->unreadcount = 0;
 
 
 	return;
@@ -105,6 +126,9 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 
 	priv->listener = listener;
 	priv->server = server;
+
+	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added_cb), self);
+	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_added_cb), self);
 
 	priv->name = gtk_label_new(INDICATE_LISTENER_SERVER_DBUS_NAME(server));
 	gtk_misc_set_alignment(GTK_MISC(priv->name), 0.0, 0.5);
@@ -162,3 +186,46 @@ activate_cb (AppMenuItem * self, gpointer data)
 
 	return;
 }
+
+static void 
+indicator_added_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
+{
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(data);
+
+	if (g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server))) {
+		/* Not us */
+		return;
+	}
+
+	priv->unreadcount++;
+
+	g_signal_emit(G_OBJECT(data), signals[COUNT_CHANGED], 0, TRUE);
+
+	return;
+}
+
+static void
+indicator_removed_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
+{
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(data);
+
+	if (g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server))) {
+		/* Not us */
+		return;
+	}
+
+	priv->unreadcount--;
+
+	g_signal_emit(G_OBJECT(data), signals[COUNT_CHANGED], 0, TRUE);
+
+	return;
+}
+
+guint
+app_menu_item_get_count (AppMenuItem * appitem)
+{
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
+
+	return priv->unreadcount;
+}
+
