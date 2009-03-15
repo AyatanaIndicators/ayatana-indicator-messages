@@ -29,14 +29,50 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static IndicateListener * listener;
 static GList * imList;
-static GHashTable * serverHash;
+static GList * serverList;
 static GtkWidget * main_image;
 static GtkWidget * main_menu;
 
-void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
+static void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
+static void reconsile_list_and_menu (GList * serverlist, GtkMenuShell * menushell);
 
 #define DESIGN_TEAM_SIZE  design_team_size
 static GtkIconSize design_team_size;
+
+typedef struct _serverList_t serverList_t;
+struct _serverList_t {
+	IndicateListenerServer * server;
+	AppMenuItem * menuitem;
+	GList * imList;
+};
+
+static gint
+serverList_equal (gconstpointer a, gconstpointer b)
+{
+	serverList_t * pa, * pb;
+
+	pa = (serverList_t *)a;
+	pb = (serverList_t *)b;
+
+	gchar * pas = INDICATE_LISTENER_SERVER_DBUS_NAME(pa->server);
+	gchar * pbs = INDICATE_LISTENER_SERVER_DBUS_NAME(pb->server);
+
+	return g_strcmp0(pas, pbs);
+}
+
+static gint
+serverList_sort (gconstpointer a, gconstpointer b)
+{
+	serverList_t * pa, * pb;
+
+	pa = (serverList_t *)a;
+	pb = (serverList_t *)b;
+
+	const gchar * pan = app_menu_item_get_name(pa->menuitem);
+	const gchar * pbn = app_menu_item_get_name(pb->menuitem);
+
+	return g_strcmp0(pan, pbn);
+}
 
 typedef struct _imList_t imList_t;
 struct _imList_t {
@@ -88,19 +124,35 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 		return;
 	}
 
-	gchar * servername = g_strdup(INDICATE_LISTENER_SERVER_DBUS_NAME(server));
 	AppMenuItem * menuitem = app_menu_item_new(listener, server);
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), NULL);
 
-	g_hash_table_insert(serverHash, servername, menuitem);
+	serverList_t * sl_item = g_new(serverList_t, 1);
+	sl_item->server = server;
+	sl_item->menuitem = menuitem;
+	sl_item->imList = NULL;
+
+	/* Incase we got an indicator first */
+	GList * alreadythere = g_list_find_custom(serverList, sl_item, serverList_equal);
+	if (alreadythere != NULL) {
+		g_free(sl_item);
+		sl_item = (serverList_t *)alreadythere->data;
+		sl_item->menuitem = menuitem;
+		serverList = g_list_sort(serverList, serverList_sort);
+	} else {
+		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
+	}
+
 	gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
 	gtk_widget_show(GTK_WIDGET(menuitem));
 	gtk_widget_show(GTK_WIDGET(main_menu));
 
+	reconsile_list_and_menu(serverList, menushell);
+
 	return;
 }
 
-void
+static void
 server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 {
 	static gboolean showing_new_icon = FALSE;
@@ -128,9 +180,9 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	   the plain one.  Let's check. */
 
 	gboolean we_have_indicators = FALSE;
-	GList * appitems = g_hash_table_get_values(serverHash);
+	GList * appitems = serverList;
 	for (; appitems != NULL; appitems = appitems->next) {
-		AppMenuItem * appitem = APP_MENU_ITEM(appitems->data);
+		AppMenuItem * appitem = ((serverList_t *)appitems->data)->menuitem;
 		if (app_menu_item_get_count(appitem) != 0) {
 			we_have_indicators = TRUE;
 			break;
@@ -150,27 +202,31 @@ void
 server_removed (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
 	g_debug("Removing server: %s", INDICATE_LISTENER_SERVER_DBUS_NAME(server));
-	gpointer lookup = g_hash_table_lookup(serverHash, INDICATE_LISTENER_SERVER_DBUS_NAME(server));
+	serverList_t slt;
+	slt.server = server;
+	GList * lookup = g_list_find_custom(serverList, &slt, serverList_equal);
 
 	if (lookup == NULL) {
 		g_debug("\tUnable to find server: %s", INDICATE_LISTENER_SERVER_DBUS_NAME(server));
 		return;
 	}
 
-	g_hash_table_remove(serverHash, INDICATE_LISTENER_SERVER_DBUS_NAME(server));
+	serverList_t * sltp = (serverList_t *)lookup->data;
+	serverList = g_list_remove(serverList, sltp);
 
-	AppMenuItem * menuitem = APP_MENU_ITEM(lookup);
-	g_return_if_fail(menuitem != NULL);
-
-	gtk_widget_hide(GTK_WIDGET(menuitem));
-	gtk_container_remove(GTK_CONTAINER(data), GTK_WIDGET(menuitem));
-
-	if (g_list_length(g_hash_table_get_keys(serverHash)) == 0 && g_list_length(imList) == 0) {
-		gtk_widget_hide(main_menu);
+	if (sltp->menuitem != NULL) {
+		gtk_widget_hide(GTK_WIDGET(sltp->menuitem));
+		gtk_container_remove(GTK_CONTAINER(data), GTK_WIDGET(sltp->menuitem));
 	}
 
-	/* Simulate a server saying zero to recalculate icon */
-	server_count_changed(NULL, 0, NULL);
+	g_free(sltp);
+
+	if (g_list_length(serverList) == 0) {
+		gtk_widget_hide(main_menu);
+	} else {
+		/* Simulate a server saying zero to recalculate icon */
+		server_count_changed(NULL, 0, NULL);
+	}
 
 	return;
 }
@@ -183,7 +239,7 @@ struct _menushell_location {
 };
 
 static void
-menushell_foreach_cb (gpointer data_mi, gpointer data_ms) {
+menushell_foreach_cb (GtkWidget * data_mi, gpointer data_ms) {
 	menushell_location_t * msl = (menushell_location_t *)data_ms;
 
 	if (msl->found) return;
@@ -196,6 +252,13 @@ menushell_foreach_cb (gpointer data_mi, gpointer data_ms) {
 	}
 
 	return;
+}
+
+static void
+reconsile_list_and_menu (GList * serverlist, GtkMenuShell * menushell)
+{
+
+
 }
 
 static void
@@ -317,9 +380,7 @@ get_menu_item (void)
 
 	listener = indicate_listener_new();
 	imList = NULL;
-
-	serverHash = g_hash_table_new_full(g_str_hash, g_str_equal,
-	                                   g_free, NULL);
+	serverList = NULL;
 
 	main_menu = gtk_menu_item_new();
 
