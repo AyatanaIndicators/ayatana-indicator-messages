@@ -267,3 +267,9 @@ app_menu_item_get_count (AppMenuItem * appitem)
 	return priv->unreadcount;
 }
 
+IndicateListenerServer *
+app_menu_item_get_server (AppMenuItem * appitem) {
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
+
+	return priv->server;
+}

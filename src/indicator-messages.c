@@ -94,8 +94,8 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 
 	g_hash_table_insert(serverHash, servername, menuitem);
 	gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
-	gtk_widget_show(menuitem);
-	gtk_widget_show(main_menu);
+	gtk_widget_show(GTK_WIDGET(menuitem));
+	gtk_widget_show(GTK_WIDGET(main_menu));
 
 	return;
 }
@@ -119,7 +119,7 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	if (count != 0) {
 		g_debug("Setting image to 'new'");
 		showing_new_icon = TRUE;
-		gtk_image_set_from_icon_name(main_image, "indicator-messages-new", DESIGN_TEAM_SIZE);
+		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages-new", DESIGN_TEAM_SIZE);
 		return;
 	}
 
@@ -140,7 +140,7 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	if (!we_have_indicators) {
 		g_debug("Setting image to boring");
 		showing_new_icon = FALSE;
-		gtk_image_set_from_icon_name(main_image, "indicator-messages", DESIGN_TEAM_SIZE);
+		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages", DESIGN_TEAM_SIZE);
 	}
 
 	return;
@@ -171,6 +171,29 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 
 	/* Simulate a server saying zero to recalculate icon */
 	server_count_changed(NULL, 0, NULL);
+
+	return;
+}
+
+typedef struct _menushell_location menushell_location_t;
+struct _menushell_location {
+	const IndicateListenerServer * server;
+	gint position;
+	gboolean found;
+};
+
+static void
+menushell_foreach_cb (gpointer data_mi, gpointer data_ms) {
+	menushell_location_t * msl = (menushell_location_t *)data_ms;
+
+	if (msl->found) return;
+
+	msl->position++;
+
+	AppMenuItem * appmenu = APP_MENU_ITEM(data_mi);
+	if (!g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(msl->server), INDICATE_LISTENER_SERVER_DBUS_NAME(app_menu_item_get_server(appmenu)))) {
+		msl->found = TRUE;
+	}
 
 	return;
 }
@@ -213,7 +236,18 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		imList = g_list_append(imList, listItem);
 
 		g_debug("Placing in Shell");
-		gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
+		menushell_location_t msl;
+		msl.found = FALSE;
+		msl.position = 0;
+		msl.server = server;
+
+		gtk_container_foreach(GTK_CONTAINER(menushell), menushell_foreach_cb, &msl);
+		if (msl.found) {
+			gtk_menu_shell_insert(menushell, GTK_WIDGET(menuitem), msl.position);
+		} else {
+			g_warning("Unable to find server menu item");
+			gtk_menu_shell_append(menushell, GTK_WIDGET(menuitem));
+		}
 	}
 
 	return;
