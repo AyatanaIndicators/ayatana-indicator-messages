@@ -46,6 +46,7 @@ struct _AppMenuItemPrivate
 	gchar * type;
 	GAppInfo * appinfo;
 	guint unreadcount;
+	gboolean count_on_label;
 
 	GtkWidget * name;
 };
@@ -62,6 +63,7 @@ static void type_cb (IndicateListener * listener, IndicateListenerServer * serve
 static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
 static void indicator_added_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
 static void indicator_removed_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
+static void update_label (AppMenuItem * self);
 
 
 
@@ -100,6 +102,7 @@ app_menu_item_init (AppMenuItem *self)
 	priv->type = NULL;
 	priv->appinfo = NULL;
 	priv->unreadcount = 0;
+	priv->count_on_label = FALSE;
 
 
 	return;
@@ -156,6 +159,28 @@ type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * v
 	
 	priv->type = g_strdup(value);
 
+	if (g_strcmp0(priv->type, "message.im") || g_strcmp0(priv->type, "message.micro")) {
+		/* For IM and Microblogging we want the individual items, not a count */
+		priv->count_on_label = TRUE;
+		update_label(self);
+	}
+
+	return;
+}
+
+static void
+update_label (AppMenuItem * self)
+{
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	if (priv->count_on_label && !priv->unreadcount < 1) {
+		gchar * label = g_strdup_printf(_("%s (%d)"), g_app_info_get_name(priv->appinfo), priv->unreadcount);
+		gtk_label_set_text(GTK_LABEL(priv->name), label);
+		g_free(label);
+	} else {
+		gtk_label_set_text(GTK_LABEL(priv->name), g_app_info_get_name(priv->appinfo));
+	}
+
 	return;
 }
 
@@ -172,7 +197,7 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(value));
 	g_return_if_fail(priv->appinfo != NULL);
 
-	gtk_label_set_text(GTK_LABEL(priv->name), g_app_info_get_name(priv->appinfo));
+	update_label(self);
 
 	return;
 }
@@ -199,6 +224,7 @@ indicator_added_cb (IndicateListener * listener, IndicateListenerServer * server
 
 	priv->unreadcount++;
 
+	update_label(APP_MENU_ITEM(data));
 	g_signal_emit(G_OBJECT(data), signals[COUNT_CHANGED], 0, TRUE);
 
 	return;
@@ -214,8 +240,12 @@ indicator_removed_cb (IndicateListener * listener, IndicateListenerServer * serv
 		return;
 	}
 
-	priv->unreadcount--;
+	/* Should never happen, but let's have some protection on that */
+	if (priv->unreadcount > 0) {
+		priv->unreadcount--;
+	}
 
+	update_label(APP_MENU_ITEM(data));
 	g_signal_emit(G_OBJECT(data), signals[COUNT_CHANGED], 0, TRUE);
 
 	return;
