@@ -269,7 +269,7 @@ indicator_removed_cb (IndicateListener * listener, IndicateListenerServer * serv
 	}
 
 	update_label(APP_MENU_ITEM(data));
-	g_signal_emit(G_OBJECT(data), signals[COUNT_CHANGED], 0, TRUE);
+	g_signal_emit(G_OBJECT(data), signals[COUNT_CHANGED], 0, priv->unreadcount, TRUE);
 
 	return;
 }
