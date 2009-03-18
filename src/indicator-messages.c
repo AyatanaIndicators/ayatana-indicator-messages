@@ -34,6 +34,7 @@ static GtkWidget * main_menu;
 
 static void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
 static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data);
+static void im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data);
 static void reconsile_list_and_menu (GList * serverlist, GtkMenuShell * menushell);
 
 #define DESIGN_TEAM_SIZE  design_team_size
@@ -100,6 +101,16 @@ imList_equal (gconstpointer a, gconstpointer b)
 	return !((!strcmp(pas, pbs)) && (pai == pbi));
 }
 
+static gint
+imList_sort (gconstpointer a, gconstpointer b)
+{
+	imList_t * pa, * pb;
+
+	pa = (imList_t *)a;
+	pb = (imList_t *)b;
+
+	return (gint)(im_menu_item_get_seconds(IM_MENU_ITEM(pa->menuitem)) - im_menu_item_get_seconds(IM_MENU_ITEM(pb->menuitem)));
+}
 
 void 
 server_added (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
@@ -204,6 +215,15 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages", DESIGN_TEAM_SIZE);
 	}
 
+	return;
+}
+
+static void
+im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data)
+{
+	serverList_t * sl = (serverList_t *)data;
+	sl->imList = g_list_sort(sl->imList, imList_sort);
+	reconsile_list_and_menu(serverList, GTK_MENU_SHELL(gtk_widget_get_parent(GTK_WIDGET(imitem))));
 	return;
 }
 
@@ -351,8 +371,9 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 			sl_item = (serverList_t *)serverentry->data;
 		}
 
-		g_debug("Adding to IM Hash");
-		sl_item->imList = g_list_append(sl_item->imList, listItem);
+		g_debug("Adding to IM List");
+		sl_item->imList = g_list_insert_sorted(sl_item->imList, listItem, imList_sort);
+		g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_TIME_CHANGED, G_CALLBACK(im_time_changed), sl_item);
 
 		g_debug("Placing in Shell");
 		menushell_location_t msl;
