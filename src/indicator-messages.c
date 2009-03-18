@@ -33,6 +33,7 @@ static GtkWidget * main_image;
 static GtkWidget * main_menu;
 
 static void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
+static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data);
 static void reconsile_list_and_menu (GList * serverlist, GtkMenuShell * menushell);
 
 #define DESIGN_TEAM_SIZE  design_team_size
@@ -125,6 +126,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 
 	AppMenuItem * menuitem = app_menu_item_new(listener, server);
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), NULL);
+	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_NAME_CHANGED,  G_CALLBACK(server_name_changed),  menushell);
 
 	serverList_t * sl_item = g_new(serverList_t, 1);
 	sl_item->server = server;
@@ -148,6 +150,14 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 
 	reconsile_list_and_menu(serverList, menushell);
 
+	return;
+}
+
+static void
+server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data)
+{
+	serverList = g_list_sort(serverList, serverList_sort);
+	reconsile_list_and_menu(serverList, GTK_MENU_SHELL(data));
 	return;
 }
 
@@ -245,6 +255,10 @@ menushell_foreach_cb (GtkWidget * data_mi, gpointer data_ms) {
 
 	msl->position++;
 
+	if (!IS_APP_MENU_ITEM(data_mi)) {
+		return;
+	}
+
 	AppMenuItem * appmenu = APP_MENU_ITEM(data_mi);
 	if (!g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(msl->server), INDICATE_LISTENER_SERVER_DBUS_NAME(app_menu_item_get_server(appmenu)))) {
 		msl->found = TRUE;
@@ -256,8 +270,32 @@ menushell_foreach_cb (GtkWidget * data_mi, gpointer data_ms) {
 static void
 reconsile_list_and_menu (GList * serverlist, GtkMenuShell * menushell)
 {
+	guint position = 0;
+	GList * serverentry;
 
+	g_debug("Reordering Menu:");
 
+	for (serverentry = serverList; serverentry != NULL; serverentry = serverentry->next) {
+		serverList_t * si = (serverList_t *)serverentry->data;
+		if (si->menuitem != NULL) {
+			g_debug("\tMoving app %s to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
+			gtk_menu_reorder_child(GTK_MENU(menushell), GTK_WIDGET(si->menuitem), position);
+			position++;
+		}
+
+		GList * imentry;
+		for (imentry = si->imList; imentry != NULL; imentry = imentry->next) {
+			imList_t * imi = (imList_t *)imentry->data;
+
+			if (imi->menuitem != NULL) {
+				g_debug("\tMoving indicator on %s id %d to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(imi->server), INDICATE_LISTENER_INDICATOR_ID(imi->indicator), position);
+				gtk_menu_reorder_child(GTK_MENU(menushell), imi->menuitem, position);
+				position++;
+			}
+		}
+	}
+
+	return;
 }
 
 static void
