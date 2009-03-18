@@ -36,11 +36,15 @@ G_BEGIN_DECLS
 #define IS_IM_MENU_ITEM_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), IM_MENU_ITEM_TYPE))
 #define IM_MENU_ITEM_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), IM_MENU_ITEM_TYPE, ImMenuItemClass))
 
+#define IM_MENU_ITEM_SIGNAL_TIME_CHANGED  "time-changed"
+
 typedef struct _ImMenuItem      ImMenuItem;
 typedef struct _ImMenuItemClass ImMenuItemClass;
 
 struct _ImMenuItemClass {
 	GtkMenuItemClass parent_class;
+
+	void (*time_changed) (glong seconds);
 };
 
 struct _ImMenuItem {
@@ -49,6 +53,7 @@ struct _ImMenuItem {
 
 GType im_menu_item_get_type (void);
 ImMenuItem * im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator);
+glong im_menu_item_get_seconds (ImMenuItem * menuitem);
 
 G_END_DECLS
 
