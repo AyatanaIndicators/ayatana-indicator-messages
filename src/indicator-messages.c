@@ -28,7 +28,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "app-menu-item.h"
 
 static IndicateListener * listener;
-static GList * imList;
 static GList * serverList;
 static GtkWidget * main_image;
 static GtkWidget * main_menu;
@@ -295,8 +294,27 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		g_object_ref(G_OBJECT(menuitem));
 		listItem->menuitem = GTK_WIDGET(menuitem);
 
+		g_debug("Finding the server entry");
+		serverList_t sl_item_local;
+		serverList_t * sl_item = NULL;
+		sl_item_local.server = server;
+		GList * serverentry = g_list_find_custom(serverList, &sl_item_local, serverList_equal);
+
+		if (serverentry == NULL) {
+			/* This sucks, we got an indicator before the server.  I guess
+			   that's the joy of being asynchronous */
+			serverList_t * sl_item = g_new(serverList_t, 1);
+			sl_item->server = server;
+			sl_item->menuitem = NULL;
+			sl_item->imList = NULL;
+
+			serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
+		} else {
+			sl_item = (serverList_t *)serverentry->data;
+		}
+
 		g_debug("Adding to IM Hash");
-		imList = g_list_append(imList, listItem);
+		sl_item->imList = g_list_append(sl_item->imList, listItem);
 
 		g_debug("Placing in Shell");
 		menushell_location_t msl;
@@ -344,12 +362,21 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 
 	gboolean removed = FALSE;
 
+	serverList_t sl_item_local;
+	serverList_t * sl_item = NULL;
+	sl_item_local.server = server;
+	GList * serverentry = g_list_find_custom(serverList, &sl_item_local, serverList_equal);
+	if (serverentry == NULL) {
+		return;
+	}
+	sl_item = (serverList_t *)serverentry->data;
+
 	/* Look in the IM Hash Table */
 	imList_t listData;
 	listData.server = server;
 	listData.indicator = indicator;
 
-	GList * listItem = g_list_find_custom(imList, &listData, imList_equal);
+	GList * listItem = g_list_find_custom(sl_item->imList, &listData, imList_equal);
 	GtkWidget * menuitem = NULL;
 	if (listItem != NULL) {
 		menuitem = ((imList_t *)listItem->data)->menuitem;
@@ -357,7 +384,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 
 	if (!removed && menuitem != NULL) {
 		g_object_ref(menuitem);
-		imList = g_list_remove(imList, listItem->data);
+		sl_item->imList = g_list_remove(sl_item->imList, listItem->data);
 
 		gtk_widget_hide(menuitem);
 		gtk_container_remove(GTK_CONTAINER(data), menuitem);
@@ -379,7 +406,6 @@ get_menu_item (void)
 	design_team_size = gtk_icon_size_register("design-team-size", 22, 22);
 
 	listener = indicate_listener_new();
-	imList = NULL;
 	serverList = NULL;
 
 	main_menu = gtk_menu_item_new();
