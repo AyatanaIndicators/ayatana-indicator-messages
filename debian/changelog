@@ -1,4 +1,4 @@
-indicator-messages (0.1.3-0ubuntu1~ppa2) jaunty; urgency=low
+indicator-messages (0.1.3-0ubuntu1) jaunty; urgency=low
 
   * New upstream version.
     * Now changes the icon based on non-IM indicators so that Evolution
@@ -6,21 +6,12 @@ indicator-messages (0.1.3-0ubuntu1~ppa2) jaunty; urgency=low
     * Now the menu items are in a predictable order, alphabetical.
     * The Messages for a particular client (i.e. Pidgin) are grouped with
       the client they're associated with.
-    * Adjusting the icon to match the new one in the Human theme.
+    * Adjusting the icon size to match the new one in the Human theme.
+    * Adjusting the build so that all the different libraries are not
+      built in a versioned manner.  Now it's just one .so, which is
+      what it should have been originally.
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 18 Mar 2009 15:34:39 -0500
-
-indicator-messages (0.1.3-0ubuntu1~ppa1) jaunty; urgency=low
-
-  * New upstream version.
-
- -- Ted Gould <ted@ubuntu.com>  Wed, 18 Mar 2009 14:41:44 -0500
-
-indicator-messages (0.1-0ubuntu1+ppa1) UNRELEASED; urgency=low
-
-  * Changing the icon size.
-
- -- Ted Gould <ted@ubuntu.com>  Mon, 09 Mar 2009 14:27:40 +0200
+ -- Ted Gould <ted@ubuntu.com>  Wed, 18 Mar 2009 16:31:28 -0500
 
 indicator-messages (0.1-0ubuntu1) jaunty; urgency=low
 
