@@ -175,7 +175,7 @@ type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * v
 	
 	priv->type = g_strdup(value);
 
-	if (!g_strcmp0(priv->type, "message.instant") || !g_strcmp0(priv->type, "message.micro") || !g_strcmp0(priv->type, "message.im")) {
+	if (!(!g_strcmp0(priv->type, "message.instant") || !g_strcmp0(priv->type, "message.micro") || !g_strcmp0(priv->type, "message.im"))) {
 		/* For IM and Microblogging we want the individual items, not a count */
 		priv->count_on_label = TRUE;
 		update_label(self);
