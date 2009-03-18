@@ -109,7 +109,7 @@ imList_sort (gconstpointer a, gconstpointer b)
 	pa = (imList_t *)a;
 	pb = (imList_t *)b;
 
-	return (gint)(im_menu_item_get_seconds(IM_MENU_ITEM(pa->menuitem)) - im_menu_item_get_seconds(IM_MENU_ITEM(pb->menuitem)));
+	return (gint)(im_menu_item_get_seconds(IM_MENU_ITEM(pb->menuitem)) - im_menu_item_get_seconds(IM_MENU_ITEM(pa->menuitem)));
 }
 
 void 
