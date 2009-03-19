@@ -27,6 +27,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gtk/gtk.h>
 #include "im-menu-item.h"
 
+enum {
+	TIME_CHANGED,
+	LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0 };
+
 typedef struct _ImMenuItemPrivate ImMenuItemPrivate;
 
 struct _ImMenuItemPrivate
@@ -34,6 +41,8 @@ struct _ImMenuItemPrivate
 	IndicateListener *           listener;
 	IndicateListenerServer *      server;
 	IndicateListenerIndicator *  indicator;
+
+	glong seconds;
 
 	GtkHBox * hbox;
 	GtkLabel * user;
@@ -92,6 +101,16 @@ im_menu_item_class_init (ImMenuItemClass *klass)
 
 	object_class->dispose = im_menu_item_dispose;
 	object_class->finalize = im_menu_item_finalize;
+
+	signals[TIME_CHANGED] =  g_signal_new(IM_MENU_ITEM_SIGNAL_TIME_CHANGED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (ImMenuItemClass, time_changed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__LONG,
+	                                      G_TYPE_NONE, 1, G_TYPE_LONG);
+
+	return;
 }
 
 static void
@@ -103,6 +122,8 @@ im_menu_item_init (ImMenuItem *self)
 	priv->listener = NULL;
 	priv->server = NULL;
 	priv->indicator = NULL;
+
+	priv->seconds = 0;
 
 	/* build widgets first */
 	priv->icon = GTK_IMAGE(gtk_image_new());
@@ -185,6 +206,8 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
+	priv->seconds = propertydata->tv_sec;
+
 	time_t timet;
 	struct tm * structtm;
 
@@ -197,6 +220,8 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 
 	gtk_label_set_label(priv->time, timestring);
 	gtk_widget_show(GTK_WIDGET(priv->time));
+
+	g_signal_emit(G_OBJECT(self), signals[TIME_CHANGED], 0, priv->seconds, TRUE);
 
 	return;
 }
@@ -275,4 +300,11 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_MODIFIED, G_CALLBACK(indicator_modified_cb), self);
 
 	return self;
+}
+
+glong
+im_menu_item_get_seconds (ImMenuItem * menuitem)
+{
+	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(menuitem);
+	return priv->seconds;
 }
