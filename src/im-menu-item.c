@@ -43,6 +43,7 @@ struct _ImMenuItemPrivate
 	IndicateListenerIndicator *  indicator;
 
 	glong seconds;
+	gboolean show_time;
 
 	GtkHBox * hbox;
 	GtkLabel * user;
@@ -208,18 +209,20 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 
 	priv->seconds = propertydata->tv_sec;
 
-	time_t timet;
-	struct tm * structtm;
+	if (priv->show_time) {
+		time_t timet;
+		struct tm * structtm;
 
-	timet = propertydata->tv_sec;
-	structtm = localtime(&timet);
+		timet = propertydata->tv_sec;
+		structtm = localtime(&timet);
 
-	/* I can't imagine needing more than 80 characters */
-	gchar timestring[80];
-	strftime(timestring, 80, _("%I:%M"), structtm);
+		/* I can't imagine needing more than 80 characters */
+		gchar timestring[80];
+		strftime(timestring, 80, _("%I:%M"), structtm);
 
-	gtk_label_set_label(priv->time, timestring);
-	gtk_widget_show(GTK_WIDGET(priv->time));
+		gtk_label_set_label(priv->time, timestring);
+		gtk_widget_show(GTK_WIDGET(priv->time));
+	}
 
 	g_signal_emit(G_OBJECT(self), signals[TIME_CHANGED], 0, priv->seconds, TRUE);
 
@@ -281,7 +284,7 @@ indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * ser
 }
 
 ImMenuItem *
-im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator)
+im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gboolean show_time)
 {
 	g_debug("Building a new IM Menu Item");
 	ImMenuItem * self = g_object_new(IM_MENU_ITEM_TYPE, NULL);
@@ -291,6 +294,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	priv->listener = listener;
 	priv->server = server;
 	priv->indicator = indicator;
+	priv->show_time = show_time;
 
 	indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
 	indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
