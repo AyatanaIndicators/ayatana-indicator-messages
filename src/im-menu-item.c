@@ -45,6 +45,8 @@ struct _ImMenuItemPrivate
 	glong seconds;
 	gboolean show_time;
 
+	guint time_update_min;
+
 	GtkHBox * hbox;
 	GtkLabel * user;
 	GtkLabel * time;
@@ -162,6 +164,13 @@ static void
 im_menu_item_dispose (GObject *object)
 {
 	G_OBJECT_CLASS (im_menu_item_parent_class)->dispose (object);
+
+	ImMenuItem * self = IM_MENU_ITEM(object);
+	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
+
+	if (priv->time_update_min != 0) {
+		g_source_remove(priv->time_update_min);
+	}
 }
 
 static void
@@ -191,6 +200,62 @@ icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 }
 
 static void
+update_time (ImMenuItem * self)
+{
+	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
+
+	if (!priv->show_time) {
+		gtk_label_set_label(priv->time, "");
+		return;
+	}
+	
+	gchar * timestring = NULL;
+
+	GTimeVal current_time;
+	g_get_current_time(&current_time);
+
+	guint elapsed_seconds = current_time.tv_sec - priv->seconds;
+	guint elapsed_minutes = elapsed_seconds / 60;
+
+	if (elapsed_seconds % 60 > 55) {
+		/* We're using fuzzy timers, so we need fuzzy comparisons */
+		elapsed_minutes += 1;
+	}
+
+	if (elapsed_minutes < 60) {
+		timestring = g_strdup_printf(ngettext("%d m", "%d m", elapsed_minutes), elapsed_minutes);
+	} else {
+		guint elapsed_hours = elapsed_minutes / 60;
+
+		if (elapsed_minutes % 60 > 55) {
+			/* We're using fuzzy timers, so we need fuzzy comparisons */
+			elapsed_hours += 1;
+		}
+
+		timestring = g_strdup_printf(ngettext("%d h", "%d h", elapsed_hours), elapsed_hours);
+	}
+
+	if (timestring != NULL) {
+		gtk_label_set_label(priv->time, timestring);
+		gtk_widget_show(GTK_WIDGET(priv->time));
+
+		g_free(timestring);
+	}
+
+	return;
+}
+
+static gboolean
+time_update_cb (gpointer data)
+{
+	ImMenuItem * self = IM_MENU_ITEM(data);
+
+	update_time(self);
+
+	return TRUE;
+}
+
+static void
 time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, GTimeVal * propertydata, gpointer data)
 {
 	g_debug("Got Time info");
@@ -209,19 +274,10 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 
 	priv->seconds = propertydata->tv_sec;
 
-	if (priv->show_time) {
-		time_t timet;
-		struct tm * structtm;
+	update_time(self);
 
-		timet = propertydata->tv_sec;
-		structtm = localtime(&timet);
-
-		/* I can't imagine needing more than 80 characters */
-		gchar timestring[80];
-		strftime(timestring, 80, _("%I:%M"), structtm);
-
-		gtk_label_set_label(priv->time, timestring);
-		gtk_widget_show(GTK_WIDGET(priv->time));
+	if (priv->time_update_min == 0) {
+		g_timeout_add_seconds(60, time_update_cb, self);
 	}
 
 	g_signal_emit(G_OBJECT(self), signals[TIME_CHANGED], 0, priv->seconds, TRUE);
@@ -295,6 +351,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	priv->server = server;
 	priv->indicator = indicator;
 	priv->show_time = show_time;
+	priv->time_update_min = 0;
 
 	indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
 	indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
