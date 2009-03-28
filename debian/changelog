@@ -1,17 +1,23 @@
 indicator-messages (0.1.3-0ubuntu1) jaunty; urgency=low
 
+  [ Ted Gould ]
   * New upstream version.
-    * Now changes the icon based on non-IM indicators so that Evolution
+    - Now changes the icon based on non-IM indicators so that Evolution
       works much better.  (LP: #342480)
-    * Now the menu items are in a predictable order, alphabetical.
-    * The Messages for a particular client (i.e. Pidgin) are grouped with
+    - Now the menu items are in a predictable order, alphabetical.
+    - The Messages for a particular client (i.e. Pidgin) are grouped with
       the client they're associated with.
-    * Adjusting the icon size to match the new one in the Human theme.
-    * Adjusting the build so that all the different libraries are not
+    - Adjusting the icon size to match the new one in the Human theme.
+    - Adjusting the build so that all the different libraries are not
       built in a versioned manner.  Now it's just one .so, which is
       what it should have been originally.
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 18 Mar 2009 16:31:28 -0500
+  [ Martin Pitt ]
+  * Add debian/watch.
+  * Add bzr-builddeb configuration.
+  * debian/copyright: Fix download location.
+
+ -- Martin Pitt <martin.pitt@ubuntu.com>  Thu, 19 Mar 2009 12:23:17 +0100
 
 indicator-messages (0.1-0ubuntu1) jaunty; urgency=low
 
