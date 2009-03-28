@@ -112,7 +112,7 @@ imList_sort (gconstpointer a, gconstpointer b)
 	return (gint)(im_menu_item_get_seconds(IM_MENU_ITEM(pb->menuitem)) - im_menu_item_get_seconds(IM_MENU_ITEM(pa->menuitem)));
 }
 
-void 
+static void 
 server_added (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
 	g_debug("Server Added '%s' of type '%s'.", INDICATE_LISTENER_SERVER_DBUS_NAME(server), type);
@@ -227,7 +227,7 @@ im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data)
 	return;
 }
 
-void 
+static void 
 server_removed (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
 	g_debug("Removing server: %s", INDICATE_LISTENER_SERVER_DBUS_NAME(server));
@@ -342,13 +342,13 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 
 	g_debug("Message subtype: %s", propertydata);
 
-	if (!strcmp(propertydata, "im")) {
+	if (!strcmp(propertydata, "im") || !strcmp(propertydata, "login")) {
 		imList_t * listItem = g_new(imList_t, 1);
 		listItem->server = server;
 		listItem->indicator = indicator;
 
 		g_debug("Building IM Item");
-		ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator);
+		ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator, !strcmp(propertydata, "im"));
 		g_object_ref(G_OBJECT(menuitem));
 		listItem->menuitem = GTK_WIDGET(menuitem);
 
