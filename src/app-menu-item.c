@@ -160,6 +160,9 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 
 	g_signal_connect(G_OBJECT(self), "activate", G_CALLBACK(activate_cb), NULL);
 
+	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_SERVER_DISPLAY);
+	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_SERVER_SIGNAL);
+
 	return self;
 }
 
@@ -179,6 +182,11 @@ type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * v
 		/* For IM and Microblogging we want the individual items, not a count */
 		priv->count_on_label = TRUE;
 		update_label(self);
+
+		indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_COUNT);
+	} else {
+		indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_DISPLAY);
+		indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_SIGNAL);
 	}
 
 	return;
