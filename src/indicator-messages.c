@@ -280,7 +280,7 @@ menushell_foreach_cb (GtkWidget * data_mi, gpointer data_ms) {
 	}
 
 	AppMenuItem * appmenu = APP_MENU_ITEM(data_mi);
-	if (!g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(msl->server), INDICATE_LISTENER_SERVER_DBUS_NAME(app_menu_item_get_server(appmenu)))) {
+	if (!g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME((IndicateListenerServer*)msl->server), INDICATE_LISTENER_SERVER_DBUS_NAME(app_menu_item_get_server(appmenu)))) {
 		msl->found = TRUE;
 	}
 
@@ -453,7 +453,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	}
 
 	if (!removed) {
-		g_warning("We were asked to remove %s %d but we didn't.", INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_SERVER_INDICATOR_ID(indicator));
+		g_warning("We were asked to remove %s %d but we didn't.", INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_INDICATOR_ID(indicator));
 	}
 
 	return;
