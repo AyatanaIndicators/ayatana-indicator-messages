@@ -55,8 +55,8 @@ serverList_equal (gconstpointer a, gconstpointer b)
 	pa = (serverList_t *)a;
 	pb = (serverList_t *)b;
 
-	gchar * pas = INDICATE_LISTENER_SERVER_DBUS_NAME(pa->server);
-	gchar * pbs = INDICATE_LISTENER_SERVER_DBUS_NAME(pb->server);
+	const gchar * pas = INDICATE_LISTENER_SERVER_DBUS_NAME(pa->server);
+	const gchar * pbs = INDICATE_LISTENER_SERVER_DBUS_NAME(pb->server);
 
 	return g_strcmp0(pas, pbs);
 }
@@ -90,8 +90,8 @@ imList_equal (gconstpointer a, gconstpointer b)
 	pa = (imList_t *)a;
 	pb = (imList_t *)b;
 
-	gchar * pas = INDICATE_LISTENER_SERVER_DBUS_NAME(pa->server);
-	gchar * pbs = INDICATE_LISTENER_SERVER_DBUS_NAME(pb->server);
+	const gchar * pas = INDICATE_LISTENER_SERVER_DBUS_NAME(pa->server);
+	const gchar * pbs = INDICATE_LISTENER_SERVER_DBUS_NAME(pb->server);
 
 	guint pai = INDICATE_LISTENER_INDICATOR_ID(pa->indicator);
 	guint pbi = INDICATE_LISTENER_INDICATOR_ID(pb->indicator);
