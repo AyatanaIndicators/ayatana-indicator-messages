@@ -411,7 +411,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 static void
 indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
 {
-	g_debug("Removing %s %d", (gchar*)server, (guint)indicator);
+	g_debug("Removing %s %d", INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_INDICATOR_ID(indicator));
 	if (type == NULL || strcmp(type, "message")) {
 		/* We only care about message type indicators
 		   all of the others can go to the bit bucket */
@@ -453,7 +453,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	}
 
 	if (!removed) {
-		g_warning("We were asked to remove %s %d but we didn't.", (gchar*)server, (guint)indicator);
+		g_warning("We were asked to remove %s %d but we didn't.", INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_SERVER_INDICATOR_ID(indicator));
 	}
 
 	return;
