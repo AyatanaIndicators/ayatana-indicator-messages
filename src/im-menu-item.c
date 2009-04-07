@@ -44,6 +44,7 @@ struct _ImMenuItemPrivate
 
 	glong seconds;
 	gboolean show_time;
+	gulong indicator_changed;
 
 	guint time_update_min;
 
@@ -171,6 +172,11 @@ im_menu_item_dispose (GObject *object)
 	if (priv->time_update_min != 0) {
 		g_source_remove(priv->time_update_min);
 	}
+
+	g_signal_handler_disconnect(priv->listener, priv->indicator_changed);
+	priv->indicator_changed = 0;
+
+	return;
 }
 
 static void
@@ -326,7 +332,7 @@ indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * ser
 
 	/* Not meant for us */
 	if (INDICATE_LISTENER_INDICATOR_ID(indicator) != INDICATE_LISTENER_INDICATOR_ID(priv->indicator)) return;
-	if (g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server))) return;
+	if (server != priv->server) return;
 
 	if (!g_strcmp0(property, "sender")) {
 		indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
@@ -358,7 +364,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	indicate_listener_get_property_icon(listener, server, indicator, "icon",   icon_cb, self);	
 
 	g_signal_connect(G_OBJECT(self), "activate", G_CALLBACK(activate_cb), NULL);
-	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_MODIFIED, G_CALLBACK(indicator_modified_cb), self);
+	priv->indicator_changed = g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_MODIFIED, G_CALLBACK(indicator_modified_cb), self);
 
 	return self;
 }

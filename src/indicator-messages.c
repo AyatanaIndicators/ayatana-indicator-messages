@@ -81,6 +81,7 @@ struct _imList_t {
 	IndicateListenerServer * server;
 	IndicateListenerIndicator * indicator;
 	GtkWidget * menuitem;
+	gulong timechange_cb;
 };
 
 static gboolean
@@ -380,7 +381,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 
 		g_debug("Adding to IM List");
 		sl_item->imList = g_list_insert_sorted(sl_item->imList, listItem, imList_sort);
-		g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_TIME_CHANGED, G_CALLBACK(im_time_changed), sl_item);
+		listItem->timechange_cb = g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_TIME_CHANGED, G_CALLBACK(im_time_changed), sl_item);
 
 		g_debug("Placing in Shell");
 		menushell_location_t msl;
@@ -444,19 +445,19 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 
 	GList * listItem = g_list_find_custom(sl_item->imList, &listData, imList_equal);
 	GtkWidget * menuitem = NULL;
+	imList_t * ilt = NULL;
 	if (listItem != NULL) {
-		menuitem = ((imList_t *)listItem->data)->menuitem;
+		ilt = (imList_t *)listItem->data;
+		menuitem = ilt->menuitem;
 	}
 
 	if (!removed && menuitem != NULL) {
-		g_object_ref(menuitem);
-		g_free(listItem->data);
-		sl_item->imList = g_list_remove(sl_item->imList, listItem->data);
+		sl_item->imList = g_list_remove(sl_item->imList, ilt);
+		g_signal_handler_disconnect(menuitem, ilt->timechange_cb);
+		g_free(ilt);
 
 		gtk_widget_hide(menuitem);
 		gtk_container_remove(GTK_CONTAINER(data), menuitem);
-
-		g_object_unref(menuitem);
 		removed = TRUE;
 	}
 
