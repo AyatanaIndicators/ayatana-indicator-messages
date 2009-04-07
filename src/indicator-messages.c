@@ -36,6 +36,7 @@ static void server_count_changed (AppMenuItem * appitem, guint count, gpointer d
 static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data);
 static void im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data);
 static void reconsile_list_and_menu (GList * serverlist, GtkMenuShell * menushell);
+static void indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
 
 #define DESIGN_TEAM_SIZE  design_team_size
 static GtkIconSize design_team_size;
@@ -241,6 +242,12 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 	}
 
 	serverList_t * sltp = (serverList_t *)lookup->data;
+
+	while (sltp->imList) {
+		imList_t * imitem = (imList_t *)sltp->imList->data;
+		indicator_removed(listener, server, imitem->indicator, "message", data);
+	}
+
 	serverList = g_list_remove(serverList, sltp);
 
 	if (sltp->menuitem != NULL) {
@@ -443,6 +450,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 
 	if (!removed && menuitem != NULL) {
 		g_object_ref(menuitem);
+		g_free(listItem->data);
 		sl_item->imList = g_list_remove(sl_item->imList, listItem->data);
 
 		gtk_widget_hide(menuitem);
