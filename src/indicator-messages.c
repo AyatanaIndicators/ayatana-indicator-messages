@@ -139,7 +139,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), NULL);
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_NAME_CHANGED,  G_CALLBACK(server_name_changed),  menushell);
 
-	serverList_t * sl_item = g_new(serverList_t, 1);
+	serverList_t * sl_item = g_new0(serverList_t, 1);
 	sl_item->server = server;
 	sl_item->menuitem = menuitem;
 	sl_item->imList = NULL;
@@ -343,7 +343,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 	g_debug("Message subtype: %s", propertydata);
 
 	if (!strcmp(propertydata, "im") || !strcmp(propertydata, "login")) {
-		imList_t * listItem = g_new(imList_t, 1);
+		imList_t * listItem = g_new0(imList_t, 1);
 		listItem->server = server;
 		listItem->indicator = indicator;
 
@@ -361,7 +361,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		if (serverentry == NULL) {
 			/* This sucks, we got an indicator before the server.  I guess
 			   that's the joy of being asynchronous */
-			serverList_t * sl_item = g_new(serverList_t, 1);
+			serverList_t * sl_item = g_new0(serverList_t, 1);
 			sl_item->server = server;
 			sl_item->menuitem = NULL;
 			sl_item->imList = NULL;
