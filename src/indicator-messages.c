@@ -98,7 +98,7 @@ imList_equal (gconstpointer a, gconstpointer b)
 
 	g_debug("\tComparing (%s %d) to (%s %d)", pas, pai, pbs, pbi);
 
-	return !((!strcmp(pas, pbs)) && (pai == pbi));
+	return !((!g_strcmp0(pas, pbs)) && (pai == pbi));
 }
 
 static gint
@@ -327,7 +327,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		return;
 	}
 
-	if (property == NULL || strcmp(property, "subtype")) {
+	if (property == NULL || g_strcmp0(property, "subtype")) {
 		/* We should only ever get subtypes, but just in case */
 		g_warning("Subtype callback got a property '%s'", property);
 		return;
@@ -342,13 +342,13 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 
 	g_debug("Message subtype: %s", propertydata);
 
-	if (!strcmp(propertydata, "im") || !strcmp(propertydata, "login")) {
+	if (!g_strcmp0(propertydata, "im") || !g_strcmp0(propertydata, "login")) {
 		imList_t * listItem = g_new0(imList_t, 1);
 		listItem->server = server;
 		listItem->indicator = indicator;
 
 		g_debug("Building IM Item");
-		ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator, !strcmp(propertydata, "im"));
+		ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator, !g_strcmp0(propertydata, "im"));
 		g_object_ref(G_OBJECT(menuitem));
 		listItem->menuitem = GTK_WIDGET(menuitem);
 
@@ -396,7 +396,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 static void
 indicator_added (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
 {
-	if (type == NULL || strcmp(type, "message")) {
+	if (type == NULL || g_strcmp0(type, "message")) {
 		/* We only care about message type indicators
 		   all of the others can go to the bit bucket */
 		g_debug("Ignoreing indicator of type '%s'", type);
@@ -412,7 +412,7 @@ static void
 indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
 {
 	g_debug("Removing %s %d", INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_INDICATOR_ID(indicator));
-	if (type == NULL || strcmp(type, "message")) {
+	if (type == NULL || g_strcmp0(type, "message")) {
 		/* We only care about message type indicators
 		   all of the others can go to the bit bucket */
 		g_debug("Ignoreing indicator of type '%s'", type);

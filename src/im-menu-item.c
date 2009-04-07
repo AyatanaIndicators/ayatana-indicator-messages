@@ -265,7 +265,7 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 		return;
 	}
 
-	if (property == NULL || strcmp(property, "time")) {
+	if (property == NULL || g_strcmp0(property, "time")) {
 		g_warning("Time callback called without being sent the time.");
 		return;
 	}
@@ -295,7 +295,7 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 		return;
 	}
 
-	if (property == NULL || strcmp(property, "sender")) {
+	if (property == NULL || g_strcmp0(property, "sender")) {
 		g_warning("Sender callback called without being sent the sender.  We got '%s' with value '%s'.", property, propertydata);
 		return;
 	}
@@ -326,13 +326,13 @@ indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * ser
 
 	/* Not meant for us */
 	if (INDICATE_LISTENER_INDICATOR_ID(indicator) != INDICATE_LISTENER_INDICATOR_ID(priv->indicator)) return;
-	if (strcmp(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server))) return;
+	if (g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server))) return;
 
-	if (!strcmp(property, "sender")) {
+	if (!g_strcmp0(property, "sender")) {
 		indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
-	} else if (!strcmp(property, "time")) {
+	} else if (!g_strcmp0(property, "time")) {
 		indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
-	} else if (!strcmp(property, "icon")) {
+	} else if (!g_strcmp0(property, "icon")) {
 		indicate_listener_get_property_icon(listener, server, indicator, "icon",   icon_cb, self);	
 	}
 	
