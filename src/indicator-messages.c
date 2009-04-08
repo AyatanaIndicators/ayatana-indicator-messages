@@ -477,6 +477,7 @@ get_menu_item (void)
 	serverList = NULL;
 
 	main_menu = gtk_menu_item_new();
+	gtk_widget_set_name(main_menu, "fast-user-switch-menuitem");
 
 	main_image = gtk_image_new_from_icon_name("indicator-messages", DESIGN_TEAM_SIZE);
 	gtk_widget_show(main_image);
