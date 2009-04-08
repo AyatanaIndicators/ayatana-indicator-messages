@@ -36,6 +36,7 @@ static void server_count_changed (AppMenuItem * appitem, guint count, gpointer d
 static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data);
 static void im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data);
 static void reconsile_list_and_menu (GList * serverlist, GtkMenuShell * menushell);
+static void indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
 
 #define DESIGN_TEAM_SIZE  design_team_size
 static GtkIconSize design_team_size;
@@ -55,8 +56,8 @@ serverList_equal (gconstpointer a, gconstpointer b)
 	pa = (serverList_t *)a;
 	pb = (serverList_t *)b;
 
-	gchar * pas = INDICATE_LISTENER_SERVER_DBUS_NAME(pa->server);
-	gchar * pbs = INDICATE_LISTENER_SERVER_DBUS_NAME(pb->server);
+	const gchar * pas = INDICATE_LISTENER_SERVER_DBUS_NAME(pa->server);
+	const gchar * pbs = INDICATE_LISTENER_SERVER_DBUS_NAME(pb->server);
 
 	return g_strcmp0(pas, pbs);
 }
@@ -80,6 +81,7 @@ struct _imList_t {
 	IndicateListenerServer * server;
 	IndicateListenerIndicator * indicator;
 	GtkWidget * menuitem;
+	gulong timechange_cb;
 };
 
 static gboolean
@@ -90,15 +92,15 @@ imList_equal (gconstpointer a, gconstpointer b)
 	pa = (imList_t *)a;
 	pb = (imList_t *)b;
 
-	gchar * pas = INDICATE_LISTENER_SERVER_DBUS_NAME(pa->server);
-	gchar * pbs = INDICATE_LISTENER_SERVER_DBUS_NAME(pb->server);
+	const gchar * pas = INDICATE_LISTENER_SERVER_DBUS_NAME(pa->server);
+	const gchar * pbs = INDICATE_LISTENER_SERVER_DBUS_NAME(pb->server);
 
 	guint pai = INDICATE_LISTENER_INDICATOR_ID(pa->indicator);
 	guint pbi = INDICATE_LISTENER_INDICATOR_ID(pb->indicator);
 
 	g_debug("\tComparing (%s %d) to (%s %d)", pas, pai, pbs, pbi);
 
-	return !((!strcmp(pas, pbs)) && (pai == pbi));
+	return !((!g_strcmp0(pas, pbs)) && (pai == pbi));
 }
 
 static gint
@@ -139,7 +141,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), NULL);
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_NAME_CHANGED,  G_CALLBACK(server_name_changed),  menushell);
 
-	serverList_t * sl_item = g_new(serverList_t, 1);
+	serverList_t * sl_item = g_new0(serverList_t, 1);
 	sl_item->server = server;
 	sl_item->menuitem = menuitem;
 	sl_item->imList = NULL;
@@ -241,6 +243,12 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 	}
 
 	serverList_t * sltp = (serverList_t *)lookup->data;
+
+	while (sltp->imList) {
+		imList_t * imitem = (imList_t *)sltp->imList->data;
+		indicator_removed(listener, server, imitem->indicator, "message", data);
+	}
+
 	serverList = g_list_remove(serverList, sltp);
 
 	if (sltp->menuitem != NULL) {
@@ -280,7 +288,7 @@ menushell_foreach_cb (GtkWidget * data_mi, gpointer data_ms) {
 	}
 
 	AppMenuItem * appmenu = APP_MENU_ITEM(data_mi);
-	if (!g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(msl->server), INDICATE_LISTENER_SERVER_DBUS_NAME(app_menu_item_get_server(appmenu)))) {
+	if (!g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME((IndicateListenerServer*)msl->server), INDICATE_LISTENER_SERVER_DBUS_NAME(app_menu_item_get_server(appmenu)))) {
 		msl->found = TRUE;
 	}
 
@@ -327,7 +335,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		return;
 	}
 
-	if (property == NULL || strcmp(property, "subtype")) {
+	if (property == NULL || g_strcmp0(property, "subtype")) {
 		/* We should only ever get subtypes, but just in case */
 		g_warning("Subtype callback got a property '%s'", property);
 		return;
@@ -342,13 +350,13 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 
 	g_debug("Message subtype: %s", propertydata);
 
-	if (!strcmp(propertydata, "im") || !strcmp(propertydata, "login")) {
-		imList_t * listItem = g_new(imList_t, 1);
+	if (!g_strcmp0(propertydata, "im") || !g_strcmp0(propertydata, "login")) {
+		imList_t * listItem = g_new0(imList_t, 1);
 		listItem->server = server;
 		listItem->indicator = indicator;
 
 		g_debug("Building IM Item");
-		ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator, !strcmp(propertydata, "im"));
+		ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator, !g_strcmp0(propertydata, "im"));
 		g_object_ref(G_OBJECT(menuitem));
 		listItem->menuitem = GTK_WIDGET(menuitem);
 
@@ -361,7 +369,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		if (serverentry == NULL) {
 			/* This sucks, we got an indicator before the server.  I guess
 			   that's the joy of being asynchronous */
-			serverList_t * sl_item = g_new(serverList_t, 1);
+			serverList_t * sl_item = g_new0(serverList_t, 1);
 			sl_item->server = server;
 			sl_item->menuitem = NULL;
 			sl_item->imList = NULL;
@@ -373,7 +381,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 
 		g_debug("Adding to IM List");
 		sl_item->imList = g_list_insert_sorted(sl_item->imList, listItem, imList_sort);
-		g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_TIME_CHANGED, G_CALLBACK(im_time_changed), sl_item);
+		listItem->timechange_cb = g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_TIME_CHANGED, G_CALLBACK(im_time_changed), sl_item);
 
 		g_debug("Placing in Shell");
 		menushell_location_t msl;
@@ -396,7 +404,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 static void
 indicator_added (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
 {
-	if (type == NULL || strcmp(type, "message")) {
+	if (type == NULL || g_strcmp0(type, "message")) {
 		/* We only care about message type indicators
 		   all of the others can go to the bit bucket */
 		g_debug("Ignoreing indicator of type '%s'", type);
@@ -411,8 +419,8 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 static void
 indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
 {
-	g_debug("Removing %s %d", (gchar*)server, (guint)indicator);
-	if (type == NULL || strcmp(type, "message")) {
+	g_debug("Removing %s %d", INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_INDICATOR_ID(indicator));
+	if (type == NULL || g_strcmp0(type, "message")) {
 		/* We only care about message type indicators
 		   all of the others can go to the bit bucket */
 		g_debug("Ignoreing indicator of type '%s'", type);
@@ -437,23 +445,24 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 
 	GList * listItem = g_list_find_custom(sl_item->imList, &listData, imList_equal);
 	GtkWidget * menuitem = NULL;
+	imList_t * ilt = NULL;
 	if (listItem != NULL) {
-		menuitem = ((imList_t *)listItem->data)->menuitem;
+		ilt = (imList_t *)listItem->data;
+		menuitem = ilt->menuitem;
 	}
 
 	if (!removed && menuitem != NULL) {
-		g_object_ref(menuitem);
-		sl_item->imList = g_list_remove(sl_item->imList, listItem->data);
+		sl_item->imList = g_list_remove(sl_item->imList, ilt);
+		g_signal_handler_disconnect(menuitem, ilt->timechange_cb);
+		g_free(ilt);
 
 		gtk_widget_hide(menuitem);
 		gtk_container_remove(GTK_CONTAINER(data), menuitem);
-
-		g_object_unref(menuitem);
 		removed = TRUE;
 	}
 
 	if (!removed) {
-		g_warning("We were asked to remove %s %d but we didn't.", (gchar*)server, (guint)indicator);
+		g_warning("We were asked to remove %s %d but we didn't.", INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_INDICATOR_ID(indicator));
 	}
 
 	return;
@@ -468,6 +477,7 @@ get_menu_item (void)
 	serverList = NULL;
 
 	main_menu = gtk_menu_item_new();
+	gtk_widget_set_name(main_menu, "fast-user-switch-menuitem");
 
 	main_image = gtk_image_new_from_icon_name("indicator-messages", DESIGN_TEAM_SIZE);
 	gtk_widget_show(main_image);

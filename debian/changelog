@@ -1,3 +1,15 @@
+indicator-messages (0.1.5-0ubuntu1) jaunty; urgency=low
+
+  * New upstream version
+    * Fixes the lifecycle of the various structures tracking the messages
+      and applications.  Fixing bugs like (LP: #355616) (LP: #352881)
+    * Fixes the visual appearance by setting the widget name to grab the
+      style settings from the main applet.  (LP: #351979)
+  * debian/control: Upgrading dependency on libindicate-dev to 0.1.5 or
+    higher as the new version requires that.
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 03 Apr 2009 16:32:49 -0500
+
 indicator-messages (0.1.4-0ubuntu1) jaunty; urgency=low
 
   * New upstream version

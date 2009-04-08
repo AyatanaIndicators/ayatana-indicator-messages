@@ -44,6 +44,7 @@ struct _ImMenuItemPrivate
 
 	glong seconds;
 	gboolean show_time;
+	gulong indicator_changed;
 
 	guint time_update_min;
 
@@ -171,6 +172,11 @@ im_menu_item_dispose (GObject *object)
 	if (priv->time_update_min != 0) {
 		g_source_remove(priv->time_update_min);
 	}
+
+	g_signal_handler_disconnect(priv->listener, priv->indicator_changed);
+	priv->indicator_changed = 0;
+
+	return;
 }
 
 static void
@@ -265,7 +271,7 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 		return;
 	}
 
-	if (property == NULL || strcmp(property, "time")) {
+	if (property == NULL || g_strcmp0(property, "time")) {
 		g_warning("Time callback called without being sent the time.");
 		return;
 	}
@@ -295,7 +301,7 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 		return;
 	}
 
-	if (property == NULL || strcmp(property, "sender")) {
+	if (property == NULL || g_strcmp0(property, "sender")) {
 		g_warning("Sender callback called without being sent the sender.  We got '%s' with value '%s'.", property, propertydata);
 		return;
 	}
@@ -326,13 +332,13 @@ indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * ser
 
 	/* Not meant for us */
 	if (INDICATE_LISTENER_INDICATOR_ID(indicator) != INDICATE_LISTENER_INDICATOR_ID(priv->indicator)) return;
-	if (strcmp(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server))) return;
+	if (server != priv->server) return;
 
-	if (!strcmp(property, "sender")) {
+	if (!g_strcmp0(property, "sender")) {
 		indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
-	} else if (!strcmp(property, "time")) {
+	} else if (!g_strcmp0(property, "time")) {
 		indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
-	} else if (!strcmp(property, "icon")) {
+	} else if (!g_strcmp0(property, "icon")) {
 		indicate_listener_get_property_icon(listener, server, indicator, "icon",   icon_cb, self);	
 	}
 	
@@ -358,7 +364,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	indicate_listener_get_property_icon(listener, server, indicator, "icon",   icon_cb, self);	
 
 	g_signal_connect(G_OBJECT(self), "activate", G_CALLBACK(activate_cb), NULL);
-	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_MODIFIED, G_CALLBACK(indicator_modified_cb), self);
+	priv->indicator_changed = g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_MODIFIED, G_CALLBACK(indicator_modified_cb), self);
 
 	return self;
 }
