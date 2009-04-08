@@ -7,6 +7,8 @@ indicator-messages (0.1.4-0ubuntu2~ppa4) UNRELEASED; urgency=low
   * g_strcmp0 
   * Ah, leaks!
   * Incrementing
+  * Fixing bugs, much better.
+  * Making the menu item lie like it's FUSA
 
  -- Ted Gould <ted@ubuntu.com>  Fri, 03 Apr 2009 16:32:49 -0500
 
