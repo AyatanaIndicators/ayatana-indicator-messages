@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PKG_NAME="indicator-applet"
+PKG_NAME="indicator-messages"
 
 which gnome-autogen.sh || {
 	echo "You need gnome-common from GNOME SVN"

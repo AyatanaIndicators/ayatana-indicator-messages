@@ -200,11 +200,11 @@ update_label (AppMenuItem * self)
 	if (priv->count_on_label && !priv->unreadcount < 1) {
 		/* TRANSLATORS: This is the name of the program and the number of indicators.  So it
 		                would read something like "Mail Client (5)" */
-		gchar * label = g_strdup_printf(_("%s (%d)"), g_app_info_get_name(priv->appinfo), priv->unreadcount);
+		gchar * label = g_strdup_printf(_("%s (%d)"), app_menu_item_get_name(self), priv->unreadcount);
 		gtk_label_set_text(GTK_LABEL(priv->name), label);
 		g_free(label);
 	} else {
-		gtk_label_set_text(GTK_LABEL(priv->name), g_app_info_get_name(priv->appinfo));
+		gtk_label_set_text(GTK_LABEL(priv->name), app_menu_item_get_name(self));
 	}
 
 	return;
@@ -228,7 +228,7 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	g_return_if_fail(priv->appinfo != NULL);
 
 	update_label(self);
-	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, g_app_info_get_name(priv->appinfo), TRUE);
+	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
 
 	return;
 }
