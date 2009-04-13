@@ -125,13 +125,13 @@ app_menu_item_dispose (GObject *object)
 static void
 app_menu_item_finalize (GObject *object)
 {
-	G_OBJECT_CLASS (app_menu_item_parent_class)->finalize (object);
-
 	AppMenuItem * self = APP_MENU_ITEM(object);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
 	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_added_cb), self);
 	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_removed_cb), self);
+
+	G_OBJECT_CLASS (app_menu_item_parent_class)->finalize (object);
 
 	return;
 }
