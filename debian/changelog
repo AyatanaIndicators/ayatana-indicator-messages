@@ -1,4 +1,4 @@
-indicator-messages (0.1.5-0ubuntu1) UNRELEASED; urgency=low
+indicator-messages (0.1.5-0ubuntu1) jaunty; urgency=low
 
   * New upstream version
     * Fixes the lifecycle of the various structures tracking the messages
