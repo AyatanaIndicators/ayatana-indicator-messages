@@ -119,6 +119,14 @@ app_menu_item_init (AppMenuItem *self)
 static void
 app_menu_item_dispose (GObject *object)
 {
+	AppMenuItem * self = APP_MENU_ITEM(object);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_added_cb), self);
+	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_removed_cb), self);
+
+	g_object_unref(priv->listener);
+
 	G_OBJECT_CLASS (app_menu_item_parent_class)->dispose (object);
 }
 
@@ -128,8 +136,13 @@ app_menu_item_finalize (GObject *object)
 	AppMenuItem * self = APP_MENU_ITEM(object);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
-	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_added_cb), self);
-	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_removed_cb), self);
+	if (priv->type != NULL) {
+		g_free(priv->type);
+	}
+
+	if (priv->appinfo != NULL) {
+		g_object_unref(priv->appinfo);
+	}
 
 	G_OBJECT_CLASS (app_menu_item_parent_class)->finalize (object);
 
@@ -144,7 +157,9 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
 	priv->listener = listener;
+	g_object_ref(G_OBJECT(listener));
 	priv->server = server;
+	/* Can not ref as not real GObject */
 
 	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added_cb), self);
 	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed_cb), self);
@@ -174,8 +189,14 @@ type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * v
 
 	if (priv->type != NULL) {
 		g_free(priv->type);
+		priv->type = NULL;
 	}
 	
+	if (value == NULL) {
+		g_warning("Type value is NULL, that shouldn't really happen");
+		return;
+	}
+
 	priv->type = g_strdup(value);
 
 	if (!(!g_strcmp0(priv->type, "message.instant") || !g_strcmp0(priv->type, "message.micro") || !g_strcmp0(priv->type, "message.im"))) {
