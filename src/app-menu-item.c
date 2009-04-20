@@ -136,6 +136,14 @@ app_menu_item_finalize (GObject *object)
 	AppMenuItem * self = APP_MENU_ITEM(object);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
+	if (priv->type != NULL) {
+		g_free(priv->type);
+	}
+
+	if (priv->appinfo != NULL) {
+		g_object_unref(priv->appinfo);
+	}
+
 	G_OBJECT_CLASS (app_menu_item_parent_class)->finalize (object);
 
 	return;
@@ -181,8 +189,14 @@ type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * v
 
 	if (priv->type != NULL) {
 		g_free(priv->type);
+		priv->type = NULL;
 	}
 	
+	if (value == NULL) {
+		g_warning("Type value is NULL, that shouldn't really happen");
+		return;
+	}
+
 	priv->type = g_strdup(value);
 
 	if (!(!g_strcmp0(priv->type, "message.instant") || !g_strcmp0(priv->type, "message.micro") || !g_strcmp0(priv->type, "message.im"))) {
