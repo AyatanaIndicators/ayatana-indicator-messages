@@ -1,3 +1,11 @@
+indicator-messages (0.2.0~bzr116-0ubuntu1) UNRELEASED; urgency=low
+
+  * Upstream release
+    * Bug fixes
+    * Update API to new libindicator
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 22 Apr 2009 15:42:37 -0500
+
 indicator-messages (0.1.6-0ubuntu1) jaunty; urgency=low
 
   * New upstream version

@@ -24,6 +24,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gtk/gtk.h>
 #include <libindicate/listener.h>
 
+#include <libindicator/indicator.h>
+INDICATOR_SET_VERSION
+
 #include "im-menu-item.h"
 #include "app-menu-item.h"
 
@@ -468,23 +471,30 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	return;
 }
 
-GtkWidget *
-get_menu_item (void)
+GtkLabel *
+get_label (void)
+{
+	return NULL;
+}
+
+GtkImage *
+get_icon (void)
 {
 	design_team_size = gtk_icon_size_register("design-team-size", 22, 22);
 
+	main_image = gtk_image_new_from_icon_name("indicator-messages", DESIGN_TEAM_SIZE);
+	gtk_widget_show(main_image);
+
+	return GTK_IMAGE(main_image);
+}
+
+GtkMenu *
+get_menu (void)
+{
 	listener = indicate_listener_new();
 	serverList = NULL;
 
-	main_menu = gtk_menu_item_new();
-	gtk_widget_set_name(main_menu, "fast-user-switch-menuitem");
-
-	main_image = gtk_image_new_from_icon_name("indicator-messages", DESIGN_TEAM_SIZE);
-	gtk_widget_show(main_image);
-	gtk_container_add(GTK_CONTAINER(main_menu), main_image);
-
 	GtkWidget * submenu = gtk_menu_new();
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(main_menu), submenu);
 	gtk_widget_show(submenu);
 
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added), submenu);
@@ -492,6 +502,6 @@ get_menu_item (void)
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_ADDED, G_CALLBACK(server_added), submenu);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), submenu);
 
-	return main_menu;
+	return GTK_MENU(submenu);
 }
 

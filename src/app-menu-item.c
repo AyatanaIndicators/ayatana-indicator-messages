@@ -119,6 +119,14 @@ app_menu_item_init (AppMenuItem *self)
 static void
 app_menu_item_dispose (GObject *object)
 {
+	AppMenuItem * self = APP_MENU_ITEM(object);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_added_cb), self);
+	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_removed_cb), self);
+
+	g_object_unref(priv->listener);
+
 	G_OBJECT_CLASS (app_menu_item_parent_class)->dispose (object);
 }
 
@@ -128,8 +136,13 @@ app_menu_item_finalize (GObject *object)
 	AppMenuItem * self = APP_MENU_ITEM(object);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
-	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_added_cb), self);
-	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_removed_cb), self);
+	if (priv->type != NULL) {
+		g_free(priv->type);
+	}
+
+	if (priv->appinfo != NULL) {
+		g_object_unref(priv->appinfo);
+	}
 
 	G_OBJECT_CLASS (app_menu_item_parent_class)->finalize (object);
 
@@ -144,7 +157,9 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
 	priv->listener = listener;
+	g_object_ref(G_OBJECT(listener));
 	priv->server = server;
+	/* Can not ref as not real GObject */
 
 	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added_cb), self);
 	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed_cb), self);
@@ -174,8 +189,14 @@ type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * v
 
 	if (priv->type != NULL) {
 		g_free(priv->type);
+		priv->type = NULL;
 	}
 	
+	if (value == NULL) {
+		g_warning("Type value is NULL, that shouldn't really happen");
+		return;
+	}
+
 	priv->type = g_strdup(value);
 
 	if (!(!g_strcmp0(priv->type, "message.instant") || !g_strcmp0(priv->type, "message.micro") || !g_strcmp0(priv->type, "message.im"))) {
@@ -200,11 +221,11 @@ update_label (AppMenuItem * self)
 	if (priv->count_on_label && !priv->unreadcount < 1) {
 		/* TRANSLATORS: This is the name of the program and the number of indicators.  So it
 		                would read something like "Mail Client (5)" */
-		gchar * label = g_strdup_printf(_("%s (%d)"), g_app_info_get_name(priv->appinfo), priv->unreadcount);
+		gchar * label = g_strdup_printf(_("%s (%d)"), app_menu_item_get_name(self), priv->unreadcount);
 		gtk_label_set_text(GTK_LABEL(priv->name), label);
 		g_free(label);
 	} else {
-		gtk_label_set_text(GTK_LABEL(priv->name), g_app_info_get_name(priv->appinfo));
+		gtk_label_set_text(GTK_LABEL(priv->name), app_menu_item_get_name(self));
 	}
 
 	return;
@@ -228,7 +249,7 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	g_return_if_fail(priv->appinfo != NULL);
 
 	update_label(self);
-	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, g_app_info_get_name(priv->appinfo), TRUE);
+	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
 
 	return;
 }

@@ -4,7 +4,7 @@ AC_INIT(src/indicator-messages.c)
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-messages, 0.1.6)
+AM_INIT_AUTOMAKE(indicator-messages, 0.2.0dev)
 
 AM_MAINTAINER_MODE
 
@@ -24,13 +24,22 @@ AC_CONFIG_MACRO_DIR([m4])
 GTK_REQUIRED_VERSION=2.12
 GIO_UNIX_REQUIRED_VERSION=2.18
 PANEL_REQUIRED_VERSION=2.0.0
-INDICATE_REQUIRED_VERSION=0.1.5
+INDICATE_REQUIRED_VERSION=0.2.0
+INDICATOR_REQUIRED_VERSION=0.2.0
 
 PKG_CHECK_MODULES(APPLET, gtk+-2.0 >= $GTK_REQUIRED_VERSION
                           gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
+                          indicator >= $INDICATOR_REQUIRED_VERSION
                           indicate >= $INDICATE_REQUIRED_VERSION)
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
+
+###########################
+# Indicator Info
+###########################
+
+INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator`
+AC_SUBST(INDICATORDIR)
 
 ###########################
 # Files
@@ -64,4 +73,5 @@ AC_MSG_NOTICE([
 Messaging Indicator Configuration:
 
 	Prefix:        $prefix
+	Indicator Dir: $INDICATORDIR
 ])
