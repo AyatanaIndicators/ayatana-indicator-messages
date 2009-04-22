@@ -24,6 +24,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gtk/gtk.h>
 #include <libindicate/listener.h>
 
+#include <libindicator/indicator.h>
+INDICATOR_SET_VERSION
+
 #include "im-menu-item.h"
 #include "app-menu-item.h"
 
