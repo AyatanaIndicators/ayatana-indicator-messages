@@ -3,6 +3,7 @@ indicator-messages (0.2.0~bzr116-0ubuntu1) UNRELEASED; urgency=low
   * Upstream release
     * Bug fixes
     * Update API to new libindicator
+  * debian/control: Adding new dependency on libindicator-dev
 
  -- Ted Gould <ted@ubuntu.com>  Wed, 22 Apr 2009 15:42:37 -0500
 
