@@ -485,7 +485,7 @@ get_icon (void)
 	main_image = gtk_image_new_from_icon_name("indicator-messages", DESIGN_TEAM_SIZE);
 	gtk_widget_show(main_image);
 
-	return main_image;
+	return GTK_IMAGE(main_image);
 }
 
 GtkMenu *
