@@ -1,8 +1,8 @@
-indicator-messages (0.2.0~bzr116-0ubuntu2) UNRELEASED; urgency=low
+indicator-messages (0.2.0~bzr116-0ubuntu2) jaunty; urgency=low
 
   * debian/control: libindicator-dev to ~bzr301
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 22 Apr 2009 15:58:07 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 22 Apr 2009 15:58:45 -0500
 
 indicator-messages (0.2.0~bzr116-0ubuntu1) jaunty; urgency=low
 
