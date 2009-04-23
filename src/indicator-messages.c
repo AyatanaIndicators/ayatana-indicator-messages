@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libindicator/indicator.h>
 INDICATOR_SET_VERSION
+INDICATOR_SET_NAME("messages")
 
 #include "im-menu-item.h"
 #include "app-menu-item.h"
@@ -33,7 +34,6 @@ INDICATOR_SET_VERSION
 static IndicateListener * listener;
 static GList * serverList;
 static GtkWidget * main_image;
-static GtkWidget * main_menu;
 
 static void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
 static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data);
@@ -162,7 +162,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 
 	gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
 	gtk_widget_show(GTK_WIDGET(menuitem));
-	gtk_widget_show(GTK_WIDGET(main_menu));
+	gtk_widget_show(GTK_WIDGET(main_image));
 
 	reconsile_list_and_menu(serverList, menushell);
 
@@ -262,7 +262,7 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 	g_free(sltp);
 
 	if (g_list_length(serverList) == 0) {
-		gtk_widget_hide(main_menu);
+		gtk_widget_hide(main_image);
 	} else {
 		/* Simulate a server saying zero to recalculate icon */
 		server_count_changed(NULL, 0, NULL);
@@ -491,7 +491,7 @@ get_icon (void)
 GtkMenu *
 get_menu (void)
 {
-	listener = indicate_listener_new();
+	listener = indicate_listener_ref_default();
 	serverList = NULL;
 
 	GtkWidget * submenu = gtk_menu_new();
