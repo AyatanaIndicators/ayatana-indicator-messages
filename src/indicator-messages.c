@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libindicator/indicator.h>
 INDICATOR_SET_VERSION
+INDICATOR_SET_NAME("messages")
 
 #include "im-menu-item.h"
 #include "app-menu-item.h"
