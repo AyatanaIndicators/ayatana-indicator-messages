@@ -491,7 +491,7 @@ get_icon (void)
 GtkMenu *
 get_menu (void)
 {
-	listener = indicate_listener_new();
+	listener = indicate_listener_ref_default();
 	serverList = NULL;
 
 	GtkWidget * submenu = gtk_menu_new();
