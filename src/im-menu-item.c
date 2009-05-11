@@ -283,7 +283,7 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 	update_time(self);
 
 	if (priv->time_update_min == 0) {
-		g_timeout_add_seconds(60, time_update_cb, self);
+		priv->time_update_min = g_timeout_add_seconds(60, time_update_cb, self);
 	}
 
 	g_signal_emit(G_OBJECT(self), signals[TIME_CHANGED], 0, priv->seconds, TRUE);
