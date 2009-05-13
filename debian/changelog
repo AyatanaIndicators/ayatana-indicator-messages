@@ -1,3 +1,9 @@
+indicator-messages (0.2.0~bzr120-0ubuntu1) UNRELEASED; urgency=low
+
+  * Fix to track the timer. (LP: #365187)
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 13 May 2009 09:55:36 -0500
+
 indicator-messages (0.2.0~bzr119-0ubuntu1) jaunty; urgency=low
 
   * Upstream update
