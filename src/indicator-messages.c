@@ -28,6 +28,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 INDICATOR_SET_VERSION
 INDICATOR_SET_NAME("messages")
 
+#include "dbus-data.h"
+
 static GtkWidget * main_image;
 
 #define DESIGN_TEAM_SIZE  design_team_size
