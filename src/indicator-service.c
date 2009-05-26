@@ -292,14 +292,6 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 }
 
 static void
-dbusmenu_menuitem_child_reorder(DbusmenuMenuitem * base, DbusmenuMenuitem * child, guint position)
-{
-	dbusmenu_menuitem_child_delete(base, child);
-	dbusmenu_menuitem_child_add_position(base, child, position);
-	return;
-}
-
-static void
 reconsile_list_and_menu (GList * serverlist, DbusmenuMenuitem * menushell)
 {
 	guint position = 0;
