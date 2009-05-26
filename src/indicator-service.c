@@ -21,7 +21,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <string.h>
-#include <gtk/gtk.h>
 #include <libindicate/listener.h>
 
 #include <libdbusmenu-glib/server.h>
@@ -32,16 +31,16 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static IndicateListener * listener;
 static GList * serverList;
-static GtkWidget * main_image;
+
+static DbusmenuMenuitem * root_menuitem = NULL;
+static GMainLoop * mainloop = NULL;
+
 
 static void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
 static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data);
 static void im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data);
-static void reconsile_list_and_menu (GList * serverlist, GtkMenuShell * menushell);
+static void reconsile_list_and_menu (GList * serverlist, DbusmenuMenuitem * menushell);
 static void indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
-
-#define DESIGN_TEAM_SIZE  design_team_size
-static GtkIconSize design_team_size;
 
 typedef struct _serverList_t serverList_t;
 struct _serverList_t {
@@ -82,7 +81,7 @@ typedef struct _imList_t imList_t;
 struct _imList_t {
 	IndicateListenerServer * server;
 	IndicateListenerIndicator * indicator;
-	GtkWidget * menuitem;
+	DbusmenuMenuitem * menuitem;
 	gulong timechange_cb;
 };
 
@@ -133,7 +132,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 		return;
 	}
 
-	GtkMenuShell * menushell = GTK_MENU_SHELL(data);
+	DbusmenuMenuitem * menushell = DBUSMENU_MENUITEM(data);
 	if (menushell == NULL) {
 		g_error("\tData in callback is not a menushell");
 		return;
@@ -159,9 +158,8 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
 	}
 
-	gtk_menu_shell_prepend(menushell, GTK_WIDGET(menuitem));
-	gtk_widget_show(GTK_WIDGET(menuitem));
-	gtk_widget_show(GTK_WIDGET(main_image));
+	dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
+	/* Should be prepend ^ */
 
 	reconsile_list_and_menu(serverList, menushell);
 
@@ -172,7 +170,7 @@ static void
 server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data)
 {
 	serverList = g_list_sort(serverList, serverList_sort);
-	reconsile_list_and_menu(serverList, GTK_MENU_SHELL(data));
+	reconsile_list_and_menu(serverList, DBUSMENU_MENUITEM(data));
 	return;
 }
 
@@ -195,7 +193,7 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	if (count != 0) {
 		g_debug("Setting image to 'new'");
 		showing_new_icon = TRUE;
-		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages-new", DESIGN_TEAM_SIZE);
+		/* gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages-new", DESIGN_TEAM_SIZE); */
 		return;
 	}
 
@@ -216,7 +214,7 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	if (!we_have_indicators) {
 		g_debug("Setting image to boring");
 		showing_new_icon = FALSE;
-		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages", DESIGN_TEAM_SIZE);
+		/* gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages", DESIGN_TEAM_SIZE); */
 	}
 
 	return;
@@ -227,7 +225,7 @@ im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data)
 {
 	serverList_t * sl = (serverList_t *)data;
 	sl->imList = g_list_sort(sl->imList, imList_sort);
-	reconsile_list_and_menu(serverList, GTK_MENU_SHELL(gtk_widget_get_parent(GTK_WIDGET(imitem))));
+	reconsile_list_and_menu(serverList, root_menuitem);
 	return;
 }
 
@@ -254,18 +252,14 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 	serverList = g_list_remove(serverList, sltp);
 
 	if (sltp->menuitem != NULL) {
-		gtk_widget_hide(GTK_WIDGET(sltp->menuitem));
-		gtk_container_remove(GTK_CONTAINER(data), GTK_WIDGET(sltp->menuitem));
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(sltp->menuitem), "visibile", "false");
+		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(sltp->menuitem));
 	}
 
 	g_free(sltp);
 
-	if (g_list_length(serverList) == 0) {
-		gtk_widget_hide(main_image);
-	} else {
-		/* Simulate a server saying zero to recalculate icon */
-		server_count_changed(NULL, 0, NULL);
-	}
+	/* Simulate a server saying zero to recalculate icon */
+	server_count_changed(NULL, 0, NULL);
 
 	return;
 }
@@ -278,7 +272,7 @@ struct _menushell_location {
 };
 
 static void
-menushell_foreach_cb (GtkWidget * data_mi, gpointer data_ms) {
+menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 	menushell_location_t * msl = (menushell_location_t *)data_ms;
 
 	if (msl->found) return;
@@ -298,7 +292,15 @@ menushell_foreach_cb (GtkWidget * data_mi, gpointer data_ms) {
 }
 
 static void
-reconsile_list_and_menu (GList * serverlist, GtkMenuShell * menushell)
+dbusmenu_menuitem_child_reorder(DbusmenuMenuitem * base, DbusmenuMenuitem * child, guint position)
+{
+	dbusmenu_menuitem_child_delete(base, child);
+	dbusmenu_menuitem_child_add_position(base, child, position);
+	return;
+}
+
+static void
+reconsile_list_and_menu (GList * serverlist, DbusmenuMenuitem * menushell)
 {
 	guint position = 0;
 	GList * serverentry;
@@ -309,7 +311,7 @@ reconsile_list_and_menu (GList * serverlist, GtkMenuShell * menushell)
 		serverList_t * si = (serverList_t *)serverentry->data;
 		if (si->menuitem != NULL) {
 			g_debug("\tMoving app %s to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
-			gtk_menu_reorder_child(GTK_MENU(menushell), GTK_WIDGET(si->menuitem), position);
+			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->menuitem), position);
 			position++;
 		}
 
@@ -319,7 +321,7 @@ reconsile_list_and_menu (GList * serverlist, GtkMenuShell * menushell)
 
 			if (imi->menuitem != NULL) {
 				g_debug("\tMoving indicator on %s id %d to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(imi->server), INDICATE_LISTENER_INDICATOR_ID(imi->indicator), position);
-				gtk_menu_reorder_child(GTK_MENU(menushell), imi->menuitem, position);
+				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(imi->menuitem), position);
 				position++;
 			}
 		}
@@ -331,7 +333,7 @@ reconsile_list_and_menu (GList * serverlist, GtkMenuShell * menushell)
 static void
 subtype_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
-	GtkMenuShell * menushell = GTK_MENU_SHELL(data);
+	DbusmenuMenuitem * menushell = DBUSMENU_MENUITEM(data);
 	if (menushell == NULL) {
 		g_error("Data in callback is not a menushell");
 		return;
@@ -360,7 +362,7 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		g_debug("Building IM Item");
 		ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator, !g_strcmp0(propertydata, "im"));
 		g_object_ref(G_OBJECT(menuitem));
-		listItem->menuitem = GTK_WIDGET(menuitem);
+		listItem->menuitem = DBUSMENU_MENUITEM(menuitem);
 
 		g_debug("Finding the server entry");
 		serverList_t sl_item_local;
@@ -391,12 +393,12 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		msl.position = 0;
 		msl.server = server;
 
-		gtk_container_foreach(GTK_CONTAINER(menushell), menushell_foreach_cb, &msl);
+		dbusmenu_menuitem_foreach(DBUSMENU_MENUITEM(menushell), menushell_foreach_cb, &msl);
 		if (msl.found) {
-			gtk_menu_shell_insert(menushell, GTK_WIDGET(menuitem), msl.position);
+			dbusmenu_menuitem_child_add_position(menushell, DBUSMENU_MENUITEM(menuitem), msl.position);
 		} else {
 			g_warning("Unable to find server menu item");
-			gtk_menu_shell_append(menushell, GTK_WIDGET(menuitem));
+			dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
 		}
 	}
 
@@ -446,7 +448,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	listData.indicator = indicator;
 
 	GList * listItem = g_list_find_custom(sl_item->imList, &listData, imList_equal);
-	GtkWidget * menuitem = NULL;
+	DbusmenuMenuitem * menuitem = NULL;
 	imList_t * ilt = NULL;
 	if (listItem != NULL) {
 		ilt = (imList_t *)listItem->data;
@@ -458,8 +460,8 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 		g_signal_handler_disconnect(menuitem, ilt->timechange_cb);
 		g_free(ilt);
 
-		gtk_widget_hide(menuitem);
-		gtk_container_remove(GTK_CONTAINER(data), menuitem);
+		dbusmenu_menuitem_property_set(menuitem, "visibile", "false");
+		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), menuitem);
 		removed = TRUE;
 	}
 
@@ -470,8 +472,6 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	return;
 }
 
-static GMainLoop * mainloop = NULL;
-
 int
 main (int argc, char ** argv)
 {
@@ -480,14 +480,14 @@ main (int argc, char ** argv)
 	listener = indicate_listener_ref_default();
 	serverList = NULL;
 
-	DbusmenuMenuitem * submenu = dbusmenu_menuitem_new();
+	root_menuitem = dbusmenu_menuitem_new();
 	DbusmenuServer * server = dbusmenu_server_new(INDICATOR_MESSAGES_DBUS_OBJECT);
-	dbusmenu_server_set_root(server, submenu);
+	dbusmenu_server_set_root(server, root_menuitem);
 
-	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added), submenu);
-	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed), submenu);
-	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_ADDED, G_CALLBACK(server_added), submenu);
-	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), submenu);
+	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added), root_menuitem);
+	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed), root_menuitem);
+	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_ADDED, G_CALLBACK(server_added), root_menuitem);
+	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), root_menuitem);
 
 	mainloop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(mainloop);
