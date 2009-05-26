@@ -58,6 +58,7 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 data/Makefile
+data/indicator-messages.service
 data/icons/Makefile
 data/icons/16x16/Makefile
 data/icons/16x16/status/Makefile
