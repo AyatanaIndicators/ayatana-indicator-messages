@@ -25,6 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 #include <glib-object.h>
 
+#include <libdbusmenu-glib/menuitem.h>
 #include <libindicate/listener.h>
 
 G_BEGIN_DECLS
@@ -42,13 +43,13 @@ typedef struct _ImMenuItem      ImMenuItem;
 typedef struct _ImMenuItemClass ImMenuItemClass;
 
 struct _ImMenuItemClass {
-	GtkMenuItemClass parent_class;
+	DbusmenuMenuitemClass parent_class;
 
 	void (*time_changed) (glong seconds);
 };
 
 struct _ImMenuItem {
-	GtkMenuItem parent;
+	DbusmenuMenuitem parent;
 };
 
 GType im_menu_item_get_type (void);
