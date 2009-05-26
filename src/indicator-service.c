@@ -24,12 +24,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gtk/gtk.h>
 #include <libindicate/listener.h>
 
-#include <libindicator/indicator.h>
-INDICATOR_SET_VERSION
-INDICATOR_SET_NAME("messages")
+#include <libdbusmenu-glib/server.h>
 
 #include "im-menu-item.h"
 #include "app-menu-item.h"
+#include "dbus-data.h"
 
 static IndicateListener * listener;
 static GList * serverList;
@@ -471,43 +470,27 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	return;
 }
 
-GtkLabel *
-get_label (void)
+static GMainLoop * mainloop = NULL;
+
+int
+main (int argc, char ** argv)
 {
-	return NULL;
-}
+	g_type_init();
 
-GtkImage *
-get_icon (void)
-{
-	design_team_size = gtk_icon_size_register("design-team-size", 22, 22);
-
-	main_image = gtk_image_new_from_icon_name("indicator-messages", DESIGN_TEAM_SIZE);
-	gtk_widget_show(main_image);
-
-	return GTK_IMAGE(main_image);
-}
-
-GtkMenu *
-get_menu (void)
-{
 	listener = indicate_listener_ref_default();
 	serverList = NULL;
 
-	GtkWidget * submenu = gtk_menu_new();
-	gtk_widget_show(submenu);
+	DbusmenuMenuitem * submenu = dbusmenu_menuitem_new();
+	DbusmenuServer * server = dbusmenu_server_new(INDICATOR_MESSAGES_DBUS_OBJECT);
+	dbusmenu_server_set_root(server, submenu);
 
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added), submenu);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed), submenu);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_ADDED, G_CALLBACK(server_added), submenu);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), submenu);
 
-	return GTK_MENU(submenu);
-}
-
-int
-main (int argc, char ** argv)
-{
+	mainloop = g_main_loop_new(NULL, FALSE);
+	g_main_loop_run(mainloop);
 
 	return 0;
 }
