@@ -44,6 +44,13 @@ INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator`
 AC_SUBST(INDICATORDIR)
 
 ###########################
+# DBus Service Info
+###########################
+
+DBUSSERVICEDIR=`$PKG_CONFIG --variable=session_bus_services_dir dbus-1`
+AC_SUBST(DBUSSERVICEDIR)
+
+###########################
 # Files
 ###########################
 
