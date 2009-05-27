@@ -1,3 +1,9 @@
+indicator-messages (0.2.0~bzr120~dbusmenu1-0ubuntu3) UNRELEASED; urgency=low
+
+  * Putting the service file in the proper directory
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 27 May 2009 12:51:43 +0200
+
 indicator-messages (0.2.0~bzr120~dbusmenu1-0ubuntu2) jaunty; urgency=low
 
   * Fix to start up the service if it isn't running.
