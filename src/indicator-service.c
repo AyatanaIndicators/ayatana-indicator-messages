@@ -21,6 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <string.h>
+#include <dbus/dbus-glib-bindings.h>
 #include <libindicate/listener.h>
 
 #include <libdbusmenu-glib/server.h>
@@ -468,6 +469,21 @@ int
 main (int argc, char ** argv)
 {
 	g_type_init();
+
+	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	DBusGProxy * bus_proxy = dbus_g_proxy_new_for_name(connection, DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS);
+	GError * error = NULL;
+	guint nameret = 0;
+
+	if (!org_freedesktop_DBus_request_name(bus_proxy, INDICATOR_MESSAGES_DBUS_NAME, 0, &nameret, &error)) {
+		g_error("Unable to call to request name");
+		return 1;
+	}
+
+	if (nameret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
+		g_error("Unable to get name");
+		return 1;
+	}
 
 	listener = indicate_listener_ref_default();
 	serverList = NULL;
