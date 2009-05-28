@@ -18,3 +18,4 @@ libmessaging_la-im-menu-item.lo
 src/libmessaging_la-app-menu-item.lo
 data/indicator-messages.service
 indicator-messages-service
+indicator-messages-service-activate
