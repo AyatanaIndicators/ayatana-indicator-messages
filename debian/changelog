@@ -1,3 +1,9 @@
+indicator-messages (0.2.0~bzr120~dbusmenu1-0ubuntu5) karmic; urgency=low
+
+  * Updating to be Karmic, whoo!  hoo!
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 17 Jul 2009 21:18:26 -0500
+
 indicator-messages (0.2.0~bzr120~dbusmenu1-0ubuntu4) jaunty; urgency=low
 
   * Fixing the service file to make it correct.  Also some other smaller
