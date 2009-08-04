@@ -10,6 +10,7 @@ Build-Depends: debhelper (>= 5.0),
                scrollkeeper,
                intltool,
                libindicate-dev (>= 0.2.0~bzr298),
+               libindicate-gtk-dev (>= 0.2.0~bzr298),
                libindicator-dev (>= 0.2.0~bzr301),
                libdbusmenu-gtk-dev,
                libdbusmenu-glib-dev
