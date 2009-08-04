@@ -24,7 +24,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include <glib/gi18n.h>
-#include <gtk/gtk.h>
 #include "im-menu-item.h"
 
 enum {
@@ -47,11 +46,6 @@ struct _ImMenuItemPrivate
 	gulong indicator_changed;
 
 	guint time_update_min;
-
-	GtkHBox * hbox;
-	GtkLabel * user;
-	GtkLabel * time;
-	GtkImage * icon;
 };
 
 #define IM_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), IM_MENU_ITEM_TYPE, ImMenuItemPrivate))
@@ -88,13 +82,7 @@ static void indicator_modified_cb   (IndicateListener * listener,
                                      gchar * property,
                                      ImMenuItem * self);
 
-
-static GtkSizeGroup * icon_group = NULL;
-static GtkSizeGroup * user_group = NULL;
-static GtkSizeGroup * time_group = NULL;
-
-
-G_DEFINE_TYPE (ImMenuItem, im_menu_item, GTK_TYPE_MENU_ITEM);
+G_DEFINE_TYPE (ImMenuItem, im_menu_item, DBUSMENU_TYPE_MENUITEM);
 
 static void
 im_menu_item_class_init (ImMenuItemClass *klass)
@@ -129,35 +117,6 @@ im_menu_item_init (ImMenuItem *self)
 
 	priv->seconds = 0;
 
-	/* build widgets first */
-	priv->icon = GTK_IMAGE(gtk_image_new());
-	priv->user = GTK_LABEL(gtk_label_new(""));
-	priv->time = GTK_LABEL(gtk_label_new(""));
-
-	gtk_misc_set_alignment(GTK_MISC(priv->user), 0.0, 0.5);
-	gtk_misc_set_alignment(GTK_MISC(priv->time), 0.0, 0.5);
-
-	if (icon_group == NULL) {
-		icon_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	}
-	if (user_group == NULL) {
-		user_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	}
-	if (time_group == NULL) {
-		time_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	}
-	gtk_size_group_add_widget(icon_group, GTK_WIDGET(priv->icon));
-	gtk_size_group_add_widget(user_group, GTK_WIDGET(priv->user));
-	gtk_size_group_add_widget(time_group, GTK_WIDGET(priv->time));
-
-	priv->hbox = GTK_HBOX(gtk_hbox_new(FALSE, 3));
-	gtk_box_pack_start(GTK_BOX(priv->hbox), GTK_WIDGET(priv->icon), FALSE, TRUE, 3);
-	gtk_box_pack_start(GTK_BOX(priv->hbox), GTK_WIDGET(priv->user), TRUE,  TRUE, 3);
-	gtk_box_pack_start(GTK_BOX(priv->hbox), GTK_WIDGET(priv->time), FALSE, TRUE, 3);
-	gtk_widget_show(GTK_WIDGET(priv->hbox));
-
-	gtk_container_add(GTK_CONTAINER(self), GTK_WIDGET(priv->hbox));
-
 	return;
 }
 
@@ -188,19 +147,7 @@ im_menu_item_finalize (GObject *object)
 static void
 icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, GdkPixbuf * propertydata, gpointer data)
 {
-	ImMenuItem * self = IM_MENU_ITEM(data);
-	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
-
-	gint height, width;
-	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
-
-	GdkPixbuf * scaled = gdk_pixbuf_scale_simple(propertydata, width, height, GDK_INTERP_BILINEAR);
-	g_object_unref(propertydata);
-
-	gtk_image_set_from_pixbuf(priv->icon, scaled);
-	g_object_unref(scaled);
-
-	gtk_widget_show(GTK_WIDGET(priv->icon));
+	/* dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "icon", propertydata); */
 
 	return;
 }
@@ -211,7 +158,7 @@ update_time (ImMenuItem * self)
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
 	if (!priv->show_time) {
-		gtk_label_set_label(priv->time, "");
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "right-column", "");
 		return;
 	}
 	
@@ -242,9 +189,7 @@ update_time (ImMenuItem * self)
 	}
 
 	if (timestring != NULL) {
-		gtk_label_set_label(priv->time, timestring);
-		gtk_widget_show(GTK_WIDGET(priv->time));
-
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "right-column", "");
 		g_free(timestring);
 	}
 
@@ -306,13 +251,7 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 		return;
 	}
 
-	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
-
-	gtk_label_set_label(priv->user, propertydata);
-	gtk_widget_show(GTK_WIDGET(priv->user));
-
-	/* Once we have the user we'll show the menu item */
-	gtk_widget_show(GTK_WIDGET(self));
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "label", propertydata);
 
 	return;
 }
@@ -348,7 +287,6 @@ indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * ser
 ImMenuItem *
 im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gboolean show_time)
 {
-	g_debug("Building a new IM Menu Item");
 	ImMenuItem * self = g_object_new(IM_MENU_ITEM_TYPE, NULL);
 
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
@@ -363,7 +301,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
 	indicate_listener_get_property_icon(listener, server, indicator, "icon",   icon_cb, self);	
 
-	g_signal_connect(G_OBJECT(self), "activate", G_CALLBACK(activate_cb), NULL);
+	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 	priv->indicator_changed = g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_MODIFIED, G_CALLBACK(indicator_modified_cb), self);
 
 	return self;
