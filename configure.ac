@@ -32,6 +32,7 @@ PKG_CHECK_MODULES(APPLET, gtk+-2.0 >= $GTK_REQUIRED_VERSION
                           gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                           indicator >= $INDICATOR_REQUIRED_VERSION
                           indicate >= $INDICATE_REQUIRED_VERSION
+                          indicate-gtk >= $INDICATE_REQUIRED_VERSION
                           dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION)
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)

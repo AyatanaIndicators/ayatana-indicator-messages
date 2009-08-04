@@ -24,6 +24,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include <glib/gi18n.h>
+#include <libindicate-gtk/indicator.h>
+#include <libindicate-gtk/listener.h>
 #include "im-menu-item.h"
 
 enum {
