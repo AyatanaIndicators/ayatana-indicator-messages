@@ -1,8 +1,8 @@
-indicator-messages (0.2.0~bzr121-0ubuntu1~ppa3) UNRELEASED; urgency=low
+indicator-messages (0.2.0~bzr121-0ubuntu1~ppa3) karmic; urgency=low
 
   * Changes for the changing libindicate stuff.
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 04 Aug 2009 17:45:57 +0100
+ -- Ted Gould <ted@ubuntu.com>  Tue, 04 Aug 2009 17:46:17 +0100
 
 indicator-messages (0.2.0~bzr121-0ubuntu1~ppa2) karmic; urgency=low
 
