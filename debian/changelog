@@ -1,8 +1,8 @@
-indicator-messages (0.2.0~bzr121-0ubuntu1~ppa4) UNRELEASED; urgency=low
+indicator-messages (0.2.0~bzr121-0ubuntu1~ppa4) karmic; urgency=low
 
   * debian/control: Adding in a build dep on libindicate-gtk-dev
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 04 Aug 2009 17:53:16 +0100
+ -- Ted Gould <ted@ubuntu.com>  Tue, 04 Aug 2009 17:54:44 +0100
 
 indicator-messages (0.2.0~bzr121-0ubuntu1~ppa3) karmic; urgency=low
 
