@@ -25,6 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 #include <glib-object.h>
 
+#include <libdbusmenu-glib/menuitem.h>
 #include <libindicate/listener.h>
 
 G_BEGIN_DECLS
@@ -43,14 +44,14 @@ typedef struct _AppMenuItem      AppMenuItem;
 typedef struct _AppMenuItemClass AppMenuItemClass;
 
 struct _AppMenuItemClass {
-	GtkMenuItemClass parent_class;
+	DbusmenuMenuitemClass parent_class;
 
 	void (* count_changed) (guint count);
 	void (* name_changed) (gchar * name);
 };
 
 struct _AppMenuItem {
-	GtkMenuItem parent;
+	DbusmenuMenuitem parent;
 };
 
 GType app_menu_item_get_type (void);

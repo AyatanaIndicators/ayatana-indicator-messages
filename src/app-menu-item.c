@@ -25,7 +25,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include <glib/gi18n.h>
-#include <gtk/gtk.h>
 #include <gio/gdesktopappinfo.h>
 #include "app-menu-item.h"
 
@@ -48,8 +47,6 @@ struct _AppMenuItemPrivate
 	GAppInfo * appinfo;
 	guint unreadcount;
 	gboolean count_on_label;
-
-	GtkWidget * name;
 };
 
 #define APP_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_MENU_ITEM_TYPE, AppMenuItemPrivate))
@@ -68,7 +65,7 @@ static void update_label (AppMenuItem * self);
 
 
 
-G_DEFINE_TYPE (AppMenuItem, app_menu_item, GTK_TYPE_MENU_ITEM);
+G_DEFINE_TYPE (AppMenuItem, app_menu_item, DBUSMENU_TYPE_MENUITEM);
 
 static void
 app_menu_item_class_init (AppMenuItemClass *klass)
@@ -106,7 +103,6 @@ app_menu_item_init (AppMenuItem *self)
 
 	priv->listener = NULL;
 	priv->server = NULL;
-	priv->name = NULL;
 	priv->type = NULL;
 	priv->appinfo = NULL;
 	priv->unreadcount = 0;
@@ -164,16 +160,10 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added_cb), self);
 	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed_cb), self);
 
-	priv->name = gtk_label_new(INDICATE_LISTENER_SERVER_DBUS_NAME(server));
-	gtk_misc_set_alignment(GTK_MISC(priv->name), 0.0, 0.5);
-	gtk_widget_show(GTK_WIDGET(priv->name));
-
-	gtk_container_add(GTK_CONTAINER(self), GTK_WIDGET(priv->name));
-
 	indicate_listener_server_get_type(listener, server, type_cb, self);
 	indicate_listener_server_get_desktop(listener, server, desktop_cb, self);
 
-	g_signal_connect(G_OBJECT(self), "activate", G_CALLBACK(activate_cb), NULL);
+	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_SERVER_DISPLAY);
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_SERVER_SIGNAL);
@@ -222,10 +212,10 @@ update_label (AppMenuItem * self)
 		/* TRANSLATORS: This is the name of the program and the number of indicators.  So it
 		                would read something like "Mail Client (5)" */
 		gchar * label = g_strdup_printf(_("%s (%d)"), app_menu_item_get_name(self), priv->unreadcount);
-		gtk_label_set_text(GTK_LABEL(priv->name), label);
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "label", label);
 		g_free(label);
 	} else {
-		gtk_label_set_text(GTK_LABEL(priv->name), app_menu_item_get_name(self));
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "label", app_menu_item_get_name(self));
 	}
 
 	return;

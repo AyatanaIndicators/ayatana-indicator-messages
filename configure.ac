@@ -26,11 +26,13 @@ GIO_UNIX_REQUIRED_VERSION=2.18
 PANEL_REQUIRED_VERSION=2.0.0
 INDICATE_REQUIRED_VERSION=0.2.0
 INDICATOR_REQUIRED_VERSION=0.2.0
+DBUSMENUGTK_REQUIRED_VERSION=0.0.0
 
 PKG_CHECK_MODULES(APPLET, gtk+-2.0 >= $GTK_REQUIRED_VERSION
                           gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                           indicator >= $INDICATOR_REQUIRED_VERSION
-                          indicate >= $INDICATE_REQUIRED_VERSION)
+                          indicate >= $INDICATE_REQUIRED_VERSION
+                          dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION)
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
@@ -42,6 +44,13 @@ INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator`
 AC_SUBST(INDICATORDIR)
 
 ###########################
+# DBus Service Info
+###########################
+
+DBUSSERVICEDIR=`$PKG_CONFIG --variable=session_bus_services_dir dbus-1`
+AC_SUBST(DBUSSERVICEDIR)
+
+###########################
 # Files
 ###########################
 
@@ -49,6 +58,7 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 data/Makefile
+data/indicator-messages.service
 data/icons/Makefile
 data/icons/16x16/Makefile
 data/icons/16x16/status/Makefile
