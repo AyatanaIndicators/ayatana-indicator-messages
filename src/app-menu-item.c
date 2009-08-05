@@ -257,6 +257,7 @@ activate_cb (AppMenuItem * self, gpointer data)
 static void 
 indicator_added_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
 {
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(data);
 
 	if (g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server))) {
