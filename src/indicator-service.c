@@ -255,6 +255,7 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 	if (sltp->menuitem != NULL) {
 		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(sltp->menuitem), "visibile", "false");
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(sltp->menuitem));
+		g_object_unref(G_OBJECT(sltp->menuitem));
 	}
 
 	g_free(sltp);

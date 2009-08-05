@@ -1,3 +1,10 @@
+indicator-messages (0.2.0~bzr121-0ubuntu1~ppa5) UNRELEASED; urgency=low
+
+  * Fix to dereference the application menu items correctly so that
+    the signal handlers are dropped as well.
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 05 Aug 2009 18:59:57 +0100
+
 indicator-messages (0.2.0~bzr121-0ubuntu1~ppa4) karmic; urgency=low
 
   * debian/control: Adding in a build dep on libindicate-gtk-dev
