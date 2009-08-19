@@ -489,6 +489,20 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 }
 
 gboolean
+build_launcher (gpointer data)
+{
+	gchar * path = (gchar *)data;
+
+	launcherList_t * ll = g_new0(launcherList_t, 1);
+	ll->menuitem = launcher_menu_item_new(path);
+
+	g_free(path);
+
+	launcherList = g_list_insert_sorted(launcherList, ll, launcherList_sort);
+	return FALSE;
+}
+
+gboolean
 build_launchers (gpointer data)
 {
 	if (!g_file_test(SYSTEM_APPS_DIR, G_FILE_TEST_IS_DIR)) {
@@ -506,10 +520,7 @@ build_launchers (gpointer data)
 	const gchar * filename = NULL;
 	while ((filename = g_dir_read_name(dir)) != NULL) {
 		gchar * path = g_build_filename(SYSTEM_APPS_DIR, filename, NULL);
-		launcherList_t * ll = g_new0(launcherList_t, 1);
-		ll->menuitem = launcher_menu_item_new(path);
-		g_free(path);
-		launcherList = g_list_append(launcherList, ll);
+		g_idle_add(build_launcher, path);
 	}
 
 	g_dir_close(dir);
