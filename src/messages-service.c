@@ -492,11 +492,18 @@ gboolean
 build_launcher (gpointer data)
 {
 	gchar * path = (gchar *)data;
+	gchar * desktop = NULL;
+	
+	g_file_get_contents(path, &desktop, NULL, NULL);
+	g_free(path);
+
+	if (desktop == NULL) {
+		return FALSE;
+	}
 
 	launcherList_t * ll = g_new0(launcherList_t, 1);
 	ll->menuitem = launcher_menu_item_new(path);
 
-	g_free(path);
 
 	launcherList = g_list_insert_sorted(launcherList, ll, launcherList_sort);
 	return FALSE;
