@@ -28,6 +28,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "im-menu-item.h"
 #include "app-menu-item.h"
+#include "launcher-menu-item.h"
 #include "dbus-data.h"
 
 static IndicateListener * listener;
@@ -114,6 +115,25 @@ imList_sort (gconstpointer a, gconstpointer b)
 	pb = (imList_t *)b;
 
 	return (gint)(im_menu_item_get_seconds(IM_MENU_ITEM(pb->menuitem)) - im_menu_item_get_seconds(IM_MENU_ITEM(pa->menuitem)));
+}
+
+typedef struct _launcherList_t launcherList_t;
+struct _launcherList_t {
+	LauncherMenuItem * menuitem;
+};
+
+static gint
+launcherList_sort (gconstpointer a, gconstpointer b)
+{
+	launcherList_t * pa, * pb;
+
+	pa = (launcherList_t *)a;
+	pb = (launcherList_t *)b;
+
+	const gchar * pan = launcher_menu_item_get_name(pa->menuitem);
+	const gchar * pbn = launcher_menu_item_get_name(pb->menuitem);
+
+	return g_strcmp0(pan, pbn);
 }
 
 static void 
@@ -466,6 +486,15 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	return;
 }
 
+gboolean
+build_launchers (gpointer data)
+{
+
+
+
+	return FALSE;
+}
+
 int
 main (int argc, char ** argv)
 {
@@ -497,6 +526,8 @@ main (int argc, char ** argv)
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed), root_menuitem);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_ADDED, G_CALLBACK(server_added), root_menuitem);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), root_menuitem);
+
+	g_idle_add(build_launchers, NULL);
 
 	mainloop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(mainloop);
