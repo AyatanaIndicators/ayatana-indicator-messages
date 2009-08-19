@@ -30,9 +30,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "app-menu-item.h"
 #include "launcher-menu-item.h"
 #include "dbus-data.h"
+#include "dirs.h"
 
 static IndicateListener * listener;
-static GList * serverList;
+static GList * serverList = NULL;
+static GList * launcherList = NULL;
 
 static DbusmenuMenuitem * root_menuitem = NULL;
 static GMainLoop * mainloop = NULL;
@@ -489,9 +491,29 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 gboolean
 build_launchers (gpointer data)
 {
+	if (!g_file_test(SYSTEM_APPS_DIR, G_FILE_TEST_IS_DIR)) {
+		return FALSE;
+	}
 
+	GError * error = NULL;
+	GDir * dir = g_dir_open(SYSTEM_APPS_DIR, 0, &error);
+	if (dir == NULL) {
+		g_warning("Unable to open system apps directory: %s", error->message);
+		g_error_free(error);
+		return FALSE;
+	}
 
+	const gchar * filename = NULL;
+	while ((filename = g_dir_read_name(dir)) != NULL) {
+		gchar * path = g_build_filename(SYSTEM_APPS_DIR, filename, NULL);
+		launcherList_t * ll = g_new0(launcherList_t, 1);
+		ll->menuitem = launcher_menu_item_new(path);
+		g_free(path);
+		launcherList = g_list_append(launcherList, ll);
+	}
 
+	g_dir_close(dir);
+	launcherList = g_list_sort(launcherList, launcherList_sort);
 	return FALSE;
 }
 
