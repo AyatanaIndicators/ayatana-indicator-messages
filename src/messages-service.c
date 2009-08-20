@@ -167,6 +167,8 @@ static GHashTable * blacklist = NULL;
 static void
 blacklist_init (gpointer data)
 {
+	blacklist = g_hash_table_new_full(g_str_hash, g_str_equal,
+	                                  g_free, g_free);
 
 	return;
 }
@@ -174,8 +176,46 @@ blacklist_init (gpointer data)
 /* Add a definition file into the black list and eclipse
    and launchers that have the same file. */
 static void
-blacklist_add (const gchar * definition_file)
+blacklist_add (gchar * definition_file)
 {
+	/* Dump the file */
+	gchar * desktop;
+	g_file_get_contents(definition_file, &desktop, NULL, NULL);
+	if (desktop == NULL) {
+		g_warning("Couldn't get data out of: %s", definition_file);
+		return;
+	}
+
+	/* Clean up the data */
+	gchar * trimdesktop = pango_trim_string(desktop);
+	g_free(desktop);
+
+	/* Check for conflicts */
+	gpointer data = g_hash_table_lookup(blacklist, trimdesktop);
+	if (data != NULL) {
+		gchar * oldfile = (gchar *)data;
+		if (!g_strcmp0(oldfile, definition_file)) {
+			g_warning("Already added file '%s'", oldfile);
+		} else {
+			g_warning("Already have desktop file '%s' in blacklist file '%s' not adding from '%s'", trimdesktop, oldfile, definition_file);
+		}
+
+		g_free(trimdesktop);
+		return;
+	}
+
+	/* Actually blacklist this thing */
+	g_hash_table_insert(blacklist, trimdesktop, definition_file);
+	g_debug("Adding Blacklist item '%s' for desktop '%s'", definition_file, trimdesktop);
+
+	/* Go through and eclipse folks */
+	GList * launcher;
+	for (launcher = launcherList; launcher != NULL; launcher = launcher->next) {
+		launcherList_t * item = (launcherList_t *)launcher->data;
+		if (!g_strcmp0(trimdesktop, launcher_menu_item_get_desktop(item->menuitem))) {
+			launcher_menu_item_set_eclipsed(item->menuitem, TRUE);
+		}
+	}
 
 	return;
 }
