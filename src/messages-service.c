@@ -21,6 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <string.h>
+#include <pango/pango-utils.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <libindicate/listener.h>
 
@@ -492,6 +493,7 @@ gboolean
 build_launcher (gpointer data)
 {
 	gchar * path = (gchar *)data;
+	g_debug("\tpath: %s", path);
 	gchar * desktop = NULL;
 	
 	g_file_get_contents(path, &desktop, NULL, NULL);
@@ -501,11 +503,17 @@ build_launcher (gpointer data)
 		return FALSE;
 	}
 
-	launcherList_t * ll = g_new0(launcherList_t, 1);
-	ll->menuitem = launcher_menu_item_new(path);
+	gchar * trimdesktop = pango_trim_string(desktop);
+	g_debug("\tcontents: %s", trimdesktop);
 
+	launcherList_t * ll = g_new0(launcherList_t, 1);
+	ll->menuitem = launcher_menu_item_new(trimdesktop);
 
 	launcherList = g_list_insert_sorted(launcherList, ll, launcherList_sort);
+
+	g_free(trimdesktop);
+	g_free(desktop);
+
 	return FALSE;
 }
 
@@ -526,6 +534,7 @@ build_launchers (gpointer data)
 
 	const gchar * filename = NULL;
 	while ((filename = g_dir_read_name(dir)) != NULL) {
+		g_debug("Found file: %s", filename);
 		gchar * path = g_build_filename(SYSTEM_APPS_DIR, filename, NULL);
 		g_idle_add(build_launcher, path);
 	}

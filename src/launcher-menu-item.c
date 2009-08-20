@@ -112,10 +112,13 @@ LauncherMenuItem *
 launcher_menu_item_new (const gchar * desktop_file)
 {
 	LauncherMenuItem * self = g_object_new(LAUNCHER_MENU_ITEM_TYPE, NULL);
+	g_debug("\tDesktop file: %s", desktop_file);
 
 	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(self);
 
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(desktop_file));
+
+	g_debug("\tName: %s", launcher_menu_item_get_name(self));
 
 	return self;
 }
