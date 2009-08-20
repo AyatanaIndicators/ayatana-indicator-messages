@@ -164,7 +164,7 @@ activate_cb (LauncherMenuItem * self, gpointer data)
 	   time as that's not sent across the bus */
 	GTimeVal time;
 	g_get_current_time(&time);
-	gdk_app_launch_context_set_timestamp(context, time.tv_usec);
+	gdk_app_launch_context_set_timestamp(context, time.tv_usec / 1000);
 
 	GError * error = NULL;
 	if (!g_app_info_launch(priv->appinfo, NULL, G_APP_LAUNCH_CONTEXT(context), &error)) {
