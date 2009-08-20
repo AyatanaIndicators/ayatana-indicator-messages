@@ -51,6 +51,11 @@ static void remove_eclipses (AppMenuItem * ai);
 static gboolean build_launcher (gpointer data);
 static gboolean build_launchers (gpointer data);
 
+
+/*
+ * Server List
+ */
+
 typedef struct _serverList_t serverList_t;
 struct _serverList_t {
 	IndicateListenerServer * server;
@@ -85,6 +90,10 @@ serverList_sort (gconstpointer a, gconstpointer b)
 
 	return g_strcmp0(pan, pbn);
 }
+
+/*
+ * Item List
+ */
 
 typedef struct _imList_t imList_t;
 struct _imList_t {
@@ -124,6 +133,10 @@ imList_sort (gconstpointer a, gconstpointer b)
 	return (gint)(im_menu_item_get_seconds(IM_MENU_ITEM(pb->menuitem)) - im_menu_item_get_seconds(IM_MENU_ITEM(pa->menuitem)));
 }
 
+/*
+ * Launcher List
+ */
+
 typedef struct _launcherList_t launcherList_t;
 struct _launcherList_t {
 	LauncherMenuItem * menuitem;
@@ -143,12 +156,20 @@ launcherList_sort (gconstpointer a, gconstpointer b)
 	return g_strcmp0(pan, pbn);
 }
 
+/*
+ * Black List
+ */
+
 static gboolean
 blacklist_check (const gchar * desktop_file)
 {
 
 	return FALSE;
 }
+
+/*
+ * More code
+ */
 
 static void 
 server_added (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
