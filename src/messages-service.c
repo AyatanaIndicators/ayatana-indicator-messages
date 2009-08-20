@@ -143,6 +143,13 @@ launcherList_sort (gconstpointer a, gconstpointer b)
 	return g_strcmp0(pan, pbn);
 }
 
+static gboolean
+blacklist_check (const gchar * desktop_file)
+{
+
+	return FALSE;
+}
+
 static void 
 server_added (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
@@ -555,6 +562,8 @@ remove_eclipses (AppMenuItem * ai)
 	const gchar * aidesktop = app_menu_item_get_desktop(ai);
 	if (aidesktop == NULL) return;
 
+	if (blacklist_check(aidesktop)) return;
+
 	GList * llitem;
 	for (llitem = launcherList; llitem != NULL; llitem = llitem->next) {
 		launcherList_t * ll = (launcherList_t *)llitem->data;
@@ -601,6 +610,10 @@ build_launcher (gpointer data)
 	/* Add it to the menu */
 	dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
 	resort_menu(root_menuitem);
+
+	if (blacklist_check(trimdesktop)) {
+		launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
+	}
 
 	return FALSE;
 }
