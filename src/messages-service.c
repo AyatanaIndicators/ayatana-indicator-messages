@@ -46,6 +46,8 @@ static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer d
 static void im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data);
 static void resort_menu (DbusmenuMenuitem * menushell);
 static void indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
+static void check_eclipses (AppMenuItem * ai);
+static void remove_eclipses (AppMenuItem * ai);
 
 typedef struct _serverList_t serverList_t;
 struct _serverList_t {
@@ -194,6 +196,7 @@ static void
 server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data)
 {
 	serverList = g_list_sort(serverList, serverList_sort);
+	check_eclipses(appitem);
 	resort_menu(DBUSMENU_MENUITEM(data));
 	return;
 }
@@ -267,6 +270,8 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 	}
 
 	serverList_t * sltp = (serverList_t *)lookup->data;
+
+	remove_eclipses(sltp->menuitem);
 
 	while (sltp->imList) {
 		imList_t * imitem = (imList_t *)sltp->imList->data;
@@ -510,6 +515,27 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	if (!removed) {
 		g_warning("We were asked to remove %s %d but we didn't.", INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_INDICATOR_ID(indicator));
 	}
+
+	return;
+}
+
+/* Check to see if a new desktop file causes
+   any of the launchers to be eclipsed by a running
+   process */
+static void
+check_eclipses (AppMenuItem * ai)
+{
+
+
+	return;
+}
+
+/* Remove any eclipses that might have been caused
+   by this app item that is now retiring */
+static void
+remove_eclipses (AppMenuItem * ai)
+{
+
 
 	return;
 }
