@@ -237,6 +237,10 @@ blacklist_check (const gchar * desktop_file)
 {
 	if (blacklist == NULL) return FALSE;
 
+	if (g_hash_table_lookup(blacklist, desktop_file)) {
+		return TRUE;
+	}
+
 	return FALSE;
 }
 
