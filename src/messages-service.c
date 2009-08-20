@@ -160,9 +160,41 @@ launcherList_sort (gconstpointer a, gconstpointer b)
  * Black List
  */
 
+static GHashTable * blacklist = NULL;
+
+/* Initialize the black list and start to setup
+   handlers for it. */
+static void
+blacklist_init (gpointer data)
+{
+
+	return;
+}
+
+/* Add a definition file into the black list and eclipse
+   and launchers that have the same file. */
+static void
+blacklist_add (const gchar * definition_file)
+{
+
+	return;
+}
+
+/* Remove a black list item based on the definition file
+   and uneclipse those launchers blocked by it. */
+static void
+blacklist_remove (const gchar * definition_file)
+{
+
+	return;
+}
+
+/* Check to see if a particular desktop file is
+   in the blacklist. */
 static gboolean
 blacklist_check (const gchar * desktop_file)
 {
+	if (blacklist == NULL) return FALSE;
 
 	return FALSE;
 }
