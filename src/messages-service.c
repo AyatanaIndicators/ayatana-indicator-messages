@@ -527,7 +527,18 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 static void
 check_eclipses (AppMenuItem * ai)
 {
+	const gchar * aidesktop = app_menu_item_get_desktop(ai);
+	if (aidesktop == NULL) return;
 
+	GList * llitem;
+	for (llitem = launcherList; llitem != NULL; llitem = llitem->next) {
+		const gchar * lidesktop = launcher_menu_item_get_desktop(LAUNCHER_MENU_ITEM(llitem->data));
+
+		if (!g_strcmp0(aidesktop, lidesktop)) {
+			launcher_menu_item_set_eclipsed(LAUNCHER_MENU_ITEM(llitem->data), TRUE);
+			break;
+		}
+	}
 
 	return;
 }
@@ -537,7 +548,18 @@ check_eclipses (AppMenuItem * ai)
 static void
 remove_eclipses (AppMenuItem * ai)
 {
+	const gchar * aidesktop = app_menu_item_get_desktop(ai);
+	if (aidesktop == NULL) return;
 
+	GList * llitem;
+	for (llitem = launcherList; llitem != NULL; llitem = llitem->next) {
+		const gchar * lidesktop = launcher_menu_item_get_desktop(LAUNCHER_MENU_ITEM(llitem->data));
+
+		if (!g_strcmp0(aidesktop, lidesktop)) {
+			launcher_menu_item_set_eclipsed(LAUNCHER_MENU_ITEM(llitem->data), FALSE);
+			break;
+		}
+	}
 
 	return;
 }
@@ -609,6 +631,8 @@ build_launchers (gpointer data)
 	return FALSE;
 }
 
+/* Oh, if you don't know what main() is for
+   we really shouldn't be talking. */
 int
 main (int argc, char ** argv)
 {

@@ -39,6 +39,7 @@ typedef struct _LauncherMenuItemPrivate LauncherMenuItemPrivate;
 struct _LauncherMenuItemPrivate
 {
 	GAppInfo * appinfo;
+	gchar * desktop;
 };
 
 #define LAUNCHER_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), LAUNCHER_MENU_ITEM_TYPE, LauncherMenuItemPrivate))
@@ -81,6 +82,7 @@ launcher_menu_item_init (LauncherMenuItem *self)
 	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(self);
 
 	priv->appinfo = NULL;
+	priv->desktop = NULL;
 
 	return;
 }
@@ -102,6 +104,12 @@ launcher_menu_item_finalize (GObject *object)
 
 	if (priv->appinfo != NULL) {
 		g_object_unref(priv->appinfo);
+		priv->appinfo = NULL;
+	}
+
+	if (priv->desktop != NULL) {
+		g_free(priv->desktop);
+		priv->desktop = NULL;
 	}
 
 	G_OBJECT_CLASS (launcher_menu_item_parent_class)->finalize (object);
@@ -118,6 +126,7 @@ launcher_menu_item_new (const gchar * desktop_file)
 	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(self);
 
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(desktop_file));
+	priv->desktop = g_strdup(desktop_file);
 
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "label", launcher_menu_item_get_name(self));
@@ -154,6 +163,14 @@ activate_cb (LauncherMenuItem * self, gpointer data)
 	}
 
 	return;
+}
+
+const gchar *
+launcher_menu_item_get_desktop (LauncherMenuItem * launchitem)
+{
+	g_return_val_if_fail(IS_LAUNCHER_MENU_ITEM(launchitem), NULL);
+	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(launchitem);
+	return priv->desktop;
 }
 
 /* Hides the menu item based on whether it is eclipsed

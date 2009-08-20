@@ -59,6 +59,7 @@ AppMenuItem * app_menu_item_new (IndicateListener * listener, IndicateListenerSe
 guint app_menu_item_get_count (AppMenuItem * appitem);
 IndicateListenerServer * app_menu_item_get_server (AppMenuItem * appitem);
 const gchar * app_menu_item_get_name (AppMenuItem * appitem);
+const gchar * app_menu_item_get_desktop (AppMenuItem * appitem);
 
 G_END_DECLS
 
