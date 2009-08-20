@@ -201,6 +201,7 @@ blacklist_add (gchar * definition_file)
 		}
 
 		g_free(trimdesktop);
+		g_free(definition_file);
 		return;
 	}
 
