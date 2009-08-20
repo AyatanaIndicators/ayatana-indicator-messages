@@ -266,9 +266,11 @@ blacklist_remove (const gchar * definition_file)
 static gboolean
 blacklist_check (const gchar * desktop_file)
 {
+	g_debug("Checking blacklist for: %s", desktop_file);
 	if (blacklist == NULL) return FALSE;
 
 	if (g_hash_table_lookup(blacklist, desktop_file)) {
+		g_debug("\tFound!");
 		return TRUE;
 	}
 
@@ -740,7 +742,7 @@ build_launcher (gpointer data)
 	dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
 	resort_menu(root_menuitem);
 
-	if (blacklist_check(trimdesktop)) {
+	if (blacklist_check(launcher_menu_item_get_desktop(ll->menuitem))) {
 		launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
 	}
 
