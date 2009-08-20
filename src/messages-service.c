@@ -532,10 +532,11 @@ check_eclipses (AppMenuItem * ai)
 
 	GList * llitem;
 	for (llitem = launcherList; llitem != NULL; llitem = llitem->next) {
-		const gchar * lidesktop = launcher_menu_item_get_desktop(LAUNCHER_MENU_ITEM(llitem->data));
+		launcherList_t * ll = (launcherList_t *)llitem->data;
+		const gchar * lidesktop = launcher_menu_item_get_desktop(ll->menuitem);
 
 		if (!g_strcmp0(aidesktop, lidesktop)) {
-			launcher_menu_item_set_eclipsed(LAUNCHER_MENU_ITEM(llitem->data), TRUE);
+			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
 			break;
 		}
 	}
@@ -553,10 +554,11 @@ remove_eclipses (AppMenuItem * ai)
 
 	GList * llitem;
 	for (llitem = launcherList; llitem != NULL; llitem = llitem->next) {
-		const gchar * lidesktop = launcher_menu_item_get_desktop(LAUNCHER_MENU_ITEM(llitem->data));
+		launcherList_t * ll = (launcherList_t *)llitem->data;
+		const gchar * lidesktop = launcher_menu_item_get_desktop(ll->menuitem);
 
 		if (!g_strcmp0(aidesktop, lidesktop)) {
-			launcher_menu_item_set_eclipsed(LAUNCHER_MENU_ITEM(llitem->data), FALSE);
+			launcher_menu_item_set_eclipsed(ll->menuitem, FALSE);
 			break;
 		}
 	}
