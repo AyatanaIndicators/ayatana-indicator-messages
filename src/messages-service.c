@@ -50,6 +50,9 @@ static void check_eclipses (AppMenuItem * ai);
 static void remove_eclipses (AppMenuItem * ai);
 static gboolean build_launcher (gpointer data);
 static gboolean build_launchers (gpointer data);
+static gboolean blacklist_init (gpointer data);
+static gboolean blacklist_add (gpointer data);
+static void blacklist_remove (const gchar * definition_file);
 
 
 /*
@@ -164,26 +167,53 @@ static GHashTable * blacklist = NULL;
 
 /* Initialize the black list and start to setup
    handlers for it. */
-static void
+static gboolean
 blacklist_init (gpointer data)
 {
 	blacklist = g_hash_table_new_full(g_str_hash, g_str_equal,
 	                                  g_free, g_free);
 
-	return;
+	gchar * blacklistdir = g_build_filename(g_get_user_config_dir(), USER_BLACKLIST_DIR, NULL);
+	g_debug("Looking at blacklist: %s", blacklistdir);
+	if (!g_file_test(blacklistdir, G_FILE_TEST_IS_DIR)) {
+		g_free(blacklistdir);
+		return FALSE;
+	}
+
+	GError * error = NULL;
+	GDir * dir = g_dir_open(blacklistdir, 0, &error);
+	if (dir == NULL) {
+		g_warning("Unable to open blacklist directory (%s): %s", blacklistdir, error->message);
+		g_error_free(error);
+		g_free(blacklistdir);
+		return FALSE;
+	}
+
+	const gchar * filename = NULL;
+	while ((filename = g_dir_read_name(dir)) != NULL) {
+		g_debug("Found file: %s", filename);
+		gchar * path = g_build_filename(blacklistdir, filename, NULL);
+		g_idle_add(blacklist_add, path);
+	}
+
+	g_dir_close(dir);
+	g_free(blacklistdir);
+
+	return FALSE;
 }
 
 /* Add a definition file into the black list and eclipse
    and launchers that have the same file. */
-static void
-blacklist_add (gchar * definition_file)
+static gboolean
+blacklist_add (gpointer udata)
 {
+	gchar * definition_file = (gchar *)udata;
 	/* Dump the file */
 	gchar * desktop;
 	g_file_get_contents(definition_file, &desktop, NULL, NULL);
 	if (desktop == NULL) {
 		g_warning("Couldn't get data out of: %s", definition_file);
-		return;
+		return FALSE;
 	}
 
 	/* Clean up the data */
@@ -202,7 +232,7 @@ blacklist_add (gchar * definition_file)
 
 		g_free(trimdesktop);
 		g_free(definition_file);
-		return;
+		return FALSE;
 	}
 
 	/* Actually blacklist this thing */
@@ -218,7 +248,8 @@ blacklist_add (gchar * definition_file)
 		}
 	}
 
-	return;
+	blacklist_remove(NULL);
+	return FALSE;
 }
 
 /* Remove a black list item based on the definition file
@@ -781,6 +812,7 @@ main (int argc, char ** argv)
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_ADDED, G_CALLBACK(server_added), root_menuitem);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), root_menuitem);
 
+	g_idle_add(blacklist_init, NULL);
 	g_idle_add(build_launchers, NULL);
 
 	mainloop = g_main_loop_new(NULL, FALSE);
