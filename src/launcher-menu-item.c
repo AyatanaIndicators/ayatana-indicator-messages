@@ -48,7 +48,7 @@ static void launcher_menu_item_class_init (LauncherMenuItemClass *klass);
 static void launcher_menu_item_init       (LauncherMenuItem *self);
 static void launcher_menu_item_dispose    (GObject *object);
 static void launcher_menu_item_finalize   (GObject *object);
-void activate_cb (LauncherMenuItem * self, gpointer data);
+static void activate_cb (LauncherMenuItem * self, gpointer data);
 
 
 G_DEFINE_TYPE (LauncherMenuItem, launcher_menu_item, DBUSMENU_TYPE_MENUITEM);
@@ -139,7 +139,9 @@ launcher_menu_item_get_name (LauncherMenuItem * appitem)
 	}
 }
 
-void
+/* When the menu item is clicked on it tries to launch
+   the application that is represented by the desktop file */
+static void
 activate_cb (LauncherMenuItem * self, gpointer data)
 {
 	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(self);
@@ -151,5 +153,15 @@ activate_cb (LauncherMenuItem * self, gpointer data)
 		g_error_free(error);
 	}
 
+	return;
+}
+
+/* Hides the menu item based on whether it is eclipsed
+   or not. */
+void
+launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed)
+{
+	g_debug("Laucher '%s' is %s", launcher_menu_item_get_name(li), eclipsed ? "now eclipsed" : "shown again");
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), "show", eclipsed ? "false" : "true");
 	return;
 }

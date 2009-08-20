@@ -55,6 +55,7 @@ struct _LauncherMenuItem {
 GType launcher_menu_item_get_type (void);
 LauncherMenuItem * launcher_menu_item_new (const gchar * desktop_file);
 const gchar * launcher_menu_item_get_name (LauncherMenuItem * appitem);
+void launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed);
 
 G_END_DECLS
 
