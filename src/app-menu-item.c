@@ -45,6 +45,7 @@ struct _AppMenuItemPrivate
 	
 	gchar * type;
 	GAppInfo * appinfo;
+	gchar * desktop;
 	guint unreadcount;
 	gboolean count_on_label;
 };
@@ -105,6 +106,7 @@ app_menu_item_init (AppMenuItem *self)
 	priv->server = NULL;
 	priv->type = NULL;
 	priv->appinfo = NULL;
+	priv->desktop = NULL;
 	priv->unreadcount = 0;
 	priv->count_on_label = FALSE;
 
@@ -134,6 +136,10 @@ app_menu_item_finalize (GObject *object)
 
 	if (priv->type != NULL) {
 		g_free(priv->type);
+	}
+
+	if (priv->desktop != NULL) {
+		g_free(priv->desktop);
 	}
 
 	if (priv->appinfo != NULL) {
@@ -229,14 +235,22 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 
 	if (priv->appinfo != NULL) {
 		g_object_unref(G_OBJECT(priv->appinfo));
+		priv->appinfo = NULL;
+	}
+
+	if (priv->desktop != NULL) {
+		g_free(priv->desktop);
+		priv->desktop = NULL;
 	}
 
 	if (value == NULL || value[0] == '\0') {
 		return;
 	}
-	
+
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(value));
 	g_return_if_fail(priv->appinfo != NULL);
+
+	priv->desktop = g_strdup(value);
 
 	update_label(self);
 	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
@@ -297,6 +311,7 @@ indicator_removed_cb (IndicateListener * listener, IndicateListenerServer * serv
 guint
 app_menu_item_get_count (AppMenuItem * appitem)
 {
+	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), 0);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
 
 	return priv->unreadcount;
@@ -304,6 +319,7 @@ app_menu_item_get_count (AppMenuItem * appitem)
 
 IndicateListenerServer *
 app_menu_item_get_server (AppMenuItem * appitem) {
+	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), NULL);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
 
 	return priv->server;
@@ -312,6 +328,7 @@ app_menu_item_get_server (AppMenuItem * appitem) {
 const gchar *
 app_menu_item_get_name (AppMenuItem * appitem)
 {
+	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), NULL);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
 
 	if (priv->appinfo == NULL) {
@@ -319,4 +336,12 @@ app_menu_item_get_name (AppMenuItem * appitem)
 	} else {
 		return g_app_info_get_name(priv->appinfo);
 	}
+}
+
+const gchar *
+app_menu_item_get_desktop (AppMenuItem * appitem)
+{
+	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), NULL);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
+	return priv->desktop;
 }
