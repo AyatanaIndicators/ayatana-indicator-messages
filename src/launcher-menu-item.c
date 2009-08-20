@@ -48,6 +48,7 @@ static void launcher_menu_item_class_init (LauncherMenuItemClass *klass);
 static void launcher_menu_item_init       (LauncherMenuItem *self);
 static void launcher_menu_item_dispose    (GObject *object);
 static void launcher_menu_item_finalize   (GObject *object);
+void activate_cb (LauncherMenuItem * self, gpointer data);
 
 
 G_DEFINE_TYPE (LauncherMenuItem, launcher_menu_item, DBUSMENU_TYPE_MENUITEM);
@@ -121,6 +122,8 @@ launcher_menu_item_new (const gchar * desktop_file)
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "label", launcher_menu_item_get_name(self));
 
+	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
+
 	return self;
 }
 
@@ -134,4 +137,19 @@ launcher_menu_item_get_name (LauncherMenuItem * appitem)
 	} else {
 		return g_app_info_get_name(priv->appinfo);
 	}
+}
+
+void
+activate_cb (LauncherMenuItem * self, gpointer data)
+{
+	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(self);
+	g_return_if_fail(priv->appinfo != NULL);
+
+	GError * error = NULL;
+	if (!g_app_info_launch(priv->appinfo, NULL, NULL, &error)) {
+		g_warning("Application failed to launch '%s' because: %s", launcher_menu_item_get_name(self), error->message);
+		g_error_free(error);
+	}
+
+	return;
 }
