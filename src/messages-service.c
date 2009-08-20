@@ -48,6 +48,8 @@ static void resort_menu (DbusmenuMenuitem * menushell);
 static void indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
 static void check_eclipses (AppMenuItem * ai);
 static void remove_eclipses (AppMenuItem * ai);
+static gboolean build_launcher (gpointer data);
+static gboolean build_launchers (gpointer data);
 
 typedef struct _serverList_t serverList_t;
 struct _serverList_t {
@@ -540,7 +542,9 @@ remove_eclipses (AppMenuItem * ai)
 	return;
 }
 
-gboolean
+/* This function turns a specific file into a menu
+   item and registers it appropriately with everyone */
+static gboolean
 build_launcher (gpointer data)
 {
 	/* Read the file get the data */
@@ -574,7 +578,11 @@ build_launcher (gpointer data)
 	return FALSE;
 }
 
-gboolean
+/* This function goes through all the launchers that we're
+   supposed to be grabbing and decides to show turn them
+   into menu items or not.  It doens't do the work, but it
+   makes the decision. */
+static gboolean
 build_launchers (gpointer data)
 {
 	if (!g_file_test(SYSTEM_APPS_DIR, G_FILE_TEST_IS_DIR)) {
