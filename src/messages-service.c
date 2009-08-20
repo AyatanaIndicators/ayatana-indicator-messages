@@ -527,13 +527,16 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 static void
 check_eclipses (AppMenuItem * ai)
 {
+	g_debug("Checking eclipsing");
 	const gchar * aidesktop = app_menu_item_get_desktop(ai);
 	if (aidesktop == NULL) return;
+	g_debug("\tApp desktop: %s", aidesktop);
 
 	GList * llitem;
 	for (llitem = launcherList; llitem != NULL; llitem = llitem->next) {
 		launcherList_t * ll = (launcherList_t *)llitem->data;
 		const gchar * lidesktop = launcher_menu_item_get_desktop(ll->menuitem);
+		g_debug("\tLauncher desktop: %s", lidesktop);
 
 		if (!g_strcmp0(aidesktop, lidesktop)) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
