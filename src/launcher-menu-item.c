@@ -119,6 +119,7 @@ launcher_menu_item_new (const gchar * desktop_file)
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(desktop_file));
 
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "label", launcher_menu_item_get_name(self));
 
 	return self;
 }
