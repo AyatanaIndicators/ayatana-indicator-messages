@@ -44,7 +44,7 @@ static GMainLoop * mainloop = NULL;
 static void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
 static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data);
 static void im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data);
-static void reconsile_list_and_menu (GList * serverlist, DbusmenuMenuitem * menushell);
+static void resort_menu (DbusmenuMenuitem * menushell);
 static void indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
 
 typedef struct _serverList_t serverList_t;
@@ -185,7 +185,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
 	/* Should be prepend ^ */
 
-	reconsile_list_and_menu(serverList, menushell);
+	resort_menu(menushell);
 
 	return;
 }
@@ -194,7 +194,7 @@ static void
 server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data)
 {
 	serverList = g_list_sort(serverList, serverList_sort);
-	reconsile_list_and_menu(serverList, DBUSMENU_MENUITEM(data));
+	resort_menu(DBUSMENU_MENUITEM(data));
 	return;
 }
 
@@ -249,7 +249,7 @@ im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data)
 {
 	serverList_t * sl = (serverList_t *)data;
 	sl->imList = g_list_sort(sl->imList, imList_sort);
-	reconsile_list_and_menu(serverList, root_menuitem);
+	resort_menu(root_menuitem);
 	return;
 }
 
@@ -317,7 +317,7 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 }
 
 static void
-reconsile_list_and_menu (GList * serverlist, DbusmenuMenuitem * menushell)
+resort_menu (DbusmenuMenuitem * menushell)
 {
 	guint position = 0;
 	GList * serverentry;
@@ -492,6 +492,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 gboolean
 build_launcher (gpointer data)
 {
+	/* Read the file get the data */
 	gchar * path = (gchar *)data;
 	g_debug("\tpath: %s", path);
 	gchar * desktop = NULL;
@@ -504,15 +505,20 @@ build_launcher (gpointer data)
 	}
 
 	gchar * trimdesktop = pango_trim_string(desktop);
+	g_free(desktop);
 	g_debug("\tcontents: %s", trimdesktop);
 
+	/* Build the item */
 	launcherList_t * ll = g_new0(launcherList_t, 1);
 	ll->menuitem = launcher_menu_item_new(trimdesktop);
+	g_free(trimdesktop);
 
+	/* Add it to the list */
 	launcherList = g_list_insert_sorted(launcherList, ll, launcherList_sort);
 
-	g_free(trimdesktop);
-	g_free(desktop);
+	/* Add it to the menu */
+	dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
+	resort_menu(root_menuitem);
 
 	return FALSE;
 }
