@@ -321,11 +321,27 @@ resort_menu (DbusmenuMenuitem * menushell)
 {
 	guint position = 0;
 	GList * serverentry;
+	GList * launcherentry = launcherList;
 
 	g_debug("Reordering Menu:");
 
 	for (serverentry = serverList; serverentry != NULL; serverentry = serverentry->next) {
 		serverList_t * si = (serverList_t *)serverentry->data;
+		
+		if (launcherentry != NULL) {
+			launcherList_t * li = (launcherList_t *)launcherentry->data;
+			while (launcherentry != NULL && g_strcmp0(launcher_menu_item_get_name(li->menuitem), app_menu_item_get_name(si->menuitem)) < 0) {
+				g_debug("\tMoving launcher '%s' to position %d", launcher_menu_item_get_name(li->menuitem), position);
+				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->menuitem), position);
+
+				position++;
+				launcherentry = launcherentry->next;
+				if (launcherentry != NULL) {
+					li = (launcherList_t *)launcherentry->data;
+				}
+			}
+		}
+
 		if (si->menuitem != NULL) {
 			g_debug("\tMoving app %s to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->menuitem), position);
@@ -342,6 +358,15 @@ resort_menu (DbusmenuMenuitem * menushell)
 				position++;
 			}
 		}
+	}
+
+	while (launcherentry != NULL) {
+		launcherList_t * li = (launcherList_t *)launcherentry->data;
+		g_debug("\tMoving launcher '%s' to position %d", launcher_menu_item_get_name(li->menuitem), position);
+		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->menuitem), position);
+
+		position++;
+		launcherentry = launcherentry->next;
 	}
 
 	return;
