@@ -24,6 +24,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <pango/pango-utils.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <libindicate/listener.h>
+#include <gio/gio.h>
 
 #include <libdbusmenu-glib/server.h>
 
@@ -53,6 +54,8 @@ static gboolean build_launchers (gpointer data);
 static gboolean blacklist_init (gpointer data);
 static gboolean blacklist_add (gpointer data);
 static void blacklist_remove (const gchar * definition_file);
+static void blacklist_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
+static void app_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
 
 
 /*
@@ -164,6 +167,7 @@ launcherList_sort (gconstpointer a, gconstpointer b)
  */
 
 static GHashTable * blacklist = NULL;
+static GFileMonitor * blacklistdirmon = NULL;
 
 /* Initialize the black list and start to setup
    handlers for it. */
@@ -178,6 +182,12 @@ blacklist_init (gpointer data)
 	if (!g_file_test(blacklistdir, G_FILE_TEST_IS_DIR)) {
 		g_free(blacklistdir);
 		return FALSE;
+	}
+
+	GFile * filedir = g_file_new_for_path(blacklistdir);
+	blacklistdirmon = g_file_monitor_directory(filedir, G_FILE_MONITOR_NONE, NULL, NULL);
+	if (blacklistdirmon != NULL) {
+		g_signal_connect(G_OBJECT(blacklistdirmon), "changed", G_CALLBACK(blacklist_dir_changed), NULL);
 	}
 
 	GError * error = NULL;
@@ -275,6 +285,16 @@ blacklist_check (const gchar * desktop_file)
 	}
 
 	return FALSE;
+}
+
+/* A callback everytime the blacklist directory changes
+   in some way.  It needs to handle that. */
+static void
+blacklist_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data)
+{
+	g_debug("Blacklist directory changed!");
+
+	return;
 }
 
 /*
@@ -659,6 +679,14 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	return;
 }
 
+static void
+app_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data)
+{
+	gchar * directory = (gchar *)user_data;
+	g_debug("Application directory changed: %s", directory);
+	return;
+}
+
 /* Check to see if a new desktop file causes
    any of the launchers to be eclipsed by a running
    process */
@@ -760,6 +788,12 @@ build_launchers (gpointer data)
 
 	if (!g_file_test(directory, G_FILE_TEST_IS_DIR)) {
 		return FALSE;
+	}
+
+	GFile * filedir = g_file_new_for_path(directory);
+	GFileMonitor * dirmon = g_file_monitor_directory(filedir, G_FILE_MONITOR_NONE, NULL, NULL);
+	if (dirmon != NULL) {
+		g_signal_connect(G_OBJECT(dirmon), "changed", G_CALLBACK(app_dir_changed), directory);
 	}
 
 	GError * error = NULL;
