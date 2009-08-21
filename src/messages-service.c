@@ -853,6 +853,18 @@ destroy_launcher (gpointer data)
 	}
 
 	/* Full Destroy */
+	g_free(appdir);
+	g_list_free(li->appdiritems);
+
+	if (li->menuitem != NULL) {
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li->menuitem), "visible", "false");
+		dbusmenu_menuitem_child_delete(root_menuitem, DBUSMENU_MENUITEM(li->menuitem));
+		g_object_unref(G_OBJECT(li->menuitem));
+		li->menuitem = NULL;
+	}
+
+	launcherList = g_list_remove(launcherList, li);
+	g_free(li);
 
 	return FALSE;
 }
