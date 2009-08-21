@@ -261,6 +261,14 @@ blacklist_add (gpointer udata)
 	return FALSE;
 }
 
+/* Looks through the list of definition files and
+   tries to match the one passed in. */
+static gboolean
+blacklist_find_def (gpointer key, gpointer value, gpointer data)
+{
+	return !g_strcmp0((gchar *)value, (gchar *)data);
+}
+
 /* Remove a black list item based on the definition file
    and uneclipse those launchers blocked by it. */
 static gboolean
@@ -268,6 +276,31 @@ blacklist_remove (gpointer data)
 {
 	gchar * definition_file = (gchar *)data;
 	g_debug("Removing: %s", definition_file);
+
+	gpointer key = g_hash_table_find(blacklist, blacklist_find_def, data);
+	if (key == NULL) {
+		g_debug("\tNot found!");
+		return FALSE;
+	}
+
+	GList * launcheritem;
+	for (launcheritem = launcherList; launcheritem != NULL; launcheritem = launcheritem->next) {
+		launcherList_t * li = (launcherList_t *)launcheritem->data;
+		if (!g_strcmp0(launcher_menu_item_get_desktop(li->menuitem), (gchar *)key)) {
+			GList * serveritem;
+			for (serveritem = serverList; serveritem != NULL; serveritem = serveritem->next) {
+				serverList_t * si = (serverList_t *)serveritem->data;
+				if (!g_strcmp0(app_menu_item_get_desktop(si->menuitem), (gchar *)key)) {
+					break;
+				}
+			}
+			if (serveritem == NULL) {
+				launcher_menu_item_set_eclipsed(li->menuitem, FALSE);
+			}
+		}
+	}
+
+	g_hash_table_remove(blacklist, key);
 
 	return FALSE;
 }
