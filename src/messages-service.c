@@ -818,6 +818,41 @@ remove_eclipses (AppMenuItem * ai)
 static gboolean
 destroy_launcher (gpointer data)
 {
+	gchar * appdirentry = (gchar *)data;
+
+	GList * listitem;
+	GList * direntry;
+	launcherList_t * li;
+	gchar * appdir;
+
+	for (listitem = launcherList; listitem != NULL; listitem = listitem->next) {
+		li = (launcherList_t *)listitem->data;
+		for (direntry = li->appdiritems; direntry != NULL; direntry = direntry->next) {
+			appdir = (gchar *)direntry->data;
+			if (!g_strcmp0(appdir, appdirentry)) {
+				break;
+			}
+		}
+
+		if (direntry != NULL) {
+			break;
+		}
+	}
+
+	if (listitem == NULL) {
+		g_warning("Removed '%s' by the way of it not seeming to exist anywhere.", appdirentry);
+		return FALSE;
+	}
+
+	if (g_list_length(li->appdiritems) > 1) {
+		/* Just remove this item, and we can move on */
+		g_debug("Just removing file entry: %s", appdir);
+		li->appdiritems = g_list_remove(li->appdiritems, appdir);
+		g_free(appdir);
+		return FALSE;
+	}
+
+	/* Full Destroy */
 
 	return FALSE;
 }
