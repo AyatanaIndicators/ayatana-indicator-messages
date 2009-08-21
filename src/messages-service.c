@@ -261,14 +261,6 @@ blacklist_add (gpointer udata)
 	return FALSE;
 }
 
-/* Looks through the list of definition files and
-   tries to match the one passed in. */
-static gboolean
-blacklist_find_def (gpointer key, gpointer value, gpointer data)
-{
-	return !g_strcmp0((gchar *)value, (gchar *)data);
-}
-
 /* Remove a black list item based on the definition file
    and uneclipse those launchers blocked by it. */
 static gboolean
@@ -277,8 +269,19 @@ blacklist_remove (gpointer data)
 	gchar * definition_file = (gchar *)data;
 	g_debug("Removing: %s", definition_file);
 
-	gpointer key = g_hash_table_find(blacklist, blacklist_find_def, data);
-	if (key == NULL) {
+	GHashTableIter iter;
+	gpointer key, value;
+	gboolean found = FALSE;
+
+	g_hash_table_iter_init(&iter, blacklist);
+	while (g_hash_table_iter_next(&iter, &key, &value)) {
+		if (!g_strcmp0((gchar *)value, definition_file)) {
+			found = TRUE;
+			break;
+		}
+	}
+
+	if (!found) {
 		g_debug("\tNot found!");
 		return FALSE;
 	}
@@ -300,7 +303,9 @@ blacklist_remove (gpointer data)
 		}
 	}
 
-	g_hash_table_remove(blacklist, key);
+	if (!g_hash_table_remove(blacklist, key)) {
+		g_warning("Unable to remove '%s' with value '%s'", definition_file, (gchar *)key);
+	}
 
 	return FALSE;
 }
