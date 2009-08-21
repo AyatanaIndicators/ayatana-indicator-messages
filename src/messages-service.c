@@ -147,6 +147,7 @@ imList_sort (gconstpointer a, gconstpointer b)
 typedef struct _launcherList_t launcherList_t;
 struct _launcherList_t {
 	LauncherMenuItem * menuitem;
+	GList * appdiritems;
 };
 
 static gint
@@ -832,7 +833,6 @@ build_launcher (gpointer data)
 	gchar * desktop = NULL;
 	
 	g_file_get_contents(path, &desktop, NULL, NULL);
-	g_free(path);
 
 	if (desktop == NULL) {
 		return FALSE;
@@ -842,20 +842,37 @@ build_launcher (gpointer data)
 	g_free(desktop);
 	g_debug("\tcontents: %s", trimdesktop);
 
-	/* Build the item */
-	launcherList_t * ll = g_new0(launcherList_t, 1);
-	ll->menuitem = launcher_menu_item_new(trimdesktop);
-	g_free(trimdesktop);
+	/* Check to see if we already have a launcher */
+	GList * listitem;
+	for (listitem = launcherList; listitem != NULL; listitem = listitem->next) {
+		launcherList_t * li = (launcherList_t *)listitem->data;
+		if (!g_strcmp0(launcher_menu_item_get_desktop(li->menuitem), trimdesktop)) {
+			break;
+		}
+	}
 
-	/* Add it to the list */
-	launcherList = g_list_insert_sorted(launcherList, ll, launcherList_sort);
+	if (listitem == NULL) {
+		/* If not */
+		/* Build the item */
+		launcherList_t * ll = g_new0(launcherList_t, 1);
+		ll->menuitem = launcher_menu_item_new(trimdesktop);
+		g_free(trimdesktop);
+		ll->appdiritems = g_list_append(NULL, path);
 
-	/* Add it to the menu */
-	dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
-	resort_menu(root_menuitem);
+		/* Add it to the list */
+		launcherList = g_list_insert_sorted(launcherList, ll, launcherList_sort);
 
-	if (blacklist_check(launcher_menu_item_get_desktop(ll->menuitem))) {
-		launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
+		/* Add it to the menu */
+		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
+		resort_menu(root_menuitem);
+
+		if (blacklist_check(launcher_menu_item_get_desktop(ll->menuitem))) {
+			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
+		}
+	} else {
+		/* If so add ourselves */
+		launcherList_t * ll = (launcherList_t *)listitem->data;
+		ll->appdiritems = g_list_append(ll->appdiritems, path);
 	}
 
 	return FALSE;
