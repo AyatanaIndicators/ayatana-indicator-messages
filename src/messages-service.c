@@ -756,12 +756,14 @@ build_launcher (gpointer data)
 static gboolean
 build_launchers (gpointer data)
 {
-	if (!g_file_test(SYSTEM_APPS_DIR, G_FILE_TEST_IS_DIR)) {
+	gchar * directory = (gchar *)data;
+
+	if (!g_file_test(directory, G_FILE_TEST_IS_DIR)) {
 		return FALSE;
 	}
 
 	GError * error = NULL;
-	GDir * dir = g_dir_open(SYSTEM_APPS_DIR, 0, &error);
+	GDir * dir = g_dir_open(directory, 0, &error);
 	if (dir == NULL) {
 		g_warning("Unable to open system apps directory: %s", error->message);
 		g_error_free(error);
@@ -771,7 +773,7 @@ build_launchers (gpointer data)
 	const gchar * filename = NULL;
 	while ((filename = g_dir_read_name(dir)) != NULL) {
 		g_debug("Found file: %s", filename);
-		gchar * path = g_build_filename(SYSTEM_APPS_DIR, filename, NULL);
+		gchar * path = g_build_filename(directory, filename, NULL);
 		g_idle_add(build_launcher, path);
 	}
 
@@ -815,7 +817,7 @@ main (int argc, char ** argv)
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), root_menuitem);
 
 	g_idle_add(blacklist_init, NULL);
-	g_idle_add(build_launchers, NULL);
+	g_idle_add(build_launchers, SYSTEM_APPS_DIR);
 
 	mainloop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(mainloop);
