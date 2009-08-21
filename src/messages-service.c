@@ -21,6 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <string.h>
+#include <pango/pango-utils.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <libindicate/listener.h>
 
@@ -28,10 +29,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "im-menu-item.h"
 #include "app-menu-item.h"
+#include "launcher-menu-item.h"
 #include "dbus-data.h"
+#include "dirs.h"
 
 static IndicateListener * listener;
-static GList * serverList;
+static GList * serverList = NULL;
+static GList * launcherList = NULL;
 
 static DbusmenuMenuitem * root_menuitem = NULL;
 static GMainLoop * mainloop = NULL;
@@ -40,8 +44,12 @@ static GMainLoop * mainloop = NULL;
 static void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
 static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data);
 static void im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data);
-static void reconsile_list_and_menu (GList * serverlist, DbusmenuMenuitem * menushell);
+static void resort_menu (DbusmenuMenuitem * menushell);
 static void indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
+static void check_eclipses (AppMenuItem * ai);
+static void remove_eclipses (AppMenuItem * ai);
+static gboolean build_launcher (gpointer data);
+static gboolean build_launchers (gpointer data);
 
 typedef struct _serverList_t serverList_t;
 struct _serverList_t {
@@ -116,6 +124,25 @@ imList_sort (gconstpointer a, gconstpointer b)
 	return (gint)(im_menu_item_get_seconds(IM_MENU_ITEM(pb->menuitem)) - im_menu_item_get_seconds(IM_MENU_ITEM(pa->menuitem)));
 }
 
+typedef struct _launcherList_t launcherList_t;
+struct _launcherList_t {
+	LauncherMenuItem * menuitem;
+};
+
+static gint
+launcherList_sort (gconstpointer a, gconstpointer b)
+{
+	launcherList_t * pa, * pb;
+
+	pa = (launcherList_t *)a;
+	pb = (launcherList_t *)b;
+
+	const gchar * pan = launcher_menu_item_get_name(pa->menuitem);
+	const gchar * pbn = launcher_menu_item_get_name(pb->menuitem);
+
+	return g_strcmp0(pan, pbn);
+}
+
 static void 
 server_added (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
@@ -162,7 +189,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
 	/* Should be prepend ^ */
 
-	reconsile_list_and_menu(serverList, menushell);
+	resort_menu(menushell);
 
 	return;
 }
@@ -171,7 +198,8 @@ static void
 server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data)
 {
 	serverList = g_list_sort(serverList, serverList_sort);
-	reconsile_list_and_menu(serverList, DBUSMENU_MENUITEM(data));
+	check_eclipses(appitem);
+	resort_menu(DBUSMENU_MENUITEM(data));
 	return;
 }
 
@@ -226,7 +254,7 @@ im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data)
 {
 	serverList_t * sl = (serverList_t *)data;
 	sl->imList = g_list_sort(sl->imList, imList_sort);
-	reconsile_list_and_menu(serverList, root_menuitem);
+	resort_menu(root_menuitem);
 	return;
 }
 
@@ -244,6 +272,8 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 	}
 
 	serverList_t * sltp = (serverList_t *)lookup->data;
+
+	remove_eclipses(sltp->menuitem);
 
 	while (sltp->imList) {
 		imList_t * imitem = (imList_t *)sltp->imList->data;
@@ -294,15 +324,31 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 }
 
 static void
-reconsile_list_and_menu (GList * serverlist, DbusmenuMenuitem * menushell)
+resort_menu (DbusmenuMenuitem * menushell)
 {
 	guint position = 0;
 	GList * serverentry;
+	GList * launcherentry = launcherList;
 
 	g_debug("Reordering Menu:");
 
 	for (serverentry = serverList; serverentry != NULL; serverentry = serverentry->next) {
 		serverList_t * si = (serverList_t *)serverentry->data;
+		
+		if (launcherentry != NULL) {
+			launcherList_t * li = (launcherList_t *)launcherentry->data;
+			while (launcherentry != NULL && g_strcmp0(launcher_menu_item_get_name(li->menuitem), app_menu_item_get_name(si->menuitem)) < 0) {
+				g_debug("\tMoving launcher '%s' to position %d", launcher_menu_item_get_name(li->menuitem), position);
+				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->menuitem), position);
+
+				position++;
+				launcherentry = launcherentry->next;
+				if (launcherentry != NULL) {
+					li = (launcherList_t *)launcherentry->data;
+				}
+			}
+		}
+
 		if (si->menuitem != NULL) {
 			g_debug("\tMoving app %s to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->menuitem), position);
@@ -319,6 +365,15 @@ reconsile_list_and_menu (GList * serverlist, DbusmenuMenuitem * menushell)
 				position++;
 			}
 		}
+	}
+
+	while (launcherentry != NULL) {
+		launcherList_t * li = (launcherList_t *)launcherentry->data;
+		g_debug("\tMoving launcher '%s' to position %d", launcher_menu_item_get_name(li->menuitem), position);
+		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->menuitem), position);
+
+		position++;
+		launcherentry = launcherentry->next;
 	}
 
 	return;
@@ -466,6 +521,123 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	return;
 }
 
+/* Check to see if a new desktop file causes
+   any of the launchers to be eclipsed by a running
+   process */
+static void
+check_eclipses (AppMenuItem * ai)
+{
+	g_debug("Checking eclipsing");
+	const gchar * aidesktop = app_menu_item_get_desktop(ai);
+	if (aidesktop == NULL) return;
+	g_debug("\tApp desktop: %s", aidesktop);
+
+	GList * llitem;
+	for (llitem = launcherList; llitem != NULL; llitem = llitem->next) {
+		launcherList_t * ll = (launcherList_t *)llitem->data;
+		const gchar * lidesktop = launcher_menu_item_get_desktop(ll->menuitem);
+		g_debug("\tLauncher desktop: %s", lidesktop);
+
+		if (!g_strcmp0(aidesktop, lidesktop)) {
+			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
+			break;
+		}
+	}
+
+	return;
+}
+
+/* Remove any eclipses that might have been caused
+   by this app item that is now retiring */
+static void
+remove_eclipses (AppMenuItem * ai)
+{
+	const gchar * aidesktop = app_menu_item_get_desktop(ai);
+	if (aidesktop == NULL) return;
+
+	GList * llitem;
+	for (llitem = launcherList; llitem != NULL; llitem = llitem->next) {
+		launcherList_t * ll = (launcherList_t *)llitem->data;
+		const gchar * lidesktop = launcher_menu_item_get_desktop(ll->menuitem);
+
+		if (!g_strcmp0(aidesktop, lidesktop)) {
+			launcher_menu_item_set_eclipsed(ll->menuitem, FALSE);
+			break;
+		}
+	}
+
+	return;
+}
+
+/* This function turns a specific file into a menu
+   item and registers it appropriately with everyone */
+static gboolean
+build_launcher (gpointer data)
+{
+	/* Read the file get the data */
+	gchar * path = (gchar *)data;
+	g_debug("\tpath: %s", path);
+	gchar * desktop = NULL;
+	
+	g_file_get_contents(path, &desktop, NULL, NULL);
+	g_free(path);
+
+	if (desktop == NULL) {
+		return FALSE;
+	}
+
+	gchar * trimdesktop = pango_trim_string(desktop);
+	g_free(desktop);
+	g_debug("\tcontents: %s", trimdesktop);
+
+	/* Build the item */
+	launcherList_t * ll = g_new0(launcherList_t, 1);
+	ll->menuitem = launcher_menu_item_new(trimdesktop);
+	g_free(trimdesktop);
+
+	/* Add it to the list */
+	launcherList = g_list_insert_sorted(launcherList, ll, launcherList_sort);
+
+	/* Add it to the menu */
+	dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
+	resort_menu(root_menuitem);
+
+	return FALSE;
+}
+
+/* This function goes through all the launchers that we're
+   supposed to be grabbing and decides to show turn them
+   into menu items or not.  It doens't do the work, but it
+   makes the decision. */
+static gboolean
+build_launchers (gpointer data)
+{
+	if (!g_file_test(SYSTEM_APPS_DIR, G_FILE_TEST_IS_DIR)) {
+		return FALSE;
+	}
+
+	GError * error = NULL;
+	GDir * dir = g_dir_open(SYSTEM_APPS_DIR, 0, &error);
+	if (dir == NULL) {
+		g_warning("Unable to open system apps directory: %s", error->message);
+		g_error_free(error);
+		return FALSE;
+	}
+
+	const gchar * filename = NULL;
+	while ((filename = g_dir_read_name(dir)) != NULL) {
+		g_debug("Found file: %s", filename);
+		gchar * path = g_build_filename(SYSTEM_APPS_DIR, filename, NULL);
+		g_idle_add(build_launcher, path);
+	}
+
+	g_dir_close(dir);
+	launcherList = g_list_sort(launcherList, launcherList_sort);
+	return FALSE;
+}
+
+/* Oh, if you don't know what main() is for
+   we really shouldn't be talking. */
 int
 main (int argc, char ** argv)
 {
@@ -497,6 +669,8 @@ main (int argc, char ** argv)
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed), root_menuitem);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_ADDED, G_CALLBACK(server_added), root_menuitem);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), root_menuitem);
+
+	g_idle_add(build_launchers, NULL);
 
 	mainloop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(mainloop);
