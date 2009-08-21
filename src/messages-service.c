@@ -56,6 +56,7 @@ static gboolean blacklist_add (gpointer data);
 static gboolean blacklist_remove (gpointer data);
 static void blacklist_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
 static void app_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
+static gboolean destroy_launcher (gpointer data);
 
 
 /*
@@ -740,6 +741,24 @@ app_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFile
 {
 	gchar * directory = (gchar *)user_data;
 	g_debug("Application directory changed: %s", directory);
+
+	switch (event_type) {
+	case G_FILE_MONITOR_EVENT_DELETED: {
+		gchar * path = g_file_get_path(file);
+		g_debug("\tDelete: %s", path);
+		g_idle_add(destroy_launcher, path);
+		break;
+	}
+	case G_FILE_MONITOR_EVENT_CREATED: {
+		gchar * path = g_file_get_path(file);
+		g_debug("\tCreate: %s", path);
+		g_idle_add(build_launcher, path);
+		break;
+	}
+	default:
+		break;
+	}
+
 	return;
 }
 
@@ -791,6 +810,15 @@ remove_eclipses (AppMenuItem * ai)
 	}
 
 	return;
+}
+
+/* Remove a launcher from the system.  We need to figure
+   out what it's up to! */
+static gboolean
+destroy_launcher (gpointer data)
+{
+
+	return FALSE;
 }
 
 /* This function turns a specific file into a menu
