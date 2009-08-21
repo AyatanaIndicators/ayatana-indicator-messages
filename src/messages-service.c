@@ -53,7 +53,7 @@ static gboolean build_launcher (gpointer data);
 static gboolean build_launchers (gpointer data);
 static gboolean blacklist_init (gpointer data);
 static gboolean blacklist_add (gpointer data);
-static void blacklist_remove (const gchar * definition_file);
+static gboolean blacklist_remove (gpointer data);
 static void blacklist_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
 static void app_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
 
@@ -258,17 +258,18 @@ blacklist_add (gpointer udata)
 		}
 	}
 
-	blacklist_remove(NULL);
 	return FALSE;
 }
 
 /* Remove a black list item based on the definition file
    and uneclipse those launchers blocked by it. */
-static void
-blacklist_remove (const gchar * definition_file)
+static gboolean
+blacklist_remove (gpointer data)
 {
+	gchar * definition_file = (gchar *)data;
+	g_debug("Removing: %s", definition_file);
 
-	return;
+	return FALSE;
 }
 
 /* Check to see if a particular desktop file is
@@ -293,6 +294,23 @@ static void
 blacklist_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data)
 {
 	g_debug("Blacklist directory changed!");
+
+	switch (event_type) {
+	case G_FILE_MONITOR_EVENT_DELETED: {
+		gchar * path = g_file_get_path(file);
+		g_debug("\tDelete: %s", path);
+		g_idle_add(blacklist_remove, path);
+		break;
+	}
+	case G_FILE_MONITOR_EVENT_CREATED: {
+		gchar * path = g_file_get_path(file);
+		g_debug("\tCreate: %s", path);
+		g_idle_add(blacklist_add, path);
+		break;
+	}
+	default:
+		break;
+	}
 
 	return;
 }
