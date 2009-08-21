@@ -818,9 +818,13 @@ main (int argc, char ** argv)
 
 	g_idle_add(blacklist_init, NULL);
 	g_idle_add(build_launchers, SYSTEM_APPS_DIR);
+	gchar * userdir = g_build_filename(g_get_user_config_dir(), USER_APPS_DIR, NULL);
+	g_idle_add(build_launchers, userdir);
 
 	mainloop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(mainloop);
+
+	g_free(userdir);
 
 	return 0;
 }
