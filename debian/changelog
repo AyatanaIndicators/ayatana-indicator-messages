@@ -1,3 +1,9 @@
+indicator-messages (0.2.0~bzr121-0ubuntu3~ppa2~dirwatch1) UNRELEASED; urgency=low
+
+  * Updated from the dirwatch branch
+
+ -- Ted Gould <ted@ubuntu.com>  Sat, 22 Aug 2009 13:01:59 -0500
+
 indicator-messages (0.2.0~bzr121-0ubuntu3~ppa1) karmic; urgency=low
 
   * Fix to dereference the application menu items correctly so that
