@@ -195,7 +195,7 @@ blacklist_init (gpointer data)
 	GError * error = NULL;
 	GDir * dir = g_dir_open(blacklistdir, 0, &error);
 	if (dir == NULL) {
-		g_warning("Unable to open blacklist directory (%s): %s", blacklistdir, error->message);
+		g_warning("Unable to open blacklist directory (%s): %s", blacklistdir, error == NULL ? "No Message" : error->message);
 		g_error_free(error);
 		g_free(blacklistdir);
 		return FALSE;
