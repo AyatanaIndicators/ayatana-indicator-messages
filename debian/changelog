@@ -1,3 +1,9 @@
+indicator-messages (0.2.0~bzr126-0ubuntu1~ppa2~dot-and-hide3) UNRELEASED; urgency=low
+
+  * Updating service file.
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 26 Aug 2009 10:41:50 -0500
+
 indicator-messages (0.2.0~bzr126-0ubuntu1~ppa2~dot-and-hide2) karmic; urgency=low
 
   * Upstream fix.
