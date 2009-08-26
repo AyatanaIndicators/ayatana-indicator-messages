@@ -175,6 +175,8 @@ get_menu (void)
 
 	g_idle_add(setup_icon_proxy, NULL);
 
-	return GTK_MENU(dbusmenu_gtkmenu_new(INDICATOR_MESSAGES_DBUS_NAME, INDICATOR_MESSAGES_DBUS_OBJECT));
+	DbusmenuGtkMenu * menu = dbusmenu_gtkmenu_new(INDICATOR_MESSAGES_DBUS_NAME, INDICATOR_MESSAGES_DBUS_OBJECT);
+
+	return GTK_MENU(menu);
 }
 
