@@ -6,6 +6,14 @@
 #include "messages-service-dbus.h"
 #include "dbus-data.h"
 
+enum {
+	ATTENTION_CHANGED,
+	ICON_CHANGED,
+	LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0 };
+
 typedef struct _MessageServiceDbusPrivate MessageServiceDbusPrivate;
 
 struct _MessageServiceDbusPrivate
@@ -39,6 +47,23 @@ message_service_dbus_class_init (MessageServiceDbusClass *klass)
 
 	object_class->dispose = message_service_dbus_dispose;
 	object_class->finalize = message_service_dbus_finalize;
+
+	signals[ATTENTION_CHANGED] =  g_signal_new(MESSAGE_SERVICE_DBUS_SIGNAL_ATTENTION_CHANGED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (MessageServiceDbusClass, attention_changed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__BOOLEAN,
+	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+
+	signals[ICON_CHANGED] =  g_signal_new(MESSAGE_SERVICE_DBUS_SIGNAL_ICON_CHANGED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (MessageServiceDbusClass, icon_changed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__BOOLEAN,
+	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+
 
 	dbus_g_object_type_install_info(MESSAGE_SERVICE_DBUS_TYPE, &dbus_glib__messages_service_server_object_info);
 
