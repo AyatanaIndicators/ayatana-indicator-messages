@@ -202,7 +202,8 @@ launcher_menu_item_get_eclipsed (LauncherMenuItem * li)
 	if (show == NULL) {
 		return FALSE;
 	}
-	if (!g_strcmp0(show, "true")) {
+	g_debug("Launcher check eclipse: %s", show);
+	if (!g_strcmp0(show, "false")) {
 		return TRUE;
 	}
 	return FALSE;
