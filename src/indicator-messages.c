@@ -136,6 +136,13 @@ setup_icon_proxy (gpointer userdata)
 	return FALSE;
 }
 
+static gboolean
+new_launcher_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, DbusmenuClient * client)
+{
+
+	return TRUE;
+}
+
 GtkLabel *
 get_label (void)
 {
@@ -176,6 +183,9 @@ get_menu (void)
 	g_idle_add(setup_icon_proxy, NULL);
 
 	DbusmenuGtkMenu * menu = dbusmenu_gtkmenu_new(INDICATOR_MESSAGES_DBUS_NAME, INDICATOR_MESSAGES_DBUS_OBJECT);
+	DbusmenuGtkClient * client = dbusmenu_gtkmenu_get_client(menu);
+
+	dbusmenu_client_add_type_handler(DBUSMENU_CLIENT(client), "launcher-item", new_launcher_item);
 
 	return GTK_MENU(menu);
 }
