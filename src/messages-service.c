@@ -437,6 +437,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	/* Should be prepend ^ */
 
 	resort_menu(menushell);
+	check_hidden();
 
 	return;
 }
@@ -539,6 +540,7 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 
 	/* Simulate a server saying zero to recalculate icon */
 	server_count_changed(NULL, 0, NULL);
+	check_hidden();
 
 	return;
 }
