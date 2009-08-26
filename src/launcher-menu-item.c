@@ -194,3 +194,17 @@ launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed)
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), "show", eclipsed ? "false" : "true");
 	return;
 }
+
+gboolean
+launcher_menu_item_get_eclipsed (LauncherMenuItem * li)
+{
+	const gchar * show = dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(li), "show");
+	if (show == NULL) {
+		return FALSE;
+	}
+	g_debug("Launcher check eclipse: %s", show);
+	if (!g_strcmp0(show, "false")) {
+		return TRUE;
+	}
+	return FALSE;
+}
