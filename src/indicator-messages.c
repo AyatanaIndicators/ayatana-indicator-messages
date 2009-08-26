@@ -43,13 +43,23 @@ static DBusGProxy * icon_proxy = NULL;
 static void
 attention_changed_cb (DBusGProxy * proxy, gboolean dot, gpointer userdata)
 {
-
+	if (dot) {
+		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages-new", DESIGN_TEAM_SIZE);
+	} else {
+		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages", DESIGN_TEAM_SIZE);
+	}
+	return;
 }
 
 static void
 icon_changed_cb (DBusGProxy * proxy, gboolean hidden, gpointer userdata)
 {
-
+	if (hidden) {
+		gtk_widget_hide(main_image);
+	} else {
+		gtk_widget_show(main_image);
+	}
+	return;
 }
 
 static void
@@ -65,15 +75,25 @@ watch_cb (DBusGProxy * proxy, GError * error, gpointer userdata)
 static void
 attention_cb (DBusGProxy * proxy, gboolean dot, GError * error, gpointer userdata)
 {
+	if (error != NULL) {
+		g_warning("Unable to get attention status: %s", error->message);
+		g_error_free(error);
+		return;
+	}
 
-	return;
+	return attention_changed_cb(proxy, dot, userdata);
 }
 
 static void
 icon_cb (DBusGProxy * proxy, gboolean hidden, GError * error, gpointer userdata)
 {
+	if (error != NULL) {
+		g_warning("Unable to get icon visibility: %s", error->message);
+		g_error_free(error);
+		return;
+	}
 
-	return;
+	return icon_changed_cb(proxy, hidden, userdata);
 }
 
 static gboolean
