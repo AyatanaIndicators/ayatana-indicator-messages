@@ -573,7 +573,15 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 static void
 check_hidden (void)
 {
-	launcherList_count();
+	gboolean hide = FALSE;
+	if (launcherList_count() == 0) {
+		/* If we don't have visible launchers we need to look more */
+		if (serverList != NULL) { /* Basically if there are zero entries it'll be NULL */
+			hide = TRUE;	
+		}
+	}
+
+	message_service_dbus_set_icon(dbus_interface, hide);
 	return;
 }
 
