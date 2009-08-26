@@ -142,7 +142,10 @@ message_server_dbus_set_attention (MessageServiceDbus * self, gboolean attention
 {
 	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
 	/* Do signal */
-	priv->dot = attention;
+	if (attention != priv->dot) {
+		priv->dot = attention;
+		g_signal_emit(G_OBJECT(self), signals[ATTENTION_CHANGED], 0, priv->dot, TRUE);
+	}
 	return;
 }
 
@@ -151,6 +154,9 @@ message_server_dbus_set_icon (MessageServiceDbus * self, gboolean hidden)
 {
 	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
 	/* Do signal */
-	priv->hidden = hidden;
+	if (hidden != priv->hidden) {
+		priv->hidden = hidden;
+		g_signal_emit(G_OBJECT(self), signals[ICON_CHANGED], 0, priv->hidden, TRUE);
+	}
 	return;
 }
