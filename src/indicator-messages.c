@@ -31,6 +31,7 @@ INDICATOR_SET_VERSION
 INDICATOR_SET_NAME("messages")
 
 #include "dbus-data.h"
+#include "messages-service-client.h"
 
 static GtkWidget * main_image = NULL;
 
@@ -39,7 +40,43 @@ static GtkIconSize design_team_size;
 
 static DBusGProxy * icon_proxy = NULL;
 
-gboolean
+static void
+attention_changed_cb (DBusGProxy * proxy, gboolean dot, gpointer userdata)
+{
+
+}
+
+static void
+icon_changed_cb (DBusGProxy * proxy, gboolean hidden, gpointer userdata)
+{
+
+}
+
+static void
+watch_cb (DBusGProxy * proxy, GError * error, gpointer userdata)
+{
+	if (error != NULL) {
+		g_warning("Watch failed!  %s", error->message);
+		g_error_free(error);
+	}
+	return;
+}
+
+static void
+attention_cb (DBusGProxy * proxy, gboolean dot, GError * error, gpointer userdata)
+{
+
+	return;
+}
+
+static void
+icon_cb (DBusGProxy * proxy, gboolean hidden, GError * error, gpointer userdata)
+{
+
+	return;
+}
+
+static gboolean
 setup_icon_proxy (gpointer userdata)
 {
 	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
@@ -56,6 +93,23 @@ setup_icon_proxy (gpointer userdata)
 		g_warning("Unable to get messages service interface.");
 		return FALSE;
 	}
+	
+	org_ayatana_indicator_messages_service_watch_async(icon_proxy, watch_cb, NULL);
+
+	dbus_g_proxy_connect_signal(icon_proxy,
+	                            "AttentionChanged",
+	                            G_CALLBACK(attention_changed_cb),
+	                            NULL,
+	                            NULL);
+
+	dbus_g_proxy_connect_signal(icon_proxy,
+	                            "IconChanged",
+	                            G_CALLBACK(icon_changed_cb),
+	                            NULL,
+	                            NULL);
+
+	org_ayatana_indicator_messages_service_attention_requested_async(icon_proxy, attention_cb, NULL);
+	org_ayatana_indicator_messages_service_icon_shown_async(icon_proxy, icon_cb, NULL);
 
 	return FALSE;
 }
