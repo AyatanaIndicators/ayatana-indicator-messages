@@ -85,12 +85,15 @@ message_service_dbus_new (void)
 	return MESSAGE_SERVICE_DBUS(g_object_new(MESSAGE_SERVICE_DBUS_TYPE, NULL));
 }
 
+/* DBus function to say that someone is watching */
 static void
 _messages_service_server_watch  (void)
 {
 
 }
 
+/* DBus interface to request the private variable to know
+   whether there is a green dot. */
 static gboolean
 _messages_service_server_attention_requested (MessageServiceDbus * self, gboolean * dot, GError ** error)
 {
@@ -99,6 +102,8 @@ _messages_service_server_attention_requested (MessageServiceDbus * self, gboolea
 	return TRUE;
 }
 
+/* DBus interface to request the private variable to know
+   whether the icon is hidden. */
 static gboolean
 _messages_service_server_icon_shown (MessageServiceDbus * self, gboolean * hidden, GError ** error)
 {
