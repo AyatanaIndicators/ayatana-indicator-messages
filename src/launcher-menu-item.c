@@ -191,14 +191,14 @@ void
 launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed)
 {
 	g_debug("Laucher '%s' is %s", launcher_menu_item_get_name(li), eclipsed ? "now eclipsed" : "shown again");
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), "show", eclipsed ? "false" : "true");
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), "visible", eclipsed ? "false" : "true");
 	return;
 }
 
 gboolean
 launcher_menu_item_get_eclipsed (LauncherMenuItem * li)
 {
-	const gchar * show = dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(li), "show");
+	const gchar * show = dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(li), "visible");
 	if (show == NULL) {
 		return FALSE;
 	}
