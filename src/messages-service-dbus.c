@@ -2,13 +2,16 @@
 #include "config.h"
 #endif
 
+#include <dbus/dbus-glib.h>
 #include "messages-service-dbus.h"
+#include "dbus-data.h"
 
 typedef struct _MessageServiceDbusPrivate MessageServiceDbusPrivate;
 
 struct _MessageServiceDbusPrivate
 {
-	guint temp;
+	gboolean dot;
+	gboolean hidden;
 };
 
 #define MESSAGE_SERVICE_DBUS_GET_PRIVATE(o) \
@@ -20,8 +23,8 @@ static void message_service_dbus_dispose    (GObject *object);
 static void message_service_dbus_finalize   (GObject *object);
 
 static void _messages_service_server_watch  (void);
-static void _messages_service_server_attention_requested (void);
-static void _messages_service_server_icon_shown (void);
+static gboolean _messages_service_server_attention_requested (MessageServiceDbus * self, gboolean * dot, GError ** error);
+static gboolean _messages_service_server_icon_shown (MessageServiceDbus * self, gboolean * hidden, GError ** error);
 
 #include "messages-service-server.h"
 
@@ -37,12 +40,24 @@ message_service_dbus_class_init (MessageServiceDbusClass *klass)
 	object_class->dispose = message_service_dbus_dispose;
 	object_class->finalize = message_service_dbus_finalize;
 
+	dbus_g_object_type_install_info(MESSAGE_SERVICE_DBUS_TYPE, &dbus_glib__messages_service_server_object_info);
+
 	return;
 }
 
 static void
 message_service_dbus_init (MessageServiceDbus *self)
 {
+	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	dbus_g_connection_register_g_object(connection,
+										INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+										G_OBJECT(self));
+
+	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
+
+	priv->dot = FALSE;
+	priv->hidden = FALSE;
+
 	return;
 }
 
@@ -76,15 +91,19 @@ _messages_service_server_watch  (void)
 
 }
 
-static void
-_messages_service_server_attention_requested (void)
+static gboolean
+_messages_service_server_attention_requested (MessageServiceDbus * self, gboolean * dot, GError ** error)
 {
-
+	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
+	*dot = priv->dot;
+	return TRUE;
 }
 
-static void
-_messages_service_server_icon_shown (void)
+static gboolean
+_messages_service_server_icon_shown (MessageServiceDbus * self, gboolean * hidden, GError ** error)
 {
-
+	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
+	*hidden = priv->hidden;
+	return TRUE;
 }
 
