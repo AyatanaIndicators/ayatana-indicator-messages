@@ -32,10 +32,33 @@ INDICATOR_SET_NAME("messages")
 
 #include "dbus-data.h"
 
-static GtkWidget * main_image;
+static GtkWidget * main_image = NULL;
 
 #define DESIGN_TEAM_SIZE  design_team_size
 static GtkIconSize design_team_size;
+
+static DBusGProxy * icon_proxy = NULL;
+
+gboolean
+setup_icon_proxy (gpointer userdata)
+{
+	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	if (connection == NULL) {
+		g_warning("Unable to get session bus");
+		return FALSE; /* TRUE? */
+	}
+
+	icon_proxy = dbus_g_proxy_new_for_name(connection,
+	                                       INDICATOR_MESSAGES_DBUS_NAME,
+	                                       INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+	                                       INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
+	if (icon_proxy == NULL) {
+		g_warning("Unable to get messages service interface.");
+		return FALSE;
+	}
+
+	return FALSE;
+}
 
 GtkLabel *
 get_label (void)
@@ -50,8 +73,6 @@ get_icon (void)
 
 	main_image = gtk_image_new_from_icon_name("indicator-messages", DESIGN_TEAM_SIZE);
 	gtk_widget_show(main_image);
-
-	/* Need a proxy here to figure out when the icon changes */
 
 	return GTK_IMAGE(main_image);
 }
@@ -75,6 +96,8 @@ get_menu (void)
 		g_error("Return value isn't indicative of success: %d", returnval);
 		return NULL;
 	}
+
+	g_idle_add(setup_icon_proxy, NULL);
 
 	return GTK_MENU(dbusmenu_gtkmenu_new(INDICATOR_MESSAGES_DBUS_NAME, INDICATOR_MESSAGES_DBUS_OBJECT));
 }
