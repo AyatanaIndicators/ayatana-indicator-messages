@@ -31,11 +31,108 @@ INDICATOR_SET_VERSION
 INDICATOR_SET_NAME("messages")
 
 #include "dbus-data.h"
+#include "messages-service-client.h"
 
-static GtkWidget * main_image;
+static GtkWidget * main_image = NULL;
 
 #define DESIGN_TEAM_SIZE  design_team_size
 static GtkIconSize design_team_size;
+
+static DBusGProxy * icon_proxy = NULL;
+
+static void
+attention_changed_cb (DBusGProxy * proxy, gboolean dot, gpointer userdata)
+{
+	if (dot) {
+		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages-new", DESIGN_TEAM_SIZE);
+	} else {
+		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages", DESIGN_TEAM_SIZE);
+	}
+	return;
+}
+
+static void
+icon_changed_cb (DBusGProxy * proxy, gboolean hidden, gpointer userdata)
+{
+	if (hidden) {
+		gtk_widget_hide(main_image);
+	} else {
+		gtk_widget_show(main_image);
+	}
+	return;
+}
+
+static void
+watch_cb (DBusGProxy * proxy, GError * error, gpointer userdata)
+{
+	if (error != NULL) {
+		g_warning("Watch failed!  %s", error->message);
+		g_error_free(error);
+	}
+	return;
+}
+
+static void
+attention_cb (DBusGProxy * proxy, gboolean dot, GError * error, gpointer userdata)
+{
+	if (error != NULL) {
+		g_warning("Unable to get attention status: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	return attention_changed_cb(proxy, dot, userdata);
+}
+
+static void
+icon_cb (DBusGProxy * proxy, gboolean hidden, GError * error, gpointer userdata)
+{
+	if (error != NULL) {
+		g_warning("Unable to get icon visibility: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	return icon_changed_cb(proxy, hidden, userdata);
+}
+
+static gboolean
+setup_icon_proxy (gpointer userdata)
+{
+	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	if (connection == NULL) {
+		g_warning("Unable to get session bus");
+		return FALSE; /* TRUE? */
+	}
+
+	icon_proxy = dbus_g_proxy_new_for_name(connection,
+	                                       INDICATOR_MESSAGES_DBUS_NAME,
+	                                       INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+	                                       INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
+	if (icon_proxy == NULL) {
+		g_warning("Unable to get messages service interface.");
+		return FALSE;
+	}
+	
+	org_ayatana_indicator_messages_service_watch_async(icon_proxy, watch_cb, NULL);
+
+	dbus_g_proxy_connect_signal(icon_proxy,
+	                            "AttentionChanged",
+	                            G_CALLBACK(attention_changed_cb),
+	                            NULL,
+	                            NULL);
+
+	dbus_g_proxy_connect_signal(icon_proxy,
+	                            "IconChanged",
+	                            G_CALLBACK(icon_changed_cb),
+	                            NULL,
+	                            NULL);
+
+	org_ayatana_indicator_messages_service_attention_requested_async(icon_proxy, attention_cb, NULL);
+	org_ayatana_indicator_messages_service_icon_shown_async(icon_proxy, icon_cb, NULL);
+
+	return FALSE;
+}
 
 GtkLabel *
 get_label (void)
@@ -50,8 +147,6 @@ get_icon (void)
 
 	main_image = gtk_image_new_from_icon_name("indicator-messages", DESIGN_TEAM_SIZE);
 	gtk_widget_show(main_image);
-
-	/* Need a proxy here to figure out when the icon changes */
 
 	return GTK_IMAGE(main_image);
 }
@@ -75,6 +170,8 @@ get_menu (void)
 		g_error("Return value isn't indicative of success: %d", returnval);
 		return NULL;
 	}
+
+	g_idle_add(setup_icon_proxy, NULL);
 
 	return GTK_MENU(dbusmenu_gtkmenu_new(INDICATOR_MESSAGES_DBUS_NAME, INDICATOR_MESSAGES_DBUS_OBJECT));
 }

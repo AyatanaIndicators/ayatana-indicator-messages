@@ -1,3 +1,9 @@
+indicator-messages (0.2.0~bzr126-0ubuntu1~ppa2~dot-and-hide1) UNRELEASED; urgency=low
+
+  * Merge from dot-and-hide branch
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 26 Aug 2009 10:32:39 -0500
+
 indicator-messages (0.2.0~bzr126-0ubuntu1~ppa1) karmic; urgency=low
 
   * Merging in upstream version with launchers, blacklists and

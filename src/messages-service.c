@@ -33,6 +33,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "launcher-menu-item.h"
 #include "dbus-data.h"
 #include "dirs.h"
+#include "messages-service-dbus.h"
 
 static IndicateListener * listener;
 static GList * serverList = NULL;
@@ -40,6 +41,8 @@ static GList * launcherList = NULL;
 
 static DbusmenuMenuitem * root_menuitem = NULL;
 static GMainLoop * mainloop = NULL;
+
+static MessageServiceDbus * dbus_interface = NULL;
 
 
 static void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
@@ -438,7 +441,7 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	if (count != 0) {
 		g_debug("Setting image to 'new'");
 		showing_new_icon = TRUE;
-		/* gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages-new", DESIGN_TEAM_SIZE); */
+		message_service_dbus_set_attention(dbus_interface, TRUE);
 		return;
 	}
 
@@ -459,7 +462,7 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	if (!we_have_indicators) {
 		g_debug("Setting image to boring");
 		showing_new_icon = FALSE;
-		/* gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages", DESIGN_TEAM_SIZE); */
+		message_service_dbus_set_attention(dbus_interface, FALSE);
 	}
 
 	return;
@@ -985,6 +988,8 @@ main (int argc, char ** argv)
 		g_error("Unable to get name");
 		return 1;
 	}
+
+	dbus_interface = message_service_dbus_new();
 
 	listener = indicate_listener_ref_default();
 	serverList = NULL;
