@@ -575,10 +575,13 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 static void
 check_hidden (void)
 {
+	g_debug("Checking Hidden...");
 	gboolean hide = FALSE;
 	if (launcherList_count() == 0) {
+		g_debug("\tZero Launchers");
 		/* If we don't have visible launchers we need to look more */
-		if (serverList != NULL) { /* Basically if there are zero entries it'll be NULL */
+		if (g_list_length(serverList) == 0) {
+			g_debug("\tZero Applications");
 			hide = TRUE;	
 		}
 	}
