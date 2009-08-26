@@ -116,12 +116,14 @@ setup_icon_proxy (gpointer userdata)
 	
 	org_ayatana_indicator_messages_service_watch_async(icon_proxy, watch_cb, NULL);
 
+	dbus_g_proxy_add_signal(icon_proxy, "AttentionChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal(icon_proxy,
 	                            "AttentionChanged",
 	                            G_CALLBACK(attention_changed_cb),
 	                            NULL,
 	                            NULL);
 
+	dbus_g_proxy_add_signal(icon_proxy, "IconChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal(icon_proxy,
 	                            "IconChanged",
 	                            G_CALLBACK(icon_changed_cb),
