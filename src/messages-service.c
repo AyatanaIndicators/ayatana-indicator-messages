@@ -60,6 +60,7 @@ static gboolean blacklist_remove (gpointer data);
 static void blacklist_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
 static void app_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
 static gboolean destroy_launcher (gpointer data);
+static void check_hidden (void);
 
 
 /*
@@ -167,6 +168,29 @@ launcherList_sort (gconstpointer a, gconstpointer b)
 	return g_strcmp0(pan, pbn);
 }
 
+static void
+launcherList_count_helper (gpointer data, gpointer user_data)
+{
+	guint * count = (guint *)user_data;
+	launcherList_t * li = (launcherList_t *)data;
+
+	if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
+		*count = *count + 1;
+	}
+
+	return;
+}
+
+static guint
+launcherList_count (void)
+{
+	guint count = 0;
+
+	g_list_foreach(launcherList, launcherList_count_helper, &count);
+
+	return count;
+}
+
 /*
  * Black List
  */
@@ -263,6 +287,8 @@ blacklist_add (gpointer udata)
 		}
 	}
 
+	check_hidden();
+
 	return FALSE;
 }
 
@@ -311,6 +337,8 @@ blacklist_remove (gpointer data)
 	if (!g_hash_table_remove(blacklist, key)) {
 		g_warning("Unable to remove '%s' with value '%s'", definition_file, (gchar *)key);
 	}
+
+	check_hidden();
 
 	return FALSE;
 }
@@ -409,6 +437,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	/* Should be prepend ^ */
 
 	resort_menu(menushell);
+	check_hidden();
 
 	return;
 }
@@ -511,6 +540,7 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 
 	/* Simulate a server saying zero to recalculate icon */
 	server_count_changed(NULL, 0, NULL);
+	check_hidden();
 
 	return;
 }
@@ -539,6 +569,21 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 		msl->found = TRUE;
 	}
 
+	return;
+}
+
+static void
+check_hidden (void)
+{
+	gboolean hide = FALSE;
+	if (launcherList_count() == 0) {
+		/* If we don't have visible launchers we need to look more */
+		if (serverList != NULL) { /* Basically if there are zero entries it'll be NULL */
+			hide = TRUE;	
+		}
+	}
+
+	message_service_dbus_set_icon(dbus_interface, hide);
 	return;
 }
 
