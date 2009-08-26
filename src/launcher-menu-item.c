@@ -130,7 +130,7 @@ launcher_menu_item_new (const gchar * desktop_file)
 	priv->desktop = g_strdup(desktop_file);
 
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "label", launcher_menu_item_get_name(self));
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, launcher_menu_item_get_name(self));
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 
@@ -191,14 +191,14 @@ void
 launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed)
 {
 	g_debug("Laucher '%s' is %s", launcher_menu_item_get_name(li), eclipsed ? "now eclipsed" : "shown again");
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), "visible", eclipsed ? "false" : "true");
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_VISIBLE, eclipsed ? "false" : "true");
 	return;
 }
 
 gboolean
 launcher_menu_item_get_eclipsed (LauncherMenuItem * li)
 {
-	const gchar * show = dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(li), "visible");
+	const gchar * show = dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_VISIBLE);
 	if (show == NULL) {
 		return FALSE;
 	}
