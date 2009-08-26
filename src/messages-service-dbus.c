@@ -64,6 +64,12 @@ message_service_dbus_finalize (GObject *object)
 	return;
 }
 
+MessageServiceDbus *
+message_service_dbus_new (void)
+{
+	return MESSAGE_SERVICE_DBUS(g_object_new(MESSAGE_SERVICE_DBUS_TYPE, NULL));
+}
+
 static void
 _messages_service_server_watch  (void)
 {

@@ -33,6 +33,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "launcher-menu-item.h"
 #include "dbus-data.h"
 #include "dirs.h"
+#include "messages-service-dbus.h"
 
 static IndicateListener * listener;
 static GList * serverList = NULL;
@@ -40,6 +41,8 @@ static GList * launcherList = NULL;
 
 static DbusmenuMenuitem * root_menuitem = NULL;
 static GMainLoop * mainloop = NULL;
+
+static MessageServiceDbus * dbus_interface = NULL;
 
 
 static void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
@@ -985,6 +988,8 @@ main (int argc, char ** argv)
 		g_error("Unable to get name");
 		return 1;
 	}
+
+	dbus_interface = message_service_dbus_new();
 
 	listener = indicate_listener_ref_default();
 	serverList = NULL;
