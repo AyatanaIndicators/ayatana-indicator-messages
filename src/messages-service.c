@@ -441,7 +441,7 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	if (count != 0) {
 		g_debug("Setting image to 'new'");
 		showing_new_icon = TRUE;
-		/* gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages-new", DESIGN_TEAM_SIZE); */
+		message_service_dbus_set_attention(dbus_interface, TRUE);
 		return;
 	}
 
@@ -462,7 +462,7 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	if (!we_have_indicators) {
 		g_debug("Setting image to boring");
 		showing_new_icon = FALSE;
-		/* gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages", DESIGN_TEAM_SIZE); */
+		message_service_dbus_set_attention(dbus_interface, FALSE);
 	}
 
 	return;
