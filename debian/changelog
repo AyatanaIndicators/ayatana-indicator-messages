@@ -1,8 +1,8 @@
-indicator-messages (0.2.0~bzr126-0ubuntu1~ppa2~dot-and-hide4) UNRELEASED; urgency=low
+indicator-messages (0.2.0~bzr126-0ubuntu1~ppa2~dot-and-hide4) karmic; urgency=low
 
   * Registering the signals first.
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 26 Aug 2009 10:50:25 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 26 Aug 2009 10:50:47 -0500
 
 indicator-messages (0.2.0~bzr126-0ubuntu1~ppa2~dot-and-hide3) karmic; urgency=low
 
