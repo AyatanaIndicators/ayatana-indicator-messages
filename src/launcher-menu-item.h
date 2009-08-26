@@ -57,6 +57,7 @@ LauncherMenuItem * launcher_menu_item_new (const gchar * desktop_file);
 const gchar * launcher_menu_item_get_name (LauncherMenuItem * appitem);
 const gchar * launcher_menu_item_get_desktop (LauncherMenuItem * launchitem);
 void launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed);
+gboolean launcher_menu_item_get_eclipsed (LauncherMenuItem * li);
 
 G_END_DECLS
 
