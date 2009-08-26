@@ -160,7 +160,7 @@ _messages_service_server_icon_shown (MessageServiceDbus * self, gboolean * hidde
 }
 
 void
-message_server_dbus_set_attention (MessageServiceDbus * self, gboolean attention)
+message_service_dbus_set_attention (MessageServiceDbus * self, gboolean attention)
 {
 	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
 	/* Do signal */
@@ -172,7 +172,7 @@ message_server_dbus_set_attention (MessageServiceDbus * self, gboolean attention
 }
 
 void
-message_server_dbus_set_icon (MessageServiceDbus * self, gboolean hidden)
+message_service_dbus_set_icon (MessageServiceDbus * self, gboolean hidden)
 {
 	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
 	/* Do signal */
