@@ -32,8 +32,8 @@ struct _MessageServiceDbus {
 
 GType message_service_dbus_get_type (void);
 MessageServiceDbus * message_service_dbus_new (void);
-void message_service_dbus_set_attention (gboolean attention);
-void message_service_dbus_set_icon (gboolean hidden);
+void message_server_dbus_set_attention (MessageServiceDbus * self, gboolean attention);
+void message_server_dbus_set_icon (MessageServiceDbus * self, gboolean hidden);
 
 G_END_DECLS
 

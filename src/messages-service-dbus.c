@@ -112,3 +112,20 @@ _messages_service_server_icon_shown (MessageServiceDbus * self, gboolean * hidde
 	return TRUE;
 }
 
+void
+message_server_dbus_set_attention (MessageServiceDbus * self, gboolean attention)
+{
+	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
+	/* Do signal */
+	priv->dot = attention;
+	return;
+}
+
+void
+message_server_dbus_set_icon (MessageServiceDbus * self, gboolean hidden)
+{
+	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
+	/* Do signal */
+	priv->hidden = hidden;
+	return;
+}
