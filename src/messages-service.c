@@ -908,7 +908,7 @@ destroy_launcher (gpointer data)
 	g_list_free(li->appdiritems);
 
 	if (li->menuitem != NULL) {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li->menuitem), "visible", "false");
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		dbusmenu_menuitem_child_delete(root_menuitem, DBUSMENU_MENUITEM(li->menuitem));
 		g_object_unref(G_OBJECT(li->menuitem));
 		li->menuitem = NULL;
