@@ -1,11 +1,11 @@
-indicator-messages (0.2.0-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.2.0-0ubuntu1~ppa1) karmic; urgency=low
 
   * Upstream version 0.2.0
   * debian/control: Adding dependency information for libdbusmenu
     to say >= 0.0.2 to match upstream build system.
   * debian/watch: Changing to use indicator-messages project.
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 27 Aug 2009 10:24:02 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 27 Aug 2009 10:28:14 -0500
 
 indicator-messages (0.2.0~bzr121-0ubuntu2) karmic; urgency=low
 
