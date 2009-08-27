@@ -21,6 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <string.h>
+#include <glib.h>
 #include <gtk/gtk.h>
 #include <libdbusmenu-gtk/menu.h>
 #include <dbus/dbus-glib.h>
@@ -144,7 +145,13 @@ new_launcher_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusme
 	GtkWidget * vbox = gtk_vbox_new(TRUE, 2);
 
 	GtkWidget * app_label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, LAUNCHER_MENUITEM_PROP_APP_NAME));
-	GtkWidget * dsc_label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, LAUNCHER_MENUITEM_PROP_APP_DESC));
+	gtk_misc_set_alignment(GTK_MISC(app_label), 0.0, 0.5);
+	GtkWidget * dsc_label = gtk_label_new("");
+	gtk_misc_set_alignment(GTK_MISC(dsc_label), 0.05, 0.5);
+	gtk_label_set_ellipsize(GTK_LABEL(dsc_label), PANGO_ELLIPSIZE_END);
+	gchar * markup = g_markup_printf_escaped("<span font-size=\"smaller\">%s</span>", dbusmenu_menuitem_property_get(newitem, LAUNCHER_MENUITEM_PROP_APP_DESC));
+	gtk_label_set_markup(GTK_LABEL(dsc_label), markup);
+	g_free(markup);
 
 	gtk_box_pack_start(GTK_BOX(vbox), app_label, FALSE, FALSE, 0);
 	gtk_widget_show(app_label);
