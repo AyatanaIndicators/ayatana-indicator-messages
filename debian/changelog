@@ -1,9 +1,13 @@
 indicator-messages (0.2.0-0ubuntu1) UNRELEASED; urgency=low
 
+  [ Ted Gould ]
   * Upstream version 0.2.0
   * debian/control: Adding dependency information for libdbusmenu
     to say >= 0.0.2 to match upstream build system.
   * debian/watch: Changing to use indicator-messages project.
+
+  [ Martin Pitt ]
+  * debian/control: Update Vcs-Bzr: for new branch location.
 
  -- Ted Gould <ted@ubuntu.com>  Thu, 27 Aug 2009 10:28:14 -0500
 
