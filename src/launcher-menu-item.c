@@ -188,6 +188,16 @@ launcher_menu_item_get_desktop (LauncherMenuItem * launchitem)
 	return priv->desktop;
 }
 
+/* Gets the decription for the item that should
+   go in the messaging menu */
+const gchar *
+launcher_menu_item_get_description (LauncherMenuItem * li)
+{
+	g_return_val_if_fail(IS_LAUNCHER_MENU_ITEM(li), NULL);
+	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(li);
+	return g_app_info_get_description(priv->appinfo);
+}
+
 /* Hides the menu item based on whether it is eclipsed
    or not. */
 void
