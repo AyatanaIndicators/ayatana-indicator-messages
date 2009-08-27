@@ -139,6 +139,22 @@ setup_icon_proxy (gpointer userdata)
 static gboolean
 new_launcher_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, DbusmenuClient * client)
 {
+	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_menu_item_new());
+
+	GtkWidget * vbox = gtk_vbox_new(TRUE, 2);
+
+	GtkWidget * app_label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, LAUNCHER_MENUITEM_PROP_APP_NAME));
+	GtkWidget * dsc_label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, LAUNCHER_MENUITEM_PROP_APP_DESC));
+
+	gtk_box_pack_start(GTK_BOX(vbox), app_label, FALSE, FALSE, 0);
+	gtk_widget_show(app_label);
+	gtk_box_pack_start(GTK_BOX(vbox), dsc_label, FALSE, FALSE, 0);
+	gtk_widget_show(dsc_label);
+
+	gtk_container_add(GTK_CONTAINER(gmi), GTK_WIDGET(vbox));
+	gtk_widget_show(GTK_WIDGET(vbox));
+
+	dbusmenu_gtkclient_newitem_base(DBUSMENU_GTKCLIENT(client), newitem, gmi, parent);
 
 	return TRUE;
 }
