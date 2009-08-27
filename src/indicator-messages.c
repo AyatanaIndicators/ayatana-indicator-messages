@@ -185,7 +185,7 @@ get_menu (void)
 	DbusmenuGtkMenu * menu = dbusmenu_gtkmenu_new(INDICATOR_MESSAGES_DBUS_NAME, INDICATOR_MESSAGES_DBUS_OBJECT);
 	DbusmenuGtkClient * client = dbusmenu_gtkmenu_get_client(menu);
 
-	dbusmenu_client_add_type_handler(DBUSMENU_CLIENT(client), "launcher-item", new_launcher_item);
+	dbusmenu_client_add_type_handler(DBUSMENU_CLIENT(client), LAUNCHER_MENUITEM_TYPE, new_launcher_item);
 
 	return GTK_MENU(menu);
 }
