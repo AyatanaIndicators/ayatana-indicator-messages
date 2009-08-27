@@ -1,2 +1,2 @@
 version=3
-http://launchpad.net/indicator-messages/+download .*/indicator-messages-([0-9.]+)\.tar\.gz
+http://launchpad.net/indicator-applet/+download .*/indicator-messages-([0-9.]+)\.tar\.gz
