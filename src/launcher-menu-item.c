@@ -28,6 +28,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
 #include "launcher-menu-item.h"
+#include "dbus-data.h"
 
 enum {
 	NAME_CHANGED,
@@ -130,7 +131,9 @@ launcher_menu_item_new (const gchar * desktop_file)
 	priv->desktop = g_strdup(desktop_file);
 
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "label", launcher_menu_item_get_name(self));
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "type", LAUNCHER_MENUITEM_TYPE);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), LAUNCHER_MENUITEM_PROP_APP_NAME, launcher_menu_item_get_name(self));
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), LAUNCHER_MENUITEM_PROP_APP_DESC, launcher_menu_item_get_description(self));
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 
@@ -157,22 +160,11 @@ activate_cb (LauncherMenuItem * self, gpointer data)
 	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(self);
 	g_return_if_fail(priv->appinfo != NULL);
 
-	/* This should manage the X stuff for us */
-	GdkAppLaunchContext * context = gdk_app_launch_context_new();
-
-	/* Using the current time as we don't have the event
-	   time as that's not sent across the bus */
-	GTimeVal time;
-	g_get_current_time(&time);
-	gdk_app_launch_context_set_timestamp(context, time.tv_usec / 1000);
-
 	GError * error = NULL;
-	if (!g_app_info_launch(priv->appinfo, NULL, G_APP_LAUNCH_CONTEXT(context), &error)) {
+	if (!g_app_info_launch(priv->appinfo, NULL, NULL, &error)) {
 		g_warning("Application failed to launch '%s' because: %s", launcher_menu_item_get_name(self), error->message);
 		g_error_free(error);
 	}
-
-	g_object_unref(G_OBJECT(context));
 
 	return;
 }
@@ -185,20 +177,30 @@ launcher_menu_item_get_desktop (LauncherMenuItem * launchitem)
 	return priv->desktop;
 }
 
+/* Gets the decription for the item that should
+   go in the messaging menu */
+const gchar *
+launcher_menu_item_get_description (LauncherMenuItem * li)
+{
+	g_return_val_if_fail(IS_LAUNCHER_MENU_ITEM(li), NULL);
+	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(li);
+	return g_app_info_get_description(priv->appinfo);
+}
+
 /* Hides the menu item based on whether it is eclipsed
    or not. */
 void
 launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed)
 {
 	g_debug("Laucher '%s' is %s", launcher_menu_item_get_name(li), eclipsed ? "now eclipsed" : "shown again");
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), "show", eclipsed ? "false" : "true");
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_VISIBLE, eclipsed ? "false" : "true");
 	return;
 }
 
 gboolean
 launcher_menu_item_get_eclipsed (LauncherMenuItem * li)
 {
-	const gchar * show = dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(li), "show");
+	const gchar * show = dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_VISIBLE);
 	if (show == NULL) {
 		return FALSE;
 	}
