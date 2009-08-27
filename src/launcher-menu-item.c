@@ -160,22 +160,11 @@ activate_cb (LauncherMenuItem * self, gpointer data)
 	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(self);
 	g_return_if_fail(priv->appinfo != NULL);
 
-	/* This should manage the X stuff for us */
-	GdkAppLaunchContext * context = gdk_app_launch_context_new();
-
-	/* Using the current time as we don't have the event
-	   time as that's not sent across the bus */
-	GTimeVal time;
-	g_get_current_time(&time);
-	gdk_app_launch_context_set_timestamp(context, time.tv_usec / 1000);
-
 	GError * error = NULL;
-	if (!g_app_info_launch(priv->appinfo, NULL, G_APP_LAUNCH_CONTEXT(context), &error)) {
+	if (!g_app_info_launch(priv->appinfo, NULL, NULL, &error)) {
 		g_warning("Application failed to launch '%s' because: %s", launcher_menu_item_get_name(self), error->message);
 		g_error_free(error);
 	}
-
-	g_object_unref(G_OBJECT(context));
 
 	return;
 }
