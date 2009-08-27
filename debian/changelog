@@ -2,6 +2,8 @@ indicator-messages (0.2.0~bzr126-0ubuntu1~ppa3~menuupdate1) UNRELEASED; urgency=
 
   * Merging in changes that are made possible via an update
     to the dbusmenu libraries.
+  * debian/control: Adding dependency information for libdbusmenu
+    to say >= 0.0.2 to match upstream build system.
 
  -- Ted Gould <ted@ubuntu.com>  Wed, 26 Aug 2009 20:30:26 -0500
 
