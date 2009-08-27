@@ -33,6 +33,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "launcher-menu-item.h"
 #include "dbus-data.h"
 #include "dirs.h"
+#include "messages-service-dbus.h"
 
 static IndicateListener * listener;
 static GList * serverList = NULL;
@@ -40,6 +41,8 @@ static GList * launcherList = NULL;
 
 static DbusmenuMenuitem * root_menuitem = NULL;
 static GMainLoop * mainloop = NULL;
+
+static MessageServiceDbus * dbus_interface = NULL;
 
 
 static void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
@@ -57,6 +60,7 @@ static gboolean blacklist_remove (gpointer data);
 static void blacklist_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
 static void app_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
 static gboolean destroy_launcher (gpointer data);
+static void check_hidden (void);
 
 
 /*
@@ -164,6 +168,29 @@ launcherList_sort (gconstpointer a, gconstpointer b)
 	return g_strcmp0(pan, pbn);
 }
 
+static void
+launcherList_count_helper (gpointer data, gpointer user_data)
+{
+	guint * count = (guint *)user_data;
+	launcherList_t * li = (launcherList_t *)data;
+
+	if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
+		*count = *count + 1;
+	}
+
+	return;
+}
+
+static guint
+launcherList_count (void)
+{
+	guint count = 0;
+
+	g_list_foreach(launcherList, launcherList_count_helper, &count);
+
+	return count;
+}
+
 /*
  * Black List
  */
@@ -195,7 +222,7 @@ blacklist_init (gpointer data)
 	GError * error = NULL;
 	GDir * dir = g_dir_open(blacklistdir, 0, &error);
 	if (dir == NULL) {
-		g_warning("Unable to open blacklist directory (%s): %s", blacklistdir, error->message);
+		g_warning("Unable to open blacklist directory (%s): %s", blacklistdir, error == NULL ? "No Message" : error->message);
 		g_error_free(error);
 		g_free(blacklistdir);
 		return FALSE;
@@ -260,6 +287,8 @@ blacklist_add (gpointer udata)
 		}
 	}
 
+	check_hidden();
+
 	return FALSE;
 }
 
@@ -308,6 +337,8 @@ blacklist_remove (gpointer data)
 	if (!g_hash_table_remove(blacklist, key)) {
 		g_warning("Unable to remove '%s' with value '%s'", definition_file, (gchar *)key);
 	}
+
+	check_hidden();
 
 	return FALSE;
 }
@@ -406,6 +437,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	/* Should be prepend ^ */
 
 	resort_menu(menushell);
+	check_hidden();
 
 	return;
 }
@@ -438,7 +470,7 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	if (count != 0) {
 		g_debug("Setting image to 'new'");
 		showing_new_icon = TRUE;
-		/* gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages-new", DESIGN_TEAM_SIZE); */
+		message_service_dbus_set_attention(dbus_interface, TRUE);
 		return;
 	}
 
@@ -459,7 +491,7 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	if (!we_have_indicators) {
 		g_debug("Setting image to boring");
 		showing_new_icon = FALSE;
-		/* gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages", DESIGN_TEAM_SIZE); */
+		message_service_dbus_set_attention(dbus_interface, FALSE);
 	}
 
 	return;
@@ -508,6 +540,7 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 
 	/* Simulate a server saying zero to recalculate icon */
 	server_count_changed(NULL, 0, NULL);
+	check_hidden();
 
 	return;
 }
@@ -536,6 +569,24 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 		msl->found = TRUE;
 	}
 
+	return;
+}
+
+static void
+check_hidden (void)
+{
+	g_debug("Checking Hidden...");
+	gboolean hide = FALSE;
+	if (launcherList_count() == 0) {
+		g_debug("\tZero Launchers");
+		/* If we don't have visible launchers we need to look more */
+		if (g_list_length(serverList) == 0) {
+			g_debug("\tZero Applications");
+			hide = TRUE;	
+		}
+	}
+
+	message_service_dbus_set_icon(dbus_interface, hide);
 	return;
 }
 
@@ -857,7 +908,7 @@ destroy_launcher (gpointer data)
 	g_list_free(li->appdiritems);
 
 	if (li->menuitem != NULL) {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li->menuitem), "visible", "false");
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		dbusmenu_menuitem_child_delete(root_menuitem, DBUSMENU_MENUITEM(li->menuitem));
 		g_object_unref(G_OBJECT(li->menuitem));
 		li->menuitem = NULL;
@@ -985,6 +1036,8 @@ main (int argc, char ** argv)
 		g_error("Unable to get name");
 		return 1;
 	}
+
+	dbus_interface = message_service_dbus_new();
 
 	listener = indicate_listener_ref_default();
 	serverList = NULL;
