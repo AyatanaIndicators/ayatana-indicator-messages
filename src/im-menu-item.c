@@ -253,7 +253,7 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 		return;
 	}
 
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "label", propertydata);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, propertydata);
 
 	return;
 }

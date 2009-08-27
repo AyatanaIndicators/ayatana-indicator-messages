@@ -218,10 +218,10 @@ update_label (AppMenuItem * self)
 		/* TRANSLATORS: This is the name of the program and the number of indicators.  So it
 		                would read something like "Mail Client (5)" */
 		gchar * label = g_strdup_printf(_("%s (%d)"), app_menu_item_get_name(self), priv->unreadcount);
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "label", label);
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, label);
 		g_free(label);
 	} else {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "label", app_menu_item_get_name(self));
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, app_menu_item_get_name(self));
 	}
 
 	return;

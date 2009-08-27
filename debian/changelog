@@ -1,3 +1,10 @@
+indicator-messages (0.2.0~bzr126-0ubuntu1~ppa3~menuupdate1) UNRELEASED; urgency=low
+
+  * Merging in changes that are made possible via an update
+    to the dbusmenu libraries.
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 26 Aug 2009 20:30:26 -0500
+
 indicator-messages (0.2.0~bzr126-0ubuntu1~ppa2) karmic; urgency=low
 
   * Merging in branch to make it so that the 'green dot' works
