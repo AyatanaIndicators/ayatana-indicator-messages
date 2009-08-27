@@ -1,4 +1,4 @@
-indicator-messages (0.2.0-0ubuntu1~ppa1) karmic; urgency=low
+indicator-messages (0.2.0-0ubuntu1) karmic; urgency=low
 
   * Upstream version 0.2.0
   * debian/control: Adding dependency information for libdbusmenu
@@ -6,6 +6,19 @@ indicator-messages (0.2.0-0ubuntu1~ppa1) karmic; urgency=low
   * debian/watch: Changing to use indicator-messages project.
 
  -- Ted Gould <ted@ubuntu.com>  Thu, 27 Aug 2009 10:28:14 -0500
+
+indicator-messages (0.2.0~bzr124-0ubuntu1) karmic; urgency=low
+
+  * Update to fix build issue
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Fri, 07 Aug 2009 17:12:40 +0100
+
+indicator-messages (0.2.0~bzr121-0ubuntu3) karmic; urgency=low
+
+  * Fix to dereference the application menu items correctly so that
+    the signal handlers are dropped as well. (lp: #410251)
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 05 Aug 2009 19:00:31 +0100
 
 indicator-messages (0.2.0~bzr121-0ubuntu2) karmic; urgency=low
 
