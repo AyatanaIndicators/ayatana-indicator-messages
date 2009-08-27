@@ -1,4 +1,4 @@
-indicator-messages (0.2.0-0ubuntu1) karmic; urgency=low
+indicator-messages (0.2.0-0ubuntu1) UNRELEASED; urgency=low
 
   * Upstream version 0.2.0
   * debian/control: Adding dependency information for libdbusmenu
