@@ -147,10 +147,9 @@ im_menu_item_finalize (GObject *object)
 }
 
 static void
-icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, GdkPixbuf * propertydata, gpointer data)
+icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
-	/* dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "icon", propertydata); */
-
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_DATA, propertydata);
 	return;
 }
 
@@ -280,7 +279,7 @@ indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * ser
 	} else if (!g_strcmp0(property, "time")) {
 		indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
 	} else if (!g_strcmp0(property, "icon")) {
-		indicate_listener_get_property_icon(listener, server, indicator, "icon",   icon_cb, self);	
+		indicate_listener_get_property(listener, server, indicator, "icon", icon_cb, self);	
 	}
 	
 	return;
@@ -299,9 +298,11 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	priv->show_time = show_time;
 	priv->time_update_min = 0;
 
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_IMAGE);
+
 	indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
 	indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
-	indicate_listener_get_property_icon(listener, server, indicator, "icon",   icon_cb, self);	
+	indicate_listener_get_property(listener, server, indicator, "icon",   icon_cb, self);	
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 	priv->indicator_changed = g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_MODIFIED, G_CALLBACK(indicator_modified_cb), self);
