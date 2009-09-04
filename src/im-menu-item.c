@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib/gi18n.h>
 #include <libdbusmenu-glib/client.h>
 #include <libindicate/indicator.h>
+#include <libindicate/indicator-messages.h>
 #include <libindicate/listener.h>
 #include "im-menu-item.h"
 #include "dbus-data.h"
@@ -260,6 +261,20 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 }
 
 static void
+count_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
+{
+	g_debug("Got Count Information");
+
+}
+
+static void
+attention_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
+{
+	g_debug("Got Attention Information");
+
+}
+
+static void
 activate_cb (ImMenuItem * self, gpointer data)
 {
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
@@ -276,12 +291,20 @@ indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * ser
 	if (INDICATE_LISTENER_INDICATOR_ID(indicator) != INDICATE_LISTENER_INDICATOR_ID(priv->indicator)) return;
 	if (server != priv->server) return;
 
-	if (!g_strcmp0(property, "sender")) {
+	if (!g_strcmp0(property, INDICATE_INDICATOR_MESSAGES_PROP_NAME)) {
+		indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_NAME, sender_cb, self);	
+	} else if (!g_strcmp0(property, INDICATE_INDICATOR_MESSAGES_PROP_TIME)) {
+		indicate_listener_get_property_time(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_TIME, time_cb, self);	
+	} else if (!g_strcmp0(property, INDICATE_INDICATOR_MESSAGES_PROP_ICON)) {
+		indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_ICON, icon_cb, self);	
+	} else if (!g_strcmp0(property, INDICATE_INDICATOR_MESSAGES_PROP_COUNT)) {
+		indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_COUNT, count_cb, self);	
+	} else if (!g_strcmp0(property, INDICATE_INDICATOR_MESSAGES_PROP_ATTENTION)) {
+		indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_ATTENTION, attention_cb, self);	
+	} else if (!g_strcmp0(property, "sender")) {
+		/* This is a compatibility string with v1 and should be removed */
+		g_debug("Indicator is using 'sender' property which is a v1 string.");
 		indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
-	} else if (!g_strcmp0(property, "time")) {
-		indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
-	} else if (!g_strcmp0(property, "icon")) {
-		indicate_listener_get_property(listener, server, indicator, "icon", icon_cb, self);	
 	}
 	
 	return;
