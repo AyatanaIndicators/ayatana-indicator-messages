@@ -14,11 +14,11 @@
 
 #define APPLICATION_MENUITEM_TYPE        "application-item"
 #define APPLICATION_MENUITEM_PROP_NAME   "app-name"
-#define APPLICATION_MENUITEM_PROP_COUNT  "count"
+#define APPLICATION_MENUITEM_PROP_COUNT  "app-count"
 
 #define INDICATOR_MENUITEM_TYPE          "indicator-item"
-#define INDICATOR_MENUITEM_PROP_LABEL    "label"
-#define INDICATOR_MENUITEM_PROP_ICON     "icon"
+#define INDICATOR_MENUITEM_PROP_LABEL    "indicator-label"
+#define INDICATOR_MENUITEM_PROP_ICON     "indicator-icon"
 #define INDICATOR_MENUITEM_PROP_RIGHT    "right-side-text"
 
 #endif /* __DBUS_DATA_H__ */
