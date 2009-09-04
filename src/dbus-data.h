@@ -21,4 +21,6 @@
 #define INDICATOR_MENUITEM_PROP_ICON     "indicator-icon"
 #define INDICATOR_MENUITEM_PROP_RIGHT    "right-side-text"
 
+#define MAX_NUMBER_OF_INDICATORS  7
+
 #endif /* __DBUS_DATA_H__ */

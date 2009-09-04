@@ -27,6 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
 #include "app-menu-item.h"
+#include "dbus-data.h"
 
 enum {
 	COUNT_CHANGED,
@@ -173,6 +174,7 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_SERVER_DISPLAY);
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_SERVER_SIGNAL);
+	indicate_listener_set_server_max_indicators(listener, server, MAX_NUMBER_OF_INDICATORS);
 
 	return self;
 }
