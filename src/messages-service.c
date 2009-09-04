@@ -49,7 +49,7 @@ static void server_count_changed (AppMenuItem * appitem, guint count, gpointer d
 static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data);
 static void im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data);
 static void resort_menu (DbusmenuMenuitem * menushell);
-static void indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
+static void indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gpointer data);
 static void check_eclipses (AppMenuItem * ai);
 static void remove_eclipses (AppMenuItem * ai);
 static gboolean build_launcher (gpointer data);
@@ -525,7 +525,7 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 
 	while (sltp->imList) {
 		imList_t * imitem = (imList_t *)sltp->imList->data;
-		indicator_removed(listener, server, imitem->indicator, "message", data);
+		indicator_removed(listener, server, imitem->indicator, data);
 	}
 
 	serverList = g_list_remove(serverList, sltp);
@@ -713,15 +713,9 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 }
 
 static void
-indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
+indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gpointer data)
 {
 	g_debug("Removing %s %d", INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_INDICATOR_ID(indicator));
-	if (type == NULL || g_strcmp0(type, "message")) {
-		/* We only care about message type indicators
-		   all of the others can go to the bit bucket */
-		g_debug("Ignoreing indicator of type '%s'", type);
-		return;
-	}
 
 	gboolean removed = FALSE;
 
