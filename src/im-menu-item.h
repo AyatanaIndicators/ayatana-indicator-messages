@@ -59,6 +59,7 @@ ImMenuItem * im_menu_item_new (IndicateListener * listener, IndicateListenerServ
 glong im_menu_item_get_seconds (ImMenuItem * menuitem);
 gboolean im_menu_item_get_attention (ImMenuItem * menuitem);
 void im_menu_item_show (ImMenuItem * menuitem, gboolean show);
+gboolean im_menu_item_shown (ImMenuItem * menuitem);
 
 G_END_DECLS
 

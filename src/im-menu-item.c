@@ -482,3 +482,15 @@ im_menu_item_show (ImMenuItem * menuitem, gboolean show)
 
 	return;
 }
+
+/* Check to see if this item is shown.  Accessor for the
+   internal variable. */
+gboolean
+im_menu_item_shown (ImMenuItem * menuitem)
+{
+	g_return_val_if_fail(IS_IM_MENU_ITEM(menuitem), FALSE);
+
+	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(menuitem);
+
+	return priv->show;
+}
