@@ -83,7 +83,6 @@ static void activate_cb             (ImMenuItem * self,
 static void indicator_modified_cb   (IndicateListener * listener,
                                      IndicateListenerServer * server,
                                      IndicateListenerIndicator * indicator,
-                                     gchar * type,
                                      gchar * property,
                                      ImMenuItem * self);
 
@@ -306,7 +305,7 @@ activate_cb (ImMenuItem * self, gpointer data)
 /* Callback when a property gets modified.  It figures out which one
    got modified and notifies the appropriate person. */
 void
-indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gchar * property, ImMenuItem * self)
+indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, ImMenuItem * self)
 {
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
@@ -314,6 +313,8 @@ indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * ser
 	if (INDICATE_LISTENER_INDICATOR_ID(indicator) != INDICATE_LISTENER_INDICATOR_ID(priv->indicator)) return;
 	if (server != priv->server) return;
 
+	/* Determine which property has been changed and request the
+	   value go to the appropriate callback. */
 	if (!g_strcmp0(property, INDICATE_INDICATOR_MESSAGES_PROP_NAME)) {
 		indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_NAME, sender_cb, self);	
 	} else if (!g_strcmp0(property, INDICATE_INDICATOR_MESSAGES_PROP_TIME)) {
