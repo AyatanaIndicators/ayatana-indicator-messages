@@ -24,6 +24,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include <glib/gi18n.h>
+#include <libdbusmenu-glib/client.h>
 #include <libindicate-gtk/indicator.h>
 #include <libindicate-gtk/listener.h>
 #include "im-menu-item.h"
@@ -298,7 +299,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	priv->show_time = show_time;
 	priv->time_update_min = 0;
 
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_IMAGE);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "type", DBUSMENU_CLIENT_TYPES_IMAGE);
 
 	indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
 	indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
