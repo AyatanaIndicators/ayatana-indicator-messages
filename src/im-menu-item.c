@@ -47,7 +47,7 @@ struct _ImMenuItemPrivate
 	IndicateListenerIndicator *  indicator;
 
 	glong seconds;
-	gboolean show_time;
+	gchar * count;
 	gulong indicator_changed;
 
 	guint time_update_min;
@@ -166,8 +166,7 @@ update_time (ImMenuItem * self)
 {
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
-	if (!priv->show_time) {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), INDICATOR_MENUITEM_PROP_RIGHT, "");
+	if (priv->count != NULL) {
 		return;
 	}
 	
@@ -349,7 +348,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	priv->listener = listener;
 	priv->server = server;
 	priv->indicator = indicator;
-	priv->show_time = TRUE;
+	priv->count = NULL;
 	priv->time_update_min = 0;
 
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "type", INDICATOR_MENUITEM_TYPE);
