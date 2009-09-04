@@ -258,13 +258,18 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 {
 	g_debug("Got Sender Information");
 	ImMenuItem * self = IM_MENU_ITEM(data);
-	if (self == NULL) {
-		g_error("Menu Item callback called without a menu item");
-		return;
-	}
 
-	if (property == NULL || g_strcmp0(property, "sender")) {
-		g_warning("Sender callback called without being sent the sender.  We got '%s' with value '%s'.", property, propertydata);
+	/* Our data should be right */
+	g_return_if_fail(self != NULL);
+	/* We should have a property name */
+	g_return_if_fail(property != NULL);
+	/* The Property should be sender or name */
+	g_return_if_fail(!g_strcmp0(property, "sender") || !g_strcmp0(property, INDICATE_INDICATOR_MESSAGES_PROP_NAME));
+
+	/* We might get the sender variable returning a
+	   null string as it doesn't exist on newer clients
+	   but we don't want to listen to that. */
+	if (!g_strcmp0(property, "sender") && property[0] == '\0') {
 		return;
 	}
 
