@@ -74,7 +74,7 @@ static void icon_cb                 (IndicateListener * listener,
                                      IndicateListenerServer * server,
                                      IndicateListenerIndicator * indicator,
                                      gchar * property,
-                                     GdkPixbuf * propertydata,
+                                     gchar * propertydata,
                                      gpointer data);
 static void activate_cb             (ImMenuItem * self,
                                      gpointer data);
@@ -150,7 +150,7 @@ im_menu_item_finalize (GObject *object)
 static void
 icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_DATA, propertydata);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM_PROP_ICON_DATA, propertydata);
 	return;
 }
 
