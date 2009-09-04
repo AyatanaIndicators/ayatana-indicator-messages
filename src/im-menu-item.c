@@ -28,6 +28,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicate-gtk/indicator.h>
 #include <libindicate-gtk/listener.h>
 #include "im-menu-item.h"
+#include "dbus-data.h"
 
 enum {
 	TIME_CHANGED,
@@ -150,7 +151,7 @@ im_menu_item_finalize (GObject *object)
 static void
 icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM_PROP_ICON_DATA, propertydata);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(data), INDICATOR_MENUITEM_PROP_ICON, propertydata);
 	return;
 }
 
@@ -160,7 +161,7 @@ update_time (ImMenuItem * self)
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
 	if (!priv->show_time) {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "right-column", "");
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), INDICATOR_MENUITEM_PROP_RIGHT, "");
 		return;
 	}
 	
@@ -191,7 +192,7 @@ update_time (ImMenuItem * self)
 	}
 
 	if (timestring != NULL) {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "right-column", "");
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), INDICATOR_MENUITEM_PROP_RIGHT, timestring);
 		g_free(timestring);
 	}
 
@@ -253,7 +254,7 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 		return;
 	}
 
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, propertydata);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), INDICATOR_MENUITEM_PROP_LABEL, propertydata);
 
 	return;
 }
@@ -299,7 +300,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	priv->show_time = TRUE;
 	priv->time_update_min = 0;
 
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "type", DBUSMENU_CLIENT_TYPES_IMAGE);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "type", INDICATOR_MENUITEM_TYPE);
 
 	indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
 	indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
