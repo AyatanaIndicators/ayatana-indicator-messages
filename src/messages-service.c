@@ -693,6 +693,18 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 	sl_item->imList = g_list_insert_sorted(sl_item->imList, listItem, imList_sort);
 	listItem->timechange_cb = g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_TIME_CHANGED, G_CALLBACK(im_time_changed), sl_item);
 
+	/* Check the length of the list.  If we've got more inidactors
+	   than we allow.  Well.  Someone's gotta pay.  Sorry.  I didn't
+	   want to do this, but you did it to yourself. */
+	if (g_list_length(sl_item->imList) > MAX_NUMBER_OF_INDICATORS) {
+		GList * indicatoritem;
+		gint count;
+		for (indicatoritem = sl_item->imList, count = 0; indicatoritem != NULL; indicatoritem = g_list_next(indicatoritem), count++) {
+			imList_t * im = (imList_t *)indicatoritem->data;
+			im_menu_item_show(IM_MENU_ITEM(im->menuitem), count < MAX_NUMBER_OF_INDICATORS);
+		}
+	}
+
 	/* Placing the item into the shell.  Look to see if
 	   we can find our server and slip in there.  Otherwise
 	   we'll just append. */
