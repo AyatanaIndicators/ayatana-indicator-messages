@@ -57,6 +57,7 @@ struct _ImMenuItem {
 GType im_menu_item_get_type (void);
 ImMenuItem * im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator);
 glong im_menu_item_get_seconds (ImMenuItem * menuitem);
+gboolean im_menu_item_get_attention (ImMenuItem * menuitem);
 
 G_END_DECLS
 

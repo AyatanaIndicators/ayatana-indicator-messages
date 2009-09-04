@@ -50,6 +50,7 @@ struct _ImMenuItemPrivate
 	glong seconds;
 	gchar * count;
 	gulong indicator_changed;
+	gboolean attention;
 
 	guint time_update_min;
 };
@@ -387,6 +388,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	priv->indicator = indicator;
 	priv->count = NULL;
 	priv->time_update_min = 0;
+	priv->attention = FALSE;
 
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "type", INDICATOR_MENUITEM_TYPE);
 
@@ -403,9 +405,24 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	return self;
 }
 
+/* Gets the number of seconds for the creator
+   of this item. */
 glong
 im_menu_item_get_seconds (ImMenuItem * menuitem)
 {
+	g_return_val_if_fail(IS_IM_MENU_ITEM(menuitem), 0);
+
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(menuitem);
 	return priv->seconds;
+}
+
+/* Gets whether or not this indicator item is
+   asking for attention or not. */
+gboolean
+im_menu_item_get_attention (ImMenuItem * menuitem)
+{
+	g_return_val_if_fail(IS_IM_MENU_ITEM(menuitem), FALSE);
+
+	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(menuitem);
+	return priv->attention;
 }
