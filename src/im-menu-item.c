@@ -478,6 +478,7 @@ im_menu_item_show (ImMenuItem * menuitem, gboolean show)
 		   again if we're being shown, otherwise no. */
 		g_signal_emit(G_OBJECT(menuitem), signals[ATTENTION_CHANGED], 0, priv->show, TRUE);
 	}
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, priv->show ? "true" : "false");
 
 	return;
 }
