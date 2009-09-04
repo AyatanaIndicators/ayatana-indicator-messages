@@ -38,6 +38,7 @@ G_BEGIN_DECLS
 #define IM_MENU_ITEM_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), IM_MENU_ITEM_TYPE, ImMenuItemClass))
 
 #define IM_MENU_ITEM_SIGNAL_TIME_CHANGED  "time-changed"
+#define IM_MENU_ITEM_SIGNAL_ATTENTION_CHANGED  "attention-changed"
 
 typedef struct _ImMenuItem      ImMenuItem;
 typedef struct _ImMenuItemClass ImMenuItemClass;
@@ -46,6 +47,7 @@ struct _ImMenuItemClass {
 	DbusmenuMenuitemClass parent_class;
 
 	void (*time_changed) (glong seconds);
+	void (*attention_changed) (gboolean requestit);
 };
 
 struct _ImMenuItem {

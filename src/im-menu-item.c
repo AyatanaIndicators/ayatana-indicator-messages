@@ -33,6 +33,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 enum {
 	TIME_CHANGED,
+	ATTENTION_CHANGED,
 	LAST_SIGNAL
 };
 
@@ -105,6 +106,13 @@ im_menu_item_class_init (ImMenuItemClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__LONG,
 	                                      G_TYPE_NONE, 1, G_TYPE_LONG);
+	signals[ATTENTION_CHANGED] =  g_signal_new(IM_MENU_ITEM_SIGNAL_ATTENTION_CHANGED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (ImMenuItemClass, attention_changed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__BOOLEAN,
+	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
 	return;
 }
