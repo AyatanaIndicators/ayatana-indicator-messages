@@ -332,7 +332,30 @@ static void
 attention_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
 	g_debug("Got Attention Information");
+	ImMenuItem * self = IM_MENU_ITEM(data);
 
+	/* Our data should be right */
+	g_return_if_fail(self != NULL);
+	/* We should have a property name */
+	g_return_if_fail(property != NULL);
+	/* The Property should be count */
+	g_return_if_fail(!g_strcmp0(property, INDICATE_INDICATOR_MESSAGES_PROP_ATTENTION));
+
+	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
+
+	gboolean wantit;
+	if (propertydata == NULL || propertydata[0] == '\0' || !g_strcmp0(propertydata, "false")) {
+		wantit = FALSE;
+	} else {
+		wantit = TRUE;
+	}
+
+	if (priv->attention != wantit) {
+		priv->attention = wantit;
+		g_signal_emit(G_OBJECT(self), signals[ATTENTION_CHANGED], 0, wantit, TRUE);
+	}
+
+	return;
 }
 
 /* Callback when the item gets clicked on from the Messaging Menu */
