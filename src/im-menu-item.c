@@ -51,6 +51,7 @@ struct _ImMenuItemPrivate
 	gchar * count;
 	gulong indicator_changed;
 	gboolean attention;
+	gboolean show;
 
 	guint time_update_min;
 };
@@ -412,8 +413,11 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	priv->count = NULL;
 	priv->time_update_min = 0;
 	priv->attention = FALSE;
+	priv->show = TRUE;
 
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "type", INDICATOR_MENUITEM_TYPE);
+
+	indicate_listener_displayed(listener, server, indicator, TRUE);
 
 	indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_NAME, sender_cb, self);	
 	indicate_listener_get_property_time(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_TIME, time_cb, self);	
@@ -448,4 +452,32 @@ im_menu_item_get_attention (ImMenuItem * menuitem)
 
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(menuitem);
 	return priv->attention;
+}
+
+/* This takes care of items that need to be hidden, this is
+   usually because they go over the count of allowed indicators.
+   Which is more than a little bit silly.  We shouldn't do that.
+   But we need to enforce it to save users against bad apps. */
+void
+im_menu_item_show (ImMenuItem * menuitem, gboolean show)
+{
+	g_return_if_fail(IS_IM_MENU_ITEM(menuitem));
+
+	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(menuitem);
+
+	if (priv->show == show) {
+		return;
+	}
+
+	priv->show = show;
+	/* Tell the app what we're doing to it.  If it's being
+	   punished it needs to know about it. */
+	indicate_listener_displayed(priv->listener, priv->server, priv->indicator, priv->show);
+	if (priv->attention) {
+		/* If we were asking for attention we can ask for it
+		   again if we're being shown, otherwise no. */
+		g_signal_emit(G_OBJECT(menuitem), signals[ATTENTION_CHANGED], 0, priv->show, TRUE);
+	}
+
+	return;
 }
