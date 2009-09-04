@@ -149,6 +149,8 @@ im_menu_item_finalize (GObject *object)
 	G_OBJECT_CLASS (im_menu_item_parent_class)->finalize (object);
 }
 
+/* Call back for getting icon data.  It just passes it along
+   to the indicator so that it can visualize it.  Not our problem. */
 static void
 icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
@@ -156,6 +158,10 @@ icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 	return;
 }
 
+/* This function takes the time and turns it into the appropriate
+   string to put on the right side of the menu item.  Of course it
+   doesn't do that if there is a count set.  If there's a count then
+   it gets that space. */
 static void
 update_time (ImMenuItem * self)
 {
@@ -200,6 +206,8 @@ update_time (ImMenuItem * self)
 	return;
 }
 
+/* This is a wrapper around update_time that matches the prototype
+   needed to make this a timer callback.  Silly. */
 static gboolean
 time_update_cb (gpointer data)
 {
@@ -210,6 +218,10 @@ time_update_cb (gpointer data)
 	return TRUE;
 }
 
+/* Yet another time function.  This one takes the time as formated as
+   we get it from libindicate and turns it into the seconds that we're
+   looking for.  It should only be called once at the init with a new
+   indicator and again when the value changes. */
 static void
 time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, GTimeVal * propertydata, gpointer data)
 {
@@ -240,6 +252,8 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 	return;
 }
 
+/* Callback from libindicate that is for getting the sender information
+   on a particular indicator. */
 static void
 sender_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
@@ -260,6 +274,9 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 	return;
 }
 
+/* Callback saying that the count is updated, we need to either put
+   that on the menu item or just remove it if the count is gone.  If
+   that's the case we can update time. */
 static void
 count_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
@@ -267,6 +284,9 @@ count_cb (IndicateListener * listener, IndicateListenerServer * server, Indicate
 
 }
 
+/* This is getting the attention variable that's looking at whether
+   this indicator should be calling for attention or not.  If we are,
+   we need to signal that. */
 static void
 attention_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
@@ -274,6 +294,7 @@ attention_cb (IndicateListener * listener, IndicateListenerServer * server, Indi
 
 }
 
+/* Callback when the item gets clicked on from the Messaging Menu */
 static void
 activate_cb (ImMenuItem * self, gpointer data)
 {
@@ -282,6 +303,8 @@ activate_cb (ImMenuItem * self, gpointer data)
 	indicate_listener_display(priv->listener, priv->server, priv->indicator);
 }
 
+/* Callback when a property gets modified.  It figures out which one
+   got modified and notifies the appropriate person. */
 void
 indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gchar * property, ImMenuItem * self)
 {
