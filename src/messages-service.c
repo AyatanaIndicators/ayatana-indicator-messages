@@ -646,8 +646,11 @@ resort_menu (DbusmenuMenuitem * menushell)
 	return;
 }
 
+/* Responding to a new indicator showing up on the bus.  We
+   need to create a menuitem for it and start populating the
+   internal structures to track it. */
 static void
-subtype_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
+indicator_added (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gpointer data)
 {
 	DbusmenuMenuitem * menushell = DBUSMENU_MENUITEM(data);
 	if (menushell == NULL) {
@@ -655,84 +658,57 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		return;
 	}
 
-	if (property == NULL || g_strcmp0(property, "subtype")) {
-		/* We should only ever get subtypes, but just in case */
-		g_warning("Subtype callback got a property '%s'", property);
-		return;
+	imList_t * listItem = g_new0(imList_t, 1);
+	listItem->server = server;
+	listItem->indicator = indicator;
+
+	/* Building the IM Menu Item which is a subclass
+	   of DBus Menuitem */
+	ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator);
+	g_object_ref(G_OBJECT(menuitem));
+	listItem->menuitem = DBUSMENU_MENUITEM(menuitem);
+
+	/* Looking for a server entry to attach this indicator
+	   to.  If we can't find one then we have to build one
+	   and attach the indicator to it. */
+	serverList_t sl_item_local;
+	serverList_t * sl_item = NULL;
+	sl_item_local.server = server;
+	GList * serverentry = g_list_find_custom(serverList, &sl_item_local, serverList_equal);
+
+	if (serverentry == NULL) {
+		/* This sucks, we got an indicator before the server.  I guess
+		   that's the joy of being asynchronous */
+		serverList_t * sl_item = g_new0(serverList_t, 1);
+		sl_item->server = server;
+		sl_item->menuitem = NULL;
+		sl_item->imList = NULL;
+
+		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
+	} else {
+		sl_item = (serverList_t *)serverentry->data;
 	}
 
-	if (propertydata == NULL || propertydata[0] == '\0') {
-		/* It's possible that this message didn't have a subtype.  That's
-		 * okay, but we don't want to display those */
-		g_debug("No subtype");
-		return;
+	/* Added a this entry into the IM list */
+	sl_item->imList = g_list_insert_sorted(sl_item->imList, listItem, imList_sort);
+	listItem->timechange_cb = g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_TIME_CHANGED, G_CALLBACK(im_time_changed), sl_item);
+
+	/* Placing the item into the shell.  Look to see if
+	   we can find our server and slip in there.  Otherwise
+	   we'll just append. */
+	menushell_location_t msl;
+	msl.found = FALSE;
+	msl.position = 0;
+	msl.server = server;
+
+	dbusmenu_menuitem_foreach(DBUSMENU_MENUITEM(menushell), menushell_foreach_cb, &msl);
+	if (msl.found) {
+		dbusmenu_menuitem_child_add_position(menushell, DBUSMENU_MENUITEM(menuitem), msl.position);
+	} else {
+		g_warning("Unable to find server menu item");
+		dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
 	}
 
-	g_debug("Message subtype: %s", propertydata);
-
-	if (!g_strcmp0(propertydata, "im") || !g_strcmp0(propertydata, "login")) {
-		imList_t * listItem = g_new0(imList_t, 1);
-		listItem->server = server;
-		listItem->indicator = indicator;
-
-		g_debug("Building IM Item");
-		ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator, !g_strcmp0(propertydata, "im"));
-		g_object_ref(G_OBJECT(menuitem));
-		listItem->menuitem = DBUSMENU_MENUITEM(menuitem);
-
-		g_debug("Finding the server entry");
-		serverList_t sl_item_local;
-		serverList_t * sl_item = NULL;
-		sl_item_local.server = server;
-		GList * serverentry = g_list_find_custom(serverList, &sl_item_local, serverList_equal);
-
-		if (serverentry == NULL) {
-			/* This sucks, we got an indicator before the server.  I guess
-			   that's the joy of being asynchronous */
-			serverList_t * sl_item = g_new0(serverList_t, 1);
-			sl_item->server = server;
-			sl_item->menuitem = NULL;
-			sl_item->imList = NULL;
-
-			serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
-		} else {
-			sl_item = (serverList_t *)serverentry->data;
-		}
-
-		g_debug("Adding to IM List");
-		sl_item->imList = g_list_insert_sorted(sl_item->imList, listItem, imList_sort);
-		listItem->timechange_cb = g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_TIME_CHANGED, G_CALLBACK(im_time_changed), sl_item);
-
-		g_debug("Placing in Shell");
-		menushell_location_t msl;
-		msl.found = FALSE;
-		msl.position = 0;
-		msl.server = server;
-
-		dbusmenu_menuitem_foreach(DBUSMENU_MENUITEM(menushell), menushell_foreach_cb, &msl);
-		if (msl.found) {
-			dbusmenu_menuitem_child_add_position(menushell, DBUSMENU_MENUITEM(menuitem), msl.position);
-		} else {
-			g_warning("Unable to find server menu item");
-			dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
-		}
-	}
-
-	return;
-}
-
-static void
-indicator_added (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
-{
-	if (type == NULL || g_strcmp0(type, "message")) {
-		/* We only care about message type indicators
-		   all of the others can go to the bit bucket */
-		g_debug("Ignoreing indicator of type '%s'", type);
-		return;
-	}
-	g_debug("Got a message");
-
-	indicate_listener_get_property(listener, server, indicator, "subtype", subtype_cb, data);	
 	return;
 }
 
