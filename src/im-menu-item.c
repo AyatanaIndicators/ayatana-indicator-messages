@@ -284,7 +284,36 @@ static void
 count_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
 	g_debug("Got Count Information");
+	ImMenuItem * self = IM_MENU_ITEM(data);
 
+	/* Our data should be right */
+	g_return_if_fail(self != NULL);
+	/* We should have a property name */
+	g_return_if_fail(property != NULL);
+	/* The Property should be count */
+	g_return_if_fail(!g_strcmp0(property, INDICATE_INDICATOR_MESSAGES_PROP_COUNT));
+
+	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
+
+	if (propertydata == NULL || propertydata[0] == '\0') {
+		/* The count is either being unset or it was never
+		   set in the first place. */
+		if (priv->count != NULL) {
+			g_free(priv->count);
+			priv->count = NULL;
+			update_time(self);
+		}
+		return;
+	}
+
+	if (priv->count != NULL) {
+		g_free(priv->count);
+	}
+
+	priv->count = g_strdup_printf("(%s)", propertydata);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), INDICATOR_MENUITEM_PROP_RIGHT, priv->count);
+
+	return;
 }
 
 /* This is getting the attention variable that's looking at whether
