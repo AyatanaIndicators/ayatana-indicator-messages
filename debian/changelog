@@ -1,9 +1,9 @@
-indicator-messages (0.2.0-0ubuntu1~ppa3) UNRELEASED; urgency=low
+indicator-messages (0.2.0-0ubuntu1~ppa3) karmic; urgency=low
 
   * Upstream usage of new Dbusmenu 0.1.1 defines.
   * debian/control: Increasing Dbusmenu dependencies.
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 04 Sep 2009 13:48:49 -0500
+ -- Ted Gould <ted@ubuntu.com>  Fri, 04 Sep 2009 13:50:50 -0500
 
 indicator-messages (0.2.0-0ubuntu1~ppa2) karmic; urgency=low
 
