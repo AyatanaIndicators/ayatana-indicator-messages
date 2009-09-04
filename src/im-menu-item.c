@@ -287,7 +287,7 @@ indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * ser
 }
 
 ImMenuItem *
-im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gboolean show_time)
+im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator)
 {
 	ImMenuItem * self = g_object_new(IM_MENU_ITEM_TYPE, NULL);
 
@@ -296,7 +296,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	priv->listener = listener;
 	priv->server = server;
 	priv->indicator = indicator;
-	priv->show_time = show_time;
+	priv->show_time = TRUE;
 	priv->time_update_min = 0;
 
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "type", DBUSMENU_CLIENT_TYPES_IMAGE);
