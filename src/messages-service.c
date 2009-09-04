@@ -758,6 +758,18 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 		g_signal_handler_disconnect(menuitem, ilt->timechange_cb);
 		g_free(ilt);
 
+		if (im_menu_item_shown(IM_MENU_ITEM(menuitem)) && g_list_length(sl_item->imList) >= MAX_NUMBER_OF_INDICATORS) {
+			/* In this case we need to show a different indicator
+			   becasue a shown one has left.  But we're going to be
+			   easy and set all the values. */
+			GList * indicatoritem;
+			gint count;
+			for (indicatoritem = sl_item->imList, count = 0; indicatoritem != NULL; indicatoritem = g_list_next(indicatoritem), count++) {
+				imList_t * im = (imList_t *)indicatoritem->data;
+				im_menu_item_show(IM_MENU_ITEM(im->menuitem), count < MAX_NUMBER_OF_INDICATORS);
+			}
+		}
+
 		dbusmenu_menuitem_property_set(menuitem, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), menuitem);
 		removed = TRUE;
