@@ -1,8 +1,8 @@
-indicator-messages (0.2.0-0ubuntu3~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.2.0-0ubuntu3~ppa1) karmic; urgency=low
 
   * Bumping version after ~ubuntu-desktop merge.
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 04 Sep 2009 13:54:31 -0500
+ -- Ted Gould <ted@ubuntu.com>  Fri, 04 Sep 2009 13:56:06 -0500
 
 indicator-messages (0.2.0-0ubuntu1~ppa3) karmic; urgency=low
 
