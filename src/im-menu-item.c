@@ -353,9 +353,12 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "type", INDICATOR_MENUITEM_TYPE);
 
+	indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_NAME, sender_cb, self);	
+	indicate_listener_get_property_time(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_TIME, time_cb, self);	
+	indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_ICON, icon_cb, self);	
+	indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_COUNT, count_cb, self);	
+	indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_ATTENTION, attention_cb, self);	
 	indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
-	indicate_listener_get_property_time(listener, server, indicator, "time",   time_cb, self);	
-	indicate_listener_get_property(listener, server, indicator, "icon",   icon_cb, self);	
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 	priv->indicator_changed = g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_MODIFIED, G_CALLBACK(indicator_modified_cb), self);
