@@ -72,6 +72,7 @@ struct _serverList_t {
 	IndicateListenerServer * server;
 	AppMenuItem * menuitem;
 	gboolean attention;
+	guint count;
 	GList * imList;
 };
 
@@ -391,6 +392,25 @@ blacklist_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file,
  * More code
  */
 
+/* Goes through all the servers and sees if any of them
+   want attention.  If they do, then well we'll give it
+   to them.  If they don't, let's not bother the user
+   any, shall we? */
+static void
+check_attention (void)
+{
+	GList * pointer;
+	for (pointer = serverList; pointer != NULL; pointer = g_list_next(pointer)) {
+		serverList_t * slt = (serverList_t *)pointer->data;
+		if (slt->attention) {
+			message_service_dbus_set_attention(dbus_interface, TRUE);
+			return;
+		}
+	}
+	message_service_dbus_set_attention(dbus_interface, FALSE);
+	return;
+}
+
 static void 
 server_added (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
@@ -414,10 +434,10 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 		return;
 	}
 
+	/* Build the Menu item */
 	AppMenuItem * menuitem = app_menu_item_new(listener, server);
-	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), NULL);
-	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_NAME_CHANGED,  G_CALLBACK(server_name_changed),  menushell);
 
+	/* Build a possible server structure */
 	serverList_t * sl_item = g_new0(serverList_t, 1);
 	sl_item->server = server;
 	sl_item->menuitem = menuitem;
@@ -427,13 +447,19 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	/* Incase we got an indicator first */
 	GList * alreadythere = g_list_find_custom(serverList, sl_item, serverList_equal);
 	if (alreadythere != NULL) {
+		/* Use the one we already had */
 		g_free(sl_item);
 		sl_item = (serverList_t *)alreadythere->data;
 		sl_item->menuitem = menuitem;
 		serverList = g_list_sort(serverList, serverList_sort);
 	} else {
+		/* Insert the new one in the list */
 		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
 	}
+
+	/* Connect the signals up to the menu item */
+	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), sl_item);
+	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_NAME_CHANGED,  G_CALLBACK(server_name_changed),  menushell);
 
 	dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
 	/* Should be prepend ^ */
@@ -453,47 +479,24 @@ server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data)
 	return;
 }
 
+/* If the count on the server changes, we need to know
+   whether that should be grabbing attention or not.  If
+   it is, we need to reevaluate whether the whole thing
+   should be grabbing attention or not. */
 static void
 server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 {
-	static gboolean showing_new_icon = FALSE;
+	serverList_t * slt = (serverList_t *)data;
+	slt->count = count;
 
-	/* Quick check for a common case */
-	if (count != 0 && showing_new_icon) {
-		return;
+	if (count == 0 && slt->attention) {
+		slt->attention = FALSE;
+		check_attention();
 	}
 
-	/* Odd that we'd get a signal in this case, but let's
-	   take it out of the mix too */
-	if (count == 0 && !showing_new_icon) {
-		return;
-	}
-
-	if (count != 0) {
-		g_debug("Setting image to 'new'");
-		showing_new_icon = TRUE;
-		message_service_dbus_set_attention(dbus_interface, TRUE);
-		return;
-	}
-
-	/* Okay, now at this point the count is zero and it
-	   might result in a switching of the icon back to being
-	   the plain one.  Let's check. */
-
-	gboolean we_have_indicators = FALSE;
-	GList * appitems = serverList;
-	for (; appitems != NULL; appitems = appitems->next) {
-		AppMenuItem * appitem = ((serverList_t *)appitems->data)->menuitem;
-		if (app_menu_item_get_count(appitem) != 0) {
-			we_have_indicators = TRUE;
-			break;
-		}
-	}
-
-	if (!we_have_indicators) {
-		g_debug("Setting image to boring");
-		showing_new_icon = FALSE;
-		message_service_dbus_set_attention(dbus_interface, FALSE);
+	if (count != 0 && !slt->attention) {
+		slt->attention = TRUE;
+		check_attention();
 	}
 
 	return;
@@ -538,10 +541,14 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 		g_object_unref(G_OBJECT(sltp->menuitem));
 	}
 
+	if (sltp->attention) {
+		/* Check to see if this was the server causing the menu item to
+		   be lit up. */
+		check_attention();
+	}
+
 	g_free(sltp);
 
-	/* Simulate a server saying zero to recalculate icon */
-	server_count_changed(NULL, 0, NULL);
 	check_hidden();
 
 	return;
