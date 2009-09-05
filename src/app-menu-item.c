@@ -61,8 +61,6 @@ static void app_menu_item_finalize   (GObject *object);
 static void activate_cb (AppMenuItem * self, gpointer data);
 static void type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
 static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
-static void indicator_added_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
-static void indicator_removed_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
 static void update_label (AppMenuItem * self);
 
 
@@ -121,9 +119,6 @@ app_menu_item_dispose (GObject *object)
 	AppMenuItem * self = APP_MENU_ITEM(object);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
-	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_added_cb), self);
-	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_removed_cb), self);
-
 	g_object_unref(priv->listener);
 
 	G_OBJECT_CLASS (app_menu_item_parent_class)->dispose (object);
@@ -163,9 +158,6 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 	g_object_ref(G_OBJECT(listener));
 	priv->server = server;
 	/* Can not ref as not real GObject */
-
-	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added_cb), self);
-	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed_cb), self);
 
 	indicate_listener_server_get_type(listener, server, type_cb, self);
 	indicate_listener_server_get_desktop(listener, server, desktop_cb, self);
@@ -266,46 +258,6 @@ activate_cb (AppMenuItem * self, gpointer data)
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
 	indicate_listener_display(priv->listener, priv->server, NULL);
-
-	return;
-}
-
-static void 
-indicator_added_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
-{
-	g_return_if_fail(IS_APP_MENU_ITEM(data));
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(data);
-
-	if (g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server))) {
-		/* Not us */
-		return;
-	}
-
-	priv->unreadcount++;
-
-	update_label(APP_MENU_ITEM(data));
-	g_signal_emit(G_OBJECT(data), signals[COUNT_CHANGED], 0, priv->unreadcount, TRUE);
-
-	return;
-}
-
-static void
-indicator_removed_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
-{
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(data);
-
-	if (g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server))) {
-		/* Not us */
-		return;
-	}
-
-	/* Should never happen, but let's have some protection on that */
-	if (priv->unreadcount > 0) {
-		priv->unreadcount--;
-	}
-
-	update_label(APP_MENU_ITEM(data));
-	g_signal_emit(G_OBJECT(data), signals[COUNT_CHANGED], 0, priv->unreadcount, TRUE);
 
 	return;
 }
