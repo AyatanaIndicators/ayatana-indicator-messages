@@ -561,6 +561,17 @@ im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data)
 static void
 im_attention_changed (ImMenuItem * imitem, gboolean requestit, gpointer data)
 {
+	serverList_t * sl = (serverList_t *)data;
+
+	if (requestit) {
+		sl->attention = TRUE;
+		message_service_dbus_set_attention(dbus_interface, TRUE);
+	} else {
+		server_attention(sl);
+		if (!sl->attention) {
+			check_attention();
+		}
+	}
 
 	return;
 }
