@@ -24,9 +24,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #endif
 
+#include <stdlib.h>
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
 #include "app-menu-item.h"
+#include "dbus-data.h"
 
 enum {
 	COUNT_CHANGED,
@@ -47,7 +49,6 @@ struct _AppMenuItemPrivate
 	GAppInfo * appinfo;
 	gchar * desktop;
 	guint unreadcount;
-	gboolean count_on_label;
 };
 
 #define APP_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_MENU_ITEM_TYPE, AppMenuItemPrivate))
@@ -58,14 +59,12 @@ static void app_menu_item_init       (AppMenuItem *self);
 static void app_menu_item_dispose    (GObject *object);
 static void app_menu_item_finalize   (GObject *object);
 static void activate_cb (AppMenuItem * self, gpointer data);
-static void type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
+static void count_changed (IndicateListener * listener, IndicateListenerServer * server, guint count, gpointer data);
+static void count_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
 static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
-static void indicator_added_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
-static void indicator_removed_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
 static void update_label (AppMenuItem * self);
 
-
-
+/* GObject Boilerplate */
 G_DEFINE_TYPE (AppMenuItem, app_menu_item, DBUSMENU_TYPE_MENUITEM);
 
 static void
@@ -108,8 +107,6 @@ app_menu_item_init (AppMenuItem *self)
 	priv->appinfo = NULL;
 	priv->desktop = NULL;
 	priv->unreadcount = 0;
-	priv->count_on_label = FALSE;
-
 
 	return;
 }
@@ -119,9 +116,6 @@ app_menu_item_dispose (GObject *object)
 {
 	AppMenuItem * self = APP_MENU_ITEM(object);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
-
-	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_added_cb), self);
-	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), G_CALLBACK(indicator_removed_cb), self);
 
 	g_object_unref(priv->listener);
 
@@ -158,55 +152,30 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
+	/* Copy the listener so we can use it later */
 	priv->listener = listener;
 	g_object_ref(G_OBJECT(listener));
-	priv->server = server;
+
 	/* Can not ref as not real GObject */
+	priv->server = server;
 
-	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added_cb), self);
-	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed_cb), self);
+	/* Set up listener signals */
+	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_SERVER_COUNT_CHANGED, G_CALLBACK(count_changed), self);
 
-	indicate_listener_server_get_type(listener, server, type_cb, self);
+	/* Get the values we care about from the server */
 	indicate_listener_server_get_desktop(listener, server, desktop_cb, self);
+	indicate_listener_server_get_count(listener, server, count_cb, self);
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_SERVER_DISPLAY);
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_SERVER_SIGNAL);
+	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_COUNT);
+	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_DISPLAY);
+	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_SIGNAL);
+	indicate_listener_set_server_max_indicators(listener, server, MAX_NUMBER_OF_INDICATORS);
 
 	return self;
-}
-
-static void 
-type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
-{
-	AppMenuItem * self = APP_MENU_ITEM(data);
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
-
-	if (priv->type != NULL) {
-		g_free(priv->type);
-		priv->type = NULL;
-	}
-	
-	if (value == NULL) {
-		g_warning("Type value is NULL, that shouldn't really happen");
-		return;
-	}
-
-	priv->type = g_strdup(value);
-
-	if (!(!g_strcmp0(priv->type, "message.instant") || !g_strcmp0(priv->type, "message.micro") || !g_strcmp0(priv->type, "message.im"))) {
-		/* For IM and Microblogging we want the individual items, not a count */
-		priv->count_on_label = TRUE;
-		update_label(self);
-
-		indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_COUNT);
-	} else {
-		indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_DISPLAY);
-		indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_SIGNAL);
-	}
-
-	return;
 }
 
 static void
@@ -214,7 +183,7 @@ update_label (AppMenuItem * self)
 {
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
-	if (priv->count_on_label && !priv->unreadcount < 1) {
+	if (priv->unreadcount > 0) {
 		/* TRANSLATORS: This is the name of the program and the number of indicators.  So it
 		                would read something like "Mail Client (5)" */
 		gchar * label = g_strdup_printf(_("%s (%d)"), app_menu_item_get_name(self), priv->unreadcount);
@@ -227,6 +196,43 @@ update_label (AppMenuItem * self)
 	return;
 }
 
+/* Callback to the signal that the server count
+   has changed to a new value.  This checks to see if
+   it's actually changed and if so signals everyone and
+   updates the label. */
+static void
+count_changed (IndicateListener * listener, IndicateListenerServer * server, guint count, gpointer data)
+{
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	if (priv->unreadcount != count) {
+		priv->unreadcount = count;
+		update_label(self);
+		g_signal_emit(G_OBJECT(self), signals[COUNT_CHANGED], 0, priv->unreadcount, TRUE);
+	}
+
+	return;
+}
+
+/* Callback for getting the count property off
+   of the server. */
+static void 
+count_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
+{
+	g_return_if_fail(value != NULL);
+	g_return_if_fail(value[0] != '\0');
+
+	int count = atoi(value);
+	count_changed(listener, server, count, data);
+
+	return;
+}
+
+/* Callback for when we ask the server for the path
+   to it's desktop file.  We then turn it into an
+   app structure and start sucking data out of it.
+   Mostly the name. */
 static void 
 desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
 {
@@ -264,46 +270,6 @@ activate_cb (AppMenuItem * self, gpointer data)
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
 	indicate_listener_display(priv->listener, priv->server, NULL);
-
-	return;
-}
-
-static void 
-indicator_added_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
-{
-	g_return_if_fail(IS_APP_MENU_ITEM(data));
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(data);
-
-	if (g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server))) {
-		/* Not us */
-		return;
-	}
-
-	priv->unreadcount++;
-
-	update_label(APP_MENU_ITEM(data));
-	g_signal_emit(G_OBJECT(data), signals[COUNT_CHANGED], 0, priv->unreadcount, TRUE);
-
-	return;
-}
-
-static void
-indicator_removed_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
-{
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(data);
-
-	if (g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server))) {
-		/* Not us */
-		return;
-	}
-
-	/* Should never happen, but let's have some protection on that */
-	if (priv->unreadcount > 0) {
-		priv->unreadcount--;
-	}
-
-	update_label(APP_MENU_ITEM(data));
-	g_signal_emit(G_OBJECT(data), signals[COUNT_CHANGED], 0, priv->unreadcount, TRUE);
 
 	return;
 }
