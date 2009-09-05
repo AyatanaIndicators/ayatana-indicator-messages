@@ -114,6 +114,7 @@ struct _imList_t {
 	IndicateListenerIndicator * indicator;
 	DbusmenuMenuitem * menuitem;
 	gulong timechange_cb;
+	gulong attentionchange_cb;
 };
 
 static gboolean
@@ -543,12 +544,24 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	return;
 }
 
+/* Respond to the IM entrie's time changing
+   which results in it needing to resort the list
+   and rebuild the menu to match. */
 static void
 im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data)
 {
 	serverList_t * sl = (serverList_t *)data;
 	sl->imList = g_list_sort(sl->imList, imList_sort);
 	resort_menu(root_menuitem);
+	return;
+}
+
+/* The IM entrie's request for attention has changed
+   so we need to pass that up the stack. */
+static void
+im_attention_changed (ImMenuItem * imitem, gboolean requestit, gpointer data)
+{
+
 	return;
 }
 
@@ -744,6 +757,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 	/* Added a this entry into the IM list */
 	sl_item->imList = g_list_insert_sorted(sl_item->imList, listItem, imList_sort);
 	listItem->timechange_cb = g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_TIME_CHANGED, G_CALLBACK(im_time_changed), sl_item);
+	listItem->attentionchange_cb = g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_ATTENTION_CHANGED, G_CALLBACK(im_attention_changed), sl_item);
 
 	/* Check the length of the list.  If we've got more inidactors
 	   than we allow.  Well.  Someone's gotta pay.  Sorry.  I didn't
@@ -817,6 +831,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	if (!removed && menuitem != NULL) {
 		sl_item->imList = g_list_remove(sl_item->imList, ilt);
 		g_signal_handler_disconnect(menuitem, ilt->timechange_cb);
+		g_signal_handler_disconnect(menuitem, ilt->attentionchange_cb);
 		g_free(ilt);
 
 		if (im_menu_item_get_attention(IM_MENU_ITEM(menuitem)) && im_menu_item_shown(IM_MENU_ITEM(menuitem))) {
