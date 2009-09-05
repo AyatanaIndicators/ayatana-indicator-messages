@@ -776,6 +776,10 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 	return;
 }
 
+/* Process and indicator getting removed from the system.  We
+   first need to ensure that it's one of ours and figure out
+   where we put it.  When we find all that out we can go through
+   the process of removing the effect it had on the system. */
 static void
 indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gpointer data)
 {
@@ -783,11 +787,13 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 
 	gboolean removed = FALSE;
 
+	/* Find the server that was related to this item */
 	serverList_t sl_item_local;
 	serverList_t * sl_item = NULL;
 	sl_item_local.server = server;
 	GList * serverentry = g_list_find_custom(serverList, &sl_item_local, serverList_equal);
 	if (serverentry == NULL) {
+		/* We didn't care about that server */
 		return;
 	}
 	sl_item = (serverList_t *)serverentry->data;
@@ -805,10 +811,25 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 		menuitem = ilt->menuitem;
 	}
 
+	/* If we found a menu item and an imList_t item then
+	   we can go ahead and remove it.  Otherwise we can 
+	   skip this and exit. */
 	if (!removed && menuitem != NULL) {
 		sl_item->imList = g_list_remove(sl_item->imList, ilt);
 		g_signal_handler_disconnect(menuitem, ilt->timechange_cb);
 		g_free(ilt);
+
+		if (im_menu_item_get_attention(IM_MENU_ITEM(menuitem)) && im_menu_item_shown(IM_MENU_ITEM(menuitem))) {
+			/* If the removed indicator menu item was asking for
+			   attention we need to see if this server should still
+			   be asking for attention. */
+			server_attention(sl_item);
+			/* If the server is no longer asking for attention then
+			   we need to check if the whole system should be. */
+			if (!sl_item->attention) {
+				check_attention();
+			}
+		}
 
 		if (im_menu_item_shown(IM_MENU_ITEM(menuitem)) && g_list_length(sl_item->imList) >= MAX_NUMBER_OF_INDICATORS) {
 			/* In this case we need to show a different indicator
@@ -822,6 +843,8 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 			}
 		}
 
+		/* Hide the item immediately, and then remove it
+		   which might take a little longer. */
 		dbusmenu_menuitem_property_set(menuitem, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), menuitem);
 		removed = TRUE;
