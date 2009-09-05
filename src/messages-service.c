@@ -71,6 +71,7 @@ typedef struct _serverList_t serverList_t;
 struct _serverList_t {
 	IndicateListenerServer * server;
 	AppMenuItem * menuitem;
+	gboolean attention;
 	GList * imList;
 };
 
@@ -421,6 +422,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	sl_item->server = server;
 	sl_item->menuitem = menuitem;
 	sl_item->imList = NULL;
+	sl_item->attention = FALSE;
 
 	/* Incase we got an indicator first */
 	GList * alreadythere = g_list_find_custom(serverList, sl_item, serverList_equal);
@@ -683,6 +685,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 		sl_item->server = server;
 		sl_item->menuitem = NULL;
 		sl_item->imList = NULL;
+		sl_item->attention = FALSE;
 
 		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
 	} else {
