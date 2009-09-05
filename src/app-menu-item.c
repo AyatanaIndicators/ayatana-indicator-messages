@@ -24,6 +24,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #endif
 
+#include <stdlib.h>
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
 #include "app-menu-item.h"
@@ -58,7 +59,7 @@ static void app_menu_item_init       (AppMenuItem *self);
 static void app_menu_item_dispose    (GObject *object);
 static void app_menu_item_finalize   (GObject *object);
 static void activate_cb (AppMenuItem * self, gpointer data);
-static void type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
+static void count_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
 static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
 static void update_label (AppMenuItem * self);
 
@@ -156,41 +157,19 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 	priv->server = server;
 	/* Can not ref as not real GObject */
 
-	indicate_listener_server_get_type(listener, server, type_cb, self);
 	indicate_listener_server_get_desktop(listener, server, desktop_cb, self);
+	indicate_listener_server_get_count(listener, server, count_cb, self);
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_SERVER_DISPLAY);
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_SERVER_SIGNAL);
-	indicate_listener_set_server_max_indicators(listener, server, MAX_NUMBER_OF_INDICATORS);
-
-	return self;
-}
-
-static void 
-type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
-{
-	AppMenuItem * self = APP_MENU_ITEM(data);
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
-
-	if (priv->type != NULL) {
-		g_free(priv->type);
-		priv->type = NULL;
-	}
-	
-	if (value == NULL) {
-		g_warning("Type value is NULL, that shouldn't really happen");
-		return;
-	}
-
-	priv->type = g_strdup(value);
-
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_COUNT);
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_DISPLAY);
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_SIGNAL);
+	indicate_listener_set_server_max_indicators(listener, server, MAX_NUMBER_OF_INDICATORS);
 
-	return;
+	return self;
 }
 
 static void
@@ -211,6 +190,28 @@ update_label (AppMenuItem * self)
 	return;
 }
 
+/* Callback for getting the count property off
+   of the server. */
+static void 
+count_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
+{
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	int count = atoi(value);
+	if (priv->unreadcount != count) {
+		priv->unreadcount = count;
+		update_label(self);
+		g_signal_emit(G_OBJECT(self), signals[COUNT_CHANGED], 0, priv->unreadcount, TRUE);
+	}
+
+	return;
+}
+
+/* Callback for when we ask the server for the path
+   to it's desktop file.  We then turn it into an
+   app structure and start sucking data out of it.
+   Mostly the name. */
 static void 
 desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
 {
