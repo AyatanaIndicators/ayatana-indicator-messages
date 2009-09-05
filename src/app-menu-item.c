@@ -48,7 +48,6 @@ struct _AppMenuItemPrivate
 	GAppInfo * appinfo;
 	gchar * desktop;
 	guint unreadcount;
-	gboolean count_on_label;
 };
 
 #define APP_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_MENU_ITEM_TYPE, AppMenuItemPrivate))
@@ -107,8 +106,6 @@ app_menu_item_init (AppMenuItem *self)
 	priv->appinfo = NULL;
 	priv->desktop = NULL;
 	priv->unreadcount = 0;
-	priv->count_on_label = FALSE;
-
 
 	return;
 }
@@ -189,16 +186,9 @@ type_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * v
 
 	priv->type = g_strdup(value);
 
-	if (!(!g_strcmp0(priv->type, "message.instant") || !g_strcmp0(priv->type, "message.micro") || !g_strcmp0(priv->type, "message.im"))) {
-		/* For IM and Microblogging we want the individual items, not a count */
-		priv->count_on_label = TRUE;
-		update_label(self);
-
-		indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_COUNT);
-	} else {
-		indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_DISPLAY);
-		indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_SIGNAL);
-	}
+	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_COUNT);
+	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_DISPLAY);
+	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_SIGNAL);
 
 	return;
 }
@@ -208,7 +198,7 @@ update_label (AppMenuItem * self)
 {
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
-	if (priv->count_on_label && !priv->unreadcount < 1) {
+	if (priv->unreadcount > 0) {
 		/* TRANSLATORS: This is the name of the program and the number of indicators.  So it
 		                would read something like "Mail Client (5)" */
 		gchar * label = g_strdup_printf(_("%s (%d)"), app_menu_item_get_name(self), priv->unreadcount);
