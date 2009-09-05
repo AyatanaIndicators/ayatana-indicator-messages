@@ -424,6 +424,7 @@ server_attention (serverList_t * slt)
 		return;
 	}
 
+	/* Check to see if any of the indicators want attention */
 	GList * pointer;
 	for (pointer = slt->imList; pointer != NULL; pointer = g_list_next(pointer)) {
 		imList_t * ilt = (imList_t *)pointer->data;
@@ -433,10 +434,14 @@ server_attention (serverList_t * slt)
 		}
 	}
 
+	/* Nope, no one */
 	slt->attention = FALSE;
 	return;
 }
 
+/* A new server has been created on the indicate bus.
+   We need to check to see if we like it.  And build
+   structures for it if so. */
 static void 
 server_added (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
@@ -497,6 +502,10 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	return;
 }
 
+/* The name of a server has changed, we probably
+   need to reorder the menu to keep it in alphabetical
+   order.  This happens often after we read the destkop
+   file from disk. */
 static void
 server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data)
 {
