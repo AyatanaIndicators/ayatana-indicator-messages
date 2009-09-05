@@ -460,6 +460,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	sl_item->menuitem = menuitem;
 	sl_item->imList = NULL;
 	sl_item->attention = FALSE;
+	sl_item->count = 0;
 
 	/* Incase we got an indicator first */
 	GList * alreadythere = g_list_find_custom(serverList, sl_item, serverList_equal);
@@ -715,6 +716,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 		sl_item->menuitem = NULL;
 		sl_item->imList = NULL;
 		sl_item->attention = FALSE;
+		sl_item->count = 0;
 
 		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
 	} else {
