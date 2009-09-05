@@ -59,12 +59,12 @@ static void app_menu_item_init       (AppMenuItem *self);
 static void app_menu_item_dispose    (GObject *object);
 static void app_menu_item_finalize   (GObject *object);
 static void activate_cb (AppMenuItem * self, gpointer data);
+static void count_changed (IndicateListener * listener, IndicateListenerServer * server, guint count, gpointer data);
 static void count_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
 static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
 static void update_label (AppMenuItem * self);
 
-
-
+/* GObject Boilerplate */
 G_DEFINE_TYPE (AppMenuItem, app_menu_item, DBUSMENU_TYPE_MENUITEM);
 
 static void
@@ -152,11 +152,17 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
+	/* Copy the listener so we can use it later */
 	priv->listener = listener;
 	g_object_ref(G_OBJECT(listener));
-	priv->server = server;
-	/* Can not ref as not real GObject */
 
+	/* Can not ref as not real GObject */
+	priv->server = server;
+
+	/* Set up listener signals */
+	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_SERVER_COUNT_CHANGED, G_CALLBACK(count_changed), self);
+
+	/* Get the values we care about from the server */
 	indicate_listener_server_get_desktop(listener, server, desktop_cb, self);
 	indicate_listener_server_get_count(listener, server, count_cb, self);
 
@@ -190,20 +196,35 @@ update_label (AppMenuItem * self)
 	return;
 }
 
-/* Callback for getting the count property off
-   of the server. */
-static void 
-count_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
+/* Callback to the signal that the server count
+   has changed to a new value.  This checks to see if
+   it's actually changed and if so signals everyone and
+   updates the label. */
+static void
+count_changed (IndicateListener * listener, IndicateListenerServer * server, guint count, gpointer data)
 {
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
-	int count = atoi(value);
 	if (priv->unreadcount != count) {
 		priv->unreadcount = count;
 		update_label(self);
 		g_signal_emit(G_OBJECT(self), signals[COUNT_CHANGED], 0, priv->unreadcount, TRUE);
 	}
+
+	return;
+}
+
+/* Callback for getting the count property off
+   of the server. */
+static void 
+count_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
+{
+	g_return_if_fail(value != NULL);
+	g_return_if_fail(value[0] != '\0');
+
+	int count = atoi(value);
+	count_changed(listener, server, count, data);
 
 	return;
 }
