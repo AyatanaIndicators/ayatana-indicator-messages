@@ -1,3 +1,9 @@
+indicator-messages (0.2.0-0ubuntu3~ppa2~newapi2) UNRELEASED; urgency=low
+
+  * Fix for the changes in libindicate (fixes)
+
+ -- Ted Gould <ted@ubuntu.com>  Sat, 05 Sep 2009 11:43:49 -0500
+
 indicator-messages (0.2.0-0ubuntu3~ppa2~newapi1) karmic; urgency=low
 
   * Merging in changes for the new libindicate API
