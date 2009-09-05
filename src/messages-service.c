@@ -531,7 +531,7 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 	serverList = g_list_remove(serverList, sltp);
 
 	if (sltp->menuitem != NULL) {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(sltp->menuitem), "visibile", "false");
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(sltp->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(sltp->menuitem));
 		g_object_unref(G_OBJECT(sltp->menuitem));
 	}
@@ -776,7 +776,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 		g_signal_handler_disconnect(menuitem, ilt->timechange_cb);
 		g_free(ilt);
 
-		dbusmenu_menuitem_property_set(menuitem, "visibile", "false");
+		dbusmenu_menuitem_property_set(menuitem, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), menuitem);
 		removed = TRUE;
 	}
