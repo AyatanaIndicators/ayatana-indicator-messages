@@ -411,6 +411,23 @@ check_attention (void)
 	return;
 }
 
+/* This checks a server listing to see if it should
+   have attention.  It can get attention through it's
+   count or by having an indicator that is requestion
+   attention. */
+static void
+server_attention (serverList_t * slt)
+{
+	/* Count, easy yes and out. */
+	if (slt->count > 0) {
+		slt->attention = TRUE;
+		return;
+	}
+
+
+	return;
+}
+
 static void 
 server_added (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
@@ -490,13 +507,18 @@ server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 	slt->count = count;
 
 	if (count == 0 && slt->attention) {
-		slt->attention = FALSE;
-		check_attention();
+		/* Regen based on indicators if the count isn't going to cause it. */
+		server_attention(slt);
+		/* If we're dropping let's see if we're the last. */
+		if (!slt->attention) {
+			check_attention();
+		}
 	}
 
 	if (count != 0 && !slt->attention) {
 		slt->attention = TRUE;
-		check_attention();
+		/* Let's tell everyone about us! */
+		message_service_dbus_set_attention(dbus_interface, TRUE);
 	}
 
 	return;
