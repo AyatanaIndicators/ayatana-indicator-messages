@@ -424,7 +424,16 @@ server_attention (serverList_t * slt)
 		return;
 	}
 
+	GList * pointer;
+	for (pointer = slt->imList; pointer != NULL; pointer = g_list_next(pointer)) {
+		imList_t * ilt = (imList_t *)pointer->data;
+		if (im_menu_item_get_attention(IM_MENU_ITEM(ilt->menuitem))) {
+			slt->attention = TRUE;
+			return;
+		}
+	}
 
+	slt->attention = FALSE;
 	return;
 }
 
