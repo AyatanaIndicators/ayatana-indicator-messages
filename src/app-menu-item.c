@@ -60,7 +60,7 @@ static void app_menu_item_dispose    (GObject *object);
 static void app_menu_item_finalize   (GObject *object);
 static void activate_cb (AppMenuItem * self, gpointer data);
 static void count_changed (IndicateListener * listener, IndicateListenerServer * server, guint count, gpointer data);
-static void count_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
+static void count_cb (IndicateListener * listener, IndicateListenerServer * server, guint value, gpointer data);
 static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
 static void update_label (AppMenuItem * self);
 
@@ -218,14 +218,9 @@ count_changed (IndicateListener * listener, IndicateListenerServer * server, gui
 /* Callback for getting the count property off
    of the server. */
 static void 
-count_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
+count_cb (IndicateListener * listener, IndicateListenerServer * server, guint value, gpointer data)
 {
-	g_return_if_fail(value != NULL);
-	g_return_if_fail(value[0] != '\0');
-
-	int count = atoi(value);
-	count_changed(listener, server, count, data);
-
+	count_changed(listener, server, value, data);
 	return;
 }
 
