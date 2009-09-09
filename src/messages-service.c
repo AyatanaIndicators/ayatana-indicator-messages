@@ -835,7 +835,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	sl_item = (serverList_t *)serverentry->data;
 
 	/* Look in the IM Hash Table */
-	imList_t listData;
+	imList_t listData = {0};
 	listData.server = server;
 	listData.indicator = indicator;
 
