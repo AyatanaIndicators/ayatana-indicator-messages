@@ -707,7 +707,10 @@ resort_menu (DbusmenuMenuitem * menushell)
 				/* Putting the launcher separator in */
 				g_debug("\tMoving launcher separator to position %d", position);
 				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
-				dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+				if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
+					/* Only clear the visiblity if we're not eclipsed */
+					dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+				}
 				position++;
 
 				launcherentry = launcherentry->next;
