@@ -588,14 +588,19 @@ im_attention_changed (ImMenuItem * imitem, gboolean requestit, gpointer data)
 	return;
 }
 
+/* Run when a server is removed from the indicator bus.  It figures
+   out if we have it somewhere, and if so then we dump it out and
+   clean up all of it's entries. */
 static void 
 server_removed (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
+	/* Look for the server */
 	g_debug("Removing server: %s", INDICATE_LISTENER_SERVER_DBUS_NAME(server));
 	serverList_t slt = {0};
 	slt.server = server;
 	GList * lookup = g_list_find_custom(serverList, &slt, serverList_equal);
 
+	/* If we don't have it, exit */
 	if (lookup == NULL) {
 		g_debug("\tUnable to find server: %s", INDICATE_LISTENER_SERVER_DBUS_NAME(server));
 		return;
@@ -603,19 +608,30 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 
 	serverList_t * sltp = (serverList_t *)lookup->data;
 
-	remove_eclipses(sltp->menuitem);
-
+	/* Removing indicators from this server */
 	while (sltp->imList) {
 		imList_t * imitem = (imList_t *)sltp->imList->data;
 		indicator_removed(listener, server, imitem->indicator, data);
 	}
 
+	/* Remove from the server list */
 	serverList = g_list_remove(serverList, sltp);
 
+	/* Remove launchers this could be eclipsing */
+	remove_eclipses(sltp->menuitem);
+
+	/* If there is a menu item, let's get rid of it. */
 	if (sltp->menuitem != NULL) {
 		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(sltp->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(sltp->menuitem));
 		g_object_unref(G_OBJECT(sltp->menuitem));
+	}
+
+	/* If there is a separator, let's get rid of it. */
+	if (sltp->separator != NULL) {
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(sltp->separator), DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(sltp->separator));
+		g_object_unref(G_OBJECT(sltp->separator));
 	}
 
 	if (sltp->attention) {
