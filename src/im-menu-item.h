@@ -38,6 +38,7 @@ G_BEGIN_DECLS
 #define IM_MENU_ITEM_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), IM_MENU_ITEM_TYPE, ImMenuItemClass))
 
 #define IM_MENU_ITEM_SIGNAL_TIME_CHANGED  "time-changed"
+#define IM_MENU_ITEM_SIGNAL_ATTENTION_CHANGED  "attention-changed"
 
 typedef struct _ImMenuItem      ImMenuItem;
 typedef struct _ImMenuItemClass ImMenuItemClass;
@@ -46,6 +47,7 @@ struct _ImMenuItemClass {
 	DbusmenuMenuitemClass parent_class;
 
 	void (*time_changed) (glong seconds);
+	void (*attention_changed) (gboolean requestit);
 };
 
 struct _ImMenuItem {
@@ -53,8 +55,11 @@ struct _ImMenuItem {
 };
 
 GType im_menu_item_get_type (void);
-ImMenuItem * im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gboolean show_time);
+ImMenuItem * im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator);
 glong im_menu_item_get_seconds (ImMenuItem * menuitem);
+gboolean im_menu_item_get_attention (ImMenuItem * menuitem);
+void im_menu_item_show (ImMenuItem * menuitem, gboolean show);
+gboolean im_menu_item_shown (ImMenuItem * menuitem);
 
 G_END_DECLS
 

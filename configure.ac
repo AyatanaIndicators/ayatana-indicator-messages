@@ -34,23 +34,37 @@ PKG_CHECK_MODULES(APPLET, gtk+-2.0 >= $GTK_REQUIRED_VERSION
                           gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                           indicator >= $INDICATOR_REQUIRED_VERSION
                           indicate >= $INDICATE_REQUIRED_VERSION
-                          indicate-gtk >= $INDICATE_REQUIRED_VERSION
                           dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION)
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
 ###########################
+# Check to see if we're local
+###########################
+
+with_localinstall="no"
+AC_ARG_ENABLE(localinstall, AS_HELP_STRING([--enable-localinstall], [install all of the files localy instead of system directories (for distcheck)]), with_localinstall=$enableval, with_localinstall=no)
+
+###########################
 # Indicator Info
 ###########################
 
-INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator`
+if test "x$with_localinstall" = "xyes"; then
+	INDICATORDIR="${libdir}/indicators/2/"
+else
+	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator`
+fi
 AC_SUBST(INDICATORDIR)
 
 ###########################
 # DBus Service Info
 ###########################
 
-DBUSSERVICEDIR=`$PKG_CONFIG --variable=session_bus_services_dir dbus-1`
+if test "x$with_localinstall" = "xyes"; then
+	DBUSSERVICEDIR="${datadir}/dbus-1/services/"
+else
+	DBUSSERVICEDIR=`$PKG_CONFIG --variable=session_bus_services_dir dbus-1`
+fi
 AC_SUBST(DBUSSERVICEDIR)
 
 ###########################
@@ -61,7 +75,6 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 data/Makefile
-data/indicator-messages.service
 data/icons/Makefile
 data/icons/16x16/Makefile
 data/icons/16x16/status/Makefile
