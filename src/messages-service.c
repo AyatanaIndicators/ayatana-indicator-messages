@@ -674,6 +674,11 @@ check_hidden (void)
 	return;
 }
 
+/* This function takes care of putting the menu in the right order.
+   It basically it rebuilds the order by looking through all the
+   applications and launchers and puts them in the right place.  The
+   menu functions will handle the cases where they don't move so this
+   is a good way to ensure everything is right. */
 static void
 resort_menu (DbusmenuMenuitem * menushell)
 {
@@ -686,13 +691,21 @@ resort_menu (DbusmenuMenuitem * menushell)
 	for (serverentry = serverList; serverentry != NULL; serverentry = serverentry->next) {
 		serverList_t * si = (serverList_t *)serverentry->data;
 		
+		/* Looking to see if there are any launchers we need to insert
+		   into the menu structure.  We put as many as we need to. */
 		if (launcherentry != NULL) {
 			launcherList_t * li = (launcherList_t *)launcherentry->data;
 			while (launcherentry != NULL && g_strcmp0(launcher_menu_item_get_name(li->menuitem), app_menu_item_get_name(si->menuitem)) < 0) {
+				/* Putting the launcher item in */
 				g_debug("\tMoving launcher '%s' to position %d", launcher_menu_item_get_name(li->menuitem), position);
 				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->menuitem), position);
-
 				position++;
+
+				/* Putting the launcher separator in */
+				g_debug("\tMoving launcher separator to position %d", position);
+				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
+				position++;
+
 				launcherentry = launcherentry->next;
 				if (launcherentry != NULL) {
 					li = (launcherList_t *)launcherentry->data;
@@ -700,12 +713,15 @@ resort_menu (DbusmenuMenuitem * menushell)
 			}
 		}
 
+		/* Putting the app menu item in */
 		if (si->menuitem != NULL) {
 			g_debug("\tMoving app %s to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->menuitem), position);
 			position++;
 		}
 
+		/* Putting all the indicators that are related to this application
+		   after it. */
 		GList * imentry;
 		for (imentry = si->imList; imentry != NULL; imentry = imentry->next) {
 			imList_t * imi = (imList_t *)imentry->data;
@@ -716,14 +732,29 @@ resort_menu (DbusmenuMenuitem * menushell)
 				position++;
 			}
 		}
+
+		/* Lastly putting the separator in */
+		if (si->separator != NULL) {
+			g_debug("\tMoving app %s separator to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
+			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->separator), position);
+			position++;
+		}
 	}
 
+	/* Put any leftover launchers in at the end of the list. */
 	while (launcherentry != NULL) {
 		launcherList_t * li = (launcherList_t *)launcherentry->data;
+
+		/* Putting the launcher in */
 		g_debug("\tMoving launcher '%s' to position %d", launcher_menu_item_get_name(li->menuitem), position);
 		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->menuitem), position);
-
 		position++;
+
+		/* Putting the launcher separator in */
+		g_debug("\tMoving launcher separator to position %d", position);
+		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
+		position++;
+
 		launcherentry = launcherentry->next;
 	}
 
