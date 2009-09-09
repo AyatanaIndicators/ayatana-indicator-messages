@@ -49,7 +49,7 @@ static void server_count_changed (AppMenuItem * appitem, guint count, gpointer d
 static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data);
 static void im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data);
 static void resort_menu (DbusmenuMenuitem * menushell);
-static void indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data);
+static void indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gpointer data);
 static void check_eclipses (AppMenuItem * ai);
 static void remove_eclipses (AppMenuItem * ai);
 static gboolean build_launcher (gpointer data);
@@ -71,6 +71,8 @@ typedef struct _serverList_t serverList_t;
 struct _serverList_t {
 	IndicateListenerServer * server;
 	AppMenuItem * menuitem;
+	gboolean attention;
+	guint count;
 	GList * imList;
 };
 
@@ -112,6 +114,7 @@ struct _imList_t {
 	IndicateListenerIndicator * indicator;
 	DbusmenuMenuitem * menuitem;
 	gulong timechange_cb;
+	gulong attentionchange_cb;
 };
 
 static gboolean
@@ -390,6 +393,56 @@ blacklist_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file,
  * More code
  */
 
+/* Goes through all the servers and sees if any of them
+   want attention.  If they do, then well we'll give it
+   to them.  If they don't, let's not bother the user
+   any, shall we? */
+static void
+check_attention (void)
+{
+	GList * pointer;
+	for (pointer = serverList; pointer != NULL; pointer = g_list_next(pointer)) {
+		serverList_t * slt = (serverList_t *)pointer->data;
+		if (slt->attention) {
+			message_service_dbus_set_attention(dbus_interface, TRUE);
+			return;
+		}
+	}
+	message_service_dbus_set_attention(dbus_interface, FALSE);
+	return;
+}
+
+/* This checks a server listing to see if it should
+   have attention.  It can get attention through it's
+   count or by having an indicator that is requestion
+   attention. */
+static void
+server_attention (serverList_t * slt)
+{
+	/* Count, easy yes and out. */
+	if (slt->count > 0) {
+		slt->attention = TRUE;
+		return;
+	}
+
+	/* Check to see if any of the indicators want attention */
+	GList * pointer;
+	for (pointer = slt->imList; pointer != NULL; pointer = g_list_next(pointer)) {
+		imList_t * ilt = (imList_t *)pointer->data;
+		if (im_menu_item_get_attention(IM_MENU_ITEM(ilt->menuitem))) {
+			slt->attention = TRUE;
+			return;
+		}
+	}
+
+	/* Nope, no one */
+	slt->attention = FALSE;
+	return;
+}
+
+/* A new server has been created on the indicate bus.
+   We need to check to see if we like it.  And build
+   structures for it if so. */
 static void 
 server_added (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
@@ -413,25 +466,33 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 		return;
 	}
 
+	/* Build the Menu item */
 	AppMenuItem * menuitem = app_menu_item_new(listener, server);
-	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), NULL);
-	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_NAME_CHANGED,  G_CALLBACK(server_name_changed),  menushell);
 
+	/* Build a possible server structure */
 	serverList_t * sl_item = g_new0(serverList_t, 1);
 	sl_item->server = server;
 	sl_item->menuitem = menuitem;
 	sl_item->imList = NULL;
+	sl_item->attention = FALSE;
+	sl_item->count = 0;
 
 	/* Incase we got an indicator first */
 	GList * alreadythere = g_list_find_custom(serverList, sl_item, serverList_equal);
 	if (alreadythere != NULL) {
+		/* Use the one we already had */
 		g_free(sl_item);
 		sl_item = (serverList_t *)alreadythere->data;
 		sl_item->menuitem = menuitem;
 		serverList = g_list_sort(serverList, serverList_sort);
 	} else {
+		/* Insert the new one in the list */
 		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
 	}
+
+	/* Connect the signals up to the menu item */
+	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), sl_item);
+	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_NAME_CHANGED,  G_CALLBACK(server_name_changed),  menushell);
 
 	dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
 	/* Should be prepend ^ */
@@ -442,6 +503,10 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	return;
 }
 
+/* The name of a server has changed, we probably
+   need to reorder the menu to keep it in alphabetical
+   order.  This happens often after we read the destkop
+   file from disk. */
 static void
 server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data)
 {
@@ -451,58 +516,63 @@ server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data)
 	return;
 }
 
+/* If the count on the server changes, we need to know
+   whether that should be grabbing attention or not.  If
+   it is, we need to reevaluate whether the whole thing
+   should be grabbing attention or not. */
 static void
 server_count_changed (AppMenuItem * appitem, guint count, gpointer data)
 {
-	static gboolean showing_new_icon = FALSE;
+	serverList_t * slt = (serverList_t *)data;
+	slt->count = count;
 
-	/* Quick check for a common case */
-	if (count != 0 && showing_new_icon) {
-		return;
-	}
-
-	/* Odd that we'd get a signal in this case, but let's
-	   take it out of the mix too */
-	if (count == 0 && !showing_new_icon) {
-		return;
-	}
-
-	if (count != 0) {
-		g_debug("Setting image to 'new'");
-		showing_new_icon = TRUE;
-		message_service_dbus_set_attention(dbus_interface, TRUE);
-		return;
-	}
-
-	/* Okay, now at this point the count is zero and it
-	   might result in a switching of the icon back to being
-	   the plain one.  Let's check. */
-
-	gboolean we_have_indicators = FALSE;
-	GList * appitems = serverList;
-	for (; appitems != NULL; appitems = appitems->next) {
-		AppMenuItem * appitem = ((serverList_t *)appitems->data)->menuitem;
-		if (app_menu_item_get_count(appitem) != 0) {
-			we_have_indicators = TRUE;
-			break;
+	if (count == 0 && slt->attention) {
+		/* Regen based on indicators if the count isn't going to cause it. */
+		server_attention(slt);
+		/* If we're dropping let's see if we're the last. */
+		if (!slt->attention) {
+			check_attention();
 		}
 	}
 
-	if (!we_have_indicators) {
-		g_debug("Setting image to boring");
-		showing_new_icon = FALSE;
-		message_service_dbus_set_attention(dbus_interface, FALSE);
+	if (count != 0 && !slt->attention) {
+		slt->attention = TRUE;
+		/* Let's tell everyone about us! */
+		message_service_dbus_set_attention(dbus_interface, TRUE);
 	}
 
 	return;
 }
 
+/* Respond to the IM entrie's time changing
+   which results in it needing to resort the list
+   and rebuild the menu to match. */
 static void
 im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data)
 {
 	serverList_t * sl = (serverList_t *)data;
 	sl->imList = g_list_sort(sl->imList, imList_sort);
 	resort_menu(root_menuitem);
+	return;
+}
+
+/* The IM entrie's request for attention has changed
+   so we need to pass that up the stack. */
+static void
+im_attention_changed (ImMenuItem * imitem, gboolean requestit, gpointer data)
+{
+	serverList_t * sl = (serverList_t *)data;
+
+	if (requestit) {
+		sl->attention = TRUE;
+		message_service_dbus_set_attention(dbus_interface, TRUE);
+	} else {
+		server_attention(sl);
+		if (!sl->attention) {
+			check_attention();
+		}
+	}
+
 	return;
 }
 
@@ -525,7 +595,7 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 
 	while (sltp->imList) {
 		imList_t * imitem = (imList_t *)sltp->imList->data;
-		indicator_removed(listener, server, imitem->indicator, "message", data);
+		indicator_removed(listener, server, imitem->indicator, data);
 	}
 
 	serverList = g_list_remove(serverList, sltp);
@@ -536,10 +606,14 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 		g_object_unref(G_OBJECT(sltp->menuitem));
 	}
 
+	if (sltp->attention) {
+		/* Check to see if this was the server causing the menu item to
+		   be lit up. */
+		check_attention();
+	}
+
 	g_free(sltp);
 
-	/* Simulate a server saying zero to recalculate icon */
-	server_count_changed(NULL, 0, NULL);
 	check_hidden();
 
 	return;
@@ -646,8 +720,11 @@ resort_menu (DbusmenuMenuitem * menushell)
 	return;
 }
 
+/* Responding to a new indicator showing up on the bus.  We
+   need to create a menuitem for it and start populating the
+   internal structures to track it. */
 static void
-subtype_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
+indicator_added (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gpointer data)
 {
 	DbusmenuMenuitem * menushell = DBUSMENU_MENUITEM(data);
 	if (menushell == NULL) {
@@ -655,105 +732,93 @@ subtype_cb (IndicateListener * listener, IndicateListenerServer * server, Indica
 		return;
 	}
 
-	if (property == NULL || g_strcmp0(property, "subtype")) {
-		/* We should only ever get subtypes, but just in case */
-		g_warning("Subtype callback got a property '%s'", property);
-		return;
+	imList_t * listItem = g_new0(imList_t, 1);
+	listItem->server = server;
+	listItem->indicator = indicator;
+
+	/* Building the IM Menu Item which is a subclass
+	   of DBus Menuitem */
+	ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator);
+	g_object_ref(G_OBJECT(menuitem));
+	listItem->menuitem = DBUSMENU_MENUITEM(menuitem);
+
+	/* Looking for a server entry to attach this indicator
+	   to.  If we can't find one then we have to build one
+	   and attach the indicator to it. */
+	serverList_t sl_item_local;
+	serverList_t * sl_item = NULL;
+	sl_item_local.server = server;
+	GList * serverentry = g_list_find_custom(serverList, &sl_item_local, serverList_equal);
+
+	if (serverentry == NULL) {
+		/* This sucks, we got an indicator before the server.  I guess
+		   that's the joy of being asynchronous */
+		serverList_t * sl_item = g_new0(serverList_t, 1);
+		sl_item->server = server;
+		sl_item->menuitem = NULL;
+		sl_item->imList = NULL;
+		sl_item->attention = FALSE;
+		sl_item->count = 0;
+
+		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
+	} else {
+		sl_item = (serverList_t *)serverentry->data;
 	}
 
-	if (propertydata == NULL || propertydata[0] == '\0') {
-		/* It's possible that this message didn't have a subtype.  That's
-		 * okay, but we don't want to display those */
-		g_debug("No subtype");
-		return;
+	/* Added a this entry into the IM list */
+	sl_item->imList = g_list_insert_sorted(sl_item->imList, listItem, imList_sort);
+	listItem->timechange_cb = g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_TIME_CHANGED, G_CALLBACK(im_time_changed), sl_item);
+	listItem->attentionchange_cb = g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_ATTENTION_CHANGED, G_CALLBACK(im_attention_changed), sl_item);
+
+	/* Check the length of the list.  If we've got more inidactors
+	   than we allow.  Well.  Someone's gotta pay.  Sorry.  I didn't
+	   want to do this, but you did it to yourself. */
+	if (g_list_length(sl_item->imList) > MAX_NUMBER_OF_INDICATORS) {
+		GList * indicatoritem;
+		gint count;
+		for (indicatoritem = sl_item->imList, count = 0; indicatoritem != NULL; indicatoritem = g_list_next(indicatoritem), count++) {
+			imList_t * im = (imList_t *)indicatoritem->data;
+			im_menu_item_show(IM_MENU_ITEM(im->menuitem), count < MAX_NUMBER_OF_INDICATORS);
+		}
 	}
 
-	g_debug("Message subtype: %s", propertydata);
+	/* Placing the item into the shell.  Look to see if
+	   we can find our server and slip in there.  Otherwise
+	   we'll just append. */
+	menushell_location_t msl;
+	msl.found = FALSE;
+	msl.position = 0;
+	msl.server = server;
 
-	if (!g_strcmp0(propertydata, "im") || !g_strcmp0(propertydata, "login")) {
-		imList_t * listItem = g_new0(imList_t, 1);
-		listItem->server = server;
-		listItem->indicator = indicator;
-
-		g_debug("Building IM Item");
-		ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator, !g_strcmp0(propertydata, "im"));
-		g_object_ref(G_OBJECT(menuitem));
-		listItem->menuitem = DBUSMENU_MENUITEM(menuitem);
-
-		g_debug("Finding the server entry");
-		serverList_t sl_item_local;
-		serverList_t * sl_item = NULL;
-		sl_item_local.server = server;
-		GList * serverentry = g_list_find_custom(serverList, &sl_item_local, serverList_equal);
-
-		if (serverentry == NULL) {
-			/* This sucks, we got an indicator before the server.  I guess
-			   that's the joy of being asynchronous */
-			serverList_t * sl_item = g_new0(serverList_t, 1);
-			sl_item->server = server;
-			sl_item->menuitem = NULL;
-			sl_item->imList = NULL;
-
-			serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
-		} else {
-			sl_item = (serverList_t *)serverentry->data;
-		}
-
-		g_debug("Adding to IM List");
-		sl_item->imList = g_list_insert_sorted(sl_item->imList, listItem, imList_sort);
-		listItem->timechange_cb = g_signal_connect(G_OBJECT(menuitem), IM_MENU_ITEM_SIGNAL_TIME_CHANGED, G_CALLBACK(im_time_changed), sl_item);
-
-		g_debug("Placing in Shell");
-		menushell_location_t msl;
-		msl.found = FALSE;
-		msl.position = 0;
-		msl.server = server;
-
-		dbusmenu_menuitem_foreach(DBUSMENU_MENUITEM(menushell), menushell_foreach_cb, &msl);
-		if (msl.found) {
-			dbusmenu_menuitem_child_add_position(menushell, DBUSMENU_MENUITEM(menuitem), msl.position);
-		} else {
-			g_warning("Unable to find server menu item");
-			dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
-		}
+	dbusmenu_menuitem_foreach(DBUSMENU_MENUITEM(menushell), menushell_foreach_cb, &msl);
+	if (msl.found) {
+		dbusmenu_menuitem_child_add_position(menushell, DBUSMENU_MENUITEM(menuitem), msl.position);
+	} else {
+		g_warning("Unable to find server menu item");
+		dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
 	}
 
 	return;
 }
 
+/* Process and indicator getting removed from the system.  We
+   first need to ensure that it's one of ours and figure out
+   where we put it.  When we find all that out we can go through
+   the process of removing the effect it had on the system. */
 static void
-indicator_added (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
-{
-	if (type == NULL || g_strcmp0(type, "message")) {
-		/* We only care about message type indicators
-		   all of the others can go to the bit bucket */
-		g_debug("Ignoreing indicator of type '%s'", type);
-		return;
-	}
-	g_debug("Got a message");
-
-	indicate_listener_get_property(listener, server, indicator, "subtype", subtype_cb, data);	
-	return;
-}
-
-static void
-indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * type, gpointer data)
+indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gpointer data)
 {
 	g_debug("Removing %s %d", INDICATE_LISTENER_SERVER_DBUS_NAME(server), INDICATE_LISTENER_INDICATOR_ID(indicator));
-	if (type == NULL || g_strcmp0(type, "message")) {
-		/* We only care about message type indicators
-		   all of the others can go to the bit bucket */
-		g_debug("Ignoreing indicator of type '%s'", type);
-		return;
-	}
 
 	gboolean removed = FALSE;
 
+	/* Find the server that was related to this item */
 	serverList_t sl_item_local;
 	serverList_t * sl_item = NULL;
 	sl_item_local.server = server;
 	GList * serverentry = g_list_find_custom(serverList, &sl_item_local, serverList_equal);
 	if (serverentry == NULL) {
+		/* We didn't care about that server */
 		return;
 	}
 	sl_item = (serverList_t *)serverentry->data;
@@ -771,11 +836,41 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 		menuitem = ilt->menuitem;
 	}
 
+	/* If we found a menu item and an imList_t item then
+	   we can go ahead and remove it.  Otherwise we can 
+	   skip this and exit. */
 	if (!removed && menuitem != NULL) {
 		sl_item->imList = g_list_remove(sl_item->imList, ilt);
 		g_signal_handler_disconnect(menuitem, ilt->timechange_cb);
+		g_signal_handler_disconnect(menuitem, ilt->attentionchange_cb);
 		g_free(ilt);
 
+		if (im_menu_item_get_attention(IM_MENU_ITEM(menuitem)) && im_menu_item_shown(IM_MENU_ITEM(menuitem))) {
+			/* If the removed indicator menu item was asking for
+			   attention we need to see if this server should still
+			   be asking for attention. */
+			server_attention(sl_item);
+			/* If the server is no longer asking for attention then
+			   we need to check if the whole system should be. */
+			if (!sl_item->attention) {
+				check_attention();
+			}
+		}
+
+		if (im_menu_item_shown(IM_MENU_ITEM(menuitem)) && g_list_length(sl_item->imList) >= MAX_NUMBER_OF_INDICATORS) {
+			/* In this case we need to show a different indicator
+			   becasue a shown one has left.  But we're going to be
+			   easy and set all the values. */
+			GList * indicatoritem;
+			gint count;
+			for (indicatoritem = sl_item->imList, count = 0; indicatoritem != NULL; indicatoritem = g_list_next(indicatoritem), count++) {
+				imList_t * im = (imList_t *)indicatoritem->data;
+				im_menu_item_show(IM_MENU_ITEM(im->menuitem), count < MAX_NUMBER_OF_INDICATORS);
+			}
+		}
+
+		/* Hide the item immediately, and then remove it
+		   which might take a little longer. */
 		dbusmenu_menuitem_property_set(menuitem, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), menuitem);
 		removed = TRUE;
