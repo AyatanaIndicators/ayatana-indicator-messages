@@ -1,9 +1,9 @@
-indicator-messages (0.2.1-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.2.1-0ubuntu1~ppa1) karmic; urgency=low
 
   * Merging in v2-api stuff which will become 0.2.1
   * debian/control: Requiring > 0.2.0 of libindicate-*
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 09 Sep 2009 10:05:52 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 09 Sep 2009 11:03:47 -0500
 
 indicator-messages (0.2.0-0ubuntu3~ppa1) karmic; urgency=low
 
