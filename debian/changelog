@@ -1,8 +1,8 @@
-indicator-messages (0.2.0-0ubuntu3~ppa2~newapi4) UNRELEASED; urgency=low
+indicator-messages (0.2.0-0ubuntu3~ppa2~newapi4) karmic; urgency=low
 
   * LANG=en_UK Bloody Hell
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 08 Sep 2009 20:21:33 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 08 Sep 2009 20:22:02 -0500
 
 indicator-messages (0.2.0-0ubuntu3~ppa2~newapi3) karmic; urgency=low
 
