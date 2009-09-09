@@ -125,11 +125,20 @@ im_menu_item_init (ImMenuItem *self)
 	g_debug("Building new IM Menu Item");
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
+	/* Set the variables to NULL, but they should be
+	   configured further down the line. */
 	priv->listener = NULL;
 	priv->server = NULL;
 	priv->indicator = NULL;
 
+	/* A sane default, but look below */
 	priv->seconds = 0;
+
+	/* Set the seconds to be the time when the item was
+	   created incase we're not given a better time. */
+	GTimeVal current_time;
+	g_get_current_time(&current_time);
+	priv->seconds = current_time.tv_sec;
 
 	return;
 }
