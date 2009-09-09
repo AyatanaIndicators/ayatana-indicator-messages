@@ -140,6 +140,39 @@ setup_icon_proxy (gpointer userdata)
 	return FALSE;
 }
 
+typedef struct _indicator_item_t indicator_item_t;
+struct _indicator_item_t {
+	GtkWidget * icon;
+	GtkWidget * label;
+	GtkWidget * right;
+};
+
+/* Whenever we have a property change on a DbusmenuMenuitem
+   we need to be responsive to that. */
+static void
+indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, gchar * value, indicator_item_t * mi_data)
+{
+	if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_LABEL)) {
+		/* Set the main label */
+		gtk_label_set_text(GTK_LABEL(mi_data->label), value);
+	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_RIGHT)) {
+		/* Set the right label */
+		gtk_label_set_text(GTK_LABEL(mi_data->right), value);
+	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_ICON)) {
+		/* We don't use the value here, which is probably less efficient, 
+		   but it's easier to use the easy function.  And since th value
+		   is already cached, shouldn't be a big deal really.  */
+		GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(newitem, INDICATOR_MENUITEM_PROP_ICON);
+		if (pixbuf != NULL) {
+			gtk_image_set_from_pixbuf(GTK_IMAGE(mi_data->icon), pixbuf);
+		}
+	} else {
+		g_warning("Indicator Item property '%s' unknown", prop);
+	}
+
+	return;
+}
+
 /* We have a small little menuitem type that handles all
    of the fun stuff for indicators.  Mostly this is the
    shifting over and putting the icon in with some right
@@ -147,6 +180,8 @@ setup_icon_proxy (gpointer userdata)
 static gboolean
 new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, DbusmenuClient * client)
 {
+	indicator_item_t * mi_data = g_new0(indicator_item_t, 1);
+
 	g_return_val_if_fail(DBUSMENU_IS_MENUITEM(newitem), FALSE);
 	g_return_val_if_fail(DBUSMENU_IS_GTKCLIENT(client), FALSE);
 	/* Note: not checking parent, it's reasonable for it to be NULL */
@@ -156,34 +191,36 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	GtkWidget * hbox = gtk_hbox_new(FALSE, 4);
 
 	/* Icon, probably someone's face or avatar on an IM */
-	GtkWidget * icon = gtk_image_new();
+	mi_data->icon = gtk_image_new();
 	GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(newitem, INDICATOR_MENUITEM_PROP_ICON);
 	if (pixbuf != NULL) {
-		gtk_image_set_from_pixbuf(GTK_IMAGE(icon), pixbuf);
+		gtk_image_set_from_pixbuf(GTK_IMAGE(mi_data->icon), pixbuf);
 	}
-	gtk_misc_set_alignment(GTK_MISC(icon), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, FALSE, 0);
-	gtk_widget_show(icon);
+	gtk_misc_set_alignment(GTK_MISC(mi_data->icon), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, 0);
+	gtk_widget_show(mi_data->icon);
 
 	/* Label, probably a username, chat room or mailbox name */
-	GtkWidget * label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_LABEL));
-	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
-	gtk_widget_show(label);
+	mi_data->label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_LABEL));
+	gtk_misc_set_alignment(GTK_MISC(mi_data->label), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), mi_data->label, TRUE, TRUE, 0);
+	gtk_widget_show(mi_data->label);
 
 	/* Usually either the time or the count on the individual
 	   item. */
-	GtkWidget * right = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_RIGHT));
-	gtk_size_group_add_widget(indicator_right_group, right);
-	gtk_misc_set_alignment(GTK_MISC(right), 1.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), right, FALSE, FALSE, 0);
-	gtk_widget_show(right);
+	mi_data->right = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_RIGHT));
+	gtk_size_group_add_widget(indicator_right_group, mi_data->right);
+	gtk_misc_set_alignment(GTK_MISC(mi_data->right), 1.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), mi_data->right, FALSE, FALSE, 0);
+	gtk_widget_show(mi_data->right);
 
 	gtk_container_add(GTK_CONTAINER(gmi), hbox);
 	gtk_widget_show(hbox);
 
 	dbusmenu_gtkclient_newitem_base(DBUSMENU_GTKCLIENT(client), newitem, gmi, parent);
-	/* TODO: Handle changes */
+
+	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(indicator_prop_change_cb), mi_data);
+	g_signal_connect(G_OBJECT(newitem), "destroyed", G_CALLBACK(g_free), mi_data);
 
 	return TRUE;
 }
