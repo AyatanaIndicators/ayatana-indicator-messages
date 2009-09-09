@@ -8,3 +8,4 @@ dbus_services_DATA = indicator-messages.service
 
 EXTRA_DIST = indicator-messages.service.in
 
+CLEANFILES = indicator-messages.service
