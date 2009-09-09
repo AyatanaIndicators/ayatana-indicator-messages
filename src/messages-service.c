@@ -687,7 +687,7 @@ resort_menu (DbusmenuMenuitem * menushell)
 	guint position = 0;
 	GList * serverentry;
 	GList * launcherentry = launcherList;
-	gboolean sep_hidden = FALSE;
+	DbusmenuMenuitem * last_separator = NULL;
 
 	g_debug("Reordering Menu:");
 
@@ -710,6 +710,7 @@ resort_menu (DbusmenuMenuitem * menushell)
 				if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
 					/* Only clear the visiblity if we're not eclipsed */
 					dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+					last_separator = li->separator;
 				}
 				position++;
 
@@ -746,16 +747,8 @@ resort_menu (DbusmenuMenuitem * menushell)
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->separator), position);
 			dbusmenu_menuitem_property_set(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
 			position++;
+			last_separator = si->separator;
 		}
-	}
-
-	/* If there are no more launchers to add we need to hide the
-	   separator on the last application item */
-	if (launcherentry == NULL && serverList != NULL) {
-		serverentry = g_list_last(serverList);
-		serverList_t * si = (serverList_t *)serverentry->data;
-		dbusmenu_menuitem_property_set(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
-		sep_hidden = TRUE;
 	}
 
 	/* Put any leftover launchers in at the end of the list. */
@@ -770,16 +763,20 @@ resort_menu (DbusmenuMenuitem * menushell)
 		/* Putting the launcher separator in */
 		g_debug("\tMoving launcher separator to position %d", position);
 		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
-		dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+		if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
+			/* Only clear the visiblity if we're not eclipsed */
+			dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+			last_separator = li->separator;
+		}
 		position++;
 
 		launcherentry = launcherentry->next;
 	}
 
-	if (!sep_hidden && launcherList != NULL) {
-		launcherentry = g_list_last(launcherList);
-		launcherList_t * li = (launcherList_t *)launcherentry->data;
-		dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+	if (last_separator != NULL) {
+		dbusmenu_menuitem_property_set(last_separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+	} else {
+		g_warning("No last separator on resort");
 	}
 
 	return;
