@@ -687,6 +687,7 @@ resort_menu (DbusmenuMenuitem * menushell)
 	guint position = 0;
 	GList * serverentry;
 	GList * launcherentry = launcherList;
+	gboolean sep_hidden = FALSE;
 
 	g_debug("Reordering Menu:");
 
@@ -706,6 +707,7 @@ resort_menu (DbusmenuMenuitem * menushell)
 				/* Putting the launcher separator in */
 				g_debug("\tMoving launcher separator to position %d", position);
 				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
+				dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
 				position++;
 
 				launcherentry = launcherentry->next;
@@ -739,8 +741,18 @@ resort_menu (DbusmenuMenuitem * menushell)
 		if (si->separator != NULL) {
 			g_debug("\tMoving app %s separator to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->separator), position);
+			dbusmenu_menuitem_property_set(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
 			position++;
 		}
+	}
+
+	/* If there are no more launchers to add we need to hide the
+	   separator on the last application item */
+	if (launcherentry == NULL && serverList != NULL) {
+		serverentry = g_list_last(serverList);
+		serverList_t * si = (serverList_t *)serverentry->data;
+		dbusmenu_menuitem_property_set(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+		sep_hidden = TRUE;
 	}
 
 	/* Put any leftover launchers in at the end of the list. */
@@ -755,9 +767,16 @@ resort_menu (DbusmenuMenuitem * menushell)
 		/* Putting the launcher separator in */
 		g_debug("\tMoving launcher separator to position %d", position);
 		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
+		dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
 		position++;
 
 		launcherentry = launcherentry->next;
+	}
+
+	if (!sep_hidden && launcherList != NULL) {
+		launcherentry = g_list_last(launcherList);
+		launcherList_t * li = (launcherList_t *)launcherentry->data;
+		dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 	}
 
 	return;
