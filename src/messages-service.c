@@ -590,7 +590,7 @@ static void
 server_removed (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
 	g_debug("Removing server: %s", INDICATE_LISTENER_SERVER_DBUS_NAME(server));
-	serverList_t slt;
+	serverList_t slt = {0};
 	slt.server = server;
 	GList * lookup = g_list_find_custom(serverList, &slt, serverList_equal);
 
@@ -755,7 +755,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 	/* Looking for a server entry to attach this indicator
 	   to.  If we can't find one then we have to build one
 	   and attach the indicator to it. */
-	serverList_t sl_item_local;
+	serverList_t sl_item_local = {0};
 	serverList_t * sl_item = NULL;
 	sl_item_local.server = server;
 	GList * serverentry = g_list_find_custom(serverList, &sl_item_local, serverList_equal);
@@ -769,6 +769,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 		sl_item->imList = NULL;
 		sl_item->attention = FALSE;
 		sl_item->count = 0;
+		sl_item->separator = NULL;
 
 		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
 	} else {
@@ -823,7 +824,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	gboolean removed = FALSE;
 
 	/* Find the server that was related to this item */
-	serverList_t sl_item_local;
+	serverList_t sl_item_local = {0};
 	serverList_t * sl_item = NULL;
 	sl_item_local.server = server;
 	GList * serverentry = g_list_find_custom(serverList, &sl_item_local, serverList_equal);
