@@ -1,3 +1,9 @@
+indicator-messages (0.2.1-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * Merging in v2-api stuff which will become 0.2.1
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 09 Sep 2009 10:05:52 -0500
+
 indicator-messages (0.2.0-0ubuntu3~ppa1) karmic; urgency=low
 
   * Bumping version after ~ubuntu-desktop merge.

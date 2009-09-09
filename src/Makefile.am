@@ -1,5 +1,5 @@
 
-bin_PROGRAMS = indicator-messages-service
+libexec_PROGRAMS = indicator-messages-service
 
 ######################################
 # Building the messages indicator
