@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicate/listener.h>
 #include <gio/gio.h>
 
+#include <libdbusmenu-glib/client.h>
 #include <libdbusmenu-glib/server.h>
 
 #include "im-menu-item.h"
@@ -71,6 +72,7 @@ typedef struct _serverList_t serverList_t;
 struct _serverList_t {
 	IndicateListenerServer * server;
 	AppMenuItem * menuitem;
+	DbusmenuMenuitem * separator;
 	gboolean attention;
 	guint count;
 	GList * imList;
@@ -113,6 +115,7 @@ struct _imList_t {
 	IndicateListenerServer * server;
 	IndicateListenerIndicator * indicator;
 	DbusmenuMenuitem * menuitem;
+	DbusmenuMenuitem * separator;
 	gulong timechange_cb;
 	gulong attentionchange_cb;
 };
@@ -477,6 +480,10 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	sl_item->attention = FALSE;
 	sl_item->count = 0;
 
+	/* Build a separator */
+	sl_item->separator = dbusmenu_menuitem_new();
+	dbusmenu_menuitem_property_set(sl_item->separator, "type", DBUSMENU_CLIENT_TYPES_SEPARATOR);
+
 	/* Incase we got an indicator first */
 	GList * alreadythere = g_list_find_custom(serverList, sl_item, serverList_equal);
 	if (alreadythere != NULL) {
@@ -494,8 +501,11 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), sl_item);
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_NAME_CHANGED,  G_CALLBACK(server_name_changed),  menushell);
 
+	/* Put our new menu item in, with the separator behind it.
+	   resort_menu will take care of whether it should be hidden
+	   or not. */
 	dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
-	/* Should be prepend ^ */
+	dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(sl_item->separator));
 
 	resort_menu(menushell);
 	check_hidden();
