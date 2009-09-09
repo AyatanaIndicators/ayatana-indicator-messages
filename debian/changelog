@@ -1,8 +1,8 @@
-indicator-messages (0.2.0-0ubuntu3~ppa2~newapi3) UNRELEASED; urgency=low
+indicator-messages (0.2.0-0ubuntu3~ppa2~newapi3) karmic; urgency=low
 
   * Changing items support
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 08 Sep 2009 20:18:56 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 08 Sep 2009 20:19:16 -0500
 
 indicator-messages (0.2.0-0ubuntu3~ppa2~newapi2) karmic; urgency=low
 
