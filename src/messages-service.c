@@ -115,7 +115,6 @@ struct _imList_t {
 	IndicateListenerServer * server;
 	IndicateListenerIndicator * indicator;
 	DbusmenuMenuitem * menuitem;
-	DbusmenuMenuitem * separator;
 	gulong timechange_cb;
 	gulong attentionchange_cb;
 };
@@ -157,6 +156,7 @@ imList_sort (gconstpointer a, gconstpointer b)
 typedef struct _launcherList_t launcherList_t;
 struct _launcherList_t {
 	LauncherMenuItem * menuitem;
+	DbusmenuMenuitem * separator;
 	GList * appdiritems;
 };
 
@@ -1063,11 +1063,16 @@ build_launcher (gpointer data)
 		g_free(trimdesktop);
 		ll->appdiritems = g_list_append(NULL, path);
 
+		/* Build a separator */
+		ll->separator = dbusmenu_menuitem_new();
+		dbusmenu_menuitem_property_set(ll->separator, "type", DBUSMENU_CLIENT_TYPES_SEPARATOR);
+
 		/* Add it to the list */
 		launcherList = g_list_insert_sorted(launcherList, ll, launcherList_sort);
 
 		/* Add it to the menu */
 		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
+		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->separator));
 		resort_menu(root_menuitem);
 
 		if (blacklist_check(launcher_menu_item_get_desktop(ll->menuitem))) {
