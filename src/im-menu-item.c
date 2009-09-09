@@ -265,7 +265,7 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 static void
 sender_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
 {
-	g_debug("Got Sender Information");
+	g_debug("Got Sender Information: %s", propertydata);
 	ImMenuItem * self = IM_MENU_ITEM(data);
 
 	/* Our data should be right */
@@ -278,7 +278,7 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 	/* We might get the sender variable returning a
 	   null string as it doesn't exist on newer clients
 	   but we don't want to listen to that. */
-	if (!g_strcmp0(property, "sender") && property[0] == '\0') {
+	if (!g_strcmp0(property, "sender") && propertydata[0] == '\0') {
 		return;
 	}
 
