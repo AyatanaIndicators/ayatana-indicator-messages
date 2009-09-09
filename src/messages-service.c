@@ -290,6 +290,7 @@ blacklist_add (gpointer udata)
 		launcherList_t * item = (launcherList_t *)launcher->data;
 		if (!g_strcmp0(trimdesktop, launcher_menu_item_get_desktop(item->menuitem))) {
 			launcher_menu_item_set_eclipsed(item->menuitem, TRUE);
+			dbusmenu_menuitem_property_set(item->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		}
 	}
 
@@ -336,6 +337,7 @@ blacklist_remove (gpointer data)
 			}
 			if (serveritem == NULL) {
 				launcher_menu_item_set_eclipsed(li->menuitem, FALSE);
+				dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
 			}
 		}
 	}
@@ -970,6 +972,7 @@ check_eclipses (AppMenuItem * ai)
 
 		if (!g_strcmp0(aidesktop, lidesktop)) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
+			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 			break;
 		}
 	}
@@ -994,6 +997,7 @@ remove_eclipses (AppMenuItem * ai)
 
 		if (!g_strcmp0(aidesktop, lidesktop)) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, FALSE);
+			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
 			break;
 		}
 	}
@@ -1108,6 +1112,7 @@ build_launcher (gpointer data)
 
 		if (blacklist_check(launcher_menu_item_get_desktop(ll->menuitem))) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
+			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		}
 	} else {
 		/* If so add ourselves */
