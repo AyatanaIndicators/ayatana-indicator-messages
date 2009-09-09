@@ -162,7 +162,7 @@ indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, gchar * value, in
 		/* We don't use the value here, which is probably less efficient, 
 		   but it's easier to use the easy function.  And since th value
 		   is already cached, shouldn't be a big deal really.  */
-		GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(newitem, INDICATOR_MENUITEM_PROP_ICON);
+		GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(mi, INDICATOR_MENUITEM_PROP_ICON);
 		if (pixbuf != NULL) {
 			gtk_image_set_from_pixbuf(GTK_IMAGE(mi_data->icon), pixbuf);
 		}
