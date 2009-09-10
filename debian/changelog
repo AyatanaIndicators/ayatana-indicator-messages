@@ -1,4 +1,4 @@
-indicator-messages (0.2.2-0ubuntu1) UNRELEASED; urgency=low
+indicator-messages (0.2.2-0ubuntu1) karmic; urgency=low
 
   * New release (LP: #427357)
     * Adds in separators between application groups
