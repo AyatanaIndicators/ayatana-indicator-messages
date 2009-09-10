@@ -1,9 +1,9 @@
-indicator-messages (0.2.2-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.2.2-0ubuntu1~ppa1) karmic; urgency=low
 
   * Upstream 0.2.2 release
     * Adds in separators between application groups
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 10 Sep 2009 09:09:41 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 10 Sep 2009 09:11:57 -0500
 
 indicator-messages (0.2.1-0ubuntu1~ppa2) karmic; urgency=low
 
