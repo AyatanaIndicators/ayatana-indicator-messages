@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicate/listener.h>
 #include <gio/gio.h>
 
+#include <libdbusmenu-glib/client.h>
 #include <libdbusmenu-glib/server.h>
 
 #include "im-menu-item.h"
@@ -71,6 +72,7 @@ typedef struct _serverList_t serverList_t;
 struct _serverList_t {
 	IndicateListenerServer * server;
 	AppMenuItem * menuitem;
+	DbusmenuMenuitem * separator;
 	gboolean attention;
 	guint count;
 	GList * imList;
@@ -154,6 +156,7 @@ imList_sort (gconstpointer a, gconstpointer b)
 typedef struct _launcherList_t launcherList_t;
 struct _launcherList_t {
 	LauncherMenuItem * menuitem;
+	DbusmenuMenuitem * separator;
 	GList * appdiritems;
 };
 
@@ -287,6 +290,7 @@ blacklist_add (gpointer udata)
 		launcherList_t * item = (launcherList_t *)launcher->data;
 		if (!g_strcmp0(trimdesktop, launcher_menu_item_get_desktop(item->menuitem))) {
 			launcher_menu_item_set_eclipsed(item->menuitem, TRUE);
+			dbusmenu_menuitem_property_set(item->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		}
 	}
 
@@ -333,6 +337,7 @@ blacklist_remove (gpointer data)
 			}
 			if (serveritem == NULL) {
 				launcher_menu_item_set_eclipsed(li->menuitem, FALSE);
+				dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
 			}
 		}
 	}
@@ -477,6 +482,10 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	sl_item->attention = FALSE;
 	sl_item->count = 0;
 
+	/* Build a separator */
+	sl_item->separator = dbusmenu_menuitem_new();
+	dbusmenu_menuitem_property_set(sl_item->separator, "type", DBUSMENU_CLIENT_TYPES_SEPARATOR);
+
 	/* Incase we got an indicator first */
 	GList * alreadythere = g_list_find_custom(serverList, sl_item, serverList_equal);
 	if (alreadythere != NULL) {
@@ -494,8 +503,11 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), sl_item);
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_NAME_CHANGED,  G_CALLBACK(server_name_changed),  menushell);
 
+	/* Put our new menu item in, with the separator behind it.
+	   resort_menu will take care of whether it should be hidden
+	   or not. */
 	dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
-	/* Should be prepend ^ */
+	dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(sl_item->separator));
 
 	resort_menu(menushell);
 	check_hidden();
@@ -576,14 +588,19 @@ im_attention_changed (ImMenuItem * imitem, gboolean requestit, gpointer data)
 	return;
 }
 
+/* Run when a server is removed from the indicator bus.  It figures
+   out if we have it somewhere, and if so then we dump it out and
+   clean up all of it's entries. */
 static void 
 server_removed (IndicateListener * listener, IndicateListenerServer * server, gchar * type, gpointer data)
 {
+	/* Look for the server */
 	g_debug("Removing server: %s", INDICATE_LISTENER_SERVER_DBUS_NAME(server));
-	serverList_t slt;
+	serverList_t slt = {0};
 	slt.server = server;
 	GList * lookup = g_list_find_custom(serverList, &slt, serverList_equal);
 
+	/* If we don't have it, exit */
 	if (lookup == NULL) {
 		g_debug("\tUnable to find server: %s", INDICATE_LISTENER_SERVER_DBUS_NAME(server));
 		return;
@@ -591,19 +608,30 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 
 	serverList_t * sltp = (serverList_t *)lookup->data;
 
-	remove_eclipses(sltp->menuitem);
-
+	/* Removing indicators from this server */
 	while (sltp->imList) {
 		imList_t * imitem = (imList_t *)sltp->imList->data;
 		indicator_removed(listener, server, imitem->indicator, data);
 	}
 
+	/* Remove from the server list */
 	serverList = g_list_remove(serverList, sltp);
 
+	/* Remove launchers this could be eclipsing */
+	remove_eclipses(sltp->menuitem);
+
+	/* If there is a menu item, let's get rid of it. */
 	if (sltp->menuitem != NULL) {
 		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(sltp->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(sltp->menuitem));
 		g_object_unref(G_OBJECT(sltp->menuitem));
+	}
+
+	/* If there is a separator, let's get rid of it. */
+	if (sltp->separator != NULL) {
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(sltp->separator), DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(sltp->separator));
+		g_object_unref(G_OBJECT(sltp->separator));
 	}
 
 	if (sltp->attention) {
@@ -664,25 +692,44 @@ check_hidden (void)
 	return;
 }
 
+/* This function takes care of putting the menu in the right order.
+   It basically it rebuilds the order by looking through all the
+   applications and launchers and puts them in the right place.  The
+   menu functions will handle the cases where they don't move so this
+   is a good way to ensure everything is right. */
 static void
 resort_menu (DbusmenuMenuitem * menushell)
 {
 	guint position = 0;
 	GList * serverentry;
 	GList * launcherentry = launcherList;
+	DbusmenuMenuitem * last_separator = NULL;
 
 	g_debug("Reordering Menu:");
 
 	for (serverentry = serverList; serverentry != NULL; serverentry = serverentry->next) {
 		serverList_t * si = (serverList_t *)serverentry->data;
 		
+		/* Looking to see if there are any launchers we need to insert
+		   into the menu structure.  We put as many as we need to. */
 		if (launcherentry != NULL) {
 			launcherList_t * li = (launcherList_t *)launcherentry->data;
 			while (launcherentry != NULL && g_strcmp0(launcher_menu_item_get_name(li->menuitem), app_menu_item_get_name(si->menuitem)) < 0) {
+				/* Putting the launcher item in */
 				g_debug("\tMoving launcher '%s' to position %d", launcher_menu_item_get_name(li->menuitem), position);
 				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->menuitem), position);
-
 				position++;
+
+				/* Putting the launcher separator in */
+				g_debug("\tMoving launcher separator to position %d", position);
+				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
+				if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
+					/* Only clear the visiblity if we're not eclipsed */
+					dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+					last_separator = li->separator;
+				}
+				position++;
+
 				launcherentry = launcherentry->next;
 				if (launcherentry != NULL) {
 					li = (launcherList_t *)launcherentry->data;
@@ -690,12 +737,15 @@ resort_menu (DbusmenuMenuitem * menushell)
 			}
 		}
 
+		/* Putting the app menu item in */
 		if (si->menuitem != NULL) {
 			g_debug("\tMoving app %s to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->menuitem), position);
 			position++;
 		}
 
+		/* Putting all the indicators that are related to this application
+		   after it. */
 		GList * imentry;
 		for (imentry = si->imList; imentry != NULL; imentry = imentry->next) {
 			imList_t * imi = (imList_t *)imentry->data;
@@ -706,15 +756,43 @@ resort_menu (DbusmenuMenuitem * menushell)
 				position++;
 			}
 		}
+
+		/* Lastly putting the separator in */
+		if (si->separator != NULL) {
+			g_debug("\tMoving app %s separator to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
+			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->separator), position);
+			dbusmenu_menuitem_property_set(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+			position++;
+			last_separator = si->separator;
+		}
 	}
 
+	/* Put any leftover launchers in at the end of the list. */
 	while (launcherentry != NULL) {
 		launcherList_t * li = (launcherList_t *)launcherentry->data;
+
+		/* Putting the launcher in */
 		g_debug("\tMoving launcher '%s' to position %d", launcher_menu_item_get_name(li->menuitem), position);
 		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->menuitem), position);
-
 		position++;
+
+		/* Putting the launcher separator in */
+		g_debug("\tMoving launcher separator to position %d", position);
+		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
+		if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
+			/* Only clear the visiblity if we're not eclipsed */
+			dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+			last_separator = li->separator;
+		}
+		position++;
+
 		launcherentry = launcherentry->next;
+	}
+
+	if (last_separator != NULL) {
+		dbusmenu_menuitem_property_set(last_separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+	} else {
+		g_warning("No last separator on resort");
 	}
 
 	return;
@@ -745,7 +823,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 	/* Looking for a server entry to attach this indicator
 	   to.  If we can't find one then we have to build one
 	   and attach the indicator to it. */
-	serverList_t sl_item_local;
+	serverList_t sl_item_local = {0};
 	serverList_t * sl_item = NULL;
 	sl_item_local.server = server;
 	GList * serverentry = g_list_find_custom(serverList, &sl_item_local, serverList_equal);
@@ -759,6 +837,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 		sl_item->imList = NULL;
 		sl_item->attention = FALSE;
 		sl_item->count = 0;
+		sl_item->separator = NULL;
 
 		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
 	} else {
@@ -813,7 +892,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	gboolean removed = FALSE;
 
 	/* Find the server that was related to this item */
-	serverList_t sl_item_local;
+	serverList_t sl_item_local = {0};
 	serverList_t * sl_item = NULL;
 	sl_item_local.server = server;
 	GList * serverentry = g_list_find_custom(serverList, &sl_item_local, serverList_equal);
@@ -824,7 +903,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	sl_item = (serverList_t *)serverentry->data;
 
 	/* Look in the IM Hash Table */
-	imList_t listData;
+	imList_t listData = {0};
 	listData.server = server;
 	listData.indicator = indicator;
 
@@ -928,6 +1007,7 @@ check_eclipses (AppMenuItem * ai)
 
 		if (!g_strcmp0(aidesktop, lidesktop)) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
+			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 			break;
 		}
 	}
@@ -952,6 +1032,7 @@ remove_eclipses (AppMenuItem * ai)
 
 		if (!g_strcmp0(aidesktop, lidesktop)) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, FALSE);
+			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
 			break;
 		}
 	}
@@ -1052,15 +1133,21 @@ build_launcher (gpointer data)
 		g_free(trimdesktop);
 		ll->appdiritems = g_list_append(NULL, path);
 
+		/* Build a separator */
+		ll->separator = dbusmenu_menuitem_new();
+		dbusmenu_menuitem_property_set(ll->separator, "type", DBUSMENU_CLIENT_TYPES_SEPARATOR);
+
 		/* Add it to the list */
 		launcherList = g_list_insert_sorted(launcherList, ll, launcherList_sort);
 
 		/* Add it to the menu */
 		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
+		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->separator));
 		resort_menu(root_menuitem);
 
 		if (blacklist_check(launcher_menu_item_get_desktop(ll->menuitem))) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
+			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		}
 	} else {
 		/* If so add ourselves */
