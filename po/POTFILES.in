@@ -1,0 +1,6 @@
+src/messages-service-dbus.c
+src/indicator-messages.c
+src/messages-service.c
+src/launcher-menu-item.c
+src/im-menu-item.c
+src/app-menu-item.c
