@@ -115,6 +115,7 @@ data/icons/48x48/Makefile
 data/icons/48x48/status/Makefile
 data/icons/scalable/Makefile
 data/icons/scalable/status/Makefile
+po/Makefile.in
 ])
 
 ###########################
