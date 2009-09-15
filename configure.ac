@@ -87,7 +87,7 @@ AC_DEFUN([AC_DEFINE_PATH], [
 # Internationalization
 ###########################
 
-GETTEXT_PACKAGE=indicator-session
+GETTEXT_PACKAGE=indicator-messages
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Name of the default get text domain])
 AC_DEFINE_PATH(GNOMELOCALEDIR, "${datadir}/locale", [locale directory])
