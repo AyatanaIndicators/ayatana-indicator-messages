@@ -22,6 +22,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 #include <locale.h>
+#include <libintl.h>
 #include <config.h>
 #include <pango/pango-utils.h>
 #include <dbus/dbus-glib-bindings.h>
