@@ -21,6 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <string.h>
+#include <locale.h>
 #include <pango/pango-utils.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <libindicate/listener.h>
@@ -1218,6 +1219,8 @@ main (int argc, char ** argv)
 		g_error("Unable to get name");
 		return 1;
 	}
+
+	setlocale(LC_ALL,"");
 
 	dbus_interface = message_service_dbus_new();
 
