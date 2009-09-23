@@ -1,8 +1,8 @@
-indicator-messages (0.2.3-0ubuntu1~ppa3~minwidth2) UNRELEASED; urgency=low
+indicator-messages (0.2.3-0ubuntu1~ppa3~minwidth2) karmic; urgency=low
 
   * Small bug with the blacklist not resorting.
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 23 Sep 2009 16:08:07 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 23 Sep 2009 16:09:04 -0500
 
 indicator-messages (0.2.3-0ubuntu1~ppa3~minwidth2) karmic; urgency=low
 
