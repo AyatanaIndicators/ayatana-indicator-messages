@@ -241,7 +241,7 @@ new_launcher_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusme
 	GtkWidget * dsc_label = gtk_label_new("");
 	gtk_misc_set_alignment(GTK_MISC(dsc_label), 0.05, 0.5);
 	gtk_label_set_ellipsize(GTK_LABEL(dsc_label), PANGO_ELLIPSIZE_END);
-	gtk_widget_set_size_request(dsc_label, 250, -1);
+	gtk_widget_set_size_request(dsc_label, 200, -1);
 	gchar * markup = g_markup_printf_escaped("<span font-size=\"smaller\">%s</span>", dbusmenu_menuitem_property_get(newitem, LAUNCHER_MENUITEM_PROP_APP_DESC));
 	gtk_label_set_markup(GTK_LABEL(dsc_label), markup);
 	g_free(markup);
