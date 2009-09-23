@@ -1244,6 +1244,7 @@ main (int argc, char ** argv)
 
 	g_idle_add(blacklist_init, NULL);
 	g_idle_add(build_launchers, SYSTEM_APPS_DIR);
+	g_idle_add(build_launchers, SYSTEM_APPS_DIR_OLD);
 	gchar * userdir = g_build_filename(g_get_user_config_dir(), USER_APPS_DIR, NULL);
 	g_idle_add(build_launchers, userdir);
 
