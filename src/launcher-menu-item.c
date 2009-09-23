@@ -137,6 +137,10 @@ launcher_menu_item_new (const gchar * desktop_file)
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 
+	if (priv->appinfo == NULL) {
+		launcher_menu_item_set_eclipsed(self, TRUE);
+	}
+
 	return self;
 }
 
