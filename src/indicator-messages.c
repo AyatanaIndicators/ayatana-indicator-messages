@@ -164,7 +164,29 @@ indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, gchar * value, in
 		   is already cached, shouldn't be a big deal really.  */
 		GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(mi, INDICATOR_MENUITEM_PROP_ICON);
 		if (pixbuf != NULL) {
-			gtk_image_set_from_pixbuf(GTK_IMAGE(mi_data->icon), pixbuf);
+			/* If we've got a pixbuf we need to make sure it's of a reasonable
+			   size to fit in the menu.  If not, rescale it. */
+			GdkPixbuf * resized_pixbuf;
+			gint width, height;
+			gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
+			if (gdk_pixbuf_get_width(pixbuf) > width ||
+					gdk_pixbuf_get_height(pixbuf) > height) {
+				g_debug("Resizing icon from %dx%d to %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf), width, height);
+				resized_pixbuf = gdk_pixbuf_scale_simple(pixbuf,
+				                                         width,
+				                                         height,
+				                                         GDK_INTERP_BILINEAR);
+			} else {
+				g_debug("Happy with icon sized %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf));
+				resized_pixbuf = pixbuf;
+			}
+	  
+			gtk_image_set_from_pixbuf(GTK_IMAGE(mi_data->icon), resized_pixbuf);
+
+			/* The other pixbuf should be free'd by the dbusmenu. */
+			if (resized_pixbuf != pixbuf) {
+				g_object_unref(resized_pixbuf);
+			}
 		}
 	} else {
 		g_warning("Indicator Item property '%s' unknown", prop);
@@ -201,11 +223,13 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 		gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
 		if (gdk_pixbuf_get_width(pixbuf) > width ||
 		        gdk_pixbuf_get_height(pixbuf) > height) {
+			g_debug("Resizing icon from %dx%d to %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf), width, height);
 			resized_pixbuf = gdk_pixbuf_scale_simple(pixbuf,
 			                                         width,
 			                                         height,
 			                                         GDK_INTERP_BILINEAR);
 		} else {
+			g_debug("Happy with icon sized %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf));
 			resized_pixbuf = pixbuf;
 		}
   
