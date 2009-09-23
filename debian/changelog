@@ -1,8 +1,8 @@
-indicator-messages (0.2.3-0ubuntu1~ppa3~minwidth1) UNRELEASED; urgency=low
+indicator-messages (0.2.3-0ubuntu1~ppa3~minwidth1) karmic; urgency=low
 
   * Putting in a min-width for launchers
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 23 Sep 2009 15:53:26 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 23 Sep 2009 15:55:47 -0500
 
 indicator-messages (0.2.3-0ubuntu1~ppa2) karmic; urgency=low
 
