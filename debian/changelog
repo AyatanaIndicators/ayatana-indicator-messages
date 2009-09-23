@@ -1,3 +1,9 @@
+indicator-messages (0.2.3-0ubuntu1~ppa2~icon2) UNRELEASED; urgency=low
+
+  * On changing values as well...
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 23 Sep 2009 13:22:30 -0500
+
 indicator-messages (0.2.3-0ubuntu1~ppa2~icon1) karmic; urgency=low
 
   * Merging in icon scaling code.
