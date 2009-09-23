@@ -1148,7 +1148,10 @@ build_launcher (gpointer data)
 		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->separator));
 		resort_menu(root_menuitem);
 
-		if (blacklist_check(launcher_menu_item_get_desktop(ll->menuitem))) {
+		/* If we're in the black list or we've gotten eclipsed
+		   by something else, hide the item and the separator. */
+		if (blacklist_check(launcher_menu_item_get_desktop(ll->menuitem)) ||
+				launcher_menu_item_get_eclipsed(ll->menuitem)) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
 			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		}
