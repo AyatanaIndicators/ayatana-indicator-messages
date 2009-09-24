@@ -22,6 +22,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 #include <locale.h>
+#include <libintl.h>
+#include <config.h>
 #include <pango/pango-utils.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <libindicate/listener.h>
@@ -348,6 +350,7 @@ blacklist_remove (gpointer data)
 	}
 
 	check_hidden();
+	resort_menu(root_menuitem);
 
 	return FALSE;
 }
@@ -1146,7 +1149,10 @@ build_launcher (gpointer data)
 		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->separator));
 		resort_menu(root_menuitem);
 
-		if (blacklist_check(launcher_menu_item_get_desktop(ll->menuitem))) {
+		/* If we're in the black list or we've gotten eclipsed
+		   by something else, hide the item and the separator. */
+		if (blacklist_check(launcher_menu_item_get_desktop(ll->menuitem)) ||
+				launcher_menu_item_get_eclipsed(ll->menuitem)) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
 			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		}
@@ -1220,7 +1226,11 @@ main (int argc, char ** argv)
 		return 1;
 	}
 
-	setlocale(LC_ALL,"");
+	/* Setting up i18n and gettext.  Apparently, we need
+	   all of these. */
+	setlocale (LC_ALL, "");
+	bindtextdomain (GETTEXT_PACKAGE, GNOMELOCALEDIR);
+	textdomain (GETTEXT_PACKAGE);
 
 	dbus_interface = message_service_dbus_new();
 
@@ -1238,6 +1248,7 @@ main (int argc, char ** argv)
 
 	g_idle_add(blacklist_init, NULL);
 	g_idle_add(build_launchers, SYSTEM_APPS_DIR);
+	g_idle_add(build_launchers, SYSTEM_APPS_DIR_OLD);
 	gchar * userdir = g_build_filename(g_get_user_config_dir(), USER_APPS_DIR, NULL);
 	g_idle_add(build_launchers, userdir);
 
