@@ -1,8 +1,8 @@
-indicator-messages (0.2.3-0ubuntu1~ppa4) UNRELEASED; urgency=low
+indicator-messages (0.2.3-0ubuntu1~ppa4) karmic; urgency=low
 
   * Merging in the min menu width feature (LP: #428292)
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 24 Sep 2009 12:46:02 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 24 Sep 2009 12:48:23 -0500
 
 indicator-messages (0.2.3-0ubuntu1~ppa3) karmic; urgency=low
 
