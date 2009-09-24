@@ -1,3 +1,15 @@
+indicator-messages (0.2.4-0ubuntu1) UNRELEASED; urgency=low
+
+  * Upstream release 0.2.4
+    - Merging in the min menu width feature (LP: #428292)
+    - Merging in icon scaling branch from trunk. Now better icons (LP: #433143)
+    - Merging in updated trunk (LP: #434097 and LP: #435184)
+    - add i18n support
+    - Prevent null entries (LP: #435184)
+    - add a path for indicators in /usr/share (LP: #434097)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 24 Sep 2009 13:07:46 -0500
+
 indicator-messages (0.2.2-0ubuntu2) karmic; urgency=low
 
   * src/messages-service.c: initialise the translations
