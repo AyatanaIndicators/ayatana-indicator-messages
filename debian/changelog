@@ -1,3 +1,9 @@
+indicator-messages (0.2.4-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * Upstream release 0.2.4
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 24 Sep 2009 13:06:15 -0500
+
 indicator-messages (0.2.3-0ubuntu1~ppa4) karmic; urgency=low
 
   * Merging in the min menu width feature (LP: #428292)
