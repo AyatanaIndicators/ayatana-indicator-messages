@@ -1,6 +1,6 @@
 indicator-messages (0.2.4-0ubuntu1) UNRELEASED; urgency=low
 
-  * Upstream release 0.2.4
+  * Upstream release 0.2.4 (LP: #436093)
     - Merging in the min menu width feature (LP: #428292)
     - Merging in icon scaling branch from trunk. Now better icons (LP: #433143)
     - Merging in updated trunk (LP: #434097 and LP: #435184)
