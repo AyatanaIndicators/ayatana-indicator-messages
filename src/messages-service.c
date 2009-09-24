@@ -350,6 +350,7 @@ blacklist_remove (gpointer data)
 	}
 
 	check_hidden();
+	resort_menu(root_menuitem);
 
 	return FALSE;
 }
