@@ -1,5 +1,5 @@
 
-iconsdir = $(datadir)/indicator-applet/icons/hicolor/32x32/status
+iconsdir = $(INDICATORICONSDIR)/hicolor/32x32/status
 
 icons_DATA =  \
 	indicator-messages.png \
