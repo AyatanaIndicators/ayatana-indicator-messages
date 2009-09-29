@@ -1,8 +1,8 @@
-indicator-messages (0.2.4-0ubuntu2~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.2.4-0ubuntu2~ppa1) karmic; urgency=low
 
   * Putting icons in the right places
 
- -- Ted Gould <ted@ubuntu.com>  Mon, 28 Sep 2009 21:37:57 -0500
+ -- Ted Gould <ted@ubuntu.com>  Mon, 28 Sep 2009 21:39:39 -0500
 
 indicator-messages (0.2.4-0ubuntu1) karmic; urgency=low
 
