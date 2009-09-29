@@ -47,6 +47,7 @@ struct _ImMenuItemPrivate
 	IndicateListenerServer *      server;
 	IndicateListenerIndicator *  indicator;
 
+	glong creation_seconds;
 	glong seconds;
 	gchar * count;
 	gulong indicator_changed;
@@ -132,13 +133,14 @@ im_menu_item_init (ImMenuItem *self)
 	priv->indicator = NULL;
 
 	/* A sane default, but look below */
+	priv->creation_seconds = 0;
 	priv->seconds = 0;
 
 	/* Set the seconds to be the time when the item was
 	   created incase we're not given a better time. */
 	GTimeVal current_time;
 	g_get_current_time(&current_time);
-	priv->seconds = current_time.tv_sec;
+	priv->creation_seconds = current_time.tv_sec;
 
 	return;
 }
@@ -449,7 +451,12 @@ im_menu_item_get_seconds (ImMenuItem * menuitem)
 	g_return_val_if_fail(IS_IM_MENU_ITEM(menuitem), 0);
 
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(menuitem);
-	return priv->seconds;
+
+	if (priv->seconds == 0) {
+		return priv->creation_seconds;
+	} else {
+		return priv->seconds;
+	}
 }
 
 /* Gets whether or not this indicator item is
