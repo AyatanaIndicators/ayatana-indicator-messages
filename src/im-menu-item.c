@@ -187,7 +187,15 @@ update_time (ImMenuItem * self)
 {
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
+	/* Count has been set, so it takes priority. */
 	if (priv->count != NULL) {
+		return;
+	}
+
+	/* Seconds hasn't been set, so we just want to keep the time
+	   area blank. */
+	if (priv->seconds == 0) {
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), INDICATOR_MENUITEM_PROP_RIGHT, "");
 		return;
 	}
 	
