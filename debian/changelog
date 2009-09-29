@@ -1,8 +1,8 @@
-indicator-messages (0.2.4-0ubuntu2~ppa2~disappearingmenu1) UNRELEASED; urgency=low
+indicator-messages (0.2.4-0ubuntu2~ppa2~disappearingmenu1) karmic; urgency=low
 
   * Fix for the diappearing menu.
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 29 Sep 2009 16:08:08 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 29 Sep 2009 16:09:27 -0500
 
 indicator-messages (0.2.4-0ubuntu2~ppa1) karmic; urgency=low
 
