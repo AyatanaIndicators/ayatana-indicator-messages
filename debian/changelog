@@ -1,3 +1,10 @@
+indicator-messages (0.2.4-0ubuntu2~ppa3) UNRELEASED; urgency=low
+
+  * Making it so that if applications don't set the time on an indicator
+    the time isn't shown in the menu.
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 30 Sep 2009 12:03:54 -0500
+
 indicator-messages (0.2.4-0ubuntu2~ppa2) karmic; urgency=low
 
   * Adding a check on addition of launchers to ensure icon is correctly
