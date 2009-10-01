@@ -1156,6 +1156,8 @@ build_launcher (gpointer data)
 			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
 			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		}
+
+		check_hidden();
 	} else {
 		/* If so add ourselves */
 		launcherList_t * ll = (launcherList_t *)listitem->data;

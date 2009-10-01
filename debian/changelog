@@ -1,3 +1,14 @@
+indicator-messages (0.2.5-0ubuntu1) UNRELEASED; urgency=low
+
+  * Upstream release 0.2.5 (LP: #440217)
+    * Adding a check on addition of launchers to ensure icon is correctly
+      visible. (LP: #433274)
+    * Making it so that if applications don't set the time on an indicator
+      the time isn't shown in the menu. (LP: #438237)
+    * Putting icons in the right places. (LP: #436460)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 01 Oct 2009 15:38:41 -0500
+
 indicator-messages (0.2.4-0ubuntu1) karmic; urgency=low
 
   * Upstream release 0.2.4 (LP: #436093)
