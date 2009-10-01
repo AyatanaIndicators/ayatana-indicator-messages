@@ -1,4 +1,4 @@
-indicator-messages (0.2.5-0ubuntu1) UNRELEASED; urgency=low
+indicator-messages (0.2.5-0ubuntu1) karmic; urgency=low
 
   * Upstream release 0.2.5 (LP: #440217)
     * Adding a check on addition of launchers to ensure icon is correctly
@@ -7,7 +7,7 @@ indicator-messages (0.2.5-0ubuntu1) UNRELEASED; urgency=low
       the time isn't shown in the menu. (LP: #438237)
     * Putting icons in the right places. (LP: #436460)
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 01 Oct 2009 15:38:41 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 01 Oct 2009 23:34:28 +0200
 
 indicator-messages (0.2.4-0ubuntu1) karmic; urgency=low
 
