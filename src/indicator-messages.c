@@ -202,11 +202,11 @@ indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, gchar * value, in
 static gboolean
 new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, DbusmenuClient * client)
 {
-	indicator_item_t * mi_data = g_new0(indicator_item_t, 1);
-
 	g_return_val_if_fail(DBUSMENU_IS_MENUITEM(newitem), FALSE);
 	g_return_val_if_fail(DBUSMENU_IS_GTKCLIENT(client), FALSE);
 	/* Note: not checking parent, it's reasonable for it to be NULL */
+
+	indicator_item_t * mi_data = g_new0(indicator_item_t, 1);
 
 	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_menu_item_new());
 
