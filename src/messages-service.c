@@ -1147,7 +1147,6 @@ build_launcher (gpointer data)
 		/* Add it to the menu */
 		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
 		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->separator));
-		resort_menu(root_menuitem);
 
 		/* If we're in the black list or we've gotten eclipsed
 		   by something else, hide the item and the separator. */
@@ -1157,6 +1156,7 @@ build_launcher (gpointer data)
 			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		}
 
+		resort_menu(root_menuitem);
 		check_hidden();
 	} else {
 		/* If so add ourselves */
