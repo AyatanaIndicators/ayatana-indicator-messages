@@ -1,3 +1,10 @@
+indicator-messages (0.2.6-0ubuntu2~ppa1) UNRELEASED; urgency=low
+
+  * Adding translator comments from hours and minutes strings.
+    (LP: #456437)
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 26 Oct 2009 21:04:54 -0500
+
 indicator-messages (0.2.6-0ubuntu1) karmic; urgency=low
 
   * Upstream release 0.2.6 (LP: #446629)
