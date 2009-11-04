@@ -1,6 +1,8 @@
 indicator-messages (0.3.0~dev-0ubuntu1~ppa1~update1) UNRELEASED; urgency=low
 
   * Porting to libindicator 0.3.0
+  * debian/control: Increasing libindicator-dev dependency to
+    0.3.0~dev
 
  -- Ted Gould <ted@ubuntu.com>  Wed, 04 Nov 2009 15:30:10 -0600
 
