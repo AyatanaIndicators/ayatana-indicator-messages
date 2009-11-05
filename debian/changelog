@@ -1,10 +1,10 @@
-indicator-messages (0.3.0~dev-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.3.0~dev-0ubuntu1~ppa1) karmic; urgency=low
 
   * Porting to libindicator 0.3.0
   * debian/control: Increasing libindicator-dev dependency to
     0.3.0~dev
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 05 Nov 2009 09:29:47 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 05 Nov 2009 09:30:58 -0600
 
 indicator-messages (0.2.6-0ubuntu2~ppa1) karmic; urgency=low
 
