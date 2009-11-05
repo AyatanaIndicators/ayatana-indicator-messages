@@ -22,6 +22,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 #include <glib.h>
+#include <glib-object.h>
 #include <gtk/gtk.h>
 #include <libdbusmenu-gtk/menu.h>
 #include <libdbusmenu-gtk/menuitem.h>
@@ -29,21 +30,88 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <dbus/dbus-glib-bindings.h>
 
 #include <libindicator/indicator.h>
-INDICATOR_SET_VERSION
-INDICATOR_SET_NAME("messages")
+#include <libindicator/indicator-object.h>
 
 #include "dbus-data.h"
 #include "messages-service-client.h"
 
-static GtkWidget * main_image = NULL;
+#define INDICATOR_MESSAGES_TYPE            (indicator_messages_get_type ())
+#define INDICATOR_MESSAGES(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), INDICATOR_MESSAGES_TYPE, IndicatorMessages))
+#define INDICATOR_MESSAGES_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), INDICATOR_MESSAGES_TYPE, IndicatorMessagesClass))
+#define IS_INDICATOR_MESSAGES(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), INDICATOR_MESSAGES_TYPE))
+#define IS_INDICATOR_MESSAGES_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), INDICATOR_MESSAGES_TYPE))
+#define INDICATOR_MESSAGES_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), INDICATOR_MESSAGES_TYPE, IndicatorMessagesClass))
 
+typedef struct _IndicatorMessages      IndicatorMessages;
+typedef struct _IndicatorMessagesClass IndicatorMessagesClass;
+
+struct _IndicatorMessagesClass {
+	IndicatorObjectClass parent_class;
+};
+
+struct _IndicatorMessages {
+	IndicatorObject parent;
+};
+
+GType indicator_messages_get_type (void);
+
+/* Indicator Module Config */
+INDICATOR_SET_VERSION
+INDICATOR_SET_TYPE(INDICATOR_MESSAGES_TYPE)
+
+/* Globals */
+static GtkWidget * main_image = NULL;
 #define DESIGN_TEAM_SIZE  design_team_size
 static GtkIconSize design_team_size;
-
 static DBusGProxy * icon_proxy = NULL;
-
 static GtkSizeGroup * indicator_right_group = NULL;
 
+/* Prototypes */
+static void indicator_messages_class_init (IndicatorMessagesClass *klass);
+static void indicator_messages_init       (IndicatorMessages *self);
+static void indicator_messages_dispose    (GObject *object);
+static void indicator_messages_finalize   (GObject *object);
+static GtkImage * get_icon                (IndicatorObject * io);
+static GtkMenu * get_menu                 (IndicatorObject * io);
+
+G_DEFINE_TYPE (IndicatorMessages, indicator_messages, INDICATOR_OBJECT_TYPE);
+
+static void
+indicator_messages_class_init (IndicatorMessagesClass *klass)
+{
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+	object_class->dispose = indicator_messages_dispose;
+	object_class->finalize = indicator_messages_finalize;
+
+	IndicatorObjectClass * io_class = INDICATOR_OBJECT_CLASS(klass);
+
+	io_class->get_image = get_icon;
+	io_class->get_menu = get_menu;
+
+	return;
+}
+
+static void
+indicator_messages_init (IndicatorMessages *self)
+{
+}
+
+static void
+indicator_messages_dispose (GObject *object)
+{
+G_OBJECT_CLASS (indicator_messages_parent_class)->dispose (object);
+}
+
+static void
+indicator_messages_finalize (GObject *object)
+{
+G_OBJECT_CLASS (indicator_messages_parent_class)->finalize (object);
+}
+
+
+
+/* Functions */
 static void
 attention_changed_cb (DBusGProxy * proxy, gboolean dot, gpointer userdata)
 {
@@ -303,14 +371,8 @@ new_launcher_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusme
 	return TRUE;
 }
 
-GtkLabel *
-get_label (void)
-{
-	return NULL;
-}
-
-GtkImage *
-get_icon (void)
+static GtkImage *
+get_icon (IndicatorObject * io)
 {
 	design_team_size = gtk_icon_size_register("design-team-size", 22, 22);
 
@@ -320,8 +382,8 @@ get_icon (void)
 	return GTK_IMAGE(main_image);
 }
 
-GtkMenu *
-get_menu (void)
+static GtkMenu *
+get_menu (IndicatorObject * io)
 {
 	guint returnval = 0;
 	GError * error = NULL;
