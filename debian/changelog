@@ -1,3 +1,11 @@
+indicator-messages (0.2.6+r156-0ubuntu1) karmic; urgency=low
+
+  * New snapshot for libindicator 0.3.0
+  * debian/control
+    - Build-Depends on libindicator >= 0.3.0
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 10 Dec 2009 14:35:46 -0500
+
 indicator-messages (0.2.6-0ubuntu1) karmic; urgency=low
 
   * Upstream release 0.2.6 (LP: #446629)
