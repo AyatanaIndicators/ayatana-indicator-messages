@@ -213,6 +213,10 @@ update_time (ImMenuItem * self)
 	}
 
 	if (elapsed_minutes < 60) {
+		/* TRANSLATORS: This string is used to represent the number of minutes
+		                since an IM has occured.  It is in the right column
+		                of a menu so being brief is desirable, but one character
+		                is not a requirement. */
 		timestring = g_strdup_printf(ngettext("%d m", "%d m", elapsed_minutes), elapsed_minutes);
 	} else {
 		guint elapsed_hours = elapsed_minutes / 60;
@@ -222,6 +226,10 @@ update_time (ImMenuItem * self)
 			elapsed_hours += 1;
 		}
 
+		/* TRANSLATORS: This string is used to represent the number of hours
+		                since an IM has occured.  It is in the right column
+		                of a menu so being brief is desirable, but one character
+		                is not a requirement. */
 		timestring = g_strdup_printf(ngettext("%d h", "%d h", elapsed_hours), elapsed_hours);
 	}
 
