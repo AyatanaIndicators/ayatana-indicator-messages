@@ -1,4 +1,4 @@
-indicator-messages (0.2.6+r156-0ubuntu1) karmic; urgency=low
+indicator-messages (0.2.6+r156-0ubuntu1) lucid; urgency=low
 
   * New snapshot for libindicator 0.3.0
   * debian/control
