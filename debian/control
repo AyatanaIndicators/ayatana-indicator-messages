@@ -21,6 +21,7 @@ Vcs-Bzr: http://bazaar.launchpad.net/~ubuntu-desktop/indicator-messages/ubuntu
 Package: indicator-messages
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, indicator-applet
+Breaks: indicator-applet (<< 0.3.0)
 Description: GNOME panel indicator applet for messages
  indicator-applet is an applet to display information from
  various applications consistently in the GNOME panel.
