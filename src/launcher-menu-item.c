@@ -131,7 +131,7 @@ launcher_menu_item_new (const gchar * desktop_file)
 	priv->desktop = g_strdup(desktop_file);
 
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "type", LAUNCHER_MENUITEM_TYPE);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_TYPE, LAUNCHER_MENUITEM_TYPE);
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), LAUNCHER_MENUITEM_PROP_APP_NAME, launcher_menu_item_get_name(self));
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), LAUNCHER_MENUITEM_PROP_APP_DESC, launcher_menu_item_get_description(self));
 

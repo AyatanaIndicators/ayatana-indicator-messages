@@ -442,7 +442,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	priv->attention = FALSE;
 	priv->show = TRUE;
 
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), "type", INDICATOR_MENUITEM_TYPE);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_TYPE, INDICATOR_MENUITEM_TYPE);
 
 	indicate_listener_displayed(listener, server, indicator, TRUE);
 
