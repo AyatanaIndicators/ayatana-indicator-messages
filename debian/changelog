@@ -1,3 +1,10 @@
+indicator-messages (0.3.0~dev-0ubuntu1~ppa3) UNRELEASED; urgency=low
+
+  * Upgrading to dbusmenu 0.2.0
+  * debian/control: Updating dbusmenu dependency to 0.2.0~dev 
+
+ -- Ted Gould <ted@ubuntu.com>  Tue, 22 Dec 2009 14:48:35 -0600
+
 indicator-messages (0.3.0~dev-0ubuntu1~ppa2) karmic; urgency=low
 
   * Disabling static builds.
