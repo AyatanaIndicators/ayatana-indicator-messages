@@ -32,6 +32,21 @@ indicator-messages (0.2.6-0ubuntu2~ppa1) karmic; urgency=low
 
  -- Ted Gould <ted@ubuntu.com>  Mon, 26 Oct 2009 21:06:26 -0500
 
+indicator-messages (0.2.6+r156-0ubuntu2) lucid; urgency=low
+
+  * debian/control
+    - add a Breaks for indicator-applet (<< 0.3.0) 
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Tue, 15 Dec 2009 11:57:42 -0500
+
+indicator-messages (0.2.6+r156-0ubuntu1) lucid; urgency=low
+
+  * New snapshot for libindicator 0.3.0
+  * debian/control
+    - Build-Depends on libindicator >= 0.3.0
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 10 Dec 2009 14:35:46 -0500
+
 indicator-messages (0.2.6-0ubuntu1) karmic; urgency=low
 
   * Upstream release 0.2.6 (LP: #446629)
