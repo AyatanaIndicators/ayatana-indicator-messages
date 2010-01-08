@@ -1,3 +1,17 @@
+indicator-messages (0.3.0-0ubuntu1) lucid; urgency=low
+
+  * Upstream release 0.3.0
+    - Disabling static builds.
+    - Porting to libindicator 0.3.0
+    - Adding translator comments from hours and minutes strings.
+      (LP: #456437)
+    - Upgrading to dbusmenu 0.2.0
+  * debian/control: Updating dbusmenu dependency to 0.2.0
+  * debian/control: Increasing libindicator-dev dependency to
+    0.3.0
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 08 Jan 2010 12:05:25 -0600
+
 indicator-messages (0.2.6+r156-0ubuntu2) lucid; urgency=low
 
   * debian/control

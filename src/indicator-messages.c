@@ -218,14 +218,14 @@ struct _indicator_item_t {
 /* Whenever we have a property change on a DbusmenuMenuitem
    we need to be responsive to that. */
 static void
-indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, gchar * value, indicator_item_t * mi_data)
+indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, indicator_item_t * mi_data)
 {
 	if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_LABEL)) {
 		/* Set the main label */
-		gtk_label_set_text(GTK_LABEL(mi_data->label), value);
+		gtk_label_set_text(GTK_LABEL(mi_data->label), g_value_get_string(value));
 	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_RIGHT)) {
 		/* Set the right label */
-		gtk_label_set_text(GTK_LABEL(mi_data->right), value);
+		gtk_label_set_text(GTK_LABEL(mi_data->right), g_value_get_string(value));
 	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_ICON)) {
 		/* We don't use the value here, which is probably less efficient, 
 		   but it's easier to use the easy function.  And since th value
@@ -351,7 +351,7 @@ new_launcher_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusme
 	GtkWidget * app_label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, LAUNCHER_MENUITEM_PROP_APP_NAME));
 	gtk_misc_set_alignment(GTK_MISC(app_label), 0.0, 0.5);
 	GtkWidget * dsc_label = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(dsc_label), 0.05, 0.5);
+	gtk_misc_set_alignment(GTK_MISC(dsc_label), 0.0, 0.5);
 	gtk_label_set_ellipsize(GTK_LABEL(dsc_label), PANGO_ELLIPSIZE_END);
 	gtk_widget_set_size_request(dsc_label, 200, -1);
 	gchar * markup = g_markup_printf_escaped("<span font-size=\"smaller\">%s</span>", dbusmenu_menuitem_property_get(newitem, LAUNCHER_MENUITEM_PROP_APP_DESC));
