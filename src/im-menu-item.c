@@ -68,21 +68,22 @@ static void sender_cb               (IndicateListener * listener,
                                      IndicateListenerServer * server,
                                      IndicateListenerIndicator * indicator,
                                      gchar * property,
-                                     gchar * propertydata,
+                                     const gchar * propertydata,
                                      gpointer data);
 static void time_cb                 (IndicateListener * listener,
                                      IndicateListenerServer * server,
                                      IndicateListenerIndicator * indicator,
                                      gchar * property,
-                                     GTimeVal * propertydata,
+                                     const GTimeVal * propertydata,
                                      gpointer data);
 static void icon_cb                 (IndicateListener * listener,
                                      IndicateListenerServer * server,
                                      IndicateListenerIndicator * indicator,
                                      gchar * property,
-                                     gchar * propertydata,
+                                     const gchar * propertydata,
                                      gpointer data);
 static void activate_cb             (ImMenuItem * self,
+                                     guint timestamp,
                                      gpointer data);
 static void indicator_modified_cb   (IndicateListener * listener,
                                      IndicateListenerServer * server,
@@ -172,7 +173,7 @@ im_menu_item_finalize (GObject *object)
 /* Call back for getting icon data.  It just passes it along
    to the indicator so that it can visualize it.  Not our problem. */
 static void
-icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
+icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, const gchar * propertydata, gpointer data)
 {
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(data), INDICATOR_MENUITEM_PROP_ICON, propertydata);
 	return;
@@ -258,7 +259,7 @@ time_update_cb (gpointer data)
    looking for.  It should only be called once at the init with a new
    indicator and again when the value changes. */
 static void
-time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, GTimeVal * propertydata, gpointer data)
+time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, const GTimeVal * propertydata, gpointer data)
 {
 	g_debug("Got Time info");
 	ImMenuItem * self = IM_MENU_ITEM(data);
@@ -290,7 +291,7 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 /* Callback from libindicate that is for getting the sender information
    on a particular indicator. */
 static void
-sender_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
+sender_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, const gchar * propertydata, gpointer data)
 {
 	g_debug("Got Sender Information: %s", propertydata);
 	ImMenuItem * self = IM_MENU_ITEM(data);
@@ -318,7 +319,7 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
    that on the menu item or just remove it if the count is gone.  If
    that's the case we can update time. */
 static void
-count_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
+count_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, const gchar * propertydata, gpointer data)
 {
 	g_debug("Got Count Information");
 	ImMenuItem * self = IM_MENU_ITEM(data);
@@ -357,7 +358,7 @@ count_cb (IndicateListener * listener, IndicateListenerServer * server, Indicate
    this indicator should be calling for attention or not.  If we are,
    we need to signal that. */
 static void
-attention_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, gchar * propertydata, gpointer data)
+attention_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, const gchar * propertydata, gpointer data)
 {
 	g_debug("Got Attention Information");
 	ImMenuItem * self = IM_MENU_ITEM(data);
@@ -388,11 +389,11 @@ attention_cb (IndicateListener * listener, IndicateListenerServer * server, Indi
 
 /* Callback when the item gets clicked on from the Messaging Menu */
 static void
-activate_cb (ImMenuItem * self, gpointer data)
+activate_cb (ImMenuItem * self, guint timestamp, gpointer data)
 {
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
-	indicate_listener_display(priv->listener, priv->server, priv->indicator);
+	indicate_listener_display(priv->listener, priv->server, priv->indicator, timestamp);
 }
 
 /* Callback when a property gets modified.  It figures out which one

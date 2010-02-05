@@ -1,3 +1,14 @@
+indicator-messages (0.3.1-0ubuntu1) lucid; urgency=low
+
+  * Upstream release 0.3.1
+    * Updates for dbusmenu 0.2.2
+    * Updates for libindicate 0.3.0
+  * debian/control:
+    * dbusmenu* depends to 0.2.2
+    * libindicate* depends to 0.3.0
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 04 Feb 2010 18:23:34 -0800
+
 indicator-messages (0.3.0-0ubuntu1) lucid; urgency=low
 
   * Upstream release 0.3.0
