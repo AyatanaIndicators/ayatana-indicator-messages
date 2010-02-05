@@ -57,7 +57,7 @@ static void app_menu_item_class_init (AppMenuItemClass *klass);
 static void app_menu_item_init       (AppMenuItem *self);
 static void app_menu_item_dispose    (GObject *object);
 static void app_menu_item_finalize   (GObject *object);
-static void activate_cb (AppMenuItem * self, gpointer data);
+static void activate_cb (AppMenuItem * self, guint timestamp, gpointer data);
 static void count_changed (IndicateListener * listener, IndicateListenerServer * server, guint count, gpointer data);
 static void count_cb (IndicateListener * listener, IndicateListenerServer * server, guint value, gpointer data);
 static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
@@ -259,11 +259,11 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 }
 
 static void
-activate_cb (AppMenuItem * self, gpointer data)
+activate_cb (AppMenuItem * self, guint timestamp, gpointer data)
 {
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
-	indicate_listener_display(priv->listener, priv->server, NULL);
+	indicate_listener_display(priv->listener, priv->server, NULL, timestamp);
 
 	return;
 }
