@@ -821,7 +821,6 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 	/* Building the IM Menu Item which is a subclass
 	   of DBus Menuitem */
 	ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator);
-	g_object_ref(G_OBJECT(menuitem));
 	listItem->menuitem = DBUSMENU_MENUITEM(menuitem);
 
 	/* Looking for a server entry to attach this indicator
