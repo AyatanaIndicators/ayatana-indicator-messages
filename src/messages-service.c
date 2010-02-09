@@ -821,7 +821,6 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 	/* Building the IM Menu Item which is a subclass
 	   of DBus Menuitem */
 	ImMenuItem * menuitem = im_menu_item_new(listener, server, indicator);
-	g_object_ref(G_OBJECT(menuitem));
 	listItem->menuitem = DBUSMENU_MENUITEM(menuitem);
 
 	/* Looking for a server entry to attach this indicator
@@ -835,7 +834,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 	if (serverentry == NULL) {
 		/* This sucks, we got an indicator before the server.  I guess
 		   that's the joy of being asynchronous */
-		serverList_t * sl_item = g_new0(serverList_t, 1);
+		sl_item = g_new0(serverList_t, 1);
 		sl_item->server = server;
 		sl_item->menuitem = NULL;
 		sl_item->imList = NULL;

@@ -97,7 +97,7 @@ app_menu_item_class_init (AppMenuItemClass *klass)
 static void
 app_menu_item_init (AppMenuItem *self)
 {
-	g_debug("Building new IM Menu Item");
+	g_debug("Building new App Menu Item");
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
 	priv->listener = NULL;
