@@ -834,7 +834,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 	if (serverentry == NULL) {
 		/* This sucks, we got an indicator before the server.  I guess
 		   that's the joy of being asynchronous */
-		serverList_t * sl_item = g_new0(serverList_t, 1);
+		sl_item = g_new0(serverList_t, 1);
 		sl_item->server = server;
 		sl_item->menuitem = NULL;
 		sl_item->imList = NULL;
