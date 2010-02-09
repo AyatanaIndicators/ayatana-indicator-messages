@@ -116,6 +116,7 @@ app_menu_item_dispose (GObject *object)
 	AppMenuItem * self = APP_MENU_ITEM(object);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
+	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), count_changed, self);
 	g_object_unref(priv->listener);
 
 	G_OBJECT_CLASS (app_menu_item_parent_class)->dispose (object);
