@@ -62,6 +62,7 @@ static gboolean build_launcher (gpointer data);
 static gboolean build_launchers (gpointer data);
 static gboolean blacklist_init (gpointer data);
 static gboolean blacklist_add (gpointer data);
+static gchar * desktop_file_from_keyfile (const gchar * definition_file);
 static gboolean blacklist_keyfile_add (gpointer udata);
 static void blacklist_add_core (gchar * desktop, gchar * definition);
 static gboolean blacklist_remove (gpointer data);
@@ -264,6 +265,19 @@ static gboolean
 blacklist_keyfile_add (gpointer udata)
 {
 	gchar * definition_file = (gchar *)udata;
+	gchar * desktopfile = desktop_file_from_keyfile(definition_file);
+	if (desktopfile != NULL) {
+		blacklist_add_core(desktopfile, definition_file);
+		g_free(desktopfile);
+	}
+	return FALSE;
+}
+
+/* Takes a keyfile and finds the desktop file in it for
+   us.  With some error handling. */
+static gchar *
+desktop_file_from_keyfile (const gchar * definition_file)
+{
 	GKeyFile * keyfile = g_key_file_new();
 	GError * error = NULL;
 
@@ -271,27 +285,30 @@ blacklist_keyfile_add (gpointer udata)
 		g_warning("Unable to load keyfile '%s' because: %s", definition_file, error == NULL ? "unknown" : error->message);
 		g_error_free(error);
 		g_key_file_free(keyfile);
-		return FALSE;
+		return NULL;
 	}
 
 	if (!g_key_file_has_group(keyfile, DESKTOP_FILE_GROUP)) {
 		g_warning("Unable to use keyfile '%s' as it has no '" DESKTOP_FILE_GROUP "' group.", definition_file);
 		g_key_file_free(keyfile);
-		return FALSE;
+		return NULL;
 	}
 
 	if (!g_key_file_has_key(keyfile, DESKTOP_FILE_GROUP, DESKTOP_FILE_KEY_DESKTOP, &error)) {
 		g_warning("Unable to use keyfile '%s' as there is no key '" DESKTOP_FILE_KEY_DESKTOP "' in the group '" DESKTOP_FILE_GROUP "' because: %s", definition_file, error == NULL ? "unknown" : error->message);
 		g_error_free(error);
 		g_key_file_free(keyfile);
-		return FALSE;
+		return NULL;
 	}
 
 	gchar * desktopfile = g_key_file_get_string(keyfile, DESKTOP_FILE_GROUP, DESKTOP_FILE_KEY_DESKTOP, &error);
-	blacklist_add_core(desktopfile, definition_file);
+	gchar * desktop = NULL;
+	if (desktopfile != NULL) {
+		desktop = g_strdup(desktopfile);
+	}
 
 	g_key_file_free(keyfile);
-	return FALSE;
+	return desktop;
 }
 
 /* Add a definition file into the black list and eclipse
