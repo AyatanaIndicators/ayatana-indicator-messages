@@ -48,6 +48,8 @@ static GMainLoop * mainloop = NULL;
 
 static MessageServiceDbus * dbus_interface = NULL;
 
+#define DESKTOP_FILE_GROUP        "Messaging Menu"
+#define DESKTOP_FILE_KEY_DESKTOP  "DesktopFile"
 
 static void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
 static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data);
@@ -60,6 +62,8 @@ static gboolean build_launcher (gpointer data);
 static gboolean build_launchers (gpointer data);
 static gboolean blacklist_init (gpointer data);
 static gboolean blacklist_add (gpointer data);
+static gboolean blacklist_keyfile_add (gpointer udata);
+static void blacklist_add_core (gchar * desktop, gchar * definition);
 static gboolean blacklist_remove (gpointer data);
 static void blacklist_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
 static void app_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
@@ -241,12 +245,52 @@ blacklist_init (gpointer data)
 	while ((filename = g_dir_read_name(dir)) != NULL) {
 		g_debug("Found file: %s", filename);
 		gchar * path = g_build_filename(blacklistdir, filename, NULL);
-		g_idle_add(blacklist_add, path);
+		if (g_str_has_suffix(path, "keyfile")) {
+			g_idle_add(blacklist_keyfile_add, path);
+		} else {
+			g_idle_add(blacklist_add, path);
+		}
 	}
 
 	g_dir_close(dir);
 	g_free(blacklistdir);
 
+	return FALSE;
+}
+
+/* Parses through a keyfile to find the desktop file entry and
+   pushes them into the blacklist. */
+static gboolean
+blacklist_keyfile_add (gpointer udata)
+{
+	gchar * definition_file = (gchar *)udata;
+	GKeyFile * keyfile = g_key_file_new();
+	GError * error = NULL;
+
+	if (!g_key_file_load_from_file(keyfile, definition_file, G_KEY_FILE_NONE, &error)) {
+		g_warning("Unable to load keyfile '%s' because: %s", definition_file, error == NULL ? "unknown" : error->message);
+		g_error_free(error);
+		g_key_file_free(keyfile);
+		return FALSE;
+	}
+
+	if (!g_key_file_has_group(keyfile, DESKTOP_FILE_GROUP)) {
+		g_warning("Unable to use keyfile '%s' as it has no '" DESKTOP_FILE_GROUP "' group.", definition_file);
+		g_key_file_free(keyfile);
+		return FALSE;
+	}
+
+	if (!g_key_file_has_key(keyfile, DESKTOP_FILE_GROUP, DESKTOP_FILE_KEY_DESKTOP, &error)) {
+		g_warning("Unable to use keyfile '%s' as there is no key '" DESKTOP_FILE_KEY_DESKTOP "' in the group '" DESKTOP_FILE_GROUP "' because: %s", definition_file, error == NULL ? "unknown" : error->message);
+		g_error_free(error);
+		g_key_file_free(keyfile);
+		return FALSE;
+	}
+
+	gchar * desktopfile = g_key_file_get_string(keyfile, DESKTOP_FILE_GROUP, DESKTOP_FILE_KEY_DESKTOP, &error);
+	blacklist_add_core(desktopfile, definition_file);
+
+	g_key_file_free(keyfile);
 	return FALSE;
 }
 
@@ -268,38 +312,51 @@ blacklist_add (gpointer udata)
 	gchar * trimdesktop = pango_trim_string(desktop);
 	g_free(desktop);
 
+	blacklist_add_core(trimdesktop, definition_file);
+	g_free(trimdesktop);
+
+	return FALSE;
+}
+
+/* This takes a desktop file and tries to add it to the black
+   list for applications in the messaging menu.  If it can,
+   then the launcher item gets marked as eclipsed and hidden
+   from the user. */
+static void
+blacklist_add_core (gchar * desktop, gchar * definition)
+{
 	/* Check for conflicts */
-	gpointer data = g_hash_table_lookup(blacklist, trimdesktop);
+	gpointer data = g_hash_table_lookup(blacklist, desktop);
 	if (data != NULL) {
 		gchar * oldfile = (gchar *)data;
-		if (!g_strcmp0(oldfile, definition_file)) {
+		if (!g_strcmp0(oldfile, definition)) {
 			g_warning("Already added file '%s'", oldfile);
 		} else {
-			g_warning("Already have desktop file '%s' in blacklist file '%s' not adding from '%s'", trimdesktop, oldfile, definition_file);
+			g_warning("Already have desktop file '%s' in blacklist file '%s' not adding from '%s'", desktop, oldfile, definition);
 		}
 
-		g_free(trimdesktop);
-		g_free(definition_file);
-		return FALSE;
+		return;
 	}
 
 	/* Actually blacklist this thing */
-	g_hash_table_insert(blacklist, trimdesktop, definition_file);
-	g_debug("Adding Blacklist item '%s' for desktop '%s'", definition_file, trimdesktop);
+	g_hash_table_insert(blacklist, desktop, definition);
+	g_debug("Adding Blacklist item '%s' for desktop '%s'", definition, desktop);
 
 	/* Go through and eclipse folks */
 	GList * launcher;
 	for (launcher = launcherList; launcher != NULL; launcher = launcher->next) {
 		launcherList_t * item = (launcherList_t *)launcher->data;
-		if (!g_strcmp0(trimdesktop, launcher_menu_item_get_desktop(item->menuitem))) {
+		if (!g_strcmp0(desktop, launcher_menu_item_get_desktop(item->menuitem))) {
 			launcher_menu_item_set_eclipsed(item->menuitem, TRUE);
 			dbusmenu_menuitem_property_set(item->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
 		}
 	}
 
 	check_hidden();
+	/* Shouldn't need a resort here as hiding shouldn't cause things to
+	   move other than this item disappearing. */
 
-	return FALSE;
+	return;
 }
 
 /* Remove a black list item based on the definition file
