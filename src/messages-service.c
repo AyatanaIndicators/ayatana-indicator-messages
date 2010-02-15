@@ -1057,7 +1057,11 @@ app_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFile
 	case G_FILE_MONITOR_EVENT_CREATED: {
 		gchar * path = g_file_get_path(file);
 		g_debug("\tCreate: %s", path);
-		g_idle_add(build_launcher, path);
+		if (g_str_has_suffix(path, "keyfile")) {
+			g_idle_add(build_launcher_keyfile, path);
+		} else {
+			g_idle_add(build_launcher, path);
+		}
 		break;
 	}
 	default:
@@ -1295,7 +1299,11 @@ build_launchers (gpointer data)
 	while ((filename = g_dir_read_name(dir)) != NULL) {
 		g_debug("Found file: %s", filename);
 		gchar * path = g_build_filename(directory, filename, NULL);
-		g_idle_add(build_launcher, path);
+		if (g_str_has_suffix(path, "keyfile")) {
+			g_idle_add(build_launcher_keyfile, path);
+		} else {
+			g_idle_add(build_launcher, path);
+		}
 	}
 
 	g_dir_close(dir);
