@@ -59,6 +59,8 @@ static void indicator_removed (IndicateListener * listener, IndicateListenerServ
 static void check_eclipses (AppMenuItem * ai);
 static void remove_eclipses (AppMenuItem * ai);
 static gboolean build_launcher (gpointer data);
+static gboolean build_launcher_keyfile (gpointer data);
+static void build_launcher_core (const gchar * desktop);
 static gboolean build_launchers (gpointer data);
 static gboolean blacklist_init (gpointer data);
 static gboolean blacklist_add (gpointer data);
@@ -1193,11 +1195,34 @@ build_launcher (gpointer data)
 	g_free(desktop);
 	g_debug("\tcontents: %s", trimdesktop);
 
+	build_launcher_core(trimdesktop);
+	g_free(trimdesktop);
+	return FALSE;
+}
+
+/* Use a key file to find the desktop file. */
+static gboolean
+build_launcher_keyfile (gpointer data)
+{
+	gchar * path = (gchar *)data;
+	gchar * desktop = desktop_file_from_keyfile (path);
+	if (desktop != NULL) {
+		build_launcher_core(desktop);
+		g_free(desktop);
+	}
+	return FALSE;
+}
+
+/* The core action of dealing with a desktop file that should
+   be a launcher */
+static void
+build_launcher_core (const gchar * desktop)
+{
 	/* Check to see if we already have a launcher */
 	GList * listitem;
 	for (listitem = launcherList; listitem != NULL; listitem = listitem->next) {
 		launcherList_t * li = (launcherList_t *)listitem->data;
-		if (!g_strcmp0(launcher_menu_item_get_desktop(li->menuitem), trimdesktop)) {
+		if (!g_strcmp0(launcher_menu_item_get_desktop(li->menuitem), desktop)) {
 			break;
 		}
 	}
@@ -1206,9 +1231,8 @@ build_launcher (gpointer data)
 		/* If not */
 		/* Build the item */
 		launcherList_t * ll = g_new0(launcherList_t, 1);
-		ll->menuitem = launcher_menu_item_new(trimdesktop);
-		g_free(trimdesktop);
-		ll->appdiritems = g_list_append(NULL, path);
+		ll->menuitem = launcher_menu_item_new(desktop);
+		ll->appdiritems = g_list_append(NULL, g_strdup(desktop));
 
 		/* Build a separator */
 		ll->separator = dbusmenu_menuitem_new();
@@ -1234,10 +1258,10 @@ build_launcher (gpointer data)
 	} else {
 		/* If so add ourselves */
 		launcherList_t * ll = (launcherList_t *)listitem->data;
-		ll->appdiritems = g_list_append(ll->appdiritems, path);
+		ll->appdiritems = g_list_append(ll->appdiritems, g_strdup(desktop));
 	}
 
-	return FALSE;
+	return;
 }
 
 /* This function goes through all the launchers that we're
