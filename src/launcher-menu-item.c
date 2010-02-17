@@ -286,6 +286,7 @@ launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed)
 	return;
 }
 
+/* Check to see if this item is eclipsed */
 gboolean
 launcher_menu_item_get_eclipsed (LauncherMenuItem * li)
 {
@@ -294,8 +295,12 @@ launcher_menu_item_get_eclipsed (LauncherMenuItem * li)
 	return !show;
 }
 
+/* Gets the shortcuts that are associated with this
+   launcher.  They're a list of DbusmenuMenuitems */
 GList *
 launcher_menu_item_get_items (LauncherMenuItem * li)
 {
-	return NULL;
+	g_return_val_if_fail(IS_LAUNCHER_MENU_ITEM(li), NULL);
+	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(li);
+	return priv->shortcuts;
 }
