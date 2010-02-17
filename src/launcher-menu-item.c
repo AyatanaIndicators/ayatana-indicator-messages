@@ -55,6 +55,7 @@ static void launcher_menu_item_init       (LauncherMenuItem *self);
 static void launcher_menu_item_dispose    (GObject *object);
 static void launcher_menu_item_finalize   (GObject *object);
 static void activate_cb (LauncherMenuItem * self, guint timestamp, gpointer data);
+static void nick_activate_cb (LauncherMenuItem * self, guint timestamp, gpointer data);
 
 
 G_DEFINE_TYPE (LauncherMenuItem, launcher_menu_item, DBUSMENU_TYPE_MENUITEM);
@@ -151,9 +152,12 @@ launcher_menu_item_new (const gchar * desktop_file)
 
 	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(self);
 
+	/* Parse the desktop file we've been given. */
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(desktop_file));
 	priv->desktop = g_strdup(desktop_file);
 
+	/* Set the appropriate values on this menu item based on the
+	   app info that we've parsed */
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_TYPE, LAUNCHER_MENUITEM_TYPE);
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), LAUNCHER_MENUITEM_PROP_APP_NAME, launcher_menu_item_get_name(self));
@@ -161,6 +165,21 @@ launcher_menu_item_new (const gchar * desktop_file)
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 
+	/* Start to build static shortcuts */
+	priv->ids = indicator_desktop_shortcuts_new(priv->desktop, "Messaging Menu");
+	const gchar ** nicks = indicator_desktop_shortcuts_get_nicks(priv->ids);
+	gint i;
+	for (i = 0; nicks[i] != NULL; i++) {
+		DbusmenuMenuitem * mi = dbusmenu_menuitem_new();
+		g_object_set_data(G_OBJECT(mi), "ids-nick", (gpointer)nicks[i]);
+
+		dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_LABEL, indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]));
+		g_signal_connect(G_OBJECT(mi), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(nick_activate_cb), self);
+
+		priv->shortcuts = g_list_append(priv->shortcuts, mi);
+	}
+
+	/* Check to see if we should be eclipsed */
 	if (priv->appinfo == NULL) {
 		launcher_menu_item_set_eclipsed(self, TRUE);
 	}
@@ -178,6 +197,13 @@ launcher_menu_item_get_name (LauncherMenuItem * appitem)
 	} else {
 		return g_app_info_get_name(priv->appinfo);
 	}
+}
+
+/* Respond to one of the shortcuts getting clicked on. */
+static void
+nick_activate_cb (LauncherMenuItem * self, guint timestamp, gpointer data)
+{
+
 }
 
 /* When the menu item is clicked on it tries to launch
