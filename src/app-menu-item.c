@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
+#include <libdbusmenu-glib/client.h>
 #include "app-menu-item.h"
 #include "dbus-data.h"
 
@@ -48,6 +49,9 @@ struct _AppMenuItemPrivate
 	GAppInfo * appinfo;
 	gchar * desktop;
 	guint unreadcount;
+
+	DbusmenuClient * client;
+	DbusmenuMenuitem * root;
 };
 
 #define APP_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_MENU_ITEM_TYPE, AppMenuItemPrivate))
@@ -60,6 +64,7 @@ static void app_menu_item_finalize   (GObject *object);
 static void activate_cb (AppMenuItem * self, guint timestamp, gpointer data);
 static void count_changed (IndicateListener * listener, IndicateListenerServer * server, guint count, gpointer data);
 static void count_cb (IndicateListener * listener, IndicateListenerServer * server, guint value, gpointer data);
+static void menu_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * menupath, gpointer data);
 static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
 static void update_label (AppMenuItem * self);
 
@@ -168,6 +173,7 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 	/* Get the values we care about from the server */
 	indicate_listener_server_get_desktop(listener, server, desktop_cb, self);
 	indicate_listener_server_get_count(listener, server, count_cb, self);
+	indicate_listener_server_get_menu(listener, server, menu_cb, self);
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 
@@ -258,6 +264,27 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 
 	update_label(self);
 	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
+
+	return;
+}
+
+static void
+root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer user_data)
+{
+
+
+}
+
+/* Gets the path to menuitems if there are some.  Now we need to
+   make them special. */
+static void
+menu_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * menupath, gpointer data)
+{
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	priv->client = dbusmenu_client_new(indicate_listener_server_get_dbusname(server), menupath);
+	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed), self);
 
 	return;
 }
