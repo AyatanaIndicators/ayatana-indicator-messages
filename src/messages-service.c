@@ -367,7 +367,7 @@ blacklist_add_core (gchar * desktop, gchar * definition)
 		launcherList_t * item = (launcherList_t *)launcher->data;
 		if (!g_strcmp0(desktop, launcher_menu_item_get_desktop(item->menuitem))) {
 			launcher_menu_item_set_eclipsed(item->menuitem, TRUE);
-			dbusmenu_menuitem_property_set(item->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+			dbusmenu_menuitem_property_set_bool(item->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		}
 	}
 
@@ -416,7 +416,7 @@ blacklist_remove (gpointer data)
 			}
 			if (serveritem == NULL) {
 				launcher_menu_item_set_eclipsed(li->menuitem, FALSE);
-				dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+				dbusmenu_menuitem_property_set_bool(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
 			}
 		}
 	}
@@ -702,14 +702,14 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 
 	/* If there is a menu item, let's get rid of it. */
 	if (sltp->menuitem != NULL) {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(sltp->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+		dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(sltp->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(sltp->menuitem));
 		g_object_unref(G_OBJECT(sltp->menuitem));
 	}
 
 	/* If there is a separator, let's get rid of it. */
 	if (sltp->separator != NULL) {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(sltp->separator), DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+		dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(sltp->separator), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(sltp->separator));
 		g_object_unref(G_OBJECT(sltp->separator));
 	}
@@ -814,7 +814,7 @@ resort_menu (DbusmenuMenuitem * menushell)
 				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
 				if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
 					/* Only clear the visiblity if we're not eclipsed */
-					dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+					dbusmenu_menuitem_property_set_bool(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
 					last_separator = li->separator;
 				}
 				position++;
@@ -850,7 +850,7 @@ resort_menu (DbusmenuMenuitem * menushell)
 		if (si->separator != NULL) {
 			g_debug("\tMoving app %s separator to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->separator), position);
-			dbusmenu_menuitem_property_set(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+			dbusmenu_menuitem_property_set_bool(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
 			position++;
 			last_separator = si->separator;
 		}
@@ -879,7 +879,7 @@ resort_menu (DbusmenuMenuitem * menushell)
 		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
 		if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
 			/* Only clear the visiblity if we're not eclipsed */
-			dbusmenu_menuitem_property_set(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+			dbusmenu_menuitem_property_set_bool(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
 			last_separator = li->separator;
 		}
 		position++;
@@ -888,7 +888,7 @@ resort_menu (DbusmenuMenuitem * menushell)
 	}
 
 	if (last_separator != NULL) {
-		dbusmenu_menuitem_property_set(last_separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+		dbusmenu_menuitem_property_set_bool(last_separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 	} else {
 		g_warning("No last separator on resort");
 	}
@@ -1047,7 +1047,7 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 
 		/* Hide the item immediately, and then remove it
 		   which might take a little longer. */
-		dbusmenu_menuitem_property_set(menuitem, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+		dbusmenu_menuitem_property_set_bool(menuitem, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), menuitem);
 		removed = TRUE;
 	}
@@ -1108,7 +1108,7 @@ check_eclipses (AppMenuItem * ai)
 
 		if (!g_strcmp0(aidesktop, lidesktop)) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
-			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+			dbusmenu_menuitem_property_set_bool(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 			break;
 		}
 	}
@@ -1133,7 +1133,7 @@ remove_eclipses (AppMenuItem * ai)
 
 		if (!g_strcmp0(aidesktop, lidesktop)) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, FALSE);
-			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "true");
+			dbusmenu_menuitem_property_set_bool(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
 			break;
 		}
 	}
@@ -1185,7 +1185,7 @@ destroy_launcher (gpointer data)
 	g_list_free(li->appdiritems);
 
 	if (li->menuitem != NULL) {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+		dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(li->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		dbusmenu_menuitem_child_delete(root_menuitem, DBUSMENU_MENUITEM(li->menuitem));
 		g_object_unref(G_OBJECT(li->menuitem));
 		li->menuitem = NULL;
@@ -1265,7 +1265,7 @@ build_launcher_core (const gchar * desktop)
 
 		/* Add it to the menu */
 		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
-		GList * shortcuts = launcher_menu_item_get_items(li->menuitem);
+		GList * shortcuts = launcher_menu_item_get_items(ll->menuitem);
 		while (shortcuts != NULL) {
 			dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(shortcuts->data));
 			shortcuts = g_list_next(shortcuts);
@@ -1277,7 +1277,7 @@ build_launcher_core (const gchar * desktop)
 		if (blacklist_check(launcher_menu_item_get_desktop(ll->menuitem)) ||
 				launcher_menu_item_get_eclipsed(ll->menuitem)) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
-			dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, "false");
+			dbusmenu_menuitem_property_set_bool(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		}
 
 		resort_menu(root_menuitem);
