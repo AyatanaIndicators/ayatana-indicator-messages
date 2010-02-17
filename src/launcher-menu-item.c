@@ -214,3 +214,9 @@ launcher_menu_item_get_eclipsed (LauncherMenuItem * li)
 	}
 	return FALSE;
 }
+
+GList *
+launcher_menu_item_get_items (LauncherMenuItem * li)
+{
+	return NULL;
+}
