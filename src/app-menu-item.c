@@ -27,6 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
 #include <libdbusmenu-glib/client.h>
+#include <libdbusmenu-glib/menuitem-proxy.h>
 #include "app-menu-item.h"
 #include "dbus-data.h"
 
@@ -51,7 +52,7 @@ struct _AppMenuItemPrivate
 	guint unreadcount;
 
 	DbusmenuClient * client;
-	DbusmenuMenuitem * root;
+	DbusmenuMenuitemProxy * root;
 };
 
 #define APP_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_MENU_ITEM_TYPE, AppMenuItemPrivate))
@@ -284,10 +285,63 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 }
 
 static void
-root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer user_data)
+child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint position, gpointer user_data)
 {
 
+	return;
+}
 
+static void
+child_removed_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, gpointer user_data)
+{
+
+	return;
+}
+
+static void 
+child_moved_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint newpos, guint oldpos, gpointer user_data)
+{
+
+	return;
+}
+
+/* We've got a new root.  We need to proxy it and handle it's children
+   if that's a relevant thing to do. */
+static void
+root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data)
+{
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+	gboolean change_time = FALSE;
+
+	if (priv->root != NULL) {
+		if (dbusmenu_menuitem_get_children(DBUSMENU_MENUITEM(priv->root)) != NULL) {
+			change_time = TRUE;
+		}
+		g_object_unref(priv->root);
+		priv->root = NULL;
+	}
+
+	/* We need to proxy the new root across to the old
+	   world of indicator land. */
+	priv->root = dbusmenu_menuitem_proxy_new(newroot);
+	g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED,   G_CALLBACK(child_added_cb),   self);
+	g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_REMOVED, G_CALLBACK(child_removed_cb), self);
+	g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_MOVED,   G_CALLBACK(child_moved_cb),   self);
+
+	/* See if we have any menuitems to worry about,
+	   otherwise we'll just move along. */
+	GList * children = dbusmenu_menuitem_get_children(DBUSMENU_MENUITEM(priv->root));
+	if (children != NULL) {
+		change_time = TRUE;
+	}
+
+	if (change_time) {
+		/* Signal that something has changed */
+		change_time = FALSE;
+	}
+
+	return;
 }
 
 /* Gets the path to menuitems if there are some.  Now we need to
