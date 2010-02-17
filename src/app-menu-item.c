@@ -292,24 +292,30 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	return;
 }
 
+/* Relay this signal into causing a rebuild of the shortcuts
+   from those above us. */
 static void
 child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint position, gpointer user_data)
 {
-
+	g_signal_emit(G_OBJECT(user_data), APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED, 0, TRUE);
 	return;
 }
 
+/* Relay this signal into causing a rebuild of the shortcuts
+   from those above us. */
 static void
 child_removed_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, gpointer user_data)
 {
-
+	g_signal_emit(G_OBJECT(user_data), APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED, 0, TRUE);
 	return;
 }
 
+/* Relay this signal into causing a rebuild of the shortcuts
+   from those above us. */
 static void 
 child_moved_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint newpos, guint oldpos, gpointer user_data)
 {
-
+	g_signal_emit(G_OBJECT(user_data), APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED, 0, TRUE);
 	return;
 }
 
@@ -345,8 +351,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 	}
 
 	if (change_time) {
-		/* Signal that something has changed */
-		change_time = FALSE;
+		g_signal_emit(G_OBJECT(self), APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED, 0, TRUE);
 	}
 
 	return;
