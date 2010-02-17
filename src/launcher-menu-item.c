@@ -27,6 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gdk/gdk.h>
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
+#include <libindicator/indicator-desktop-shortcuts.h>
 #include "launcher-menu-item.h"
 #include "dbus-data.h"
 
@@ -42,6 +43,8 @@ struct _LauncherMenuItemPrivate
 {
 	GAppInfo * appinfo;
 	gchar * desktop;
+	IndicatorDesktopShortcuts * ids;
+	GList * shortcuts;
 };
 
 #define LAUNCHER_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), LAUNCHER_MENU_ITEM_TYPE, LauncherMenuItemPrivate))
@@ -86,14 +89,40 @@ launcher_menu_item_init (LauncherMenuItem *self)
 	priv->appinfo = NULL;
 	priv->desktop = NULL;
 
+	priv->ids = NULL;
+	priv->shortcuts = NULL;
+
+	return;
+}
+
+static void
+func_unref (gpointer data, gpointer user_data)
+{
+	g_object_unref(G_OBJECT(data));
 	return;
 }
 
 static void
 launcher_menu_item_dispose (GObject *object)
 {
-	// LauncherMenuItem * self = LAUNCHER_MENU_ITEM(object);
-	// LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(self);
+	LauncherMenuItem * self = LAUNCHER_MENU_ITEM(object);
+	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(self);
+
+	if (priv->appinfo != NULL) {
+		g_object_unref(priv->appinfo);
+		priv->appinfo = NULL;
+	}
+
+	if (priv->ids != NULL) {
+		g_object_unref(priv->ids);
+		priv->ids = NULL;
+	}
+
+	if (priv->shortcuts != NULL) {
+		g_list_foreach(priv->shortcuts, func_unref, NULL);
+		g_list_free(priv->shortcuts);
+		priv->shortcuts = NULL;
+	}
 
 	G_OBJECT_CLASS (launcher_menu_item_parent_class)->dispose (object);
 }
@@ -103,11 +132,6 @@ launcher_menu_item_finalize (GObject *object)
 {
 	LauncherMenuItem * self = LAUNCHER_MENU_ITEM(object);
 	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(self);
-
-	if (priv->appinfo != NULL) {
-		g_object_unref(priv->appinfo);
-		priv->appinfo = NULL;
-	}
 
 	if (priv->desktop != NULL) {
 		g_free(priv->desktop);
