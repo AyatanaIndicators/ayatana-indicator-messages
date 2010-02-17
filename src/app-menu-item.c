@@ -53,7 +53,7 @@ struct _AppMenuItemPrivate
 	guint unreadcount;
 
 	DbusmenuClient * client;
-	DbusmenuMenuitemProxy * root;
+	DbusmenuMenuitem * root;
 	GList * shortcuts;
 };
 
@@ -312,27 +312,70 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 /* Relay this signal into causing a rebuild of the shortcuts
    from those above us. */
 static void
-child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint position, gpointer user_data)
+child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint position, gpointer data)
 {
-	g_signal_emit(G_OBJECT(user_data), signals[SHORTCUTS_CHANGED], 0, TRUE);
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+	DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(child);
+
+	priv->shortcuts = g_list_insert(priv->shortcuts, mip, position);
+
+	g_signal_emit(G_OBJECT(data), signals[SHORTCUTS_CHANGED], 0, TRUE);
 	return;
 }
 
 /* Relay this signal into causing a rebuild of the shortcuts
    from those above us. */
 static void
-child_removed_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, gpointer user_data)
+child_removed_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, gpointer data)
 {
-	g_signal_emit(G_OBJECT(user_data), signals[SHORTCUTS_CHANGED], 0, TRUE);
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	GList * pitems = priv->shortcuts;
+	while (pitems != NULL) {
+		DbusmenuMenuitemProxy * mip = DBUSMENU_MENUITEM_PROXY(pitems->data);
+
+		if (dbusmenu_menuitem_proxy_get_wrapped(mip) == child) {
+			break;
+		}
+
+		pitems = g_list_next(pitems);
+	}
+
+	if (pitems != NULL) {
+		DbusmenuMenuitemProxy * mip = DBUSMENU_MENUITEM_PROXY(pitems->data);
+		g_object_unref(mip);
+		priv->shortcuts = g_list_remove(priv->shortcuts, mip);
+
+		g_signal_emit(G_OBJECT(data), signals[SHORTCUTS_CHANGED], 0, TRUE);
+	}
+
 	return;
 }
 
 /* Relay this signal into causing a rebuild of the shortcuts
    from those above us. */
 static void 
-child_moved_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint newpos, guint oldpos, gpointer user_data)
+child_moved_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint newpos, guint oldpos, gpointer data)
 {
-	g_signal_emit(G_OBJECT(user_data), signals[SHORTCUTS_CHANGED], 0, TRUE);
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	DbusmenuMenuitemProxy * mip = DBUSMENU_MENUITEM_PROXY(g_list_nth_data(priv->shortcuts, oldpos));
+
+	if (mip != NULL) {
+		if (dbusmenu_menuitem_proxy_get_wrapped(mip) != child) {
+			mip = NULL;
+		}
+	}
+
+	if (mip != NULL) {
+		priv->shortcuts = g_list_remove(priv->shortcuts, mip);
+		priv->shortcuts = g_list_insert(priv->shortcuts, mip, newpos);
+		g_signal_emit(G_OBJECT(data), signals[SHORTCUTS_CHANGED], 0, TRUE);
+	}
+
 	return;
 }
 
@@ -348,6 +391,9 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 	if (priv->root != NULL) {
 		if (dbusmenu_menuitem_get_children(DBUSMENU_MENUITEM(priv->root)) != NULL) {
 			change_time = TRUE;
+			g_list_foreach(priv->shortcuts, func_unref, NULL);
+			g_list_free(priv->shortcuts);
+			priv->shortcuts = NULL;
 		}
 		g_object_unref(priv->root);
 		priv->root = NULL;
@@ -355,7 +401,8 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 
 	/* We need to proxy the new root across to the old
 	   world of indicator land. */
-	priv->root = dbusmenu_menuitem_proxy_new(newroot);
+	priv->root = newroot;
+	g_object_ref(priv->root);
 	g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED,   G_CALLBACK(child_added_cb),   self);
 	g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_REMOVED, G_CALLBACK(child_removed_cb), self);
 	g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_MOVED,   G_CALLBACK(child_moved_cb),   self);
@@ -365,6 +412,10 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 	GList * children = dbusmenu_menuitem_get_children(DBUSMENU_MENUITEM(priv->root));
 	if (children != NULL) {
 		change_time = TRUE;
+		while (children != NULL) {
+			DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(DBUSMENU_MENUITEM(children->data));
+			priv->shortcuts = g_list_append(priv->shortcuts, mip);
+		}
 	}
 
 	if (change_time) {
