@@ -263,22 +263,16 @@ void
 launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed)
 {
 	g_debug("Laucher '%s' is %s", launcher_menu_item_get_name(li), eclipsed ? "now eclipsed" : "shown again");
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_VISIBLE, eclipsed ? "false" : "true");
+	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_VISIBLE, !eclipsed);
 	return;
 }
 
 gboolean
 launcher_menu_item_get_eclipsed (LauncherMenuItem * li)
 {
-	const gchar * show = dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_VISIBLE);
-	if (show == NULL) {
-		return FALSE;
-	}
-	g_debug("Launcher check eclipse: %s", show);
-	if (!g_strcmp0(show, "false")) {
-		return TRUE;
-	}
-	return FALSE;
+	gboolean show = dbusmenu_menuitem_property_get_bool(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_VISIBLE);
+	g_debug("Launcher check eclipse: %s", show ? "false" : "true");
+	return !show;
 }
 
 GList *
