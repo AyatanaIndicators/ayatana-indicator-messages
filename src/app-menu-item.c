@@ -309,3 +309,11 @@ app_menu_item_get_desktop (AppMenuItem * appitem)
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
 	return priv->desktop;
 }
+
+/* Get the dynamic items added onto the end of
+   and app entry. */
+GList *
+app_menu_item_get_items (AppMenuItem * appitem)
+{
+	return NULL;
+}
