@@ -297,7 +297,7 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 static void
 child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint position, gpointer user_data)
 {
-	g_signal_emit(G_OBJECT(user_data), APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED, 0, TRUE);
+	g_signal_emit(G_OBJECT(user_data), signals[SHORTCUTS_CHANGED], 0, TRUE);
 	return;
 }
 
@@ -306,7 +306,7 @@ child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint positio
 static void
 child_removed_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, gpointer user_data)
 {
-	g_signal_emit(G_OBJECT(user_data), APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED, 0, TRUE);
+	g_signal_emit(G_OBJECT(user_data), signals[SHORTCUTS_CHANGED], 0, TRUE);
 	return;
 }
 
@@ -315,7 +315,7 @@ child_removed_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, gpointer us
 static void 
 child_moved_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint newpos, guint oldpos, gpointer user_data)
 {
-	g_signal_emit(G_OBJECT(user_data), APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED, 0, TRUE);
+	g_signal_emit(G_OBJECT(user_data), signals[SHORTCUTS_CHANGED], 0, TRUE);
 	return;
 }
 
@@ -351,7 +351,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 	}
 
 	if (change_time) {
-		g_signal_emit(G_OBJECT(self), APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED, 0, TRUE);
+		g_signal_emit(G_OBJECT(self), signals[SHORTCUTS_CHANGED], 0, TRUE);
 	}
 
 	return;
