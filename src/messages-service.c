@@ -800,6 +800,15 @@ resort_menu (DbusmenuMenuitem * menushell)
 				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->menuitem), position);
 				position++;
 
+				/* Inserting the shortcuts from the launcher */
+				GList * shortcuts = launcher_menu_item_get_items(li->menuitem);
+				while (shortcuts != NULL) {
+					g_debug("\t\tMoving shortcut to position %d", position);
+					dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(shortcuts->data), position);
+					position++;
+					shortcuts = g_list_next(shortcuts);
+				}
+
 				/* Putting the launcher separator in */
 				g_debug("\tMoving launcher separator to position %d", position);
 				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
@@ -855,6 +864,15 @@ resort_menu (DbusmenuMenuitem * menushell)
 		g_debug("\tMoving launcher '%s' to position %d", launcher_menu_item_get_name(li->menuitem), position);
 		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->menuitem), position);
 		position++;
+
+		/* Inserting the shortcuts from the launcher */
+		GList * shortcuts = launcher_menu_item_get_items(li->menuitem);
+		while (shortcuts != NULL) {
+			g_debug("\t\tMoving shortcut to position %d", position);
+			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(shortcuts->data), position);
+			position++;
+			shortcuts = g_list_next(shortcuts);
+		}
 
 		/* Putting the launcher separator in */
 		g_debug("\tMoving launcher separator to position %d", position);
@@ -1247,6 +1265,11 @@ build_launcher_core (const gchar * desktop)
 
 		/* Add it to the menu */
 		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
+		GList * shortcuts = launcher_menu_item_get_items(li->menuitem);
+		while (shortcuts != NULL) {
+			dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(shortcuts->data));
+			shortcuts = g_list_next(shortcuts);
+		}
 		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->separator));
 
 		/* If we're in the black list or we've gotten eclipsed
