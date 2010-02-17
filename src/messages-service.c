@@ -882,6 +882,15 @@ resort_menu (DbusmenuMenuitem * menushell)
 			g_debug("\tMoving app %s to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->menuitem), position);
 			position++;
+
+			/* Inserting the shortcuts from the launcher */
+			GList * shortcuts = app_menu_item_get_items(si->menuitem);
+			while (shortcuts != NULL) {
+				g_debug("\t\tMoving shortcut to position %d", position);
+				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(shortcuts->data), position);
+				position++;
+				shortcuts = g_list_next(shortcuts);
+			}
 		}
 
 		/* Putting all the indicators that are related to this application
