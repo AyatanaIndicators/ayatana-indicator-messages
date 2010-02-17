@@ -54,6 +54,7 @@ struct _AppMenuItemPrivate
 
 	DbusmenuClient * client;
 	DbusmenuMenuitemProxy * root;
+	GList * shortcuts;
 };
 
 #define APP_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_MENU_ITEM_TYPE, AppMenuItemPrivate))
@@ -123,7 +124,16 @@ app_menu_item_init (AppMenuItem *self)
 
 	priv->client = NULL;
 	priv->root = NULL;
+	priv->shortcuts = NULL;
 
+	return;
+}
+
+/* A wrapper to make the prototypes work for GFunc */
+static void
+func_unref (gpointer data, gpointer user_data)
+{
+	g_object_unref(G_OBJECT(data));
 	return;
 }
 
@@ -137,6 +147,13 @@ app_menu_item_dispose (GObject *object)
 	if (priv->listener != NULL) {
 		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), count_changed, self);
 		g_object_unref(priv->listener);
+	}
+
+	if (priv->shortcuts != NULL) {
+		g_list_foreach(priv->shortcuts, func_unref, NULL);
+		g_list_free(priv->shortcuts);
+		priv->shortcuts = NULL;
+		g_signal_emit(object, signals[SHORTCUTS_CHANGED], 0, TRUE);
 	}
 
 	if (priv->root != NULL) {
