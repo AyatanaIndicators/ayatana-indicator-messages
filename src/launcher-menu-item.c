@@ -257,13 +257,32 @@ launcher_menu_item_get_description (LauncherMenuItem * li)
 	return g_app_info_get_description(priv->appinfo);
 }
 
+/* Apply the eclipse value to all the shortcuts */
+static void
+eclipse_shortcuts_cb (gpointer data, gpointer user_data)
+{
+	DbusmenuMenuitem * mi = DBUSMENU_MENUITEM(data);
+	g_return_if_fail(mi != NULL);
+
+	gboolean eclipsed = GPOINTER_TO_UINT(user_data);
+	
+	dbusmenu_menuitem_property_set_bool(mi, DBUSMENU_MENUITEM_PROP_VISIBLE, !eclipsed);
+	return;
+}
+
 /* Hides the menu item based on whether it is eclipsed
    or not. */
 void
 launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed)
 {
+	g_return_if_fail(IS_LAUNCHER_MENU_ITEM(li));
+	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(li);
+
 	g_debug("Laucher '%s' is %s", launcher_menu_item_get_name(li), eclipsed ? "now eclipsed" : "shown again");
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_VISIBLE, !eclipsed);
+
+	g_list_foreach(priv->shortcuts, eclipse_shortcuts_cb, GINT_TO_POINTER(eclipsed));
+
 	return;
 }
 
