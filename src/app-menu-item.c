@@ -34,6 +34,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 enum {
 	COUNT_CHANGED,
 	NAME_CHANGED,
+	SHORTCUTS_CHANGED,
 	LAST_SIGNAL
 };
 
@@ -96,6 +97,13 @@ app_menu_item_class_init (AppMenuItemClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__STRING,
 	                                      G_TYPE_NONE, 1, G_TYPE_STRING);
+	signals[SHORTCUTS_CHANGED] =  g_signal_new(APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (AppMenuItemClass, shortcuts_changed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__VOID,
+	                                      G_TYPE_NONE, 0, G_TYPE_NONE);
 
 	return;
 }
