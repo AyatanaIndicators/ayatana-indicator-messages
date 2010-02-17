@@ -49,6 +49,8 @@ struct _LauncherMenuItemPrivate
 
 #define LAUNCHER_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), LAUNCHER_MENU_ITEM_TYPE, LauncherMenuItemPrivate))
 
+#define NICK_DATA  "ids-nick-data"
+
 /* Prototypes */
 static void launcher_menu_item_class_init (LauncherMenuItemClass *klass);
 static void launcher_menu_item_init       (LauncherMenuItem *self);
@@ -171,7 +173,7 @@ launcher_menu_item_new (const gchar * desktop_file)
 	gint i;
 	for (i = 0; nicks[i] != NULL; i++) {
 		DbusmenuMenuitem * mi = dbusmenu_menuitem_new();
-		g_object_set_data(G_OBJECT(mi), "ids-nick", (gpointer)nicks[i]);
+		g_object_set_data(G_OBJECT(mi), NICK_DATA, (gpointer)nicks[i]);
 
 		dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_LABEL, indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]));
 		g_signal_connect(G_OBJECT(mi), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(nick_activate_cb), self);
@@ -203,7 +205,21 @@ launcher_menu_item_get_name (LauncherMenuItem * appitem)
 static void
 nick_activate_cb (LauncherMenuItem * self, guint timestamp, gpointer data)
 {
+	gchar * nick = (gchar *)g_object_get_data(G_OBJECT(self), NICK_DATA);
+	LauncherMenuItem * lmi = LAUNCHER_MENU_ITEM(data);
 
+	g_return_if_fail(nick != NULL);
+	g_return_if_fail(lmi != NULL);
+
+	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(lmi);
+	
+	g_return_if_fail(priv->ids != NULL);
+
+	if (!indicator_desktop_shortcuts_nick_exec(priv->ids, nick)) {
+		g_warning("Unable to execute nick '%s' for desktop file '%s'", nick, priv->desktop);
+	}
+
+	return;
 }
 
 /* When the menu item is clicked on it tries to launch
