@@ -112,6 +112,9 @@ app_menu_item_init (AppMenuItem *self)
 	priv->desktop = NULL;
 	priv->unreadcount = 0;
 
+	priv->client = NULL;
+	priv->root = NULL;
+
 	return;
 }
 
@@ -122,8 +125,20 @@ app_menu_item_dispose (GObject *object)
 	AppMenuItem * self = APP_MENU_ITEM(object);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
-	g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), count_changed, self);
-	g_object_unref(priv->listener);
+	if (priv->listener != NULL) {
+		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), count_changed, self);
+		g_object_unref(priv->listener);
+	}
+
+	if (priv->root != NULL) {
+		g_object_unref(priv->root);
+		priv->root = NULL;
+	}
+
+	if (priv->client != NULL) {
+		g_object_unref(priv->client);
+		priv->client = NULL;
+	}
 
 	G_OBJECT_CLASS (app_menu_item_parent_class)->dispose (object);
 }
