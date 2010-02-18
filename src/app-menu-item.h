@@ -37,8 +37,9 @@ G_BEGIN_DECLS
 #define IS_APP_MENU_ITEM_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), APP_MENU_ITEM_TYPE))
 #define APP_MENU_ITEM_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), APP_MENU_ITEM_TYPE, AppMenuItemClass))
 
-#define APP_MENU_ITEM_SIGNAL_COUNT_CHANGED  "count-changed"
-#define APP_MENU_ITEM_SIGNAL_NAME_CHANGED   "name-changed"
+#define APP_MENU_ITEM_SIGNAL_COUNT_CHANGED     "count-changed"
+#define APP_MENU_ITEM_SIGNAL_NAME_CHANGED      "name-changed"
+#define APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED "shortcuts-changed"
 
 typedef struct _AppMenuItem      AppMenuItem;
 typedef struct _AppMenuItemClass AppMenuItemClass;
@@ -48,6 +49,7 @@ struct _AppMenuItemClass {
 
 	void (* count_changed) (guint count);
 	void (* name_changed) (gchar * name);
+	void (* shortcuts_changed) (void);
 };
 
 struct _AppMenuItem {
@@ -60,6 +62,7 @@ guint app_menu_item_get_count (AppMenuItem * appitem);
 IndicateListenerServer * app_menu_item_get_server (AppMenuItem * appitem);
 const gchar * app_menu_item_get_name (AppMenuItem * appitem);
 const gchar * app_menu_item_get_desktop (AppMenuItem * appitem);
+GList * app_menu_item_get_items (AppMenuItem * appitem);
 
 G_END_DECLS
 
