@@ -26,12 +26,15 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
+#include <libdbusmenu-glib/client.h>
+#include <libdbusmenu-glib/menuitem-proxy.h>
 #include "app-menu-item.h"
 #include "dbus-data.h"
 
 enum {
 	COUNT_CHANGED,
 	NAME_CHANGED,
+	SHORTCUTS_CHANGED,
 	LAST_SIGNAL
 };
 
@@ -48,6 +51,10 @@ struct _AppMenuItemPrivate
 	GAppInfo * appinfo;
 	gchar * desktop;
 	guint unreadcount;
+
+	DbusmenuClient * client;
+	DbusmenuMenuitem * root;
+	GList * shortcuts;
 };
 
 #define APP_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_MENU_ITEM_TYPE, AppMenuItemPrivate))
@@ -60,6 +67,7 @@ static void app_menu_item_finalize   (GObject *object);
 static void activate_cb (AppMenuItem * self, guint timestamp, gpointer data);
 static void count_changed (IndicateListener * listener, IndicateListenerServer * server, guint count, gpointer data);
 static void count_cb (IndicateListener * listener, IndicateListenerServer * server, guint value, gpointer data);
+static void menu_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * menupath, gpointer data);
 static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
 static void update_label (AppMenuItem * self);
 
@@ -90,6 +98,13 @@ app_menu_item_class_init (AppMenuItemClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__STRING,
 	                                      G_TYPE_NONE, 1, G_TYPE_STRING);
+	signals[SHORTCUTS_CHANGED] =  g_signal_new(APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (AppMenuItemClass, shortcuts_changed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__VOID,
+	                                      G_TYPE_NONE, 0, G_TYPE_NONE);
 
 	return;
 }
@@ -107,20 +122,56 @@ app_menu_item_init (AppMenuItem *self)
 	priv->desktop = NULL;
 	priv->unreadcount = 0;
 
+	priv->client = NULL;
+	priv->root = NULL;
+	priv->shortcuts = NULL;
+
 	return;
 }
 
+/* A wrapper to make the prototypes work for GFunc */
+static void
+func_unref (gpointer data, gpointer user_data)
+{
+	g_object_unref(G_OBJECT(data));
+	return;
+}
+
+/* Disconnect the count_changed signal and unref the listener */
 static void
 app_menu_item_dispose (GObject *object)
 {
 	AppMenuItem * self = APP_MENU_ITEM(object);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
-	g_object_unref(priv->listener);
+	if (priv->listener != NULL) {
+		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), count_changed, self);
+		g_object_unref(priv->listener);
+		priv->listener = NULL;
+	}
+
+	if (priv->shortcuts != NULL) {
+		g_list_foreach(priv->shortcuts, func_unref, NULL);
+		g_list_free(priv->shortcuts);
+		priv->shortcuts = NULL;
+		g_signal_emit(object, signals[SHORTCUTS_CHANGED], 0, TRUE);
+	}
+
+	if (priv->root != NULL) {
+		g_object_unref(priv->root);
+		priv->root = NULL;
+	}
+
+	if (priv->client != NULL) {
+		g_object_unref(priv->client);
+		priv->client = NULL;
+	}
 
 	G_OBJECT_CLASS (app_menu_item_parent_class)->dispose (object);
 }
 
+/* Free the memory used by our type, desktop file and application
+   info structures. */
 static void
 app_menu_item_finalize (GObject *object)
 {
@@ -164,6 +215,7 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 	/* Get the values we care about from the server */
 	indicate_listener_server_get_desktop(listener, server, desktop_cb, self);
 	indicate_listener_server_get_count(listener, server, count_cb, self);
+	indicate_listener_server_get_menu(listener, server, menu_cb, self);
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 
@@ -202,6 +254,7 @@ update_label (AppMenuItem * self)
 static void
 count_changed (IndicateListener * listener, IndicateListenerServer * server, guint count, gpointer data)
 {
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
@@ -230,6 +283,7 @@ count_cb (IndicateListener * listener, IndicateListenerServer * server, guint va
 static void 
 desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
 {
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
@@ -253,7 +307,156 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	priv->desktop = g_strdup(value);
 
 	update_label(self);
+
+	GIcon * icon = g_app_info_get_icon(priv->appinfo);
+	gchar * iconstr = g_icon_to_string(icon);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_NAME, iconstr);
+	g_free(iconstr);
+
 	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
+
+	return;
+}
+
+/* Relay this signal into causing a rebuild of the shortcuts
+   from those above us. */
+static void
+child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint position, gpointer data)
+{
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+	DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(child);
+
+	priv->shortcuts = g_list_insert(priv->shortcuts, mip, position);
+
+	g_signal_emit(G_OBJECT(data), signals[SHORTCUTS_CHANGED], 0, TRUE);
+	return;
+}
+
+/* Relay this signal into causing a rebuild of the shortcuts
+   from those above us. */
+static void
+child_removed_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, gpointer data)
+{
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	GList * pitems = priv->shortcuts;
+	while (pitems != NULL) {
+		DbusmenuMenuitemProxy * mip = DBUSMENU_MENUITEM_PROXY(pitems->data);
+
+		if (dbusmenu_menuitem_proxy_get_wrapped(mip) == child) {
+			break;
+		}
+
+		pitems = g_list_next(pitems);
+	}
+
+	if (pitems != NULL) {
+		DbusmenuMenuitemProxy * mip = DBUSMENU_MENUITEM_PROXY(pitems->data);
+		g_object_unref(mip);
+		priv->shortcuts = g_list_remove(priv->shortcuts, mip);
+
+		g_signal_emit(G_OBJECT(data), signals[SHORTCUTS_CHANGED], 0, TRUE);
+	}
+
+	return;
+}
+
+/* Relay this signal into causing a rebuild of the shortcuts
+   from those above us. */
+static void 
+child_moved_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint newpos, guint oldpos, gpointer data)
+{
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	DbusmenuMenuitemProxy * mip = DBUSMENU_MENUITEM_PROXY(g_list_nth_data(priv->shortcuts, oldpos));
+
+	if (mip != NULL) {
+		if (dbusmenu_menuitem_proxy_get_wrapped(mip) != child) {
+			mip = NULL;
+		}
+	}
+
+	if (mip != NULL) {
+		priv->shortcuts = g_list_remove(priv->shortcuts, mip);
+		priv->shortcuts = g_list_insert(priv->shortcuts, mip, newpos);
+		g_signal_emit(G_OBJECT(data), signals[SHORTCUTS_CHANGED], 0, TRUE);
+	}
+
+	return;
+}
+
+/* We've got a new root.  We need to proxy it and handle it's children
+   if that's a relevant thing to do. */
+static void
+root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data)
+{
+	g_debug("Root Changed");
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+	gboolean change_time = FALSE;
+
+	if (priv->root != NULL) {
+		if (dbusmenu_menuitem_get_children(DBUSMENU_MENUITEM(priv->root)) != NULL) {
+			change_time = TRUE;
+			g_list_foreach(priv->shortcuts, func_unref, NULL);
+			g_list_free(priv->shortcuts);
+			priv->shortcuts = NULL;
+		}
+		g_object_unref(priv->root);
+		priv->root = NULL;
+	}
+
+	/* We need to proxy the new root across to the old
+	   world of indicator land. */
+	priv->root = newroot;
+	g_object_ref(priv->root);
+	g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED,   G_CALLBACK(child_added_cb),   self);
+	g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_REMOVED, G_CALLBACK(child_removed_cb), self);
+	g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_MOVED,   G_CALLBACK(child_moved_cb),   self);
+
+	/* See if we have any menuitems to worry about,
+	   otherwise we'll just move along. */
+	GList * children = dbusmenu_menuitem_get_children(DBUSMENU_MENUITEM(priv->root));
+	if (children != NULL) {
+		change_time = TRUE;
+		g_debug("\tProcessing %d children", g_list_length(children));
+		while (children != NULL) {
+			DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(DBUSMENU_MENUITEM(children->data));
+			priv->shortcuts = g_list_append(priv->shortcuts, mip);
+			children = g_list_next(children);
+		}
+	}
+
+	if (change_time) {
+		g_signal_emit(G_OBJECT(self), signals[SHORTCUTS_CHANGED], 0, TRUE);
+	}
+
+	return;
+}
+
+/* Gets the path to menuitems if there are some.  Now we need to
+   make them special. */
+static void
+menu_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * menupath, gpointer data)
+{
+	g_debug("Got Menu: %s", menupath);
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
+	AppMenuItem * self = APP_MENU_ITEM(data);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	priv->client = dbusmenu_client_new(indicate_listener_server_get_dbusname(server), menupath);
+	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed), self);
+
+	DbusmenuMenuitem * root = dbusmenu_client_get_root(priv->client);
+	if (root != NULL) {
+		root_changed(priv->client, root, self);
+	}
 
 	return;
 }
@@ -304,4 +507,14 @@ app_menu_item_get_desktop (AppMenuItem * appitem)
 	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), NULL);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
 	return priv->desktop;
+}
+
+/* Get the dynamic items added onto the end of
+   and app entry. */
+GList *
+app_menu_item_get_items (AppMenuItem * appitem)
+{
+	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), NULL);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
+	return priv->shortcuts;
 }
