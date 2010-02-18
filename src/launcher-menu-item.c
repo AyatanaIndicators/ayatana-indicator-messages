@@ -131,9 +131,10 @@ launcher_menu_item_new (const gchar * desktop_file)
 	priv->desktop = g_strdup(desktop_file);
 
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_TYPE, LAUNCHER_MENUITEM_TYPE);
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), LAUNCHER_MENUITEM_PROP_APP_NAME, launcher_menu_item_get_name(self));
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), LAUNCHER_MENUITEM_PROP_APP_DESC, launcher_menu_item_get_description(self));
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL,     launcher_menu_item_get_name(self));
+	gchar * iconstr = launcher_menu_item_get_icon(self);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_NAME, iconstr);
+	g_free(iconstr);
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 
@@ -153,6 +154,20 @@ launcher_menu_item_get_name (LauncherMenuItem * appitem)
 		return NULL;
 	} else {
 		return g_app_info_get_name(priv->appinfo);
+	}
+}
+
+gchar *
+launcher_menu_item_get_icon (LauncherMenuItem * appitem)
+{
+	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(appitem);
+
+	if (priv->appinfo == NULL) {
+		return NULL;
+	} else {
+		GIcon * icon = g_app_info_get_icon(priv->appinfo);
+		gchar * iconstr = g_icon_to_string(icon);
+		return iconstr;
 	}
 }
 
