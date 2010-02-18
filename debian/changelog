@@ -1,4 +1,4 @@
-indicator-messages (0.3.2-0ubuntu1~ppa1) lucid; urgency=low
+indicator-messages (0.3.2-0ubuntu1) lucid; urgency=low
 
   * Upstream release 0.3.2
     * Removing extra ref
