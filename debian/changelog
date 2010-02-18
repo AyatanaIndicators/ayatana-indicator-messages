@@ -1,13 +1,13 @@
-indicator-messages (0.3.1-0ubuntu1~ppa2) lucid; urgency=low
+indicator-messages (0.3.1-0ubuntu2) lucid; urgency=low
 
   * Upstream Merge
     * Removing extra ref
     * Moving locally defined variable to use the one defined in
-      the function to fix a NULL pointer.
+      the function to fix a NULL pointer. (lp: #518547)
 
  -- Ted Gould <ted@ubuntu.com>  Tue, 09 Feb 2010 09:30:10 -0600
 
-indicator-messages (0.3.1-0ubuntu1~ppa1) lucid; urgency=low
+indicator-messages (0.3.1-0ubuntu1) lucid; urgency=low
 
   * Upstream release 0.3.1
     * Updates for dbusmenu 0.2.2
