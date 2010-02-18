@@ -257,6 +257,12 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	priv->desktop = g_strdup(value);
 
 	update_label(self);
+
+	GIcon * icon = g_app_info_get_icon(priv->appinfo);
+	gchar * iconstr = g_icon_to_string(icon);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_NAME, iconstr);
+	g_free(iconstr);
+
 	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
 
 	return;
