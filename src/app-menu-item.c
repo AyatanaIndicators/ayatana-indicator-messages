@@ -384,6 +384,7 @@ child_moved_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint newpos,
 static void
 root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data)
 {
+	g_debug("Root Changed");
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 	gboolean change_time = FALSE;
@@ -412,6 +413,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 	GList * children = dbusmenu_menuitem_get_children(DBUSMENU_MENUITEM(priv->root));
 	if (children != NULL) {
 		change_time = TRUE;
+		g_debug("\tProcessing %d children", g_list_length(children));
 		while (children != NULL) {
 			DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(DBUSMENU_MENUITEM(children->data));
 			priv->shortcuts = g_list_append(priv->shortcuts, mip);

@@ -594,6 +594,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	GList * shortcuts = app_menu_item_get_items(sl_item->menuitem);
 	while (shortcuts != NULL) {
 		DbusmenuMenuitem * mi = DBUSMENU_MENUITEM(shortcuts->data);
+		g_debug("\tAdding shortcut: %s", dbusmenu_menuitem_property_get(mi, DBUSMENU_MENUITEM_PROP_LABEL));
 		dbusmenu_menuitem_child_append(menushell, mi);
 		shortcuts = g_list_next(shortcuts);
 	}
@@ -611,6 +612,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 static void
 server_shortcuts_changed (AppMenuItem * appitem, gpointer data)
 {
+	g_debug("Application Shortcuts changed");
 	DbusmenuMenuitem * shell = DBUSMENU_MENUITEM(data);
 	gboolean appitemfound = FALSE;
 	GList * children = dbusmenu_menuitem_get_children(shell);
@@ -639,6 +641,7 @@ server_shortcuts_changed (AppMenuItem * appitem, gpointer data)
 	GList * shortcuts = app_menu_item_get_items(appitem);
 	while (shortcuts != NULL) {
 		DbusmenuMenuitem * mi = DBUSMENU_MENUITEM(shortcuts->data);
+		g_debug("\tAdding shortcut: %s", dbusmenu_menuitem_property_get(mi, DBUSMENU_MENUITEM_PROP_LABEL));
 		dbusmenu_menuitem_child_append(shell, mi);
 		shortcuts = g_list_next(shortcuts);
 	}
