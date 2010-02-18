@@ -254,6 +254,7 @@ update_label (AppMenuItem * self)
 static void
 count_changed (IndicateListener * listener, IndicateListenerServer * server, guint count, gpointer data)
 {
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
@@ -282,6 +283,7 @@ count_cb (IndicateListener * listener, IndicateListenerServer * server, guint va
 static void 
 desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
 {
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
@@ -315,6 +317,7 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 static void
 child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint position, gpointer data)
 {
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 	DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(child);
@@ -330,6 +333,7 @@ child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint positio
 static void
 child_removed_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, gpointer data)
 {
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
@@ -360,6 +364,7 @@ child_removed_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, gpointer da
 static void 
 child_moved_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint newpos, guint oldpos, gpointer data)
 {
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
@@ -435,6 +440,7 @@ static void
 menu_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * menupath, gpointer data)
 {
 	g_debug("Got Menu: %s", menupath);
+	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
