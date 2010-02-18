@@ -337,40 +337,6 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	return TRUE;
 }
 
-static gboolean
-new_launcher_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, DbusmenuClient * client)
-{
-	g_return_val_if_fail(DBUSMENU_IS_MENUITEM(newitem), FALSE);
-	g_return_val_if_fail(DBUSMENU_IS_GTKCLIENT(client), FALSE);
-	/* Note: not checking parent, it's reasonable for it to be NULL */
-
-	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_menu_item_new());
-
-	GtkWidget * vbox = gtk_vbox_new(TRUE, 2);
-
-	GtkWidget * app_label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, LAUNCHER_MENUITEM_PROP_APP_NAME));
-	gtk_misc_set_alignment(GTK_MISC(app_label), 0.0, 0.5);
-	GtkWidget * dsc_label = gtk_label_new("");
-	gtk_misc_set_alignment(GTK_MISC(dsc_label), 0.0, 0.5);
-	gtk_label_set_ellipsize(GTK_LABEL(dsc_label), PANGO_ELLIPSIZE_END);
-	gtk_widget_set_size_request(dsc_label, 200, -1);
-	gchar * markup = g_markup_printf_escaped("<span font-size=\"smaller\">%s</span>", dbusmenu_menuitem_property_get(newitem, LAUNCHER_MENUITEM_PROP_APP_DESC));
-	gtk_label_set_markup(GTK_LABEL(dsc_label), markup);
-	g_free(markup);
-
-	gtk_box_pack_start(GTK_BOX(vbox), app_label, FALSE, FALSE, 0);
-	gtk_widget_show(app_label);
-	gtk_box_pack_start(GTK_BOX(vbox), dsc_label, FALSE, FALSE, 0);
-	gtk_widget_show(dsc_label);
-
-	gtk_container_add(GTK_CONTAINER(gmi), GTK_WIDGET(vbox));
-	gtk_widget_show(GTK_WIDGET(vbox));
-
-	dbusmenu_gtkclient_newitem_base(DBUSMENU_GTKCLIENT(client), newitem, gmi, parent);
-
-	return TRUE;
-}
-
 static GtkImage *
 get_icon (IndicatorObject * io)
 {
@@ -409,7 +375,6 @@ get_menu (IndicatorObject * io)
 	DbusmenuGtkMenu * menu = dbusmenu_gtkmenu_new(INDICATOR_MESSAGES_DBUS_NAME, INDICATOR_MESSAGES_DBUS_OBJECT);
 	DbusmenuGtkClient * client = dbusmenu_gtkmenu_get_client(menu);
 
-	dbusmenu_client_add_type_handler(DBUSMENU_CLIENT(client), LAUNCHER_MENUITEM_TYPE, new_launcher_item);
 	dbusmenu_client_add_type_handler(DBUSMENU_CLIENT(client), INDICATOR_MENUITEM_TYPE, new_indicator_item);
 
 	return GTK_MENU(menu);
