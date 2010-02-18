@@ -161,9 +161,10 @@ launcher_menu_item_new (const gchar * desktop_file)
 	/* Set the appropriate values on this menu item based on the
 	   app info that we've parsed */
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_TYPE, LAUNCHER_MENUITEM_TYPE);
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), LAUNCHER_MENUITEM_PROP_APP_NAME, launcher_menu_item_get_name(self));
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), LAUNCHER_MENUITEM_PROP_APP_DESC, launcher_menu_item_get_description(self));
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL,     launcher_menu_item_get_name(self));
+	gchar * iconstr = launcher_menu_item_get_icon(self);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_NAME, iconstr);
+	g_free(iconstr);
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
@@ -221,6 +222,20 @@ nick_activate_cb (LauncherMenuItem * self, guint timestamp, gpointer data)
 	}
 
 	return;
+}
+
+gchar *
+launcher_menu_item_get_icon (LauncherMenuItem * appitem)
+{
+	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(appitem);
+
+	if (priv->appinfo == NULL) {
+		return NULL;
+	} else {
+		GIcon * icon = g_app_info_get_icon(priv->appinfo);
+		gchar * iconstr = g_icon_to_string(icon);
+		return iconstr;
+	}
 }
 
 /* When the menu item is clicked on it tries to launch
