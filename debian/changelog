@@ -1,3 +1,20 @@
+indicator-messages (0.3.2-0ubuntu1) lucid; urgency=low
+
+  * Upstream release 0.3.2
+    * Removing extra ref
+    * Moving locally defined variable to use the one defined in
+      the function to fix a NULL pointer. (lp: #518547)
+    * Disconnect the count changed signal property
+    * Adding static desktop shortcuts to application items
+    * Adding dynamic application menuitems
+    * Switching application menu items to remove descriptions
+      and add in application icons
+  * debian/control:
+    * libindicator build dependency to 0.3.3
+    * dbusmenu build dependency to 0.2.5
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 18 Feb 2010 12:23:29 -0600
+
 indicator-messages (0.3.1-0ubuntu2) lucid; urgency=low
 
   * Upstream Merge
