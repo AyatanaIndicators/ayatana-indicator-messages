@@ -147,6 +147,7 @@ app_menu_item_dispose (GObject *object)
 	if (priv->listener != NULL) {
 		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->listener), count_changed, self);
 		g_object_unref(priv->listener);
+		priv->listener = NULL;
 	}
 
 	if (priv->shortcuts != NULL) {
