@@ -432,11 +432,17 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 static void
 menu_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * menupath, gpointer data)
 {
+	g_debug("Got Menu: %s", menupath);
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 
 	priv->client = dbusmenu_client_new(indicate_listener_server_get_dbusname(server), menupath);
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed), self);
+
+	DbusmenuMenuitem * root = dbusmenu_client_get_root(priv->client);
+	if (root != NULL) {
+		root_changed(priv->client, root, self);
+	}
 
 	return;
 }
