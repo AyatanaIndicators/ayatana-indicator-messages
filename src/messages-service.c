@@ -646,6 +646,8 @@ server_shortcuts_changed (AppMenuItem * appitem, gpointer data)
 		shortcuts = g_list_next(shortcuts);
 	}
 
+	resort_menu(shell);
+
 	return;
 }
 
