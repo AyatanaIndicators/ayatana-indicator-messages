@@ -304,13 +304,8 @@ desktop_file_from_keyfile (const gchar * definition_file)
 	}
 
 	gchar * desktopfile = g_key_file_get_string(keyfile, DESKTOP_FILE_GROUP, DESKTOP_FILE_KEY_DESKTOP, &error);
-	gchar * desktop = NULL;
-	if (desktopfile != NULL) {
-		desktop = g_strdup(desktopfile);
-	}
-
 	g_key_file_free(keyfile);
-	return desktop;
+	return desktopfile;
 }
 
 /* Add a definition file into the black list and eclipse
