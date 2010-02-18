@@ -417,6 +417,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 		while (children != NULL) {
 			DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(DBUSMENU_MENUITEM(children->data));
 			priv->shortcuts = g_list_append(priv->shortcuts, mip);
+			children = g_list_next(children);
 		}
 	}
 
