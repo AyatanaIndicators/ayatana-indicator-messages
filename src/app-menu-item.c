@@ -500,5 +500,7 @@ app_menu_item_get_desktop (AppMenuItem * appitem)
 GList *
 app_menu_item_get_items (AppMenuItem * appitem)
 {
-	return NULL;
+	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), NULL);
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
+	return priv->shortcuts;
 }
