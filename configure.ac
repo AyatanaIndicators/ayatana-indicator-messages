@@ -4,7 +4,7 @@ AC_INIT(src/indicator-messages.c)
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-messages, 0.3.2)
+AM_INIT_AUTOMAKE(indicator-messages, 0.3.3)
 
 AM_MAINTAINER_MODE
 
@@ -111,16 +111,20 @@ data/Makefile
 data/icons/Makefile
 data/icons/16x16/Makefile
 data/icons/16x16/status/Makefile
+data/icons/16x16/categories/Makefile
 data/icons/22x22/Makefile
 data/icons/22x22/status/Makefile
+data/icons/22x22/categories/Makefile
 data/icons/24x24/Makefile
 data/icons/24x24/status/Makefile
 data/icons/32x32/Makefile
 data/icons/32x32/status/Makefile
+data/icons/32x32/categories/Makefile
 data/icons/48x48/Makefile
 data/icons/48x48/status/Makefile
 data/icons/scalable/Makefile
 data/icons/scalable/status/Makefile
+data/icons/scalable/categories/Makefile
 po/Makefile.in
 ])
 
