@@ -16,7 +16,7 @@ struct default_db_t default_db[] = {
 	{NULL, NULL}
 };
 
-struct default_db_t *
+static struct default_db_t *
 get_default_helper (gchar * desktop_path)
 {
 	g_return_val_if_fail(desktop_path != NULL, NULL);
@@ -47,4 +47,14 @@ get_default_name (gchar * desktop_path)
 	if (db == NULL)
 		return NULL;
 	return db->name;
+}
+
+const gchar *
+get_default_setup (gchar * desktop_path)
+{
+	struct default_db_t * db = get_default_helper(desktop_path);
+
+	if (db == NULL)
+		return NULL;
+	return db->setupname;
 }

@@ -3,6 +3,7 @@
 #define DEFAULT_APPLICATIONS_H__ 1
 
 const gchar * get_default_name (gchar * desktop_path);
+const gchar * get_default_setup (gchar * desktop_path);
 
 #endif /* DEFAULT_APPLICATIONS_H__ */
 
