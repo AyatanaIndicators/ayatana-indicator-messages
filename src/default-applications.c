@@ -37,7 +37,7 @@ struct default_db_t default_db[] = {
 };
 
 static struct default_db_t *
-get_default_helper (gchar * desktop_path)
+get_default_helper (const gchar * desktop_path)
 {
 	g_return_val_if_fail(desktop_path != NULL, NULL);
 	gchar * basename = g_path_get_basename(desktop_path);
@@ -60,7 +60,7 @@ get_default_helper (gchar * desktop_path)
 }
 
 const gchar *
-get_default_name (gchar * desktop_path)
+get_default_name (const gchar * desktop_path)
 {
 	struct default_db_t * db = get_default_helper(desktop_path);
 
@@ -70,7 +70,7 @@ get_default_name (gchar * desktop_path)
 }
 
 const gchar *
-get_default_setup (gchar * desktop_path)
+get_default_setup (const gchar * desktop_path)
 {
 	struct default_db_t * db = get_default_helper(desktop_path);
 
