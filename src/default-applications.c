@@ -10,6 +10,8 @@ struct default_db_t {
 
 struct default_db_t default_db[] = {
 	{"evolution.desktop", N_("Mail")},
+	{"empathy.desktop", N_("Chat")},
+	{"gwibber.desktop", N_("Microblogging")},
 	{NULL, NULL}
 };
 
