@@ -27,12 +27,13 @@ struct default_db_t {
 	const gchar * desktop_file;
 	const gchar * name;
 	const gchar * setupname;
+	const gchar * icon;
 };
 
 struct default_db_t default_db[] = {
-	{"evolution.desktop", N_("Mail"),           N_("Set Up Mail...")},
-	{"empathy.desktop",   N_("Chat"),           N_("Set Up Chat...")},
-	{"gwibber.desktop",   N_("Microblogging"),  N_("Set Up Microblogging...")},
+	{"evolution.desktop", N_("Mail"),           N_("Set Up Mail..."),          "applications-email-panel"},
+	{"empathy.desktop",   N_("Chat"),           N_("Set Up Chat..."),          "applications-chat-panel"},
+	{"gwibber.desktop",   N_("Microblogging"),  N_("Set Up Microblogging..."), "applications-microblogging-panel"},
 	{NULL, NULL}
 };
 
@@ -77,4 +78,14 @@ get_default_setup (const gchar * desktop_path)
 	if (db == NULL)
 		return NULL;
 	return db->setupname;
+}
+
+const gchar *
+get_default_icon (const gchar * desktop_path)
+{
+	struct default_db_t * db = get_default_helper(desktop_path);
+
+	if (db == NULL)
+		return NULL;
+	return db->icon;
 }

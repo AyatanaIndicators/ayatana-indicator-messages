@@ -170,7 +170,12 @@ launcher_menu_item_new (const gchar * desktop_file)
 		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, default_name);
 	}
 
-	gchar * iconstr = launcher_menu_item_get_icon(self);
+	gchar * iconstr;
+	if (default_name == NULL) {
+		iconstr = launcher_menu_item_get_icon(self);
+	} else {
+		iconstr = g_strdup(get_default_icon(desktop_file));
+	}
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_NAME, iconstr);
 	g_free(iconstr);
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
