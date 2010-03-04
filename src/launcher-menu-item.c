@@ -30,6 +30,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator-desktop-shortcuts.h>
 #include "launcher-menu-item.h"
 #include "dbus-data.h"
+#include "default-applications.h"
 
 enum {
 	NAME_CHANGED,
@@ -161,8 +162,20 @@ launcher_menu_item_new (const gchar * desktop_file)
 	/* Set the appropriate values on this menu item based on the
 	   app info that we've parsed */
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL,     launcher_menu_item_get_name(self));
-	gchar * iconstr = launcher_menu_item_get_icon(self);
+
+	const gchar * default_name = get_default_name(desktop_file);
+	if (default_name == NULL) {
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, launcher_menu_item_get_name(self));
+	} else {
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, default_name);
+	}
+
+	gchar * iconstr;
+	if (default_name == NULL) {
+		iconstr = launcher_menu_item_get_icon(self);
+	} else {
+		iconstr = g_strdup(get_default_icon(desktop_file));
+	}
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_NAME, iconstr);
 	g_free(iconstr);
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
