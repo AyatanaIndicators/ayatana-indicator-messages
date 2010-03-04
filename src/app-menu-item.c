@@ -30,6 +30,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libdbusmenu-glib/menuitem-proxy.h>
 #include "app-menu-item.h"
 #include "dbus-data.h"
+#include "default-applications.h"
 
 enum {
 	COUNT_CHANGED,
@@ -233,15 +234,20 @@ static void
 update_label (AppMenuItem * self)
 {
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+	const gchar * name = get_default_name(priv->desktop);
+
+	if (name == NULL) {
+		name = app_menu_item_get_name(self);
+	}
 
 	if (priv->unreadcount > 0) {
 		/* TRANSLATORS: This is the name of the program and the number of indicators.  So it
 		                would read something like "Mail Client (5)" */
-		gchar * label = g_strdup_printf(_("%s (%d)"), app_menu_item_get_name(self), priv->unreadcount);
+		gchar * label = g_strdup_printf(_("%s (%d)"), _(name), priv->unreadcount);
 		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, label);
 		g_free(label);
 	} else {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, app_menu_item_get_name(self));
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, _(name));
 	}
 
 	return;
