@@ -24,6 +24,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 const gchar * get_default_name  (const gchar * desktop_path);
 const gchar * get_default_setup (const gchar * desktop_path);
+const gchar * get_default_icon  (const gchar * desktop_path);
 
 #endif /* DEFAULT_APPLICATIONS_H__ */
 
