@@ -167,7 +167,7 @@ launcher_menu_item_new (const gchar * desktop_file)
 	if (default_name == NULL) {
 		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, launcher_menu_item_get_name(self));
 	} else {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, default_name);
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, _(default_name));
 	}
 
 	gchar * iconstr;
