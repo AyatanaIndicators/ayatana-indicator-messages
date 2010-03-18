@@ -31,6 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
+#include <libindicator/indicator-image-helper.h>
 
 #include "dbus-data.h"
 #include "messages-service-client.h"
@@ -61,8 +62,6 @@ INDICATOR_SET_TYPE(INDICATOR_MESSAGES_TYPE)
 
 /* Globals */
 static GtkWidget * main_image = NULL;
-#define DESIGN_TEAM_SIZE  design_team_size
-static GtkIconSize design_team_size;
 static DBusGProxy * icon_proxy = NULL;
 static GtkSizeGroup * indicator_right_group = NULL;
 
@@ -116,9 +115,9 @@ static void
 attention_changed_cb (DBusGProxy * proxy, gboolean dot, gpointer userdata)
 {
 	if (dot) {
-		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages-new", DESIGN_TEAM_SIZE);
+		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
 	} else {
-		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages", DESIGN_TEAM_SIZE);
+		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
 	}
 	return;
 }
@@ -340,9 +339,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 static GtkImage *
 get_icon (IndicatorObject * io)
 {
-	design_team_size = gtk_icon_size_register("design-team-size", 22, 22);
-
-	main_image = gtk_image_new_from_icon_name("indicator-messages", DESIGN_TEAM_SIZE);
+	main_image = GTK_WIDGET(indicator_image_helper("indicator-messages"));
 	gtk_widget_show(main_image);
 
 	return GTK_IMAGE(main_image);
