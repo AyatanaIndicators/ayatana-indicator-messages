@@ -1,4 +1,4 @@
-indicator-messages (0.3.4-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.3.4-0ubuntu1~ppa1) lucid; urgency=low
 
   * Upstream release 0.3.4
     * Fix avatar spacing to match other menu items
@@ -8,7 +8,7 @@ indicator-messages (0.3.4-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Changing microblogging to broadcast to match Me Menu (LP: #534952)
   * debian/control: Updating requirement to libindicator 0.3.5
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 18 Mar 2010 13:42:42 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 18 Mar 2010 13:45:19 -0500
 
 indicator-messages (0.3.3-0ubuntu2) lucid; urgency=low
 
