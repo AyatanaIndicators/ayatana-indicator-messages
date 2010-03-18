@@ -277,17 +277,24 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 
 	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_menu_item_new());
 
-	GtkWidget * hbox = gtk_hbox_new(FALSE, 4);
+	gint padding = 4;
+	gtk_widget_style_get(GTK_WIDGET(gmi), "horizontal-padding", &padding, NULL);
+
+	GtkWidget * hbox = gtk_hbox_new(FALSE, 0);
 
 	/* Icon, probably someone's face or avatar on an IM */
 	mi_data->icon = gtk_image_new();
+
+	/* Set the minimum size, we always want it to take space */
+	gint width, height;
+	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
+	gtk_widget_set_size_request(mi_data->icon, width, height);
+
 	GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(newitem, INDICATOR_MENUITEM_PROP_ICON);
 	if (pixbuf != NULL) {
 		/* If we've got a pixbuf we need to make sure it's of a reasonable
 		   size to fit in the menu.  If not, rescale it. */
 		GdkPixbuf * resized_pixbuf;
-		gint width, height;
-		gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
 		if (gdk_pixbuf_get_width(pixbuf) > width ||
 		        gdk_pixbuf_get_height(pixbuf) > height) {
 			g_debug("Resizing icon from %dx%d to %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf), width, height);
@@ -308,13 +315,13 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 		}
 	}
 	gtk_misc_set_alignment(GTK_MISC(mi_data->icon), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, padding);
 	gtk_widget_show(mi_data->icon);
 
 	/* Label, probably a username, chat room or mailbox name */
 	mi_data->label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_LABEL));
 	gtk_misc_set_alignment(GTK_MISC(mi_data->label), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), mi_data->label, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), mi_data->label, TRUE, TRUE, padding);
 	gtk_widget_show(mi_data->label);
 
 	/* Usually either the time or the count on the individual
@@ -322,7 +329,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	mi_data->right = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_RIGHT));
 	gtk_size_group_add_widget(indicator_right_group, mi_data->right);
 	gtk_misc_set_alignment(GTK_MISC(mi_data->right), 1.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), mi_data->right, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), mi_data->right, FALSE, FALSE, padding);
 	gtk_widget_show(mi_data->right);
 
 	gtk_container_add(GTK_CONTAINER(gmi), hbox);
