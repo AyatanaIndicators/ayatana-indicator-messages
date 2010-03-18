@@ -31,9 +31,9 @@ struct default_db_t {
 };
 
 struct default_db_t default_db[] = {
-	{"evolution.desktop", N_("Mail"),           N_("Set Up Mail..."),          "applications-email-panel"},
-	{"empathy.desktop",   N_("Chat"),           N_("Set Up Chat..."),          "applications-chat-panel"},
-	{"gwibber.desktop",   N_("Microblogging"),  N_("Set Up Microblogging..."), "applications-microblogging-panel"},
+	{"evolution.desktop", N_("Mail"),           N_("Set Up Mail..."),              "applications-email-panel"},
+	{"empathy.desktop",   N_("Chat"),           N_("Set Up Chat..."),              "applications-chat-panel"},
+	{"gwibber.desktop",   N_("Broadcast"),      N_("Set Up Broadcast Account..."), "applications-microblogging-panel"},
 	{NULL, NULL}
 };
 
