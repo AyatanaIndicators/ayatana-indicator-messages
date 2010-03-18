@@ -285,13 +285,17 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 
 	/* Icon, probably someone's face or avatar on an IM */
 	mi_data->icon = gtk_image_new();
+
+	/* Set the minimum size, we always want it to take space */
+	gint width, height;
+	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
+	gtk_widget_set_size_request(mi_data->icon, width, height);
+
 	GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(newitem, INDICATOR_MENUITEM_PROP_ICON);
 	if (pixbuf != NULL) {
 		/* If we've got a pixbuf we need to make sure it's of a reasonable
 		   size to fit in the menu.  If not, rescale it. */
 		GdkPixbuf * resized_pixbuf;
-		gint width, height;
-		gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
 		if (gdk_pixbuf_get_width(pixbuf) > width ||
 		        gdk_pixbuf_get_height(pixbuf) > height) {
 			g_debug("Resizing icon from %dx%d to %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf), width, height);
