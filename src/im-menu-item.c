@@ -358,7 +358,7 @@ count_cb (IndicateListener * listener, IndicateListenerServer * server, Indicate
    this indicator should be calling for attention or not.  If we are,
    we need to signal that. */
 static void
-attention_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, const gchar * propertydata, gpointer data)
+attention_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, const GValue * propertydata, gpointer data)
 {
 	g_debug("Got Attention Information");
 	ImMenuItem * self = IM_MENU_ITEM(data);
@@ -373,10 +373,19 @@ attention_cb (IndicateListener * listener, IndicateListenerServer * server, Indi
 	ImMenuItemPrivate * priv = IM_MENU_ITEM_GET_PRIVATE(self);
 
 	gboolean wantit;
-	if (propertydata == NULL || propertydata[0] == '\0' || !g_strcmp0(propertydata, "false")) {
-		wantit = FALSE;
+	if (G_VALUE_HOLDS_BOOLEAN(propertydata)) {
+		wantit = g_value_get_boolean(propertydata);
+	} else if (G_VALUE_HOLDS_STRING(propertydata)) {
+		const gchar * propstring = g_value_get_string(propertydata);
+
+		if (propstring == NULL || propstring[0] == '\0' || !g_strcmp0(propstring, "false")) {
+			wantit = FALSE;
+		} else {
+			wantit = TRUE;
+		}
 	} else {
-		wantit = TRUE;
+		g_warning("Got property '%s' of an unknown type.", property);
+		return;
 	}
 
 	if (priv->attention != wantit) {
@@ -418,7 +427,7 @@ indicator_modified_cb (IndicateListener * listener, IndicateListenerServer * ser
 	} else if (!g_strcmp0(property, INDICATE_INDICATOR_MESSAGES_PROP_COUNT)) {
 		indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_COUNT, count_cb, self);	
 	} else if (!g_strcmp0(property, INDICATE_INDICATOR_MESSAGES_PROP_ATTENTION)) {
-		indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_ATTENTION, attention_cb, self);	
+		indicate_listener_get_property_value(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_ATTENTION, attention_cb, self);	
 	} else if (!g_strcmp0(property, "sender")) {
 		/* This is a compatibility string with v1 and should be removed */
 		g_debug("Indicator is using 'sender' property which is a v1 string.");
@@ -451,7 +460,7 @@ im_menu_item_new (IndicateListener * listener, IndicateListenerServer * server, 
 	indicate_listener_get_property_time(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_TIME, time_cb, self);	
 	indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_ICON, icon_cb, self);	
 	indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_COUNT, count_cb, self);	
-	indicate_listener_get_property(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_ATTENTION, attention_cb, self);	
+	indicate_listener_get_property_value(listener, server, indicator, INDICATE_INDICATOR_MESSAGES_PROP_ATTENTION, attention_cb, self);	
 	indicate_listener_get_property(listener, server, indicator, "sender", sender_cb, self);	
 
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);

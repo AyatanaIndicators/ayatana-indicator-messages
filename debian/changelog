@@ -1,3 +1,14 @@
+indicator-messages (0.3.4-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * Upstream release 0.3.4
+    * Fix avatar spacing to match other menu items
+    * Use standard libindicator icon handling in panel
+    * Fix translation of non-running applications (LP: #540148)
+    * Handling bools for requesting attention from apps
+    * Changing microblogging to broadcast to match Me Menu (LP: #534952)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 18 Mar 2010 13:42:42 -0500
+
 indicator-messages (0.3.3-0ubuntu2) lucid; urgency=low
 
   * src/default-applications.c
