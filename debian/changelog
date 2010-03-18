@@ -6,6 +6,7 @@ indicator-messages (0.3.4-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Fix translation of non-running applications (LP: #540148)
     * Handling bools for requesting attention from apps
     * Changing microblogging to broadcast to match Me Menu (LP: #534952)
+  * debian/control: Updating requirement to libindicator 0.3.5
 
  -- Ted Gould <ted@ubuntu.com>  Thu, 18 Mar 2010 13:42:42 -0500
 
