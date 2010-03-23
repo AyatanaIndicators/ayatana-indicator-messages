@@ -22,6 +22,8 @@ libmessaging_la_LDFLAGS = -module -avoid-version
 ######################################
 
 indicator_messages_service_SOURCES = \
+	default-applications.h \
+	default-applications.c \
 	messages-service.c \
 	messages-service-server.h \
 	messages-service-dbus.c \
