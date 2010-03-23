@@ -10,7 +10,7 @@
 
 #define APPLICATION_MENUITEM_TYPE        "application-item"
 #define APPLICATION_MENUITEM_PROP_NAME   "app-name"
-#define APPLICATION_MENUITEM_PROP_COUNT  "app-count"
+#define APPLICATION_MENUITEM_PROP_ICON   "app-icon"
 
 #define INDICATOR_MENUITEM_TYPE          "indicator-item"
 #define INDICATOR_MENUITEM_PROP_LABEL    "indicator-label"

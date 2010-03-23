@@ -8,6 +8,8 @@ libexec_PROGRAMS = indicator-messages-service
 messaginglibdir = $(INDICATORDIR)
 messaginglib_LTLIBRARIES = libmessaging.la
 libmessaging_la_SOURCES = \
+	app-gtk-menu-item.h \
+	app-gtk-menu-item.c \
 	indicator-messages.c \
 	messages-service-client.h \
 	dbus-data.h

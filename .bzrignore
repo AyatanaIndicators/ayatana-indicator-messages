@@ -22,3 +22,4 @@ indicator-messages-service-activate
 src/messages-service-client.h
 src/messages-service-server.h
 po/indicator-messages.pot
+src/libmessaging_la-app-gtk-menu-item.lo
