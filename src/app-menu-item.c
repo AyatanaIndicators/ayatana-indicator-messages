@@ -210,6 +210,8 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 	/* Can not ref as not real GObject */
 	priv->server = server;
 
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_TYPE, APPLICATION_MENUITEM_TYPE);
+
 	/* Set up listener signals */
 	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_SERVER_COUNT_CHANGED, G_CALLBACK(count_changed), self);
 
@@ -244,10 +246,10 @@ update_label (AppMenuItem * self)
 		/* TRANSLATORS: This is the name of the program and the number of indicators.  So it
 		                would read something like "Mail Client (5)" */
 		gchar * label = g_strdup_printf(_("%s (%d)"), _(name), priv->unreadcount);
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, label);
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_NAME, label);
 		g_free(label);
 	} else {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, _(name));
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_NAME, _(name));
 	}
 
 	return;
@@ -318,10 +320,10 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	if (def_icon == NULL) {
 		GIcon * icon = g_app_info_get_icon(priv->appinfo);
 		gchar * iconstr = g_icon_to_string(icon);
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_NAME, iconstr);
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_ICON, iconstr);
 		g_free(iconstr);
 	} else {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_NAME, def_icon);
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_ICON, def_icon);
 	}
 
 	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
