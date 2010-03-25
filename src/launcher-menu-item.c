@@ -31,6 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "launcher-menu-item.h"
 #include "dbus-data.h"
 #include "default-applications.h"
+#include "seen-db.h"
 
 enum {
 	NAME_CHANGED,
@@ -163,7 +164,14 @@ launcher_menu_item_new (const gchar * desktop_file)
 	   app info that we've parsed */
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
 
-	const gchar * default_name = get_default_name(desktop_file);
+	const gchar * default_name = NULL;
+	
+	if (seen_db_seen(desktop_file)) {
+		default_name = get_default_name(desktop_file);
+	} else {
+		default_name = get_default_setup(desktop_file);
+	}
+
 	if (default_name == NULL) {
 		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, launcher_menu_item_get_name(self));
 	} else {
