@@ -1,15 +1,20 @@
 #include "seen-db.h"
 
-SeenDB *
+GHashTable * seendb = NULL;
+
+void
 seen_db_init(void)
 {
-	GHashTable * hash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+	if (seendb != NULL) {
+		return;
+	}
 
-	return hash;
+	seendb = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+	return;
 }
 
 void
-seen_db_add (SeenDB * seendb, const gchar * desktop)
+seen_db_add (const gchar * desktop)
 {
 	g_hash_table_insert(seendb,
 	                    g_strdup(desktop),
@@ -19,7 +24,7 @@ seen_db_add (SeenDB * seendb, const gchar * desktop)
 }
 
 gboolean
-seen_db_seen (SeenDB * seendb, const gchar * desktop)
+seen_db_seen (const gchar * desktop)
 {
 	return GPOINTER_TO_INT(g_hash_table_lookup(seendb, desktop));
 }
