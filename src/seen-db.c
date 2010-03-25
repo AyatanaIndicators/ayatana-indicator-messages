@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 GHashTable * seendb = NULL;
 gchar * filename = NULL;
+gchar * dirname = NULL;
 guint write_process = 0;
 
 /* Build the hashtable and then see if we have a keyfile that
@@ -42,8 +43,11 @@ seen_db_init(void)
 	/* Build the filename for the seen database.  We're putting
 	   it in the cache directory because it could get deleted and
 	   it really wouldn't be a big deal. */
+	if (dirname == NULL) {
+		dirname = g_build_filename(g_get_user_cache_dir(), "indicators", "messages", NULL);
+	}
 	if (filename == NULL) {
-		filename = g_build_filename(g_get_user_cache_dir(), "indicators", "messages", "seen-db.keyfile", NULL);
+		filename = g_build_filename(dirname, "seen-db.keyfile", NULL);
 	}
 
 	if (g_file_test(filename, G_FILE_TEST_EXISTS)) {
@@ -91,6 +95,55 @@ static gboolean
 write_seen_db (gpointer user_data)
 {
 	write_process = 0;
+
+	/* Build up the key file */
+	GKeyFile * keyfile = g_key_file_new();
+	GArray * desktops = g_array_new(FALSE, FALSE, sizeof(gchar *));
+
+	/* Get the keys from the hashtable and make them
+	   into an array */
+	if (keyfile != NULL) {
+		GList * desktop_keys = g_hash_table_get_keys(seendb);
+		GList * head = NULL;
+
+		for (head = desktop_keys; head != NULL; head = g_list_next(head)) {
+			g_array_append_val(desktops, head->data);
+		}
+
+		g_list_free(desktop_keys);
+	}
+
+	/* Use the array to dump the strings into the keyfile */
+	g_key_file_set_string_list(keyfile,
+	                           GROUP_NAME,
+	                           KEY_NAME,
+	                           (const gchar * const *)desktops->data,
+	                           desktops->len);
+	g_array_free(desktops, TRUE);
+
+	/* Dump the key file to string */
+	gchar * keydump = NULL;
+	gsize keydumplen = 0;
+	keydump = g_key_file_to_data(keyfile, &keydumplen, NULL);
+	g_key_file_free(keyfile);
+
+	/* Ensure the directory exists */
+	if (g_mkdir_with_parents(dirname, 0700) != 0) {
+		g_warning("Unable to make directory: %s", dirname);
+		g_free(keydump);
+		return FALSE;
+	}
+
+	/* Dump out the file */
+	GError * error = NULL;
+	if (!g_file_set_contents(filename, keydump, keydumplen, &error)) {
+		g_warning("Unable to write out file '%s': %s", filename, error->message);
+		g_error_free(error);
+	}
+
+	/* Clean up */
+	g_free(keydump);
+
 	return FALSE;
 }
 
