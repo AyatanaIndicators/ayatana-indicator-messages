@@ -321,6 +321,24 @@ launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed)
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_VISIBLE, !eclipsed);
 
 	g_list_foreach(priv->shortcuts, eclipse_shortcuts_cb, GINT_TO_POINTER(eclipsed));
+	
+	/* If we're being reshown let's re-evaluate how we should be
+	   showing the label */
+	if (!eclipsed) {
+		const gchar * default_name = NULL;
+		
+		if (seen_db_seen(priv->desktop)) {
+			default_name = get_default_name(priv->desktop);
+		} else {
+			default_name = get_default_setup(priv->desktop);
+		}
+
+		if (default_name == NULL) {
+			dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_LABEL, launcher_menu_item_get_name(li));
+		} else {
+			dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_LABEL, _(default_name));
+		}
+	}
 
 	return;
 }
