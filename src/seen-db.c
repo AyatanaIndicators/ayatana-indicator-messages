@@ -160,7 +160,7 @@ seen_db_add (const gchar * desktop)
 			write_process = 0;
 		}
 
-		write_process = g_timeout_add_seconds(300, write_seen_db, NULL);
+		write_process = g_timeout_add_seconds(1, write_seen_db, NULL);
 	}
 
 	g_hash_table_insert(seendb,
