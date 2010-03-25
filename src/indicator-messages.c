@@ -207,6 +207,20 @@ setup_icon_proxy (gpointer userdata)
 	return FALSE;
 }
 
+/* Sets the icon when it changes. */
+static void
+application_icon_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, gpointer user_data)
+{
+	if (!g_strcmp0(prop, APPLICATION_MENUITEM_PROP_ICON)) {
+		/* Set the main icon */
+		if (GTK_IS_IMAGE(user_data)) {
+			gtk_image_set_from_icon_name(GTK_IMAGE(user_data), g_value_get_string(value), GTK_ICON_SIZE_MENU);
+		}
+	}
+
+	return;
+}
+
 /* Sets the label when it changes. */
 static void
 application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, gpointer user_data)
@@ -266,6 +280,7 @@ new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbu
 
 	/* Make sure we can handle the label changing */
 	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_prop_change_cb), label);
+	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_icon_change_cb), icon);
 
 	return TRUE;
 }

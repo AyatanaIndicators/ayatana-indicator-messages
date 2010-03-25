@@ -1,16 +1,14 @@
-indicator-messages (0.3.4-0ubuntu1~ppa3) lucid; urgency=low
+indicator-messages (0.3.5-0ubuntu1~ppa1) UNRELEASED; urgency=low
 
-  * debian/changlog: Adding bug number to previous entry.
-
- -- Ted Gould <ted@ubuntu.com>  Wed, 24 Mar 2010 10:30:37 -0500
-
-indicator-messages (0.3.4-0ubuntu1~ppa2) lucid; urgency=low
-
-  * Upstream merge
+  * Upstream release 0.3.5
     * Show which applications are running with a small icon
       next to their entry. (LP: #438526)
+    * Shift command items to line up with application names.
+      (LP: #537312)
+    * Track applications we've seen so that we can show "Set Up"
+      text if we've not seen the app before.
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 24 Mar 2010 10:07:24 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 25 Mar 2010 10:48:10 -0500
 
 indicator-messages (0.3.4-0ubuntu1~ppa1) lucid; urgency=low
 

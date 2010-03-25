@@ -31,6 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "app-menu-item.h"
 #include "dbus-data.h"
 #include "default-applications.h"
+#include "seen-db.h"
 
 enum {
 	COUNT_CHANGED,
@@ -309,6 +310,8 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 		return;
 	}
 
+	seen_db_add(value);
+
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(value));
 	g_return_if_fail(priv->appinfo != NULL);
 
@@ -340,6 +343,7 @@ child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint positio
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 	DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(child);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(mip), DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
 
 	priv->shortcuts = g_list_insert(priv->shortcuts, mip, position);
 
@@ -441,6 +445,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 		g_debug("\tProcessing %d children", g_list_length(children));
 		while (children != NULL) {
 			DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(DBUSMENU_MENUITEM(children->data));
+			dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(mip), DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
 			priv->shortcuts = g_list_append(priv->shortcuts, mip);
 			children = g_list_next(children);
 		}
