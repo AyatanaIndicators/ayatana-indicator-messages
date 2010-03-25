@@ -49,17 +49,20 @@ seen_db_init(void)
 	if (g_file_test(filename, G_FILE_TEST_EXISTS)) {
 		GKeyFile * keyfile = g_key_file_new();
 		
+		/* Load from file */
 		if (!g_key_file_load_from_file(keyfile, filename, G_KEY_FILE_NONE, NULL)) {
 			g_key_file_free(keyfile);
 			keyfile = NULL;
 		}
 
+		/* Check for keys */
 		if (keyfile != NULL && !g_key_file_has_key(keyfile, GROUP_NAME, KEY_NAME, NULL)) {
 			g_warning("Seen DB '%s' does not have key '%s' in group '%s'", filename, KEY_NAME, GROUP_NAME);
 			g_key_file_free(keyfile);
 			keyfile = NULL;
 		}
 		
+		/* Grab them and put in DB */
 		if (keyfile != NULL) {
 			gchar ** desktops = g_key_file_get_string_list(keyfile, GROUP_NAME, KEY_NAME, NULL, NULL);
 			gint i = 0;
@@ -73,6 +76,7 @@ seen_db_init(void)
 			g_strfreev(desktops);
 		}
 
+		/* Clean up our file */
 		if (keyfile != NULL) {
 			g_key_file_free(keyfile);
 		}
@@ -95,6 +99,8 @@ write_seen_db (gpointer user_data)
 void
 seen_db_add (const gchar * desktop)
 {
+	/* If this is a new one, let's set up the timer.  If
+	   there's already one clear it. */
 	if (!seen_db_seen(desktop)) {
 		if (write_process != 0) {
 			g_source_remove(write_process);
