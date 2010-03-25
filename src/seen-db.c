@@ -1,5 +1,8 @@
 #include "seen-db.h"
 
+#define GROUP_NAME   "Seen Database"
+#define KEY_NAME     "DesktopFiles"
+
 GHashTable * seendb = NULL;
 gchar * filename = NULL;
 
@@ -20,7 +23,35 @@ seen_db_init(void)
 	}
 
 	if (g_file_test(filename, G_FILE_TEST_EXISTS)) {
+		GKeyFile * keyfile = g_key_file_new();
+		
+		if (!g_key_file_load_from_file(keyfile, filename, G_KEY_FILE_NONE, NULL)) {
+			g_key_file_free(keyfile);
+			keyfile = NULL;
+		}
 
+		if (keyfile != NULL && !g_key_file_has_key(keyfile, GROUP_NAME, KEY_NAME, NULL)) {
+			g_warning("Seen DB '%s' does not have key '%s' in group '%s'", filename, KEY_NAME, GROUP_NAME);
+			g_key_file_free(keyfile);
+			keyfile = NULL;
+		}
+		
+		if (keyfile != NULL) {
+			gchar ** desktops = g_key_file_get_string_list(keyfile, GROUP_NAME, KEY_NAME, NULL, NULL);
+			gint i = 0;
+
+			while (desktops[i] != NULL) {
+				g_hash_table_insert(seendb,
+				                    g_strdup(desktops[i]),
+				                    GINT_TO_POINTER(TRUE));
+			}
+
+			g_strfreev(desktops);
+		}
+
+		if (keyfile != NULL) {
+			g_key_file_free(keyfile);
+		}
 	}
 
 	return;
