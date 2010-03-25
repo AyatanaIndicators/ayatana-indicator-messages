@@ -32,6 +32,8 @@ indicator_messages_service_SOURCES = \
 	app-menu-item.h \
 	launcher-menu-item.c \
 	launcher-menu-item.h \
+	seen-db.c \
+	seen-db.h \
 	dirs.h \
 	dbus-data.h
 indicator_messages_service_CFLAGS = $(APPLET_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror

@@ -31,6 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "app-menu-item.h"
 #include "dbus-data.h"
 #include "default-applications.h"
+#include "seen-db.h"
 
 enum {
 	COUNT_CHANGED,
@@ -210,6 +211,8 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 	/* Can not ref as not real GObject */
 	priv->server = server;
 
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_TYPE, APPLICATION_MENUITEM_TYPE);
+
 	/* Set up listener signals */
 	g_signal_connect(G_OBJECT(listener), INDICATE_LISTENER_SIGNAL_SERVER_COUNT_CHANGED, G_CALLBACK(count_changed), self);
 
@@ -244,10 +247,10 @@ update_label (AppMenuItem * self)
 		/* TRANSLATORS: This is the name of the program and the number of indicators.  So it
 		                would read something like "Mail Client (5)" */
 		gchar * label = g_strdup_printf(_("%s (%d)"), _(name), priv->unreadcount);
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, label);
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_NAME, label);
 		g_free(label);
 	} else {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, _(name));
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_NAME, _(name));
 	}
 
 	return;
@@ -307,6 +310,8 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 		return;
 	}
 
+	seen_db_add(value);
+
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(value));
 	g_return_if_fail(priv->appinfo != NULL);
 
@@ -318,10 +323,10 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	if (def_icon == NULL) {
 		GIcon * icon = g_app_info_get_icon(priv->appinfo);
 		gchar * iconstr = g_icon_to_string(icon);
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_NAME, iconstr);
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_ICON, iconstr);
 		g_free(iconstr);
 	} else {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_NAME, def_icon);
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_ICON, def_icon);
 	}
 
 	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
@@ -338,6 +343,7 @@ child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint positio
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 	DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(child);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(mip), DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
 
 	priv->shortcuts = g_list_insert(priv->shortcuts, mip, position);
 
@@ -439,6 +445,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 		g_debug("\tProcessing %d children", g_list_length(children));
 		while (children != NULL) {
 			DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(DBUSMENU_MENUITEM(children->data));
+			dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(mip), DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
 			priv->shortcuts = g_list_append(priv->shortcuts, mip);
 			children = g_list_next(children);
 		}

@@ -31,6 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
+#include <libindicator/indicator-image-helper.h>
 
 #include "dbus-data.h"
 #include "messages-service-client.h"
@@ -61,8 +62,6 @@ INDICATOR_SET_TYPE(INDICATOR_MESSAGES_TYPE)
 
 /* Globals */
 static GtkWidget * main_image = NULL;
-#define DESIGN_TEAM_SIZE  design_team_size
-static GtkIconSize design_team_size;
 static DBusGProxy * icon_proxy = NULL;
 static GtkSizeGroup * indicator_right_group = NULL;
 
@@ -116,9 +115,9 @@ static void
 attention_changed_cb (DBusGProxy * proxy, gboolean dot, gpointer userdata)
 {
 	if (dot) {
-		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages-new", DESIGN_TEAM_SIZE);
+		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
 	} else {
-		gtk_image_set_from_icon_name(GTK_IMAGE(main_image), "indicator-messages", DESIGN_TEAM_SIZE);
+		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
 	}
 	return;
 }
@@ -208,6 +207,85 @@ setup_icon_proxy (gpointer userdata)
 	return FALSE;
 }
 
+/* Sets the icon when it changes. */
+static void
+application_icon_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, gpointer user_data)
+{
+	if (!g_strcmp0(prop, APPLICATION_MENUITEM_PROP_ICON)) {
+		/* Set the main icon */
+		if (GTK_IS_IMAGE(user_data)) {
+			gtk_image_set_from_icon_name(GTK_IMAGE(user_data), g_value_get_string(value), GTK_ICON_SIZE_MENU);
+		}
+	}
+
+	return;
+}
+
+/* Sets the label when it changes. */
+static void
+application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, gpointer user_data)
+{
+	if (!g_strcmp0(prop, APPLICATION_MENUITEM_PROP_NAME)) {
+		/* Set the main label */
+		if (GTK_IS_LABEL(user_data)) {
+			gtk_label_set_text(GTK_LABEL(user_data), g_value_get_string(value));
+		}
+	}
+
+	return;
+}
+
+/* Builds a menu item representing a running application in the
+   messaging menu */
+static gboolean
+new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, DbusmenuClient * client)
+{
+	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_image_menu_item_new());
+
+	gint padding = 4;
+	gtk_widget_style_get(GTK_WIDGET(gmi), "horizontal-padding", &padding, NULL);
+
+	GtkWidget * hbox = gtk_hbox_new(FALSE, 0);
+
+	/* Set the minimum size, we always want it to take space */
+	gint width, height;
+	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
+
+	GtkWidget * icon = gtk_image_new_from_icon_name(dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_ICON), GTK_ICON_SIZE_MENU);
+	gtk_widget_set_size_request(icon, width, height);
+	gtk_misc_set_alignment(GTK_MISC(icon), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, FALSE, padding);
+	gtk_widget_show(icon);
+
+	/* Application name in a label */
+	GtkWidget * label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_NAME));
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, padding);
+	gtk_widget_show(label);
+
+	/* Insert the hbox */
+	gtk_container_add(GTK_CONTAINER(gmi), hbox);
+	gtk_widget_show(hbox);
+
+	/* Build up the running icon */
+	GtkWidget * running_icon = gtk_image_new_from_icon_name("application-running", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(gmi), running_icon);
+	gtk_widget_show(running_icon);
+
+	/* Make sure it always appears */
+	gtk_image_menu_item_set_always_show_image(GTK_IMAGE_MENU_ITEM(gmi), TRUE);
+
+	/* Attach some of the standard GTK stuff */
+	dbusmenu_gtkclient_newitem_base(DBUSMENU_GTKCLIENT(client), newitem, gmi, parent);
+
+	/* Make sure we can handle the label changing */
+	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_prop_change_cb), label);
+	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_icon_change_cb), icon);
+
+	return TRUE;
+}
+
+
 typedef struct _indicator_item_t indicator_item_t;
 struct _indicator_item_t {
 	GtkWidget * icon;
@@ -278,17 +356,24 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 
 	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_menu_item_new());
 
-	GtkWidget * hbox = gtk_hbox_new(FALSE, 4);
+	gint padding = 4;
+	gtk_widget_style_get(GTK_WIDGET(gmi), "horizontal-padding", &padding, NULL);
+
+	GtkWidget * hbox = gtk_hbox_new(FALSE, 0);
 
 	/* Icon, probably someone's face or avatar on an IM */
 	mi_data->icon = gtk_image_new();
+
+	/* Set the minimum size, we always want it to take space */
+	gint width, height;
+	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
+	gtk_widget_set_size_request(mi_data->icon, width, height);
+
 	GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(newitem, INDICATOR_MENUITEM_PROP_ICON);
 	if (pixbuf != NULL) {
 		/* If we've got a pixbuf we need to make sure it's of a reasonable
 		   size to fit in the menu.  If not, rescale it. */
 		GdkPixbuf * resized_pixbuf;
-		gint width, height;
-		gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
 		if (gdk_pixbuf_get_width(pixbuf) > width ||
 		        gdk_pixbuf_get_height(pixbuf) > height) {
 			g_debug("Resizing icon from %dx%d to %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf), width, height);
@@ -309,13 +394,13 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 		}
 	}
 	gtk_misc_set_alignment(GTK_MISC(mi_data->icon), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, padding);
 	gtk_widget_show(mi_data->icon);
 
 	/* Label, probably a username, chat room or mailbox name */
 	mi_data->label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_LABEL));
 	gtk_misc_set_alignment(GTK_MISC(mi_data->label), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), mi_data->label, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), mi_data->label, TRUE, TRUE, padding);
 	gtk_widget_show(mi_data->label);
 
 	/* Usually either the time or the count on the individual
@@ -323,7 +408,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	mi_data->right = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_RIGHT));
 	gtk_size_group_add_widget(indicator_right_group, mi_data->right);
 	gtk_misc_set_alignment(GTK_MISC(mi_data->right), 1.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), mi_data->right, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), mi_data->right, FALSE, FALSE, padding);
 	gtk_widget_show(mi_data->right);
 
 	gtk_container_add(GTK_CONTAINER(gmi), hbox);
@@ -340,9 +425,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 static GtkImage *
 get_icon (IndicatorObject * io)
 {
-	design_team_size = gtk_icon_size_register("design-team-size", 22, 22);
-
-	main_image = gtk_image_new_from_icon_name("indicator-messages", DESIGN_TEAM_SIZE);
+	main_image = GTK_WIDGET(indicator_image_helper("indicator-messages"));
 	gtk_widget_show(main_image);
 
 	return GTK_IMAGE(main_image);
@@ -376,6 +459,7 @@ get_menu (IndicatorObject * io)
 	DbusmenuGtkClient * client = dbusmenu_gtkmenu_get_client(menu);
 
 	dbusmenu_client_add_type_handler(DBUSMENU_CLIENT(client), INDICATOR_MENUITEM_TYPE, new_indicator_item);
+	dbusmenu_client_add_type_handler(DBUSMENU_CLIENT(client), APPLICATION_MENUITEM_TYPE, new_application_item);
 
 	return GTK_MENU(menu);
 }
