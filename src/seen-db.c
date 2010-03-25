@@ -75,6 +75,7 @@ seen_db_init(void)
 				g_hash_table_insert(seendb,
 				                    g_strdup(desktops[i]),
 				                    GINT_TO_POINTER(TRUE));
+				i++;
 			}
 
 			g_strfreev(desktops);
