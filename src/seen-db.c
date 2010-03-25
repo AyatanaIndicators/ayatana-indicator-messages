@@ -34,9 +34,7 @@ guint write_process = 0;
 void
 seen_db_init(void)
 {
-	if (seendb != NULL) {
-		return;
-	}
+	g_return_if_fail(seendb == NULL);
 
 	seendb = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
