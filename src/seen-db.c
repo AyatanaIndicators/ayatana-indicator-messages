@@ -5,6 +5,7 @@
 
 GHashTable * seendb = NULL;
 gchar * filename = NULL;
+guint write_process = 0;
 
 void
 seen_db_init(void)
@@ -57,9 +58,25 @@ seen_db_init(void)
 	return;
 }
 
+static gboolean
+write_seen_db (gpointer user_data)
+{
+	write_process = 0;
+	return FALSE;
+}
+
 void
 seen_db_add (const gchar * desktop)
 {
+	if (!seen_db_seen(desktop)) {
+		if (write_process != 0) {
+			g_source_remove(write_process);
+			write_process = 0;
+		}
+
+		write_process = g_timeout_add_seconds(300, write_seen_db, NULL);
+	}
+
 	g_hash_table_insert(seendb,
 	                    g_strdup(desktop),
 	                    GINT_TO_POINTER(TRUE));
