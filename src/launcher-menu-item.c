@@ -31,6 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "launcher-menu-item.h"
 #include "dbus-data.h"
 #include "default-applications.h"
+#include "seen-db.h"
 
 enum {
 	NAME_CHANGED,
@@ -163,7 +164,14 @@ launcher_menu_item_new (const gchar * desktop_file)
 	   app info that we've parsed */
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
 
-	const gchar * default_name = get_default_name(desktop_file);
+	const gchar * default_name = NULL;
+	
+	if (seen_db_seen(desktop_file)) {
+		default_name = get_default_name(desktop_file);
+	} else {
+		default_name = get_default_setup(desktop_file);
+	}
+
 	if (default_name == NULL) {
 		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, launcher_menu_item_get_name(self));
 	} else {
@@ -183,18 +191,20 @@ launcher_menu_item_new (const gchar * desktop_file)
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 
 	/* Start to build static shortcuts */
-	priv->ids = indicator_desktop_shortcuts_new(priv->desktop, "Messaging Menu");
-	const gchar ** nicks = indicator_desktop_shortcuts_get_nicks(priv->ids);
-	gint i;
-	for (i = 0; nicks[i] != NULL; i++) {
-		DbusmenuMenuitem * mi = dbusmenu_menuitem_new();
-		g_object_set_data(G_OBJECT(mi), NICK_DATA, (gpointer)nicks[i]);
+	if (seen_db_seen(desktop_file)) {
+		priv->ids = indicator_desktop_shortcuts_new(priv->desktop, "Messaging Menu");
+		const gchar ** nicks = indicator_desktop_shortcuts_get_nicks(priv->ids);
+		gint i;
+		for (i = 0; nicks[i] != NULL; i++) {
+			DbusmenuMenuitem * mi = dbusmenu_menuitem_new();
+			g_object_set_data(G_OBJECT(mi), NICK_DATA, (gpointer)nicks[i]);
 
-		dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
-		dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_LABEL, indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]));
-		g_signal_connect(G_OBJECT(mi), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(nick_activate_cb), self);
+			dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
+			dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_LABEL, indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]));
+			g_signal_connect(G_OBJECT(mi), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(nick_activate_cb), self);
 
-		priv->shortcuts = g_list_append(priv->shortcuts, mi);
+			priv->shortcuts = g_list_append(priv->shortcuts, mi);
+		}
 	}
 
 	/* Check to see if we should be eclipsed */
@@ -312,6 +322,24 @@ launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed)
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_VISIBLE, !eclipsed);
 
 	g_list_foreach(priv->shortcuts, eclipse_shortcuts_cb, GINT_TO_POINTER(eclipsed));
+	
+	/* If we're being reshown let's re-evaluate how we should be
+	   showing the label */
+	if (!eclipsed) {
+		const gchar * default_name = NULL;
+		
+		if (seen_db_seen(priv->desktop)) {
+			default_name = get_default_name(priv->desktop);
+		} else {
+			default_name = get_default_setup(priv->desktop);
+		}
+
+		if (default_name == NULL) {
+			dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_LABEL, launcher_menu_item_get_name(li));
+		} else {
+			dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_LABEL, _(default_name));
+		}
+	}
 
 	return;
 }

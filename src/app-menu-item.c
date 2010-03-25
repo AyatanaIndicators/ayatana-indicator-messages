@@ -31,6 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "app-menu-item.h"
 #include "dbus-data.h"
 #include "default-applications.h"
+#include "seen-db.h"
 
 enum {
 	COUNT_CHANGED,
@@ -308,6 +309,8 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	if (value == NULL || value[0] == '\0') {
 		return;
 	}
+
+	seen_db_add(value);
 
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(value));
 	g_return_if_fail(priv->appinfo != NULL);
