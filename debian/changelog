@@ -1,4 +1,4 @@
-indicator-messages (0.3.5-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.3.5-0ubuntu1~ppa1) lucid; urgency=low
 
   * Upstream release 0.3.5
     * Show which applications are running with a small icon
@@ -9,7 +9,7 @@ indicator-messages (0.3.5-0ubuntu1~ppa1) UNRELEASED; urgency=low
       text if we've not seen the app before.
   * debian/control: Increasing dbusmenu-glib dep to 0.2.8
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 25 Mar 2010 10:48:10 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 25 Mar 2010 10:53:01 -0500
 
 indicator-messages (0.3.4-0ubuntu1~ppa1) lucid; urgency=low
 
