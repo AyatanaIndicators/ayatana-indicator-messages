@@ -1,6 +1,7 @@
 #include "seen-db.h"
 
 GHashTable * seendb = NULL;
+gchar * filename = NULL;
 
 void
 seen_db_init(void)
@@ -10,6 +11,18 @@ seen_db_init(void)
 	}
 
 	seendb = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
+	/* Build the filename for the seen database.  We're putting
+	   it in the cache directory because it could get deleted and
+	   it really wouldn't be a big deal. */
+	if (filename == NULL) {
+		filename = g_build_filename(g_get_user_cache_dir(), "indicators", "messages", "seen-db.keyfile", NULL);
+	}
+
+	if (g_file_test(filename, G_FILE_TEST_EXISTS)) {
+
+	}
+
 	return;
 }
 
