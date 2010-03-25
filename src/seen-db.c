@@ -7,6 +7,8 @@ GHashTable * seendb = NULL;
 gchar * filename = NULL;
 guint write_process = 0;
 
+/* Build the hashtable and then see if we have a keyfile that
+   we can get the history of desktop files we've seen. */
 void
 seen_db_init(void)
 {
@@ -58,6 +60,8 @@ seen_db_init(void)
 	return;
 }
 
+/* A function to write out the seen database after it's been
+   modified for a while. */
 static gboolean
 write_seen_db (gpointer user_data)
 {
@@ -65,6 +69,8 @@ write_seen_db (gpointer user_data)
 	return FALSE;
 }
 
+/* Add a new desktop file to the seen database.  Also sets up a timer
+   to do the write out. */
 void
 seen_db_add (const gchar * desktop)
 {
@@ -84,6 +90,7 @@ seen_db_add (const gchar * desktop)
 	return;
 }
 
+/* Checks to see if a desktop file has been seen. */
 gboolean
 seen_db_seen (const gchar * desktop)
 {
