@@ -75,6 +75,7 @@ static GtkMenu * get_menu                 (IndicatorObject * io);
 
 G_DEFINE_TYPE (IndicatorMessages, indicator_messages, INDICATOR_OBJECT_TYPE);
 
+/* Initialize the one-timers */
 static void
 indicator_messages_class_init (IndicatorMessagesClass *klass)
 {
@@ -91,26 +92,37 @@ indicator_messages_class_init (IndicatorMessagesClass *klass)
 	return;
 }
 
+/* Build up our per-instance variables */
 static void
 indicator_messages_init (IndicatorMessages *self)
 {
+
+	return;
 }
 
+/* Unref stuff */
 static void
 indicator_messages_dispose (GObject *object)
 {
-G_OBJECT_CLASS (indicator_messages_parent_class)->dispose (object);
+
+	G_OBJECT_CLASS (indicator_messages_parent_class)->dispose (object);
+	return;
 }
 
+/* Destory all memory users */
 static void
 indicator_messages_finalize (GObject *object)
 {
-G_OBJECT_CLASS (indicator_messages_parent_class)->finalize (object);
+
+	G_OBJECT_CLASS (indicator_messages_parent_class)->finalize (object);
+	return;
 }
 
 
 
 /* Functions */
+
+/* Called everytime the attention changes in the service. */
 static void
 attention_changed_cb (DBusGProxy * proxy, gboolean dot, gpointer userdata)
 {
@@ -122,6 +134,7 @@ attention_changed_cb (DBusGProxy * proxy, gboolean dot, gpointer userdata)
 	return;
 }
 
+/* Change the icon to whether it should be visible or not */
 static void
 icon_changed_cb (DBusGProxy * proxy, gboolean hidden, gpointer userdata)
 {
@@ -133,6 +146,7 @@ icon_changed_cb (DBusGProxy * proxy, gboolean hidden, gpointer userdata)
 	return;
 }
 
+/* Whether we can send the watch signal to the service */
 static void
 watch_cb (DBusGProxy * proxy, GError * error, gpointer userdata)
 {
@@ -143,6 +157,7 @@ watch_cb (DBusGProxy * proxy, GError * error, gpointer userdata)
 	return;
 }
 
+/* Callback from getting the attention status from the service. */
 static void
 attention_cb (DBusGProxy * proxy, gboolean dot, GError * error, gpointer userdata)
 {
@@ -155,6 +170,7 @@ attention_cb (DBusGProxy * proxy, gboolean dot, GError * error, gpointer userdat
 	return attention_changed_cb(proxy, dot, userdata);
 }
 
+/* Change from getting the icon visibility from the service */
 static void
 icon_cb (DBusGProxy * proxy, gboolean hidden, GError * error, gpointer userdata)
 {
@@ -167,6 +183,7 @@ icon_cb (DBusGProxy * proxy, gboolean hidden, GError * error, gpointer userdata)
 	return icon_changed_cb(proxy, hidden, userdata);
 }
 
+/* Sets up all the icon information in the proxy. */
 static gboolean
 setup_icon_proxy (gpointer userdata)
 {
@@ -422,6 +439,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	return TRUE;
 }
 
+/* Builds the main image icon using the libindicator helper. */
 static GtkImage *
 get_icon (IndicatorObject * io)
 {
@@ -431,6 +449,7 @@ get_icon (IndicatorObject * io)
 	return GTK_IMAGE(main_image);
 }
 
+/* Builds the menu for the indicator */
 static GtkMenu *
 get_menu (IndicatorObject * io)
 {
