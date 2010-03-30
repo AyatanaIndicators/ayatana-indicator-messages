@@ -27,6 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <pango/pango-utils.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <libindicate/listener.h>
+#include <libindicator/indicator-service.h>
 #include <gio/gio.h>
 
 #include <libdbusmenu-glib/client.h>
@@ -41,7 +42,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "messages-service-dbus.h"
 #include "seen-db.h"
 
-static IndicateListener * listener;
+static IndicatorService * service = NULL;
+static IndicateListener * listener = NULL;
 static GList * serverList = NULL;
 static GList * launcherList = NULL;
 
@@ -1395,6 +1397,14 @@ build_launchers (gpointer data)
 	return FALSE;
 }
 
+static void 
+service_shutdown (IndicatorService * service, gpointer user_data)
+{
+	g_warning("Shutting down service!");
+	g_main_loop_quit(mainloop);
+	return;
+}
+
 /* Oh, if you don't know what main() is for
    we really shouldn't be talking. */
 int
@@ -1402,20 +1412,8 @@ main (int argc, char ** argv)
 {
 	g_type_init();
 
-	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	DBusGProxy * bus_proxy = dbus_g_proxy_new_for_name(connection, DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS);
-	GError * error = NULL;
-	guint nameret = 0;
-
-	if (!org_freedesktop_DBus_request_name(bus_proxy, INDICATOR_MESSAGES_DBUS_NAME, 0, &nameret, &error)) {
-		g_error("Unable to call to request name");
-		return 1;
-	}
-
-	if (nameret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
-		g_error("Unable to get name");
-		return 1;
-	}
+	service = indicator_service_new_version(INDICATOR_MESSAGES_DBUS_NAME, 1);
+	g_signal_connect(service, INDICATOR_SERVICE_SIGNAL_SHUTDOWN, G_CALLBACK(service_shutdown), NULL);
 
 	/* Setting up i18n and gettext.  Apparently, we need
 	   all of these. */
