@@ -226,28 +226,30 @@ connection_change (IndicatorServiceManager * sm, gboolean connected, gpointer us
 		return;
 	}
 
-	icon_proxy = dbus_g_proxy_new_for_name(connection,
-	                                       INDICATOR_MESSAGES_DBUS_NAME,
-	                                       INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
-	                                       INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
 	if (icon_proxy == NULL) {
-		g_warning("Unable to get messages service interface.");
-		return;
-	}
-	
-	dbus_g_proxy_add_signal(icon_proxy, "AttentionChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal(icon_proxy,
-	                            "AttentionChanged",
-	                            G_CALLBACK(attention_changed_cb),
-	                            NULL,
-	                            NULL);
+		icon_proxy = dbus_g_proxy_new_for_name(connection,
+		                                       INDICATOR_MESSAGES_DBUS_NAME,
+		                                       INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+		                                       INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
+		if (icon_proxy == NULL) {
+			g_warning("Unable to get messages service interface.");
+			return;
+		}
+		
+		dbus_g_proxy_add_signal(icon_proxy, "AttentionChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
+		dbus_g_proxy_connect_signal(icon_proxy,
+		                            "AttentionChanged",
+		                            G_CALLBACK(attention_changed_cb),
+		                            NULL,
+		                            NULL);
 
-	dbus_g_proxy_add_signal(icon_proxy, "IconChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal(icon_proxy,
-	                            "IconChanged",
-	                            G_CALLBACK(icon_changed_cb),
-	                            NULL,
-	                            NULL);
+		dbus_g_proxy_add_signal(icon_proxy, "IconChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
+		dbus_g_proxy_connect_signal(icon_proxy,
+		                            "IconChanged",
+		                            G_CALLBACK(icon_changed_cb),
+		                            NULL,
+		                            NULL);
+	}
 
 	org_ayatana_indicator_messages_service_attention_requested_async(icon_proxy, attention_cb, NULL);
 	org_ayatana_indicator_messages_service_icon_shown_async(icon_proxy, icon_cb, NULL);
