@@ -1,4 +1,4 @@
-indicator-messages (0.3.5-0ubuntu3~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.3.5-0ubuntu3~ppa1) lucid; urgency=low
 
   * Bumping version, becuase well, we always want to be ahead
     in this branch.
@@ -6,7 +6,7 @@ indicator-messages (0.3.5-0ubuntu3~ppa1) UNRELEASED; urgency=low
     * Changing the service management over to using libindicator
       services and service manager for robustness.
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 30 Mar 2010 16:41:55 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 30 Mar 2010 16:44:57 -0500
 
 indicator-messages (0.3.5-0ubuntu2) lucid; urgency=low
 
