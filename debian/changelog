@@ -1,10 +1,10 @@
-indicator-messages (0.3.5-0ubuntu1~ppa2~service1) UNRELEASED; urgency=low
+indicator-messages (0.3.5-0ubuntu1~ppa2~service1) lucid; urgency=low
 
   * Upstream merge
     * Changing the service management over to using libindicator
       services and service manager for robustness.
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 30 Mar 2010 09:13:50 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 30 Mar 2010 09:15:54 -0500
 
 indicator-messages (0.3.5-0ubuntu1~ppa1) lucid; urgency=low
 
