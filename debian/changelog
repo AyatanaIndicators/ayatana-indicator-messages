@@ -1,3 +1,13 @@
+indicator-messages (0.3.5-0ubuntu3~ppa1) UNRELEASED; urgency=low
+
+  * Bumping version, becuase well, we always want to be ahead
+    in this branch.
+  * Upstream merge
+    * Changing the service management over to using libindicator
+      services and service manager for robustness.
+
+ -- Ted Gould <ted@ubuntu.com>  Tue, 30 Mar 2010 16:41:55 -0500
+
 indicator-messages (0.3.5-0ubuntu2) lucid; urgency=low
 
   * debian/control:
@@ -23,27 +33,6 @@ indicator-messages (0.3.5-0ubuntu1) lucid; urgency=low
   * debian/control: 
     - Updating requirement to libindicator 0.3.5
     - Increasing dbusmenu-glib dep to 0.2.8
-
- -- Ted Gould <ted@ubuntu.com>  Thu, 25 Mar 2010 10:53:01 -0500
-
-indicator-messages (0.3.5-0ubuntu1~ppa2) lucid; urgency=low
-
-  * Upstream merge
-    * Changing the service management over to using libindicator
-      services and service manager for robustness.
-
- -- Ted Gould <ted@ubuntu.com>  Tue, 30 Mar 2010 16:39:59 -0500
-
-indicator-messages (0.3.5-0ubuntu1~ppa1) lucid; urgency=low
-
-  * Upstream release 0.3.5
-    * Show which applications are running with a small icon
-      next to their entry. (LP: #438526)
-    * Shift command items to line up with application names.
-      (LP: #537312)
-    * Track applications we've seen so that we can show "Set Up"
-      text if we've not seen the app before.
-  * debian/control: Increasing dbusmenu-glib dep to 0.2.8
 
  -- Ted Gould <ted@ubuntu.com>  Thu, 25 Mar 2010 10:53:01 -0500
 
