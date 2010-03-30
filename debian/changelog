@@ -1,3 +1,11 @@
+indicator-messages (0.3.5-0ubuntu1~ppa2~service2) UNRELEASED; urgency=low
+
+  * Upstream merge
+    * Fix allocating multiple proxies
+    * When connection drops drop new message indicator.
+
+ -- Ted Gould <ted@ubuntu.com>  Tue, 30 Mar 2010 09:57:41 -0500
+
 indicator-messages (0.3.5-0ubuntu1~ppa2~service1) lucid; urgency=low
 
   * Upstream merge

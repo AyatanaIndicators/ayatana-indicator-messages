@@ -190,11 +190,33 @@ icon_cb (DBusGProxy * proxy, gboolean hidden, GError * error, gpointer userdata)
 	return icon_changed_cb(proxy, hidden, userdata);
 }
 
+static guint connection_drop_timeout = 0;
+
+/* Resets the icon to not having messages if we can't get a good
+   answer on it from the service. */
+static gboolean
+connection_drop_cb (gpointer user_data)
+{
+	if (main_image != NULL) {
+		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
+	}
+	connection_drop_timeout = 0;
+	return FALSE;
+}
+
 /* Sets up all the icon information in the proxy. */
 static void 
 connection_change (IndicatorServiceManager * sm, gboolean connected, gpointer user_data)
 {
+	if (connection_drop_timeout != 0) {
+		g_source_remove(connection_drop_timeout);
+		connection_drop_timeout = 0;
+	}
+
 	if (!connected) {
+		/* Ensure that we're not saying there are messages
+		   when we don't have a connection. */
+		connection_drop_timeout = g_timeout_add(400, connection_drop_cb, NULL);
 		return;
 	}
 
@@ -204,28 +226,30 @@ connection_change (IndicatorServiceManager * sm, gboolean connected, gpointer us
 		return;
 	}
 
-	icon_proxy = dbus_g_proxy_new_for_name(connection,
-	                                       INDICATOR_MESSAGES_DBUS_NAME,
-	                                       INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
-	                                       INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
 	if (icon_proxy == NULL) {
-		g_warning("Unable to get messages service interface.");
-		return;
-	}
-	
-	dbus_g_proxy_add_signal(icon_proxy, "AttentionChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal(icon_proxy,
-	                            "AttentionChanged",
-	                            G_CALLBACK(attention_changed_cb),
-	                            NULL,
-	                            NULL);
+		icon_proxy = dbus_g_proxy_new_for_name(connection,
+		                                       INDICATOR_MESSAGES_DBUS_NAME,
+		                                       INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+		                                       INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
+		if (icon_proxy == NULL) {
+			g_warning("Unable to get messages service interface.");
+			return;
+		}
+		
+		dbus_g_proxy_add_signal(icon_proxy, "AttentionChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
+		dbus_g_proxy_connect_signal(icon_proxy,
+		                            "AttentionChanged",
+		                            G_CALLBACK(attention_changed_cb),
+		                            NULL,
+		                            NULL);
 
-	dbus_g_proxy_add_signal(icon_proxy, "IconChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal(icon_proxy,
-	                            "IconChanged",
-	                            G_CALLBACK(icon_changed_cb),
-	                            NULL,
-	                            NULL);
+		dbus_g_proxy_add_signal(icon_proxy, "IconChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
+		dbus_g_proxy_connect_signal(icon_proxy,
+		                            "IconChanged",
+		                            G_CALLBACK(icon_changed_cb),
+		                            NULL,
+		                            NULL);
+	}
 
 	org_ayatana_indicator_messages_service_attention_requested_async(icon_proxy, attention_cb, NULL);
 	org_ayatana_indicator_messages_service_icon_shown_async(icon_proxy, icon_cb, NULL);
