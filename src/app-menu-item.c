@@ -128,6 +128,8 @@ app_menu_item_init (AppMenuItem *self)
 	priv->root = NULL;
 	priv->shortcuts = NULL;
 
+	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
+
 	return;
 }
 
