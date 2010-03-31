@@ -128,7 +128,7 @@ app_menu_item_init (AppMenuItem *self)
 	priv->root = NULL;
 	priv->shortcuts = NULL;
 
-	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
+	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 
 	return;
 }
@@ -318,6 +318,8 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	g_return_if_fail(priv->appinfo != NULL);
 
 	priv->desktop = g_strdup(value);
+
+	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
 
 	update_label(self);
 
