@@ -384,8 +384,6 @@ indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, i
 				g_object_unref(resized_pixbuf);
 			}
 		}
-	} else {
-		g_warning("Indicator Item property '%s' unknown", prop);
 	}
 
 	return;
