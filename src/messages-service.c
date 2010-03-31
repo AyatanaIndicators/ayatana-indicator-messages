@@ -794,15 +794,16 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 
 	if (msl->found) return;
 
-	msl->position++;
-
 	if (!IS_APP_MENU_ITEM(data_mi)) {
+		msl->position++;
 		return;
 	}
 
 	AppMenuItem * appmenu = APP_MENU_ITEM(data_mi);
 	if (!g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME((IndicateListenerServer*)msl->server), INDICATE_LISTENER_SERVER_DBUS_NAME(app_menu_item_get_server(appmenu)))) {
 		msl->found = TRUE;
+	} else {
+		msl->position++;
 	}
 
 	return;
