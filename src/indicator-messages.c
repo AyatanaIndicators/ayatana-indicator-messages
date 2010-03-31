@@ -467,7 +467,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	dbusmenu_gtkclient_newitem_base(DBUSMENU_GTKCLIENT(client), newitem, gmi, parent);
 
 	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(indicator_prop_change_cb), mi_data);
-	g_signal_connect(G_OBJECT(newitem), "destroyed", G_CALLBACK(g_free), mi_data);
+	g_signal_connect(G_OBJECT(newitem), "destroy", G_CALLBACK(g_free), mi_data);
 
 	return TRUE;
 }
