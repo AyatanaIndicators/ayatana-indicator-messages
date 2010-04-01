@@ -1,20 +1,12 @@
-indicator-messages (0.3.5-0ubuntu3~ppa2) lucid; urgency=low
+indicator-messages (0.3.6-0ubuntu1~ppa1) UNRELEASED; urgency=low
 
-  * Upstream merge
+  * New upstream release.
     * Fixing several bugs with regards to visibility and placement
       if items and separators in the menu.  (LP: #446914)
-
- -- Ted Gould <ted@ubuntu.com>  Wed, 31 Mar 2010 22:07:37 -0500
-
-indicator-messages (0.3.5-0ubuntu3~ppa1) lucid; urgency=low
-
-  * Bumping version, becuase well, we always want to be ahead
-    in this branch.
-  * Upstream merge
     * Changing the service management over to using libindicator
       services and service manager for robustness.
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 30 Mar 2010 16:44:57 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 01 Apr 2010 10:10:01 -0500
 
 indicator-messages (0.3.5-0ubuntu2) lucid; urgency=low
 
