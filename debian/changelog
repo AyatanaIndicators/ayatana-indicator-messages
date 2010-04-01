@@ -1,10 +1,10 @@
-indicator-messages (0.3.5-0ubuntu3~ppa2) UNRELEASED; urgency=low
+indicator-messages (0.3.5-0ubuntu3~ppa2) lucid; urgency=low
 
   * Upstream merge
     * Fixing several bugs with regards to visibility and placement
       if items and separators in the menu.  (LP: #446914)
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 31 Mar 2010 22:04:17 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 31 Mar 2010 22:07:37 -0500
 
 indicator-messages (0.3.5-0ubuntu3~ppa1) lucid; urgency=low
 
