@@ -27,6 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <pango/pango-utils.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <libindicate/listener.h>
+#include <libindicator/indicator-service.h>
 #include <gio/gio.h>
 
 #include <libdbusmenu-glib/client.h>
@@ -41,7 +42,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "messages-service-dbus.h"
 #include "seen-db.h"
 
-static IndicateListener * listener;
+static IndicatorService * service = NULL;
+static IndicateListener * listener = NULL;
 static GList * serverList = NULL;
 static GList * launcherList = NULL;
 
@@ -560,10 +562,6 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	sl_item->attention = FALSE;
 	sl_item->count = 0;
 
-	/* Build a separator */
-	sl_item->separator = dbusmenu_menuitem_new();
-	dbusmenu_menuitem_property_set(sl_item->separator, DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_SEPARATOR);
-
 	/* Incase we got an indicator first */
 	GList * alreadythere = g_list_find_custom(serverList, sl_item, serverList_equal);
 	if (alreadythere != NULL) {
@@ -576,6 +574,10 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 		/* Insert the new one in the list */
 		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
 	}
+
+	/* Build a separator */
+	sl_item->separator = dbusmenu_menuitem_new();
+	dbusmenu_menuitem_property_set(sl_item->separator, DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_SEPARATOR);
 
 	/* Connect the signals up to the menu item */
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), sl_item);
@@ -792,15 +794,16 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 
 	if (msl->found) return;
 
-	msl->position++;
-
 	if (!IS_APP_MENU_ITEM(data_mi)) {
+		msl->position++;
 		return;
 	}
 
 	AppMenuItem * appmenu = APP_MENU_ITEM(data_mi);
 	if (!g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME((IndicateListenerServer*)msl->server), INDICATE_LISTENER_SERVER_DBUS_NAME(app_menu_item_get_server(appmenu)))) {
 		msl->found = TRUE;
+	} else {
+		msl->position++;
 	}
 
 	return;
@@ -902,6 +905,13 @@ resort_menu (DbusmenuMenuitem * menushell)
 
 			if (imi->menuitem != NULL) {
 				g_debug("\tMoving indicator on %s id %d to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(imi->server), INDICATE_LISTENER_INDICATOR_ID(imi->indicator), position);
+
+				if (si->menuitem == NULL || !dbusmenu_menuitem_property_get_bool(DBUSMENU_MENUITEM(si->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+					dbusmenu_menuitem_property_set_bool(imi->menuitem, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
+				} else {
+					dbusmenu_menuitem_property_set_bool(imi->menuitem, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
+				}
+
 				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(imi->menuitem), position);
 				position++;
 			}
@@ -910,10 +920,17 @@ resort_menu (DbusmenuMenuitem * menushell)
 		/* Lastly putting the separator in */
 		if (si->separator != NULL) {
 			g_debug("\tMoving app %s separator to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
+
+			if (si->menuitem == NULL || !dbusmenu_menuitem_property_get_bool(DBUSMENU_MENUITEM(si->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+				dbusmenu_menuitem_property_set_bool(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
+				/* Note, this isn't the last if we can't see it */
+			} else {
+				dbusmenu_menuitem_property_set_bool(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
+				last_separator = si->separator;
+			}
+
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->separator), position);
-			dbusmenu_menuitem_property_set_bool(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
 			position++;
-			last_separator = si->separator;
 		}
 	}
 
@@ -1395,6 +1412,14 @@ build_launchers (gpointer data)
 	return FALSE;
 }
 
+static void 
+service_shutdown (IndicatorService * service, gpointer user_data)
+{
+	g_warning("Shutting down service!");
+	g_main_loop_quit(mainloop);
+	return;
+}
+
 /* Oh, if you don't know what main() is for
    we really shouldn't be talking. */
 int
@@ -1402,20 +1427,8 @@ main (int argc, char ** argv)
 {
 	g_type_init();
 
-	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	DBusGProxy * bus_proxy = dbus_g_proxy_new_for_name(connection, DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS);
-	GError * error = NULL;
-	guint nameret = 0;
-
-	if (!org_freedesktop_DBus_request_name(bus_proxy, INDICATOR_MESSAGES_DBUS_NAME, 0, &nameret, &error)) {
-		g_error("Unable to call to request name");
-		return 1;
-	}
-
-	if (nameret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
-		g_error("Unable to get name");
-		return 1;
-	}
+	service = indicator_service_new_version(INDICATOR_MESSAGES_DBUS_NAME, 1);
+	g_signal_connect(service, INDICATOR_SERVICE_SIGNAL_SHUTDOWN, G_CALLBACK(service_shutdown), NULL);
 
 	/* Setting up i18n and gettext.  Apparently, we need
 	   all of these. */

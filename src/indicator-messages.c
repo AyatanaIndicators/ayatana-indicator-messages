@@ -32,6 +32,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
 #include <libindicator/indicator-image-helper.h>
+#include <libindicator/indicator-service-manager.h>
 
 #include "dbus-data.h"
 #include "messages-service-client.h"
@@ -52,6 +53,7 @@ struct _IndicatorMessagesClass {
 
 struct _IndicatorMessages {
 	IndicatorObject parent;
+	IndicatorServiceManager * service;
 };
 
 GType indicator_messages_get_type (void);
@@ -72,9 +74,13 @@ static void indicator_messages_dispose    (GObject *object);
 static void indicator_messages_finalize   (GObject *object);
 static GtkImage * get_icon                (IndicatorObject * io);
 static GtkMenu * get_menu                 (IndicatorObject * io);
+static void connection_change             (IndicatorServiceManager * sm,
+                                           gboolean connected,
+                                           gpointer user_data);
 
 G_DEFINE_TYPE (IndicatorMessages, indicator_messages, INDICATOR_OBJECT_TYPE);
 
+/* Initialize the one-timers */
 static void
 indicator_messages_class_init (IndicatorMessagesClass *klass)
 {
@@ -91,26 +97,50 @@ indicator_messages_class_init (IndicatorMessagesClass *klass)
 	return;
 }
 
+/* Build up our per-instance variables */
 static void
 indicator_messages_init (IndicatorMessages *self)
 {
+	/* Default values */
+	self->service = NULL;
+
+	/* Complex stuff */
+	self->service = indicator_service_manager_new_version(INDICATOR_MESSAGES_DBUS_NAME, 1);
+	g_signal_connect(self->service, INDICATOR_SERVICE_MANAGER_SIGNAL_CONNECTION_CHANGE, G_CALLBACK(connection_change), self);
+
+	return;
 }
 
+/* Unref stuff */
 static void
 indicator_messages_dispose (GObject *object)
 {
-G_OBJECT_CLASS (indicator_messages_parent_class)->dispose (object);
+	IndicatorMessages * self = INDICATOR_MESSAGES(object);
+	g_return_if_fail(self != NULL);
+
+	if (self->service != NULL) {
+		g_object_unref(self->service);
+		self->service = NULL;
+	}
+
+	G_OBJECT_CLASS (indicator_messages_parent_class)->dispose (object);
+	return;
 }
 
+/* Destory all memory users */
 static void
 indicator_messages_finalize (GObject *object)
 {
-G_OBJECT_CLASS (indicator_messages_parent_class)->finalize (object);
+
+	G_OBJECT_CLASS (indicator_messages_parent_class)->finalize (object);
+	return;
 }
 
 
 
 /* Functions */
+
+/* Called everytime the attention changes in the service. */
 static void
 attention_changed_cb (DBusGProxy * proxy, gboolean dot, gpointer userdata)
 {
@@ -122,6 +152,7 @@ attention_changed_cb (DBusGProxy * proxy, gboolean dot, gpointer userdata)
 	return;
 }
 
+/* Change the icon to whether it should be visible or not */
 static void
 icon_changed_cb (DBusGProxy * proxy, gboolean hidden, gpointer userdata)
 {
@@ -133,16 +164,7 @@ icon_changed_cb (DBusGProxy * proxy, gboolean hidden, gpointer userdata)
 	return;
 }
 
-static void
-watch_cb (DBusGProxy * proxy, GError * error, gpointer userdata)
-{
-	if (error != NULL) {
-		g_warning("Watch failed!  %s", error->message);
-		g_error_free(error);
-	}
-	return;
-}
-
+/* Callback from getting the attention status from the service. */
 static void
 attention_cb (DBusGProxy * proxy, gboolean dot, GError * error, gpointer userdata)
 {
@@ -155,6 +177,7 @@ attention_cb (DBusGProxy * proxy, gboolean dot, GError * error, gpointer userdat
 	return attention_changed_cb(proxy, dot, userdata);
 }
 
+/* Change from getting the icon visibility from the service */
 static void
 icon_cb (DBusGProxy * proxy, gboolean hidden, GError * error, gpointer userdata)
 {
@@ -167,44 +190,71 @@ icon_cb (DBusGProxy * proxy, gboolean hidden, GError * error, gpointer userdata)
 	return icon_changed_cb(proxy, hidden, userdata);
 }
 
+static guint connection_drop_timeout = 0;
+
+/* Resets the icon to not having messages if we can't get a good
+   answer on it from the service. */
 static gboolean
-setup_icon_proxy (gpointer userdata)
+connection_drop_cb (gpointer user_data)
 {
+	if (main_image != NULL) {
+		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
+	}
+	connection_drop_timeout = 0;
+	return FALSE;
+}
+
+/* Sets up all the icon information in the proxy. */
+static void 
+connection_change (IndicatorServiceManager * sm, gboolean connected, gpointer user_data)
+{
+	if (connection_drop_timeout != 0) {
+		g_source_remove(connection_drop_timeout);
+		connection_drop_timeout = 0;
+	}
+
+	if (!connected) {
+		/* Ensure that we're not saying there are messages
+		   when we don't have a connection. */
+		connection_drop_timeout = g_timeout_add(400, connection_drop_cb, NULL);
+		return;
+	}
+
 	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
 	if (connection == NULL) {
 		g_warning("Unable to get session bus");
-		return FALSE; /* TRUE? */
+		return;
 	}
 
-	icon_proxy = dbus_g_proxy_new_for_name(connection,
-	                                       INDICATOR_MESSAGES_DBUS_NAME,
-	                                       INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
-	                                       INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
 	if (icon_proxy == NULL) {
-		g_warning("Unable to get messages service interface.");
-		return FALSE;
+		icon_proxy = dbus_g_proxy_new_for_name(connection,
+		                                       INDICATOR_MESSAGES_DBUS_NAME,
+		                                       INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+		                                       INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
+		if (icon_proxy == NULL) {
+			g_warning("Unable to get messages service interface.");
+			return;
+		}
+		
+		dbus_g_proxy_add_signal(icon_proxy, "AttentionChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
+		dbus_g_proxy_connect_signal(icon_proxy,
+		                            "AttentionChanged",
+		                            G_CALLBACK(attention_changed_cb),
+		                            NULL,
+		                            NULL);
+
+		dbus_g_proxy_add_signal(icon_proxy, "IconChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
+		dbus_g_proxy_connect_signal(icon_proxy,
+		                            "IconChanged",
+		                            G_CALLBACK(icon_changed_cb),
+		                            NULL,
+		                            NULL);
 	}
-	
-	org_ayatana_indicator_messages_service_watch_async(icon_proxy, watch_cb, NULL);
-
-	dbus_g_proxy_add_signal(icon_proxy, "AttentionChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal(icon_proxy,
-	                            "AttentionChanged",
-	                            G_CALLBACK(attention_changed_cb),
-	                            NULL,
-	                            NULL);
-
-	dbus_g_proxy_add_signal(icon_proxy, "IconChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal(icon_proxy,
-	                            "IconChanged",
-	                            G_CALLBACK(icon_changed_cb),
-	                            NULL,
-	                            NULL);
 
 	org_ayatana_indicator_messages_service_attention_requested_async(icon_proxy, attention_cb, NULL);
 	org_ayatana_indicator_messages_service_icon_shown_async(icon_proxy, icon_cb, NULL);
 
-	return FALSE;
+	return;
 }
 
 /* Sets the icon when it changes. */
@@ -334,8 +384,6 @@ indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, i
 				g_object_unref(resized_pixbuf);
 			}
 		}
-	} else {
-		g_warning("Indicator Item property '%s' unknown", prop);
 	}
 
 	return;
@@ -417,11 +465,12 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	dbusmenu_gtkclient_newitem_base(DBUSMENU_GTKCLIENT(client), newitem, gmi, parent);
 
 	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(indicator_prop_change_cb), mi_data);
-	g_signal_connect(G_OBJECT(newitem), "destroyed", G_CALLBACK(g_free), mi_data);
+	g_object_weak_ref(G_OBJECT(newitem), (GWeakNotify)g_free, mi_data);
 
 	return TRUE;
 }
 
+/* Builds the main image icon using the libindicator helper. */
 static GtkImage *
 get_icon (IndicatorObject * io)
 {
@@ -431,29 +480,11 @@ get_icon (IndicatorObject * io)
 	return GTK_IMAGE(main_image);
 }
 
+/* Builds the menu for the indicator */
 static GtkMenu *
 get_menu (IndicatorObject * io)
 {
-	guint returnval = 0;
-	GError * error = NULL;
-
-	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	DBusGProxy * proxy = dbus_g_proxy_new_for_name(connection, DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS);
-
-	if (!org_freedesktop_DBus_start_service_by_name (proxy, INDICATOR_MESSAGES_DBUS_NAME, 0, &returnval, &error)) {
-		g_error("Unable to send message to DBus to start service: %s", error != NULL ? error->message : "(NULL error)" );
-		g_error_free(error);
-		return NULL;
-	}
-
-	if (returnval != DBUS_START_REPLY_SUCCESS && returnval != DBUS_START_REPLY_ALREADY_RUNNING) {
-		g_error("Return value isn't indicative of success: %d", returnval);
-		return NULL;
-	}
-
 	indicator_right_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-
-	g_idle_add(setup_icon_proxy, NULL);
 
 	DbusmenuGtkMenu * menu = dbusmenu_gtkmenu_new(INDICATOR_MESSAGES_DBUS_NAME, INDICATOR_MESSAGES_DBUS_OBJECT);
 	DbusmenuGtkClient * client = dbusmenu_gtkmenu_get_client(menu);
