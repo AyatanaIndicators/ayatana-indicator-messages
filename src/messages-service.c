@@ -562,10 +562,6 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	sl_item->attention = FALSE;
 	sl_item->count = 0;
 
-	/* Build a separator */
-	sl_item->separator = dbusmenu_menuitem_new();
-	dbusmenu_menuitem_property_set(sl_item->separator, DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_SEPARATOR);
-
 	/* Incase we got an indicator first */
 	GList * alreadythere = g_list_find_custom(serverList, sl_item, serverList_equal);
 	if (alreadythere != NULL) {
@@ -578,6 +574,10 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 		/* Insert the new one in the list */
 		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
 	}
+
+	/* Build a separator */
+	sl_item->separator = dbusmenu_menuitem_new();
+	dbusmenu_menuitem_property_set(sl_item->separator, DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_SEPARATOR);
 
 	/* Connect the signals up to the menu item */
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), sl_item);
@@ -794,15 +794,16 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 
 	if (msl->found) return;
 
-	msl->position++;
-
 	if (!IS_APP_MENU_ITEM(data_mi)) {
+		msl->position++;
 		return;
 	}
 
 	AppMenuItem * appmenu = APP_MENU_ITEM(data_mi);
 	if (!g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME((IndicateListenerServer*)msl->server), INDICATE_LISTENER_SERVER_DBUS_NAME(app_menu_item_get_server(appmenu)))) {
 		msl->found = TRUE;
+	} else {
+		msl->position++;
 	}
 
 	return;
@@ -904,6 +905,13 @@ resort_menu (DbusmenuMenuitem * menushell)
 
 			if (imi->menuitem != NULL) {
 				g_debug("\tMoving indicator on %s id %d to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(imi->server), INDICATE_LISTENER_INDICATOR_ID(imi->indicator), position);
+
+				if (si->menuitem == NULL || !dbusmenu_menuitem_property_get_bool(DBUSMENU_MENUITEM(si->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+					dbusmenu_menuitem_property_set_bool(imi->menuitem, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
+				} else {
+					dbusmenu_menuitem_property_set_bool(imi->menuitem, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
+				}
+
 				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(imi->menuitem), position);
 				position++;
 			}
@@ -912,10 +920,17 @@ resort_menu (DbusmenuMenuitem * menushell)
 		/* Lastly putting the separator in */
 		if (si->separator != NULL) {
 			g_debug("\tMoving app %s separator to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
+
+			if (si->menuitem == NULL || !dbusmenu_menuitem_property_get_bool(DBUSMENU_MENUITEM(si->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+				dbusmenu_menuitem_property_set_bool(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
+				/* Note, this isn't the last if we can't see it */
+			} else {
+				dbusmenu_menuitem_property_set_bool(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
+				last_separator = si->separator;
+			}
+
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->separator), position);
-			dbusmenu_menuitem_property_set_bool(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
 			position++;
-			last_separator = si->separator;
 		}
 	}
 
