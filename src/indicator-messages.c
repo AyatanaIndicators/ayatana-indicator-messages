@@ -384,8 +384,6 @@ indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, i
 				g_object_unref(resized_pixbuf);
 			}
 		}
-	} else {
-		g_warning("Indicator Item property '%s' unknown", prop);
 	}
 
 	return;
@@ -467,7 +465,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	dbusmenu_gtkclient_newitem_base(DBUSMENU_GTKCLIENT(client), newitem, gmi, parent);
 
 	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(indicator_prop_change_cb), mi_data);
-	g_signal_connect(G_OBJECT(newitem), "destroyed", G_CALLBACK(g_free), mi_data);
+	g_object_weak_ref(G_OBJECT(newitem), (GWeakNotify)g_free, mi_data);
 
 	return TRUE;
 }
