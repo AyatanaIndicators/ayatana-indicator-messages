@@ -623,11 +623,17 @@ server_shortcuts_changed (AppMenuItem * appitem, gpointer data)
 		}
 		appitemfound = TRUE;
 
+		if (children->data == appitem) {
+			children = g_list_next(children);
+			continue;
+		}
+
 		if (!DBUSMENU_IS_MENUITEM_PROXY(children->data)) {
 			break;
 		}
 
 		removelist = g_list_prepend(removelist, children->data);
+		children = g_list_next(children);
 	}
 
 	GList * removeitem;
