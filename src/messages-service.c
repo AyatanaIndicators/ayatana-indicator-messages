@@ -756,11 +756,19 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 
 	/* If there is a menu item, let's get rid of it. */
 	if (sltp->menuitem != NULL) {
-		dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(sltp->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
+		/* If there are shortcuts remove them */
+		GList * shortcuts = app_menu_item_get_items(sltp->menuitem);
+		while (shortcuts != NULL) {
+			dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(shortcuts->data), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
+			dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(shortcuts->data));
+			shortcuts = g_list_next(shortcuts);
+		}
+
+		dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(sltp->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(sltp->menuitem));
 		g_object_unref(G_OBJECT(sltp->menuitem));
 	}
-
+	
 	/* If there is a separator, let's get rid of it. */
 	if (sltp->separator != NULL) {
 		dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(sltp->separator), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
