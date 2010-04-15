@@ -775,6 +775,8 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 		dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(sltp->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(sltp->menuitem));
 		g_object_unref(G_OBJECT(sltp->menuitem));
+	} else {
+		g_debug("\tNo menuitem");
 	}
 	
 	/* If there is a separator, let's get rid of it. */
@@ -783,6 +785,8 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 		dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(sltp->separator), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(sltp->separator));
 		g_object_unref(G_OBJECT(sltp->separator));
+	} else {
+		g_debug("\tNo separator");
 	}
 
 	if (sltp->attention) {
