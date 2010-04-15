@@ -1271,6 +1271,14 @@ destroy_launcher (gpointer data)
 	g_list_free(li->appdiritems);
 
 	if (li->menuitem != NULL) {
+		/* If there are shortcuts remove them */
+		GList * shortcuts = launcher_menu_item_get_items(li->menuitem);
+		while (shortcuts != NULL) {
+			dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(shortcuts->data), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
+			dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(shortcuts->data));
+			shortcuts = g_list_next(shortcuts);
+		}
+
 		dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(li->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		dbusmenu_menuitem_child_delete(root_menuitem, DBUSMENU_MENUITEM(li->menuitem));
 		g_object_unref(G_OBJECT(li->menuitem));
