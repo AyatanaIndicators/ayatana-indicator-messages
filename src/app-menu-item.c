@@ -436,22 +436,25 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 	/* We need to proxy the new root across to the old
 	   world of indicator land. */
 	priv->root = newroot;
-	g_object_ref(priv->root);
-	g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED,   G_CALLBACK(child_added_cb),   self);
-	g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_REMOVED, G_CALLBACK(child_removed_cb), self);
-	g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_MOVED,   G_CALLBACK(child_moved_cb),   self);
 
-	/* See if we have any menuitems to worry about,
-	   otherwise we'll just move along. */
-	GList * children = dbusmenu_menuitem_get_children(DBUSMENU_MENUITEM(priv->root));
-	if (children != NULL) {
-		change_time = TRUE;
-		g_debug("\tProcessing %d children", g_list_length(children));
-		while (children != NULL) {
-			DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(DBUSMENU_MENUITEM(children->data));
-			dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(mip), DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
-			priv->shortcuts = g_list_append(priv->shortcuts, mip);
-			children = g_list_next(children);
+	if (priv->root != NULL) {
+		g_object_ref(priv->root);
+		g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED,   G_CALLBACK(child_added_cb),   self);
+		g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_REMOVED, G_CALLBACK(child_removed_cb), self);
+		g_signal_connect(G_OBJECT(priv->root), DBUSMENU_MENUITEM_SIGNAL_CHILD_MOVED,   G_CALLBACK(child_moved_cb),   self);
+
+		/* See if we have any menuitems to worry about,
+		   otherwise we'll just move along. */
+		GList * children = dbusmenu_menuitem_get_children(DBUSMENU_MENUITEM(priv->root));
+		if (children != NULL) {
+			change_time = TRUE;
+			g_debug("\tProcessing %d children", g_list_length(children));
+			while (children != NULL) {
+				DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(DBUSMENU_MENUITEM(children->data));
+				dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(mip), DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
+				priv->shortcuts = g_list_append(priv->shortcuts, mip);
+				children = g_list_next(children);
+			}
 		}
 	}
 
