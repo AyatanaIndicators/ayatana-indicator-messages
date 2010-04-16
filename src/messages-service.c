@@ -615,20 +615,24 @@ server_shortcuts_changed (AppMenuItem * appitem, gpointer data)
 	gboolean appitemfound = FALSE;
 	GList * children = dbusmenu_menuitem_get_children(shell);
 	GList * removelist = NULL;
+	guint position = -1;
 
 	while (children != NULL) {
-		if (!appitemfound && children->data != appitem) {
+		position++;
+		if (children->data == appitem) {
+			g_debug("\tApp entry found at position %d", position);
 			children = g_list_next(children);
+			appitemfound = TRUE;
 			continue;
 		}
-		appitemfound = TRUE;
 
-		if (children->data == appitem) {
+		if (!appitemfound) {
 			children = g_list_next(children);
 			continue;
 		}
 
 		if (!DBUSMENU_IS_MENUITEM_PROXY(children->data)) {
+			g_debug("\tNon-proxy item (%s) found at %d: %s", G_OBJECT_TYPE_NAME(children->data), position, dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(children->data), DBUSMENU_MENUITEM_PROP_LABEL));
 			break;
 		}
 
