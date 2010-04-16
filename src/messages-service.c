@@ -55,7 +55,8 @@ static MessageServiceDbus * dbus_interface = NULL;
 #define DESKTOP_FILE_GROUP        "Messaging Menu"
 #define DESKTOP_FILE_KEY_DESKTOP  "DesktopFile"
 
-static void server_shortcuts_changed (AppMenuItem * appitem, gpointer data);
+static void server_shortcut_added (AppMenuItem * appitem, DbusmenuMenuitem * mi, gpointer data);
+static void server_shortcut_removed (AppMenuItem * appitem, DbusmenuMenuitem * mi, gpointer data);
 static void server_count_changed (AppMenuItem * appitem, guint count, gpointer data);
 static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data);
 static void im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data);
@@ -582,7 +583,8 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	/* Connect the signals up to the menu item */
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), sl_item);
 	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_NAME_CHANGED,  G_CALLBACK(server_name_changed),  menushell);
-	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED,  G_CALLBACK(server_shortcuts_changed),  menushell);
+	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_SHORTCUT_ADDED,  G_CALLBACK(server_shortcut_added),  menushell);
+	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_SHORTCUT_REMOVED,  G_CALLBACK(server_shortcut_removed),  menushell);
 
 	/* Put our new menu item in, with the separator behind it.
 	   resort_menu will take care of whether it should be hidden
@@ -605,60 +607,26 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	return;
 }
 
-/* The shortcuts have changed, let's just remove them and put
-   the back. */
+/* Server shortcut has been added */
 static void
-server_shortcuts_changed (AppMenuItem * appitem, gpointer data)
+server_shortcut_added (AppMenuItem * appitem, DbusmenuMenuitem * mi, gpointer data)
 {
-	g_debug("Application Shortcuts changed");
+	g_debug("Application Shortcut added: %s", mi != NULL ? dbusmenu_menuitem_property_get(mi, DBUSMENU_MENUITEM_PROP_LABEL) : "none");
 	DbusmenuMenuitem * shell = DBUSMENU_MENUITEM(data);
-	gboolean appitemfound = FALSE;
-	GList * children = dbusmenu_menuitem_get_children(shell);
-	GList * removelist = NULL;
-	guint position = -1;
-
-	while (children != NULL) {
-		position++;
-		if (children->data == appitem) {
-			g_debug("\tApp entry found at position %d", position);
-			children = g_list_next(children);
-			appitemfound = TRUE;
-			continue;
-		}
-
-		if (!appitemfound) {
-			children = g_list_next(children);
-			continue;
-		}
-
-		if (!DBUSMENU_IS_MENUITEM_PROXY(children->data)) {
-			g_debug("\tNon-proxy item (%s) found at %d: %s", G_OBJECT_TYPE_NAME(children->data), position, dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(children->data), DBUSMENU_MENUITEM_PROP_LABEL));
-			break;
-		}
-
-		removelist = g_list_prepend(removelist, children->data);
-		children = g_list_next(children);
-	}
-
-	g_debug("\tRemoving %d shortcuts", g_list_length(removelist));
-
-	GList * removeitem;
-	for (removeitem = removelist; removeitem != NULL; removeitem = g_list_next(removeitem)) {
-		g_debug("\tRemoving shortcut: %s", dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(removeitem->data), DBUSMENU_MENUITEM_PROP_LABEL));
-		dbusmenu_menuitem_child_delete(shell, DBUSMENU_MENUITEM(removeitem->data));
-	}
-	g_list_free(removeitem);
-
-	GList * shortcuts = app_menu_item_get_items(appitem);
-	while (shortcuts != NULL) {
-		DbusmenuMenuitem * mi = DBUSMENU_MENUITEM(shortcuts->data);
-		g_debug("\tAdding shortcut: %s", dbusmenu_menuitem_property_get(mi, DBUSMENU_MENUITEM_PROP_LABEL));
+	if (mi != NULL) {
 		dbusmenu_menuitem_child_append(shell, mi);
-		shortcuts = g_list_next(shortcuts);
 	}
-
 	resort_menu(shell);
+	return;
+}
 
+/* Server shortcut has been removed */
+static void
+server_shortcut_removed (AppMenuItem * appitem, DbusmenuMenuitem * mi, gpointer data)
+{
+	g_debug("Application Shortcut removed: %s", mi != NULL ? dbusmenu_menuitem_property_get(mi, DBUSMENU_MENUITEM_PROP_LABEL) : "none");
+	DbusmenuMenuitem * shell = DBUSMENU_MENUITEM(data);
+	dbusmenu_menuitem_child_delete(shell, mi);
 	return;
 }
 
