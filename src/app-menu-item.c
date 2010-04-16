@@ -36,7 +36,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 enum {
 	COUNT_CHANGED,
 	NAME_CHANGED,
-	SHORTCUTS_CHANGED,
+	SHORTCUT_ADDED,
+	SHORTCUT_REMOVED,
 	LAST_SIGNAL
 };
 
@@ -100,13 +101,20 @@ app_menu_item_class_init (AppMenuItemClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__STRING,
 	                                      G_TYPE_NONE, 1, G_TYPE_STRING);
-	signals[SHORTCUTS_CHANGED] =  g_signal_new(APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED,
+	signals[SHORTCUT_ADDED] =  g_signal_new(APP_MENU_ITEM_SIGNAL_SHORTCUT_ADDED,
 	                                      G_TYPE_FROM_CLASS(klass),
 	                                      G_SIGNAL_RUN_LAST,
-	                                      G_STRUCT_OFFSET (AppMenuItemClass, shortcuts_changed),
+	                                      G_STRUCT_OFFSET (AppMenuItemClass, shortcut_added),
 	                                      NULL, NULL,
-	                                      g_cclosure_marshal_VOID__VOID,
-	                                      G_TYPE_NONE, 0, G_TYPE_NONE);
+	                                      g_cclosure_marshal_VOID__OBJECT,
+	                                      G_TYPE_NONE, 1, G_TYPE_OBJECT);
+	signals[SHORTCUT_REMOVED] =  g_signal_new(APP_MENU_ITEM_SIGNAL_SHORTCUT_REMOVED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (AppMenuItemClass, shortcut_removed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__OBJECT,
+	                                      G_TYPE_NONE, 1, G_TYPE_OBJECT);
 
 	return;
 }
@@ -137,6 +145,7 @@ app_menu_item_init (AppMenuItem *self)
 static void
 func_unref (gpointer data, gpointer user_data)
 {
+	g_signal_emit(user_data, signals[SHORTCUT_REMOVED], 0, data, TRUE);
 	g_object_unref(G_OBJECT(data));
 	return;
 }
@@ -155,10 +164,9 @@ app_menu_item_dispose (GObject *object)
 	}
 
 	if (priv->shortcuts != NULL) {
-		g_list_foreach(priv->shortcuts, func_unref, NULL);
+		g_list_foreach(priv->shortcuts, func_unref, object);
 		g_list_free(priv->shortcuts);
 		priv->shortcuts = NULL;
-		g_signal_emit(object, signals[SHORTCUTS_CHANGED], 0, TRUE);
 	}
 
 	if (priv->root != NULL) {
@@ -351,7 +359,7 @@ child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint positio
 
 	priv->shortcuts = g_list_insert(priv->shortcuts, mip, position);
 
-	g_signal_emit(G_OBJECT(data), signals[SHORTCUTS_CHANGED], 0, TRUE);
+	g_signal_emit(G_OBJECT(data), signals[SHORTCUT_ADDED], 0, mip, TRUE);
 	return;
 }
 
@@ -377,10 +385,10 @@ child_removed_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, gpointer da
 
 	if (pitems != NULL) {
 		DbusmenuMenuitemProxy * mip = DBUSMENU_MENUITEM_PROXY(pitems->data);
-		g_object_unref(mip);
 		priv->shortcuts = g_list_remove(priv->shortcuts, mip);
 
-		g_signal_emit(G_OBJECT(data), signals[SHORTCUTS_CHANGED], 0, TRUE);
+		g_signal_emit(G_OBJECT(data), signals[SHORTCUT_REMOVED], 0, mip, TRUE);
+		g_object_unref(mip);
 	}
 
 	return;
@@ -406,7 +414,7 @@ child_moved_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint newpos,
 	if (mip != NULL) {
 		priv->shortcuts = g_list_remove(priv->shortcuts, mip);
 		priv->shortcuts = g_list_insert(priv->shortcuts, mip, newpos);
-		g_signal_emit(G_OBJECT(data), signals[SHORTCUTS_CHANGED], 0, TRUE);
+		g_signal_emit(G_OBJECT(data), signals[SHORTCUT_ADDED], 0, NULL, TRUE);
 	}
 
 	return;
@@ -420,11 +428,9 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 	g_debug("Root Changed");
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
-	gboolean change_time = FALSE;
 
 	if (priv->root != NULL) {
 		if (dbusmenu_menuitem_get_children(DBUSMENU_MENUITEM(priv->root)) != NULL) {
-			change_time = TRUE;
 			g_list_foreach(priv->shortcuts, func_unref, NULL);
 			g_list_free(priv->shortcuts);
 			priv->shortcuts = NULL;
@@ -447,19 +453,15 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 		   otherwise we'll just move along. */
 		GList * children = dbusmenu_menuitem_get_children(DBUSMENU_MENUITEM(priv->root));
 		if (children != NULL) {
-			change_time = TRUE;
 			g_debug("\tProcessing %d children", g_list_length(children));
 			while (children != NULL) {
 				DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(DBUSMENU_MENUITEM(children->data));
 				dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(mip), DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
 				priv->shortcuts = g_list_append(priv->shortcuts, mip);
+				g_signal_emit(G_OBJECT(self), signals[SHORTCUT_ADDED], 0, mip, TRUE);
 				children = g_list_next(children);
 			}
 		}
-	}
-
-	if (change_time) {
-		g_signal_emit(G_OBJECT(self), signals[SHORTCUTS_CHANGED], 0, TRUE);
 	}
 
 	return;
