@@ -431,7 +431,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 
 	if (priv->root != NULL) {
 		if (dbusmenu_menuitem_get_children(DBUSMENU_MENUITEM(priv->root)) != NULL) {
-			g_list_foreach(priv->shortcuts, func_unref, NULL);
+			g_list_foreach(priv->shortcuts, func_unref, data);
 			g_list_free(priv->shortcuts);
 			priv->shortcuts = NULL;
 		}
