@@ -636,8 +636,11 @@ server_shortcuts_changed (AppMenuItem * appitem, gpointer data)
 		children = g_list_next(children);
 	}
 
+	g_debug("\tRemoving %d shortcuts", g_list_length(removelist));
+
 	GList * removeitem;
 	for (removeitem = removelist; removeitem != NULL; removeitem = g_list_next(removeitem)) {
+		g_debug("\tRemoving shortcut: %s", dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(removeitem->data), DBUSMENU_MENUITEM_PROP_LABEL));
 		dbusmenu_menuitem_child_delete(shell, DBUSMENU_MENUITEM(removeitem->data));
 	}
 	g_list_free(removeitem);
