@@ -1,4 +1,4 @@
-indicator-messages (0.3.6-0ubuntu1~ppa1) lucid; urgency=low
+indicator-messages (0.3.6-0ubuntu1) lucid; urgency=low
 
   * New upstream release.
     * Fixing several bugs with regards to visibility and placement
