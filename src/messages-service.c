@@ -1358,6 +1358,14 @@ build_launcher_core (const gchar * desktop)
 			dbusmenu_menuitem_property_set_bool(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		}
 
+		/* Check to see if any of the current applications should
+		   be eclipsing us. */
+		GList * server;
+		for (server = serverList; server != NULL; server = g_list_next(server)) {
+			serverList_t * slt = (serverList_t *)server->data;
+			check_eclipses(slt->menuitem);
+		}
+
 		resort_menu(root_menuitem);
 		check_hidden();
 	} else {
