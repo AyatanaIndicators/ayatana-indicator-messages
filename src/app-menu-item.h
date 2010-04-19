@@ -39,7 +39,8 @@ G_BEGIN_DECLS
 
 #define APP_MENU_ITEM_SIGNAL_COUNT_CHANGED     "count-changed"
 #define APP_MENU_ITEM_SIGNAL_NAME_CHANGED      "name-changed"
-#define APP_MENU_ITEM_SIGNAL_SHORTCUTS_CHANGED "shortcuts-changed"
+#define APP_MENU_ITEM_SIGNAL_SHORTCUT_ADDED    "shortcut-added"
+#define APP_MENU_ITEM_SIGNAL_SHORTCUT_REMOVED  "shortcut-removed"
 
 typedef struct _AppMenuItem      AppMenuItem;
 typedef struct _AppMenuItemClass AppMenuItemClass;
@@ -49,7 +50,8 @@ struct _AppMenuItemClass {
 
 	void (* count_changed) (guint count);
 	void (* name_changed) (gchar * name);
-	void (* shortcuts_changed) (void);
+	void (* shortcut_added) (DbusmenuMenuitem * mi);
+	void (* shortcut_removed) (DbusmenuMenuitem * mi);
 };
 
 struct _AppMenuItem {
