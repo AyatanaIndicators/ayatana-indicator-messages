@@ -1,4 +1,4 @@
-indicator-messages (0.3.6-0ubuntu2~ppa1) lucid; urgency=low
+indicator-messages (0.3.6-0ubuntu2) lucid; urgency=low
 
   * Upstream Merge
     * When loading desktop files check to see if they've
