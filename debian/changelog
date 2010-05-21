@@ -1,4 +1,4 @@
-indicator-messages (0.3.7-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.3.7-0ubuntu1~ppa1) lucid; urgency=low
 
   * New upstream release.
     * When loading desktop files check to see if they've
@@ -8,7 +8,7 @@ indicator-messages (0.3.7-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Track blacklisted apps to ensure that the messaging menu
       hides when there is no app.  (LP: #533021)
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 21 May 2010 14:55:12 -0500
+ -- Ted Gould <ted@ubuntu.com>  Fri, 21 May 2010 15:02:16 -0500
 
 indicator-messages (0.3.6-0ubuntu2) lucid; urgency=low
 
