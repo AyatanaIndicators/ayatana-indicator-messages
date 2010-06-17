@@ -4,8 +4,9 @@ indicator-messages (0.3.7-1) unstable; urgency=low
     Closes: #586132
   * debian/control:
     - Homepage is at LP/indicator-messages, not -applet.
+    - Update package description.
 
- -- Evgeni Golov <evgeni@debian.org>  Thu, 17 Jun 2010 11:40:36 +0200
+ -- Evgeni Golov <evgeni@debian.org>  Thu, 17 Jun 2010 11:42:39 +0200
 
 indicator-messages (0.3.7-0ubuntu1~ppa1) lucid; urgency=low
 
