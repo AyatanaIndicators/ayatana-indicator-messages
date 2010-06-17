@@ -16,7 +16,7 @@ Build-Depends: debhelper (>= 5.0),
                libdbusmenu-gtk-dev (>= 0.2.5),
                libdbusmenu-glib-dev (>= 0.2.8)
 Standards-Version: 3.8.0
-Homepage: https://launchpad.net/indicator-applet
+Homepage: https://launchpad.net/indicator-messages
 Vcs-Bzr: http://bazaar.launchpad.net/~ubuntu-desktop/indicator-messages/ubuntu
 
 Package: indicator-messages
