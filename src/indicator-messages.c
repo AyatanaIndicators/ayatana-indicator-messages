@@ -570,8 +570,12 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 		if (resized_pixbuf != pixbuf) {
 			g_object_unref(resized_pixbuf);
 		}
+
+		/* Add the icon only if present. */
+		gtk_misc_set_alignment(GTK_MISC(mi_data->icon), 0.0, 0.5);
+		gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, padding);
+		gtk_widget_show(mi_data->icon);
 	}
-	gtk_widget_show(mi_data->icon);
 
 	/* Label, probably a username, chat room or mailbox name */
 	mi_data->label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_LABEL));
@@ -594,12 +598,6 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	gtk_misc_set_alignment(GTK_MISC(mi_data->right), 1.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), mi_data->right, FALSE, FALSE, padding + font_size/2.0);
 	gtk_widget_show(mi_data->right);
-
-	/* Build up the running icon */
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(gmi), mi_data->icon);
-
-	/* Make sure it always appears */
-	gtk_image_menu_item_set_always_show_image(GTK_IMAGE_MENU_ITEM(gmi), TRUE);
 
 	gtk_container_add(GTK_CONTAINER(gmi), hbox);
 	gtk_widget_show(hbox);
