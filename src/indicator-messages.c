@@ -290,6 +290,47 @@ application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value,
 	return;
 }
 
+/* Draws a triangle on the left, using fg[STATE_TYPE] color. */
+static gboolean
+application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
+{
+	GtkStyle *style;
+	cairo_t *cr;
+	int x, y, arrow_width, arrow_height;
+
+	if (!GTK_IS_WIDGET (widget)) return;
+
+	/* get style */
+	style = gtk_widget_get_style (widget);
+
+	/* set arrow position / dimensions */
+	arrow_width = widget->allocation.height/5.0;
+	arrow_height = widget->allocation.height/3.0;
+	x = widget->allocation.x;
+	y = widget->allocation.y + widget->allocation.height/2.0 - (double)arrow_height/2.0;
+
+	/* initialize cairo drawing area */
+	cr = (cairo_t*) gdk_cairo_create (widget->window);
+
+	/* set line width */	
+	cairo_set_line_width (cr, 1.0);
+
+	/* cairo drawing code */
+	cairo_move_to (cr, x, y);
+	cairo_line_to (cr, x, y + arrow_height);
+	cairo_line_to (cr, x + arrow_width, y + (double)arrow_height/2.0);
+	cairo_close_path (cr);
+	cairo_set_source_rgb (cr, style->fg[gtk_widget_get_state(widget)].red/65535.0,
+	                          style->fg[gtk_widget_get_state(widget)].green/65535.0,
+	                          style->fg[gtk_widget_get_state(widget)].blue/65535.0);
+	cairo_fill (cr);
+
+	/* remember to destroy cairo context to avoid leaks */
+        cairo_destroy (cr);
+
+	return FALSE;
+}
+
 /* Custom function to draw rounded rectangle with max radius */
 static void
 custom_cairo_rounded_rectangle (cairo_t *cr,
@@ -403,7 +444,8 @@ new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbu
 
 	/* Make sure we can handle the label changing */
 	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_prop_change_cb), label);
-	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_icon_change_cb), icon);
+	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_icon_change_cb), icon);	
+	g_signal_connect_after(G_OBJECT (gmi), "expose_event", G_CALLBACK (application_triangle_draw_cb), NULL);
 
 	return TRUE;
 }
