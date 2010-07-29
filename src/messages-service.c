@@ -315,7 +315,7 @@ desktop_file_from_keyfile (const gchar * definition_file)
 }
 
 /* Add a definition file into the black list and eclipse
-   and launchers that have the same file. */
+   any launchers that have the same file. */
 static gboolean
 blacklist_add (gpointer udata)
 {
@@ -359,7 +359,7 @@ blacklist_add_core (gchar * desktop, gchar * definition)
 	}
 
 	/* Actually blacklist this thing */
-	g_hash_table_insert(blacklist, desktop, definition);
+	g_hash_table_insert(blacklist, g_strdup(desktop), g_strdup(definition));
 	g_debug("Adding Blacklist item '%s' for desktop '%s'", definition, desktop);
 
 	/* Go through and eclipse folks */
