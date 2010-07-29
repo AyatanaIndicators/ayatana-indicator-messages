@@ -304,8 +304,8 @@ application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer
 	style = gtk_widget_get_style (widget);
 
 	/* set arrow position / dimensions */
-	arrow_width = widget->allocation.height/5.0;
-	arrow_height = widget->allocation.height/3.0;
+	arrow_width = (int) ((double)widget->allocation.height * 0.25f);
+	arrow_height = (int) ((double)widget->allocation.height * 0.60f);
 	x = widget->allocation.x;
 	y = widget->allocation.y + widget->allocation.height/2.0 - (double)arrow_height/2.0;
 
