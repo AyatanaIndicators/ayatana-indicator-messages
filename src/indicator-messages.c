@@ -290,6 +290,47 @@ application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value,
 	return;
 }
 
+/* Draws a triangle on the left, using fg[STATE_TYPE] color. */
+static gboolean
+application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
+{
+	GtkStyle *style;
+	cairo_t *cr;
+	int x, y, arrow_width, arrow_height;
+
+	if (!GTK_IS_WIDGET (widget)) return FALSE;
+
+	/* get style */
+	style = gtk_widget_get_style (widget);
+
+	/* set arrow position / dimensions */
+	arrow_width = (int) ((double)widget->allocation.height * 0.25f);
+	arrow_height = (int) ((double)widget->allocation.height * 0.50f);
+	x = widget->allocation.x;
+	y = widget->allocation.y + widget->allocation.height/2.0 - (double)arrow_height/2.0;
+
+	/* initialize cairo drawing area */
+	cr = (cairo_t*) gdk_cairo_create (widget->window);
+
+	/* set line width */	
+	cairo_set_line_width (cr, 1.0);
+
+	/* cairo drawing code */
+	cairo_move_to (cr, x, y);
+	cairo_line_to (cr, x, y + arrow_height);
+	cairo_line_to (cr, x + arrow_width, y + (double)arrow_height/2.0);
+	cairo_close_path (cr);
+	cairo_set_source_rgb (cr, style->fg[gtk_widget_get_state(widget)].red/65535.0,
+	                          style->fg[gtk_widget_get_state(widget)].green/65535.0,
+	                          style->fg[gtk_widget_get_state(widget)].blue/65535.0);
+	cairo_fill (cr);
+
+	/* remember to destroy cairo context to avoid leaks */
+        cairo_destroy (cr);
+
+	return FALSE;
+}
+
 /* Custom function to draw rounded rectangle with max radius */
 static void
 custom_cairo_rounded_rectangle (cairo_t *cr,
@@ -314,7 +355,7 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	PangoLayout * layout;
 	gint font_size = RIGHT_LABEL_FONT_SIZE;
 
-	if (!GTK_IS_WIDGET (widget)) return;
+	if (!GTK_IS_WIDGET (widget)) return FALSE;
 
 	/* get style */
 	style = gtk_widget_get_style (widget);
@@ -390,20 +431,13 @@ new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbu
 	gtk_container_add(GTK_CONTAINER(gmi), hbox);
 	gtk_widget_show(hbox);
 
-	/* Build up the running icon */
-	GtkWidget * running_icon = gtk_image_new_from_icon_name("application-running", GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(gmi), running_icon);
-	gtk_widget_show(running_icon);
-
-	/* Make sure it always appears */
-	gtk_image_menu_item_set_always_show_image(GTK_IMAGE_MENU_ITEM(gmi), TRUE);
-
 	/* Attach some of the standard GTK stuff */
 	dbusmenu_gtkclient_newitem_base(DBUSMENU_GTKCLIENT(client), newitem, gmi, parent);
 
 	/* Make sure we can handle the label changing */
 	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_prop_change_cb), label);
 	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_icon_change_cb), icon);
+	g_signal_connect_after(G_OBJECT (gmi), "expose_event", G_CALLBACK (application_triangle_draw_cb), NULL);
 
 	return TRUE;
 }
@@ -528,11 +562,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	   item. */
 	mi_data->right = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_RIGHT));
 	gtk_size_group_add_widget(indicator_right_group, mi_data->right);
-
-	/* Doesn't work, look numbers_draw_cb. */
-	/* PangoLayout * right_layout = gtk_label_get_layout (GTK_LABEL(mi_data->right));
-	   font_size = pango_font_description_get_size (pango_layout_get_font_description (right_layout)); */
-
+	/* install extra decoration overlay */
 	g_signal_connect (G_OBJECT (mi_data->right), "expose_event",
 	                  G_CALLBACK (numbers_draw_cb), NULL);
 
@@ -575,4 +605,3 @@ get_menu (IndicatorObject * io)
 
 	return GTK_MENU(menu);
 }
-
