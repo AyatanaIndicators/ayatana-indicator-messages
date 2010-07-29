@@ -298,14 +298,14 @@ application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer
 	cairo_t *cr;
 	int x, y, arrow_width, arrow_height;
 
-	if (!GTK_IS_WIDGET (widget)) return;
+	if (!GTK_IS_WIDGET (widget)) return FALSE;
 
 	/* get style */
 	style = gtk_widget_get_style (widget);
 
 	/* set arrow position / dimensions */
-	arrow_width = widget->allocation.height/5.0;
-	arrow_height = widget->allocation.height/3.0;
+	arrow_width = (int) ((double)widget->allocation.height * 0.25f);
+	arrow_height = (int) ((double)widget->allocation.height * 0.50f);
 	x = widget->allocation.x;
 	y = widget->allocation.y + widget->allocation.height/2.0 - (double)arrow_height/2.0;
 
@@ -355,7 +355,7 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	PangoLayout * layout;
 	gint font_size = RIGHT_LABEL_FONT_SIZE;
 
-	if (!GTK_IS_WIDGET (widget)) return;
+	if (!GTK_IS_WIDGET (widget)) return FALSE;
 
 	/* get style */
 	style = gtk_widget_get_style (widget);
@@ -562,11 +562,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	   item. */
 	mi_data->right = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_RIGHT));
 	gtk_size_group_add_widget(indicator_right_group, mi_data->right);
-
-	/* Doesn't work, look numbers_draw_cb. */
-	/* PangoLayout * right_layout = gtk_label_get_layout (GTK_LABEL(mi_data->right));
-	   font_size = pango_font_description_get_size (pango_layout_get_font_description (right_layout)); */
-
+	/* install extra decoration overlay */
 	g_signal_connect (G_OBJECT (mi_data->right), "expose_event",
 	                  G_CALLBACK (numbers_draw_cb), NULL);
 
@@ -609,4 +605,3 @@ get_menu (IndicatorObject * io)
 
 	return GTK_MENU(menu);
 }
-
