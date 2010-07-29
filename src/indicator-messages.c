@@ -314,6 +314,8 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	PangoLayout * layout;
 	gint font_size = RIGHT_LABEL_FONT_SIZE;
 
+	if (!GTK_IS_WIDGET (widget)) return;
+
 	/* get style */
 	style = gtk_widget_get_style (widget);
 
