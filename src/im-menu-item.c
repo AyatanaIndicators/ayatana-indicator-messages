@@ -348,7 +348,7 @@ count_cb (IndicateListener * listener, IndicateListenerServer * server, Indicate
 		g_free(priv->count);
 	}
 
-	priv->count = g_strdup_printf("(%s)", propertydata);
+	priv->count = g_strdup_printf("%s", propertydata);
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), INDICATOR_MENUITEM_PROP_RIGHT, priv->count);
 
 	return;
