@@ -1,9 +1,9 @@
-indicator-messages (0.3.9-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.3.9-0ubuntu1~ppa1) maverick; urgency=low
 
   * New upstream release.
     * Remove parens from counts
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 12 Aug 2010 13:09:20 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 12 Aug 2010 13:10:10 -0500
 
 indicator-messages (0.3.8-0ubuntu1) maverick; urgency=low
 
