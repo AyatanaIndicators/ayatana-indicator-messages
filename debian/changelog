@@ -6,6 +6,21 @@ indicator-messages (0.3.8-0ubuntu1) maverick; urgency=low
 
  -- Ken VanDine <ken.vandine@canonical.com>  Thu, 29 Jul 2010 13:33:14 -0400
 
+indicator-messages (0.3.7-1) unstable; urgency=low
+
+  * Merge from Ubuntu.
+    Closes: #586132
+  * debian/control:
+    - Homepage is at LP/indicator-messages, not -applet.
+    - Update package description.
+    - Update Vcs-* fields.
+    - Standards-Version: 3.8.4.
+  * debian/copyright:
+    - Convert to DEP5 format.
+    - Add missing copyright holders of debian/.
+
+ -- Evgeni Golov <evgeni@debian.org>  Thu, 17 Jun 2010 13:02:37 +0200
+
 indicator-messages (0.3.7-0ubuntu1~ppa1) lucid; urgency=low
 
   * New upstream release.
