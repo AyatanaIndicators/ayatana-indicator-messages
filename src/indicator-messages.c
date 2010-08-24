@@ -418,7 +418,7 @@ new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbu
 	GtkWidget * icon = gtk_image_new_from_icon_name(dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_ICON), GTK_ICON_SIZE_MENU);
 	gtk_widget_set_size_request(icon, width, height);
 	gtk_misc_set_alignment(GTK_MISC(icon), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, FALSE, padding);
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(gmi), icon);
 	gtk_widget_show(icon);
 
 	/* Application name in a label */
