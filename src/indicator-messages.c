@@ -489,6 +489,10 @@ indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, i
 			if (resized_pixbuf != pixbuf) {
 				g_object_unref(resized_pixbuf);
 			}
+
+			gtk_widget_show(mi_data->icon);
+		} else {
+			gtk_widget_hide(mi_data->icon);
 		}
 	}
 
@@ -550,7 +554,10 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	}
 	gtk_misc_set_alignment(GTK_MISC(mi_data->icon), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, padding);
-	gtk_widget_show(mi_data->icon);
+
+	if (pixbuf != NULL) {
+		gtk_widget_show(mi_data->icon);
+	}
 
 	/* Label, probably a username, chat room or mailbox name */
 	mi_data->label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_LABEL));
