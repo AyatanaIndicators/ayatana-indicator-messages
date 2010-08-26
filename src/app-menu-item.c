@@ -328,6 +328,7 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	priv->desktop = g_strdup(value);
 
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
+	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_RUNNING, TRUE);
 
 	update_label(self);
 

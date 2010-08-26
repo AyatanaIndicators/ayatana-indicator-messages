@@ -287,6 +287,11 @@ application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value,
 		}
 	}
 
+	if (!g_strcmp0(prop, APPLICATION_MENUITEM_PROP_RUNNING)) {
+		/* TODO: should hide/show the triangle live if the menu was open.
+		   In practice, this is rarely needed. */
+	}
+
 	return;
 }
 
@@ -299,13 +304,18 @@ application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer
 	int x, y, arrow_width, arrow_height;
 
 	if (!GTK_IS_WIDGET (widget)) return FALSE;
+	if (!DBUSMENU_IS_MENUITEM (data)) return FALSE;
+
+	/* render the triangle indicator only if the application is running */
+	if (! dbusmenu_menuitem_property_get_bool (DBUSMENU_MENUITEM(data), APPLICATION_MENUITEM_PROP_RUNNING))
+		return FALSE;;
 
 	/* get style */
 	style = gtk_widget_get_style (widget);
 
 	/* set arrow position / dimensions */
-	arrow_width = (int) ((double)widget->allocation.height * 0.25f);
-	arrow_height = (int) ((double)widget->allocation.height * 0.50f);
+	arrow_width = 5; /* the pixel-based reference triangle is 5x9 */
+	arrow_height = 9;
 	x = widget->allocation.x;
 	y = widget->allocation.y + widget->allocation.height/2.0 - (double)arrow_height/2.0;
 
@@ -326,7 +336,7 @@ application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer
 	cairo_fill (cr);
 
 	/* remember to destroy cairo context to avoid leaks */
-        cairo_destroy (cr);
+	cairo_destroy (cr);
 
 	return FALSE;
 }
@@ -404,6 +414,8 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 static gboolean
 new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, DbusmenuClient * client)
 {
+	g_debug ("%s (\"%s\")", __func__, dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_NAME));
+
 	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_image_menu_item_new());
 	gtk_image_menu_item_set_always_show_image(GTK_IMAGE_MENU_ITEM(gmi), TRUE);
 
@@ -413,7 +425,15 @@ new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbu
 	GtkWidget * hbox = gtk_hbox_new(FALSE, 0);
 
 	/* Set the minimum size, we always want it to take space */
+	gint width, height;
+	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
+
 	GtkWidget * icon = gtk_image_new_from_icon_name(dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_ICON), GTK_ICON_SIZE_MENU);
+	gtk_widget_set_size_request(icon, width
+								+ 5 /* ref triangle is 5x9 pixels */
+								+ 2 /* padding */,
+								height);
+	gtk_misc_set_alignment(GTK_MISC(icon), 1.0 /* right aligned */, 0.5);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(gmi), icon);
 	gtk_widget_show(icon);
 
