@@ -1,10 +1,10 @@
-indicator-messages (0.3.10-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.3.10-0ubuntu1~ppa1) maverick; urgency=low
 
   * New upstream release.
     * Shifting icons into the gutter and adjusting the arrow
       padding.
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 26 Aug 2010 15:07:22 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 26 Aug 2010 15:08:31 -0500
 
 indicator-messages (0.3.9-0ubuntu1~ppa1) maverick; urgency=low
 
