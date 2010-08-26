@@ -197,9 +197,9 @@ launcher_menu_item_new (const gchar * desktop_file)
 		gint i;
 		for (i = 0; nicks[i] != NULL; i++) {
 			DbusmenuMenuitem * mi = dbusmenu_menuitem_new();
+			dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_TYPE, APPLICATION_MENUITEM_TYPE);
 			g_object_set_data(G_OBJECT(mi), NICK_DATA, (gpointer)nicks[i]);
 
-			dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
 			dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_LABEL, indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]));
 			g_signal_connect(G_OBJECT(mi), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(nick_activate_cb), self);
 
