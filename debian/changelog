@@ -1,9 +1,9 @@
-indicator-messages (0.3.11-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.3.11-0ubuntu1~ppa1) maverick; urgency=low
 
   * New upstream release.
     * Fixing triangles by passing data to callback (LP: #623453)
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 09 Sep 2010 13:21:35 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 09 Sep 2010 13:24:13 -0500
 
 indicator-messages (0.3.10-0ubuntu1) maverick; urgency=low
 
