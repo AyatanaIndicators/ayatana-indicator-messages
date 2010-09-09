@@ -5,7 +5,7 @@ indicator-messages (0.3.11-0ubuntu1~ppa1) UNRELEASED; urgency=low
 
  -- Ted Gould <ted@ubuntu.com>  Thu, 09 Sep 2010 13:21:35 -0500
 
-indicator-messages (0.3.10-0ubuntu1~ppa1) maverick; urgency=low
+indicator-messages (0.3.10-0ubuntu1) maverick; urgency=low
 
   * New upstream release.
     * Shifting icons into the gutter and adjusting the arrow
@@ -13,7 +13,7 @@ indicator-messages (0.3.10-0ubuntu1~ppa1) maverick; urgency=low
 
  -- Ted Gould <ted@ubuntu.com>  Thu, 26 Aug 2010 15:08:31 -0500
 
-indicator-messages (0.3.9-0ubuntu1~ppa1) maverick; urgency=low
+indicator-messages (0.3.9-0ubuntu1) maverick; urgency=low
 
   * New upstream release.
     * Remove parens from counts
@@ -390,3 +390,4 @@ indicator-messages (0.1-0ubuntu1) jaunty; urgency=low
   * debian/copyright: Properly describe license.
 
  -- Martin Pitt <martin.pitt@ubuntu.com>  Tue, 17 Feb 2009 11:35:38 +0100
+
