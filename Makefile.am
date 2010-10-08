@@ -4,7 +4,7 @@ SUBDIRS = \
 	data \
 	po
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall
+DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations
 
 dist-hook:
 	@if test -d "$(top_srcdir)/.bzr"; \

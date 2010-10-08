@@ -299,6 +299,7 @@ application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value,
 static gboolean
 application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
+	GtkAllocation allocation;
 	GtkStyle *style;
 	cairo_t *cr;
 	int x, y, arrow_width, arrow_height;
@@ -316,11 +317,12 @@ application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer
 	/* set arrow position / dimensions */
 	arrow_width = 5; /* the pixel-based reference triangle is 5x9 */
 	arrow_height = 9;
-	x = widget->allocation.x;
-	y = widget->allocation.y + widget->allocation.height/2.0 - (double)arrow_height/2.0;
+	gtk_widget_get_allocation (widget, &allocation);
+	x = allocation.x;
+	y = allocation.y + allocation.height/2.0 - (double)arrow_height/2.0;
 
 	/* initialize cairo drawing area */
-	cr = (cairo_t*) gdk_cairo_create (widget->window);
+	cr = (cairo_t*) gdk_cairo_create (gtk_widget_get_window (widget));
 
 	/* set line width */	
 	cairo_set_line_width (cr, 1.0);
@@ -359,6 +361,7 @@ custom_cairo_rounded_rectangle (cairo_t *cr,
 static gboolean
 numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
+	GtkAllocation allocation;
 	GtkStyle *style;
 	cairo_t *cr;
 	double x, y, w, h;
@@ -371,10 +374,11 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	style = gtk_widget_get_style (widget);
 
 	/* set arrow position / dimensions */
-	w = widget->allocation.width;
-	h = widget->allocation.height;
-	x = widget->allocation.x;
-	y = widget->allocation.y;
+	gtk_widget_get_allocation (widget, &allocation);
+	w = allocation.width;
+	h = allocation.height;
+	x = allocation.x;
+	y = allocation.y;
 
 	layout = gtk_label_get_layout (GTK_LABEL(widget));
 
@@ -385,7 +389,7 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	font_size = pango_font_description_get_size (font_description); */
 
 	/* initialize cairo drawing area */
-	cr = (cairo_t*) gdk_cairo_create (widget->window);
+	cr = (cairo_t*) gdk_cairo_create (gtk_widget_get_window (widget));
 
 	/* set line width */	
 	cairo_set_line_width (cr, 1.0);
