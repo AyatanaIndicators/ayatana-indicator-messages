@@ -1,3 +1,9 @@
+indicator-messages (0.3.11-0ubuntu3) UNRELEASED; urgency=low
+
+  * debian/control: package description spelling (LP: #658096)
+
+ -- Greg Auger <gregory.auger@googlemail.com> Tue, 09 Nov 2010 18:49:38 +0000
+
 indicator-messages (0.3.11-0ubuntu2) maverick; urgency=low
 
   * Rebuild for libindicator ABI change (LP: #637692)

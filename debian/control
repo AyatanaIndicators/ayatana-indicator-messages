@@ -28,6 +28,6 @@ Recommends: indicator-applet | indicator-renderer
 Breaks: indicator-applet (<< 0.3.0)
 Description: indicator that collects messages that need a response
  A place on the user's desktop that collects messages that need a response.
- This menu provides a condenced and collected view of all of those messages
+ This menu provides a condensed and collected view of all of those messages
  for quick access, but without making them annoying in times that you want
  to ignore them.
