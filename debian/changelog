@@ -1,3 +1,10 @@
+indicator-messages (0.3.11-0ubuntu4) natty; urgency=low
+
+  * debian/control
+    - Bump build depends for libdbusmenu-* to >= 0.3.90
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 09 Dec 2010 11:39:40 -0500
+
 indicator-messages (0.3.11-0ubuntu3) UNRELEASED; urgency=low
 
   * debian/control: package description spelling (LP: #658096)
