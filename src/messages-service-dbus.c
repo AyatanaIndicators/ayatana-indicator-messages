@@ -52,6 +52,14 @@ static void message_service_dbus_class_init (MessageServiceDbusClass *klass);
 static void message_service_dbus_init       (MessageServiceDbus *self);
 static void message_service_dbus_dispose    (GObject *object);
 static void message_service_dbus_finalize   (GObject *object);
+static void     bus_method_call             (GDBusConnection * connection,
+                                             const gchar * sender,
+                                             const gchar * path,
+                                             const gchar * interface,
+                                             const gchar * method,
+                                             GVariant * params,
+                                             GDBusMethodInvocation * invocation,
+                                             gpointer user_data);
 
 static void _messages_service_server_watch  (void);
 static gboolean _messages_service_server_attention_requested (MessageServiceDbus * self, gboolean * dot, GError ** error);
@@ -59,6 +67,11 @@ static gboolean _messages_service_server_icon_shown (MessageServiceDbus * self, 
 
 static GDBusNodeInfo *            bus_node_info = NULL;
 static GDBusInterfaceInfo *       bus_interface_info = NULL;
+static const GDBusInterfaceVTable bus_interface_table = {
+	method_call:    bus_method_call,
+	get_property:   NULL,  /* No properties */
+	set_property:   NULL   /* No properties */
+};
 
 G_DEFINE_TYPE (MessageServiceDbus, message_service_dbus, G_TYPE_OBJECT);
 
@@ -125,7 +138,7 @@ connection_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 	g_dbus_connection_register_object(connection,
 	                                  INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
 	                                  bus_interface_info,
-	                                  bus_vtable,
+	                                  &bus_interface_table,
 	                                  user_data,
 	                                  NULL, /* destroy */
 	                                  &error);
