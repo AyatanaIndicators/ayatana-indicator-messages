@@ -223,6 +223,16 @@ message_service_dbus_set_attention (MessageServiceDbus * self, gboolean attentio
 	if (attention != priv->dot) {
 		priv->dot = attention;
 		g_signal_emit(G_OBJECT(self), signals[ATTENTION_CHANGED], 0, priv->dot, TRUE);
+
+		if (priv->connection != NULL) {
+			g_dbus_connection_emit_signal(priv->connection,
+			                              NULL,
+			                              INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+			                              INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE,
+			                              "AttentionChanged",
+			                              g_variant_new("(b)", priv->dot),
+			                              NULL);
+		}
 	}
 	return;
 }
@@ -235,6 +245,16 @@ message_service_dbus_set_icon (MessageServiceDbus * self, gboolean hidden)
 	if (hidden != priv->hidden) {
 		priv->hidden = hidden;
 		g_signal_emit(G_OBJECT(self), signals[ICON_CHANGED], 0, priv->hidden, TRUE);
+
+		if (priv->connection != NULL) {
+			g_dbus_connection_emit_signal(priv->connection,
+			                              NULL,
+			                              INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+			                              INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE,
+			                              "IconChanged",
+			                              g_variant_new("(b)", priv->hidden),
+			                              NULL);
+		}
 	}
 	return;
 }
