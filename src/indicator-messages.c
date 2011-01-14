@@ -26,8 +26,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gtk/gtk.h>
 #include <libdbusmenu-gtk/menu.h>
 #include <libdbusmenu-gtk/menuitem.h>
-#include <dbus/dbus-glib.h>
-#include <dbus/dbus-glib-bindings.h>
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
@@ -35,7 +33,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator-service-manager.h>
 
 #include "dbus-data.h"
-#include "messages-service-client.h"
+#include "gen-messages-service.xml.h"
 
 #define INDICATOR_MESSAGES_TYPE            (indicator_messages_get_type ())
 #define INDICATOR_MESSAGES(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), INDICATOR_MESSAGES_TYPE, IndicatorMessages))
@@ -69,8 +67,10 @@ INDICATOR_SET_TYPE(INDICATOR_MESSAGES_TYPE)
 
 /* Globals */
 static GtkWidget * main_image = NULL;
-static DBusGProxy * icon_proxy = NULL;
+static GDBusProxy * icon_proxy = NULL;
 static GtkSizeGroup * indicator_right_group = NULL;
+static GDBusNodeInfo *            bus_node_info = NULL;
+static GDBusInterfaceInfo *       bus_interface_info = NULL;
 
 /* Prototypes */
 static void indicator_messages_class_init (IndicatorMessagesClass *klass);
@@ -98,6 +98,24 @@ indicator_messages_class_init (IndicatorMessagesClass *klass)
 
 	io_class->get_image = get_icon;
 	io_class->get_menu = get_menu;
+
+	if (bus_node_info == NULL) {
+		GError * error = NULL;
+
+		bus_node_info = g_dbus_node_info_new_for_xml(_messages_service, &error);
+		if (error != NULL) {
+			g_error("Unable to parse Messaging Menu Interface description: %s", error->message);
+			g_error_free(error);
+		}
+	}
+
+	if (bus_interface_info == NULL) {
+		bus_interface_info = g_dbus_node_info_lookup_interface(bus_node_info, INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
+
+		if (bus_interface_info == NULL) {
+			g_error("Unable to find interface '" INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE "'");
+		}
+	}
 
 	return;
 }
