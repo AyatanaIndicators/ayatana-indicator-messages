@@ -111,12 +111,40 @@ message_service_dbus_class_init (MessageServiceDbusClass *klass)
 }
 
 static void
+connection_cb (GObject * object, GAsyncResult * res, gpointer user_data)
+{
+	GError * error = NULL;
+	GDBusConnection * connection = g_bus_get_finish(res, &error);
+
+	if (error != NULL) {
+		g_error("Unable to connect to the session bus: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	g_dbus_connection_register_object(connection,
+	                                  INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+	                                  bus_interface_info,
+	                                  bus_vtable,
+	                                  user_data,
+	                                  NULL, /* destroy */
+	                                  &error);
+
+	if (error != NULL) {
+		g_error("Unable to register on session bus: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	g_debug("Service on session bus");
+
+	return;
+}
+
+static void
 message_service_dbus_init (MessageServiceDbus *self)
 {
-	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	dbus_g_connection_register_g_object(connection,
-										INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
-										G_OBJECT(self));
+	g_bus_get(G_BUS_TYPE_SESSION, NULL, connection_cb, self);
 
 	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
 
