@@ -227,6 +227,43 @@ connection_drop_cb (gpointer user_data)
 	return FALSE;
 }
 
+/* Proxy is setup now.. whoo! */
+static void
+proxy_ready_cb (GObject * obj, GAsyncResult * res, gpointer user_data)
+{
+	GError * error = NULL;
+	GDBusProxy * proxy = g_dbus_proxy_new_for_bus_finish(res, &error);
+
+	if (error != NULL) {
+		g_warning("Unable to get proxy of service: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	icon_proxy = proxy;
+
+	g_signal_connect(G_OBJECT(proxy), "g-signal", G_CALLBACK(proxy_signal), user_data);
+
+	g_dbus_proxy_call(icon_proxy,
+	                  "AttentionRequested",
+	                  NULL, /* params */
+	                  G_DBUS_CALL_FLAGS_NONE,
+	                  -1, /* timeout */
+	                  NULL, /* cancel */
+	                  attention_cb,
+	                  sm);
+	g_dbus_proxy_call(icon_proxy,
+	                  "IconShown",
+	                  NULL, /* params */
+	                  G_DBUS_CALL_FLAGS_NONE,
+	                  -1, /* timeout */
+	                  NULL, /* cancel */
+	                  icon_cb,
+	                  sm);
+
+	return;
+}
+
 /* Sets up all the icon information in the proxy. */
 static void 
 connection_change (IndicatorServiceManager * sm, gboolean connected, gpointer user_data)
@@ -243,39 +280,34 @@ connection_change (IndicatorServiceManager * sm, gboolean connected, gpointer us
 		return;
 	}
 
-	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	if (connection == NULL) {
-		g_warning("Unable to get session bus");
-		return;
-	}
-
 	if (icon_proxy == NULL) {
-		icon_proxy = dbus_g_proxy_new_for_name(connection,
-		                                       INDICATOR_MESSAGES_DBUS_NAME,
-		                                       INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
-		                                       INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
-		if (icon_proxy == NULL) {
-			g_warning("Unable to get messages service interface.");
-			return;
-		}
-		
-		dbus_g_proxy_add_signal(icon_proxy, "AttentionChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
-		dbus_g_proxy_connect_signal(icon_proxy,
-		                            "AttentionChanged",
-		                            G_CALLBACK(attention_changed_cb),
-		                            NULL,
-		                            NULL);
-
-		dbus_g_proxy_add_signal(icon_proxy, "IconChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
-		dbus_g_proxy_connect_signal(icon_proxy,
-		                            "IconChanged",
-		                            G_CALLBACK(icon_changed_cb),
-		                            NULL,
-		                            NULL);
+		g_dbus_proxy_new_for_bus(G_BUS_SESSION,
+		                         G_DBUS_PROXY_FLAGS_NONE,
+		                         bus_interface_info,
+		                         INDICATOR_MESSAGES_DBUS_NAME,
+		                         INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+		                         INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE,
+		                         NULL, /* cancel */
+		                         proxy_ready_cb,
+		                         sm);
+	} else {
+		g_dbus_proxy_call(icon_proxy,
+		                  "AttentionRequested",
+		                  NULL, /* params */
+		                  G_DBUS_CALL_FLAGS_NONE,
+		                  -1, /* timeout */
+		                  NULL, /* cancel */
+		                  attention_cb,
+		                  sm);
+		g_dbus_proxy_call(icon_proxy,
+		                  "IconShown",
+		                  NULL, /* params */
+		                  G_DBUS_CALL_FLAGS_NONE,
+		                  -1, /* timeout */
+		                  NULL, /* cancel */
+		                  icon_cb,
+		                  sm);
 	}
-
-	org_ayatana_indicator_messages_service_attention_requested_async(icon_proxy, attention_cb, NULL);
-	org_ayatana_indicator_messages_service_icon_shown_async(icon_proxy, icon_cb, NULL);
 
 	return;
 }
