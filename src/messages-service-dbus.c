@@ -24,9 +24,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #endif
 
-#include <dbus/dbus-glib.h>
+#include <gio/gio.h>
 #include "messages-service-dbus.h"
 #include "dbus-data.h"
+#include "gen-messages-service.xml.h"
 
 enum {
 	ATTENTION_CHANGED,
@@ -56,9 +57,11 @@ static void _messages_service_server_watch  (void);
 static gboolean _messages_service_server_attention_requested (MessageServiceDbus * self, gboolean * dot, GError ** error);
 static gboolean _messages_service_server_icon_shown (MessageServiceDbus * self, gboolean * hidden, GError ** error);
 
-#include "messages-service-server.h"
+static GDBusNodeInfo *            bus_node_info = NULL;
+static GDBusInterfaceInfo *       bus_interface_info = NULL;
 
 G_DEFINE_TYPE (MessageServiceDbus, message_service_dbus, G_TYPE_OBJECT);
+
 
 static void
 message_service_dbus_class_init (MessageServiceDbusClass *klass)
@@ -86,8 +89,23 @@ message_service_dbus_class_init (MessageServiceDbusClass *klass)
 	                                      g_cclosure_marshal_VOID__BOOLEAN,
 	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
+	if (bus_node_info == NULL) {
+		GError * error = NULL;
 
-	dbus_g_object_type_install_info(MESSAGE_SERVICE_DBUS_TYPE, &dbus_glib__messages_service_server_object_info);
+		bus_node_info = g_dbus_node_info_new_for_xml(_messages_service, &error);
+		if (error != NULL) {
+			g_error("Unable to parse Messaging Menu Interface description: %s", error->message);
+			g_error_free(error);
+		}
+	}
+
+	if (bus_interface_info == NULL) {
+		bus_interface_info = g_dbus_node_info_lookup_interface(bus_node_info, INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
+
+		if (bus_interface_info == NULL) {
+			g_error("Unable to find interface '" INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE "'");
+		}
+	}
 
 	return;
 }
