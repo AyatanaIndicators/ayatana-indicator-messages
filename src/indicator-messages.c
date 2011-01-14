@@ -190,28 +190,50 @@ proxy_signal (GDBusProxy * proxy, const gchar * sender, const gchar * signal, GV
 
 /* Callback from getting the attention status from the service. */
 static void
-attention_cb (DBusGProxy * proxy, gboolean dot, GError * error, gpointer userdata)
+attention_cb (GObject * object, GAsyncResult * ares, gpointer user_data)
 {
+	GError * error = NULL;
+	GVariant * res = g_dbus_proxy_call_finish(G_DBUS_PROXY(object), ares, &error);
+
 	if (error != NULL) {
 		g_warning("Unable to get attention status: %s", error->message);
 		g_error_free(error);
 		return;
 	}
 
-	return attention_changed_cb(proxy, dot, userdata);
+	gboolean prop = g_variant_get_boolean(g_variant_get_child_value(res, 0));
+
+	if (prop) {
+		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
+	} else {
+		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
+	}
+
+	return;
 }
 
 /* Change from getting the icon visibility from the service */
 static void
-icon_cb (DBusGProxy * proxy, gboolean hidden, GError * error, gpointer userdata)
+icon_cb (GObject * object, GAsyncResult * ares, gpointer user_data)
 {
+	GError * error = NULL;
+	GVariant * res = g_dbus_proxy_call_finish(G_DBUS_PROXY(object), ares, &error);
+
 	if (error != NULL) {
 		g_warning("Unable to get icon visibility: %s", error->message);
 		g_error_free(error);
 		return;
 	}
 
-	return icon_changed_cb(proxy, hidden, userdata);
+	gboolean prop = g_variant_get_boolean(g_variant_get_child_value(res, 0));
+	
+	if (prop) {
+		gtk_widget_hide(main_image);
+	} else {
+		gtk_widget_show(main_image);
+	}
+
+	return;
 }
 
 static guint connection_drop_timeout = 0;
@@ -252,7 +274,7 @@ proxy_ready_cb (GObject * obj, GAsyncResult * res, gpointer user_data)
 	                  -1, /* timeout */
 	                  NULL, /* cancel */
 	                  attention_cb,
-	                  sm);
+	                  user_data);
 	g_dbus_proxy_call(icon_proxy,
 	                  "IconShown",
 	                  NULL, /* params */
@@ -260,7 +282,7 @@ proxy_ready_cb (GObject * obj, GAsyncResult * res, gpointer user_data)
 	                  -1, /* timeout */
 	                  NULL, /* cancel */
 	                  icon_cb,
-	                  sm);
+	                  user_data);
 
 	return;
 }
