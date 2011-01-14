@@ -26,8 +26,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gtk/gtk.h>
 #include <libdbusmenu-gtk/menu.h>
 #include <libdbusmenu-gtk/menuitem.h>
-#include <dbus/dbus-glib.h>
-#include <dbus/dbus-glib-bindings.h>
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
@@ -35,7 +33,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator-service-manager.h>
 
 #include "dbus-data.h"
-#include "messages-service-client.h"
+#include "gen-messages-service.xml.h"
 
 #define INDICATOR_MESSAGES_TYPE            (indicator_messages_get_type ())
 #define INDICATOR_MESSAGES(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), INDICATOR_MESSAGES_TYPE, IndicatorMessages))
@@ -69,8 +67,10 @@ INDICATOR_SET_TYPE(INDICATOR_MESSAGES_TYPE)
 
 /* Globals */
 static GtkWidget * main_image = NULL;
-static DBusGProxy * icon_proxy = NULL;
+static GDBusProxy * icon_proxy = NULL;
 static GtkSizeGroup * indicator_right_group = NULL;
+static GDBusNodeInfo *            bus_node_info = NULL;
+static GDBusInterfaceInfo *       bus_interface_info = NULL;
 
 /* Prototypes */
 static void indicator_messages_class_init (IndicatorMessagesClass *klass);
@@ -98,6 +98,24 @@ indicator_messages_class_init (IndicatorMessagesClass *klass)
 
 	io_class->get_image = get_icon;
 	io_class->get_menu = get_menu;
+
+	if (bus_node_info == NULL) {
+		GError * error = NULL;
+
+		bus_node_info = g_dbus_node_info_new_for_xml(_messages_service, &error);
+		if (error != NULL) {
+			g_error("Unable to parse Messaging Menu Interface description: %s", error->message);
+			g_error_free(error);
+		}
+	}
+
+	if (bus_interface_info == NULL) {
+		bus_interface_info = g_dbus_node_info_lookup_interface(bus_node_info, INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
+
+		if (bus_interface_info == NULL) {
+			g_error("Unable to find interface '" INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE "'");
+		}
+	}
 
 	return;
 }
@@ -145,54 +163,77 @@ indicator_messages_finalize (GObject *object)
 
 /* Functions */
 
-/* Called everytime the attention changes in the service. */
+/* Signal off of the proxy */
 static void
-attention_changed_cb (DBusGProxy * proxy, gboolean dot, gpointer userdata)
+proxy_signal (GDBusProxy * proxy, const gchar * sender, const gchar * signal, GVariant * params, gpointer user_data)
 {
-	if (dot) {
-		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
-	} else {
-		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
-	}
-	return;
-}
+	gboolean prop = g_variant_get_boolean(g_variant_get_child_value(params, 0));
 
-/* Change the icon to whether it should be visible or not */
-static void
-icon_changed_cb (DBusGProxy * proxy, gboolean hidden, gpointer userdata)
-{
-	if (hidden) {
-		gtk_widget_hide(main_image);
+	if (g_strcmp0("AttentionChanged", signal) == 0) {
+		if (prop) {
+			indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
+		} else {
+			indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
+		}
+	} else if (g_strcmp0("IconChanged", signal) == 0) {
+		if (prop) {
+			gtk_widget_hide(main_image);
+		} else {
+			gtk_widget_show(main_image);
+		}
 	} else {
-		gtk_widget_show(main_image);
+		g_warning("Unknown signal %s", signal);
 	}
+
 	return;
 }
 
 /* Callback from getting the attention status from the service. */
 static void
-attention_cb (DBusGProxy * proxy, gboolean dot, GError * error, gpointer userdata)
+attention_cb (GObject * object, GAsyncResult * ares, gpointer user_data)
 {
+	GError * error = NULL;
+	GVariant * res = g_dbus_proxy_call_finish(G_DBUS_PROXY(object), ares, &error);
+
 	if (error != NULL) {
 		g_warning("Unable to get attention status: %s", error->message);
 		g_error_free(error);
 		return;
 	}
 
-	return attention_changed_cb(proxy, dot, userdata);
+	gboolean prop = g_variant_get_boolean(g_variant_get_child_value(res, 0));
+
+	if (prop) {
+		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
+	} else {
+		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
+	}
+
+	return;
 }
 
 /* Change from getting the icon visibility from the service */
 static void
-icon_cb (DBusGProxy * proxy, gboolean hidden, GError * error, gpointer userdata)
+icon_cb (GObject * object, GAsyncResult * ares, gpointer user_data)
 {
+	GError * error = NULL;
+	GVariant * res = g_dbus_proxy_call_finish(G_DBUS_PROXY(object), ares, &error);
+
 	if (error != NULL) {
 		g_warning("Unable to get icon visibility: %s", error->message);
 		g_error_free(error);
 		return;
 	}
 
-	return icon_changed_cb(proxy, hidden, userdata);
+	gboolean prop = g_variant_get_boolean(g_variant_get_child_value(res, 0));
+	
+	if (prop) {
+		gtk_widget_hide(main_image);
+	} else {
+		gtk_widget_show(main_image);
+	}
+
+	return;
 }
 
 static guint connection_drop_timeout = 0;
@@ -207,6 +248,43 @@ connection_drop_cb (gpointer user_data)
 	}
 	connection_drop_timeout = 0;
 	return FALSE;
+}
+
+/* Proxy is setup now.. whoo! */
+static void
+proxy_ready_cb (GObject * obj, GAsyncResult * res, gpointer user_data)
+{
+	GError * error = NULL;
+	GDBusProxy * proxy = g_dbus_proxy_new_for_bus_finish(res, &error);
+
+	if (error != NULL) {
+		g_warning("Unable to get proxy of service: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	icon_proxy = proxy;
+
+	g_signal_connect(G_OBJECT(proxy), "g-signal", G_CALLBACK(proxy_signal), user_data);
+
+	g_dbus_proxy_call(icon_proxy,
+	                  "AttentionRequested",
+	                  NULL, /* params */
+	                  G_DBUS_CALL_FLAGS_NONE,
+	                  -1, /* timeout */
+	                  NULL, /* cancel */
+	                  attention_cb,
+	                  user_data);
+	g_dbus_proxy_call(icon_proxy,
+	                  "IconShown",
+	                  NULL, /* params */
+	                  G_DBUS_CALL_FLAGS_NONE,
+	                  -1, /* timeout */
+	                  NULL, /* cancel */
+	                  icon_cb,
+	                  user_data);
+
+	return;
 }
 
 /* Sets up all the icon information in the proxy. */
@@ -225,51 +303,46 @@ connection_change (IndicatorServiceManager * sm, gboolean connected, gpointer us
 		return;
 	}
 
-	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	if (connection == NULL) {
-		g_warning("Unable to get session bus");
-		return;
-	}
-
 	if (icon_proxy == NULL) {
-		icon_proxy = dbus_g_proxy_new_for_name(connection,
-		                                       INDICATOR_MESSAGES_DBUS_NAME,
-		                                       INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
-		                                       INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
-		if (icon_proxy == NULL) {
-			g_warning("Unable to get messages service interface.");
-			return;
-		}
-		
-		dbus_g_proxy_add_signal(icon_proxy, "AttentionChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
-		dbus_g_proxy_connect_signal(icon_proxy,
-		                            "AttentionChanged",
-		                            G_CALLBACK(attention_changed_cb),
-		                            NULL,
-		                            NULL);
-
-		dbus_g_proxy_add_signal(icon_proxy, "IconChanged", G_TYPE_BOOLEAN, G_TYPE_INVALID);
-		dbus_g_proxy_connect_signal(icon_proxy,
-		                            "IconChanged",
-		                            G_CALLBACK(icon_changed_cb),
-		                            NULL,
-		                            NULL);
+		g_dbus_proxy_new_for_bus(G_BUS_TYPE_SESSION,
+		                         G_DBUS_PROXY_FLAGS_NONE,
+		                         bus_interface_info,
+		                         INDICATOR_MESSAGES_DBUS_NAME,
+		                         INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+		                         INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE,
+		                         NULL, /* cancel */
+		                         proxy_ready_cb,
+		                         sm);
+	} else {
+		g_dbus_proxy_call(icon_proxy,
+		                  "AttentionRequested",
+		                  NULL, /* params */
+		                  G_DBUS_CALL_FLAGS_NONE,
+		                  -1, /* timeout */
+		                  NULL, /* cancel */
+		                  attention_cb,
+		                  sm);
+		g_dbus_proxy_call(icon_proxy,
+		                  "IconShown",
+		                  NULL, /* params */
+		                  G_DBUS_CALL_FLAGS_NONE,
+		                  -1, /* timeout */
+		                  NULL, /* cancel */
+		                  icon_cb,
+		                  sm);
 	}
-
-	org_ayatana_indicator_messages_service_attention_requested_async(icon_proxy, attention_cb, NULL);
-	org_ayatana_indicator_messages_service_icon_shown_async(icon_proxy, icon_cb, NULL);
 
 	return;
 }
 
 /* Sets the icon when it changes. */
 static void
-application_icon_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, gpointer user_data)
+application_icon_change_cb (DbusmenuMenuitem * mi, gchar * prop, GVariant * value, gpointer user_data)
 {
 	if (!g_strcmp0(prop, APPLICATION_MENUITEM_PROP_ICON)) {
 		/* Set the main icon */
 		if (GTK_IS_IMAGE(user_data)) {
-			gtk_image_set_from_icon_name(GTK_IMAGE(user_data), g_value_get_string(value), GTK_ICON_SIZE_MENU);
+			gtk_image_set_from_icon_name(GTK_IMAGE(user_data), g_variant_get_string(value, NULL), GTK_ICON_SIZE_MENU);
 		}
 	}
 
@@ -278,12 +351,12 @@ application_icon_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value,
 
 /* Sets the label when it changes. */
 static void
-application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, gpointer user_data)
+application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GVariant * value, gpointer user_data)
 {
 	if (!g_strcmp0(prop, APPLICATION_MENUITEM_PROP_NAME)) {
 		/* Set the main label */
 		if (GTK_IS_LABEL(user_data)) {
-			gtk_label_set_text(GTK_LABEL(user_data), g_value_get_string(value));
+			gtk_label_set_text(GTK_LABEL(user_data), g_variant_get_string(value, NULL));
 		}
 	}
 
@@ -299,6 +372,7 @@ application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value,
 static gboolean
 application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
+	GtkAllocation allocation;
 	GtkStyle *style;
 	cairo_t *cr;
 	int x, y, arrow_width, arrow_height;
@@ -316,11 +390,12 @@ application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer
 	/* set arrow position / dimensions */
 	arrow_width = 5; /* the pixel-based reference triangle is 5x9 */
 	arrow_height = 9;
-	x = widget->allocation.x;
-	y = widget->allocation.y + widget->allocation.height/2.0 - (double)arrow_height/2.0;
+	gtk_widget_get_allocation (widget, &allocation);
+	x = allocation.x;
+	y = allocation.y + allocation.height/2.0 - (double)arrow_height/2.0;
 
 	/* initialize cairo drawing area */
-	cr = (cairo_t*) gdk_cairo_create (widget->window);
+	cr = (cairo_t*) gdk_cairo_create (gtk_widget_get_window (widget));
 
 	/* set line width */	
 	cairo_set_line_width (cr, 1.0);
@@ -359,6 +434,7 @@ custom_cairo_rounded_rectangle (cairo_t *cr,
 static gboolean
 numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
+	GtkAllocation allocation;
 	GtkStyle *style;
 	cairo_t *cr;
 	double x, y, w, h;
@@ -371,10 +447,11 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	style = gtk_widget_get_style (widget);
 
 	/* set arrow position / dimensions */
-	w = widget->allocation.width;
-	h = widget->allocation.height;
-	x = widget->allocation.x;
-	y = widget->allocation.y;
+	gtk_widget_get_allocation (widget, &allocation);
+	w = allocation.width;
+	h = allocation.height;
+	x = allocation.x;
+	y = allocation.y;
 
 	layout = gtk_label_get_layout (GTK_LABEL(widget));
 
@@ -385,7 +462,7 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	font_size = pango_font_description_get_size (font_description); */
 
 	/* initialize cairo drawing area */
-	cr = (cairo_t*) gdk_cairo_create (widget->window);
+	cr = (cairo_t*) gdk_cairo_create (gtk_widget_get_window (widget));
 
 	/* set line width */	
 	cairo_set_line_width (cr, 1.0);
@@ -468,14 +545,14 @@ struct _indicator_item_t {
 /* Whenever we have a property change on a DbusmenuMenuitem
    we need to be responsive to that. */
 static void
-indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, indicator_item_t * mi_data)
+indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GVariant * value, indicator_item_t * mi_data)
 {
 	if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_LABEL)) {
 		/* Set the main label */
-		gtk_label_set_text(GTK_LABEL(mi_data->label), g_value_get_string(value));
+		gtk_label_set_text(GTK_LABEL(mi_data->label), g_variant_get_string(value, NULL));
 	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_RIGHT)) {
 		/* Set the right label */
-		gtk_label_set_text(GTK_LABEL(mi_data->right), g_value_get_string(value));
+		gtk_label_set_text(GTK_LABEL(mi_data->right), g_variant_get_string(value, NULL));
 	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_ICON)) {
 		/* We don't use the value here, which is probably less efficient, 
 		   but it's easier to use the easy function.  And since th value
