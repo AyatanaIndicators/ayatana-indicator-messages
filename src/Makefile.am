@@ -9,7 +9,8 @@ messaginglibdir = $(INDICATORDIR)
 messaginglib_LTLIBRARIES = libmessaging.la
 libmessaging_la_SOURCES = \
 	indicator-messages.c \
-	messages-service-client.h \
+	gen-messages-service.xml.h \
+	gen-messages-service.xml.c \
 	dbus-data.h
 libmessaging_la_CFLAGS = $(APPLET_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror
 libmessaging_la_LIBADD = $(APPLET_LIBS)
@@ -23,9 +24,10 @@ indicator_messages_service_SOURCES = \
 	default-applications.h \
 	default-applications.c \
 	messages-service.c \
-	messages-service-server.h \
 	messages-service-dbus.c \
 	messages-service-dbus.h \
+	gen-messages-service.xml.h \
+	gen-messages-service.xml.c \
 	im-menu-item.c \
 	im-menu-item.h \
 	app-menu-item.c \
@@ -39,23 +41,19 @@ indicator_messages_service_SOURCES = \
 indicator_messages_service_CFLAGS = $(APPLET_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror
 indicator_messages_service_LDADD = $(APPLET_LIBS)
 
-messages-service-client.h: $(srcdir)/messages-service.xml
-	dbus-binding-tool \
-		--prefix=_messages_service_client \
-		--mode=glib-client \
-		--output=messages-service-client.h \
-		$(srcdir)/messages-service.xml
+gen-%.xml.h: %.xml
+	@echo "Building $@ from $<"
+	@echo "extern const char * _$(subst -,_,$(subst .,_,$(basename $(notdir $<))));" > $@
 
-messages-service-server.h: $(srcdir)/messages-service.xml
-	dbus-binding-tool \
-		--prefix=_messages_service_server \
-		--mode=glib-server \
-		--output=messages-service-server.h \
-		$(srcdir)/messages-service.xml
+gen-%.xml.c: %.xml
+	@echo "Building $@ from $<"
+	echo "const char * _$(subst -,_,$(subst .,_,$(basename $(notdir $<)))) = " > $@
+	@sed -e "s:\":\\\\\":g" -e s:^:\": -e s:\$$:\\\\n\": $< >> $@
+	@echo ";" >> $@
 
 BUILT_SOURCES = \
-	messages-service-client.h \
-	messages-service-server.h
+	gen-messages-service.xml.h \
+	gen-messages-service.xml.c
 
 CLEANFILES = \
 	$(BUILT_SOURCES)

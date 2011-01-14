@@ -70,8 +70,8 @@ static void app_menu_item_finalize   (GObject *object);
 static void activate_cb (AppMenuItem * self, guint timestamp, gpointer data);
 static void count_changed (IndicateListener * listener, IndicateListenerServer * server, guint count, gpointer data);
 static void count_cb (IndicateListener * listener, IndicateListenerServer * server, guint value, gpointer data);
-static void menu_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * menupath, gpointer data);
-static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
+static void menu_cb (IndicateListener * listener, IndicateListenerServer * server, const gchar * menupath, gpointer data);
+static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const gchar * value, gpointer data);
 static void update_label (AppMenuItem * self);
 
 /* GObject Boilerplate */
@@ -300,7 +300,7 @@ count_cb (IndicateListener * listener, IndicateListenerServer * server, guint va
    app structure and start sucking data out of it.
    Mostly the name. */
 static void 
-desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
+desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const gchar * value, gpointer data)
 {
 	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItem * self = APP_MENU_ITEM(data);
@@ -469,7 +469,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 /* Gets the path to menuitems if there are some.  Now we need to
    make them special. */
 static void
-menu_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * menupath, gpointer data)
+menu_cb (IndicateListener * listener, IndicateListenerServer * server, const gchar * menupath, gpointer data)
 {
 	g_debug("Got Menu: %s", menupath);
 	g_return_if_fail(IS_APP_MENU_ITEM(data));
