@@ -25,7 +25,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libintl.h>
 #include <config.h>
 #include <pango/pango-utils.h>
-#include <dbus/dbus-glib-bindings.h>
 #include <libindicate/listener.h>
 #include <libindicator/indicator-service.h>
 #include <gio/gio.h>

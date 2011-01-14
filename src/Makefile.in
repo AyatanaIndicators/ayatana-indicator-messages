@@ -72,7 +72,8 @@ am__installdirs = "$(DESTDIR)$(messaginglibdir)" \
 LTLIBRARIES = $(messaginglib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libmessaging_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_libmessaging_la_OBJECTS = libmessaging_la-indicator-messages.lo
+am_libmessaging_la_OBJECTS = libmessaging_la-indicator-messages.lo \
+	libmessaging_la-gen-messages-service.xml.lo
 libmessaging_la_OBJECTS = $(am_libmessaging_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
@@ -86,6 +87,7 @@ am_indicator_messages_service_OBJECTS =  \
 	indicator_messages_service-default-applications.$(OBJEXT) \
 	indicator_messages_service-messages-service.$(OBJEXT) \
 	indicator_messages_service-messages-service-dbus.$(OBJEXT) \
+	indicator_messages_service-gen-messages-service.xml.$(OBJEXT) \
 	indicator_messages_service-im-menu-item.$(OBJEXT) \
 	indicator_messages_service-app-menu-item.$(OBJEXT) \
 	indicator_messages_service-launcher-menu-item.$(OBJEXT) \
@@ -283,7 +285,8 @@ messaginglibdir = $(INDICATORDIR)
 messaginglib_LTLIBRARIES = libmessaging.la
 libmessaging_la_SOURCES = \
 	indicator-messages.c \
-	messages-service-client.h \
+	gen-messages-service.xml.h \
+	gen-messages-service.xml.c \
 	dbus-data.h
 
 libmessaging_la_CFLAGS = $(APPLET_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror
@@ -297,9 +300,10 @@ indicator_messages_service_SOURCES = \
 	default-applications.h \
 	default-applications.c \
 	messages-service.c \
-	messages-service-server.h \
 	messages-service-dbus.c \
 	messages-service-dbus.h \
+	gen-messages-service.xml.h \
+	gen-messages-service.xml.c \
 	im-menu-item.c \
 	im-menu-item.h \
 	app-menu-item.c \
@@ -314,8 +318,8 @@ indicator_messages_service_SOURCES = \
 indicator_messages_service_CFLAGS = $(APPLET_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror
 indicator_messages_service_LDADD = $(APPLET_LIBS)
 BUILT_SOURCES = \
-	messages-service-client.h \
-	messages-service-server.h
+	gen-messages-service.xml.h \
+	gen-messages-service.xml.c
 
 CLEANFILES = \
 	$(BUILT_SOURCES)
@@ -446,11 +450,13 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-app-menu-item.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-default-applications.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-gen-messages-service.xml.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-im-menu-item.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-launcher-menu-item.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-messages-service-dbus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-messages-service.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-seen-db.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmessaging_la-gen-messages-service.xml.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmessaging_la-indicator-messages.Plo@am__quote@
 
 .c.o:
@@ -484,6 +490,14 @@ libmessaging_la-indicator-messages.lo: indicator-messages.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='indicator-messages.c' object='libmessaging_la-indicator-messages.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmessaging_la_CFLAGS) $(CFLAGS) -c -o libmessaging_la-indicator-messages.lo `test -f 'indicator-messages.c' || echo '$(srcdir)/'`indicator-messages.c
+
+libmessaging_la-gen-messages-service.xml.lo: gen-messages-service.xml.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmessaging_la_CFLAGS) $(CFLAGS) -MT libmessaging_la-gen-messages-service.xml.lo -MD -MP -MF $(DEPDIR)/libmessaging_la-gen-messages-service.xml.Tpo -c -o libmessaging_la-gen-messages-service.xml.lo `test -f 'gen-messages-service.xml.c' || echo '$(srcdir)/'`gen-messages-service.xml.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libmessaging_la-gen-messages-service.xml.Tpo $(DEPDIR)/libmessaging_la-gen-messages-service.xml.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gen-messages-service.xml.c' object='libmessaging_la-gen-messages-service.xml.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmessaging_la_CFLAGS) $(CFLAGS) -c -o libmessaging_la-gen-messages-service.xml.lo `test -f 'gen-messages-service.xml.c' || echo '$(srcdir)/'`gen-messages-service.xml.c
 
 indicator_messages_service-default-applications.o: default-applications.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -MT indicator_messages_service-default-applications.o -MD -MP -MF $(DEPDIR)/indicator_messages_service-default-applications.Tpo -c -o indicator_messages_service-default-applications.o `test -f 'default-applications.c' || echo '$(srcdir)/'`default-applications.c
@@ -532,6 +546,22 @@ indicator_messages_service-messages-service-dbus.obj: messages-service-dbus.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='messages-service-dbus.c' object='indicator_messages_service-messages-service-dbus.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -c -o indicator_messages_service-messages-service-dbus.obj `if test -f 'messages-service-dbus.c'; then $(CYGPATH_W) 'messages-service-dbus.c'; else $(CYGPATH_W) '$(srcdir)/messages-service-dbus.c'; fi`
+
+indicator_messages_service-gen-messages-service.xml.o: gen-messages-service.xml.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -MT indicator_messages_service-gen-messages-service.xml.o -MD -MP -MF $(DEPDIR)/indicator_messages_service-gen-messages-service.xml.Tpo -c -o indicator_messages_service-gen-messages-service.xml.o `test -f 'gen-messages-service.xml.c' || echo '$(srcdir)/'`gen-messages-service.xml.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/indicator_messages_service-gen-messages-service.xml.Tpo $(DEPDIR)/indicator_messages_service-gen-messages-service.xml.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gen-messages-service.xml.c' object='indicator_messages_service-gen-messages-service.xml.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -c -o indicator_messages_service-gen-messages-service.xml.o `test -f 'gen-messages-service.xml.c' || echo '$(srcdir)/'`gen-messages-service.xml.c
+
+indicator_messages_service-gen-messages-service.xml.obj: gen-messages-service.xml.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -MT indicator_messages_service-gen-messages-service.xml.obj -MD -MP -MF $(DEPDIR)/indicator_messages_service-gen-messages-service.xml.Tpo -c -o indicator_messages_service-gen-messages-service.xml.obj `if test -f 'gen-messages-service.xml.c'; then $(CYGPATH_W) 'gen-messages-service.xml.c'; else $(CYGPATH_W) '$(srcdir)/gen-messages-service.xml.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/indicator_messages_service-gen-messages-service.xml.Tpo $(DEPDIR)/indicator_messages_service-gen-messages-service.xml.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gen-messages-service.xml.c' object='indicator_messages_service-gen-messages-service.xml.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -c -o indicator_messages_service-gen-messages-service.xml.obj `if test -f 'gen-messages-service.xml.c'; then $(CYGPATH_W) 'gen-messages-service.xml.c'; else $(CYGPATH_W) '$(srcdir)/gen-messages-service.xml.c'; fi`
 
 indicator_messages_service-im-menu-item.o: im-menu-item.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -MT indicator_messages_service-im-menu-item.o -MD -MP -MF $(DEPDIR)/indicator_messages_service-im-menu-item.Tpo -c -o indicator_messages_service-im-menu-item.o `test -f 'im-menu-item.c' || echo '$(srcdir)/'`im-menu-item.c
@@ -813,19 +843,15 @@ uninstall-am: uninstall-libexecPROGRAMS \
 	uninstall-messaginglibLTLIBRARIES
 
 
-messages-service-client.h: $(srcdir)/messages-service.xml
-	dbus-binding-tool \
-		--prefix=_messages_service_client \
-		--mode=glib-client \
-		--output=messages-service-client.h \
-		$(srcdir)/messages-service.xml
+gen-%.xml.h: %.xml
+	@echo "Building $@ from $<"
+	@echo "extern const char * _$(subst -,_,$(subst .,_,$(basename $(notdir $<))));" > $@
 
-messages-service-server.h: $(srcdir)/messages-service.xml
-	dbus-binding-tool \
-		--prefix=_messages_service_server \
-		--mode=glib-server \
-		--output=messages-service-server.h \
-		$(srcdir)/messages-service.xml
+gen-%.xml.c: %.xml
+	@echo "Building $@ from $<"
+	echo "const char * _$(subst -,_,$(subst .,_,$(basename $(notdir $<)))) = " > $@
+	@sed -e "s:\":\\\\\":g" -e s:^:\": -e s:\$$:\\\\n\": $< >> $@
+	@echo ";" >> $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
