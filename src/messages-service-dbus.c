@@ -61,10 +61,6 @@ static void     bus_method_call             (GDBusConnection * connection,
                                              GDBusMethodInvocation * invocation,
                                              gpointer user_data);
 
-static void _messages_service_server_watch  (void);
-static gboolean _messages_service_server_attention_requested (MessageServiceDbus * self, gboolean * dot, GError ** error);
-static gboolean _messages_service_server_icon_shown (MessageServiceDbus * self, gboolean * hidden, GError ** error);
-
 static GDBusNodeInfo *            bus_node_info = NULL;
 static GDBusInterfaceInfo *       bus_interface_info = NULL;
 static const GDBusInterfaceVTable bus_interface_table = {
@@ -191,31 +187,23 @@ message_service_dbus_new (void)
 	return MESSAGE_SERVICE_DBUS(g_object_new(MESSAGE_SERVICE_DBUS_TYPE, NULL));
 }
 
-/* DBus function to say that someone is watching */
+/* Method request off of DBus */
 static void
-_messages_service_server_watch  (void)
+bus_method_call (GDBusConnection * connection, const gchar * sender, const gchar * path, const gchar * interface, const gchar * method, GVariant * params, GDBusMethodInvocation * invocation, gpointer user_data)
 {
+	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(user_data);
 
-}
+	if (g_strcmp0("AttentionRequested", method) == 0) {
+		g_dbus_method_invocation_return_value(invocation, g_variant_new("(b)", priv->dot));
+		return;
+	} else if (g_strcmp0("IconShown", method) == 0) {
+		g_dbus_method_invocation_return_value(invocation, g_variant_new("(b)", priv->hidden));
+		return;
+	} else {
+		g_warning("Unknown function call '%s'", method);
+	}
 
-/* DBus interface to request the private variable to know
-   whether there is a green dot. */
-static gboolean
-_messages_service_server_attention_requested (MessageServiceDbus * self, gboolean * dot, GError ** error)
-{
-	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
-	*dot = priv->dot;
-	return TRUE;
-}
-
-/* DBus interface to request the private variable to know
-   whether the icon is hidden. */
-static gboolean
-_messages_service_server_icon_shown (MessageServiceDbus * self, gboolean * hidden, GError ** error)
-{
-	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
-	*hidden = priv->hidden;
-	return TRUE;
+	return;
 }
 
 void
