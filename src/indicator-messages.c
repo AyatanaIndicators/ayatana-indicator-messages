@@ -337,12 +337,12 @@ connection_change (IndicatorServiceManager * sm, gboolean connected, gpointer us
 
 /* Sets the icon when it changes. */
 static void
-application_icon_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, gpointer user_data)
+application_icon_change_cb (DbusmenuMenuitem * mi, gchar * prop, GVariant * value, gpointer user_data)
 {
 	if (!g_strcmp0(prop, APPLICATION_MENUITEM_PROP_ICON)) {
 		/* Set the main icon */
 		if (GTK_IS_IMAGE(user_data)) {
-			gtk_image_set_from_icon_name(GTK_IMAGE(user_data), g_value_get_string(value), GTK_ICON_SIZE_MENU);
+			gtk_image_set_from_icon_name(GTK_IMAGE(user_data), g_variant_get_string(value, NULL), GTK_ICON_SIZE_MENU);
 		}
 	}
 
@@ -351,12 +351,12 @@ application_icon_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value,
 
 /* Sets the label when it changes. */
 static void
-application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, gpointer user_data)
+application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GVariant * value, gpointer user_data)
 {
 	if (!g_strcmp0(prop, APPLICATION_MENUITEM_PROP_NAME)) {
 		/* Set the main label */
 		if (GTK_IS_LABEL(user_data)) {
-			gtk_label_set_text(GTK_LABEL(user_data), g_value_get_string(value));
+			gtk_label_set_text(GTK_LABEL(user_data), g_variant_get_string(value, NULL));
 		}
 	}
 
@@ -545,14 +545,14 @@ struct _indicator_item_t {
 /* Whenever we have a property change on a DbusmenuMenuitem
    we need to be responsive to that. */
 static void
-indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GValue * value, indicator_item_t * mi_data)
+indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GVariant * value, indicator_item_t * mi_data)
 {
 	if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_LABEL)) {
 		/* Set the main label */
-		gtk_label_set_text(GTK_LABEL(mi_data->label), g_value_get_string(value));
+		gtk_label_set_text(GTK_LABEL(mi_data->label), g_variant_get_string(value, NULL));
 	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_RIGHT)) {
 		/* Set the right label */
-		gtk_label_set_text(GTK_LABEL(mi_data->right), g_value_get_string(value));
+		gtk_label_set_text(GTK_LABEL(mi_data->right), g_variant_get_string(value, NULL));
 	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_ICON)) {
 		/* We don't use the value here, which is probably less efficient, 
 		   but it's easier to use the easy function.  And since th value
