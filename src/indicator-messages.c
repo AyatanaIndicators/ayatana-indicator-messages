@@ -163,27 +163,28 @@ indicator_messages_finalize (GObject *object)
 
 /* Functions */
 
-/* Called everytime the attention changes in the service. */
+/* Signal off of the proxy */
 static void
-attention_changed_cb (DBusGProxy * proxy, gboolean dot, gpointer userdata)
+proxy_signal (GDBusProxy * proxy, const gchar * sender, const gchar * signal, GVariant * params, gpointer user_data)
 {
-	if (dot) {
-		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
-	} else {
-		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
-	}
-	return;
-}
+	gboolean prop = g_variant_get_boolean(g_variant_get_child_value(params, 0));
 
-/* Change the icon to whether it should be visible or not */
-static void
-icon_changed_cb (DBusGProxy * proxy, gboolean hidden, gpointer userdata)
-{
-	if (hidden) {
-		gtk_widget_hide(main_image);
+	if (g_strcmp0("AttentionChanged", signal) == 0) {
+		if (prop) {
+			indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
+		} else {
+			indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
+		}
+	} else if (g_strcmp0("IconChanged", signal) == 0) {
+		if (prop) {
+			gtk_widget_hide(main_image);
+		} else {
+			gtk_widget_show(main_image);
+		}
 	} else {
-		gtk_widget_show(main_image);
+		g_warning("Unknown signal %s", signal);
 	}
+
 	return;
 }
 
