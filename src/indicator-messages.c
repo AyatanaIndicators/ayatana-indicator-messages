@@ -304,7 +304,7 @@ connection_change (IndicatorServiceManager * sm, gboolean connected, gpointer us
 	}
 
 	if (icon_proxy == NULL) {
-		g_dbus_proxy_new_for_bus(G_BUS_SESSION,
+		g_dbus_proxy_new_for_bus(G_BUS_TYPE_SESSION,
 		                         G_DBUS_PROXY_FLAGS_NONE,
 		                         bus_interface_info,
 		                         INDICATOR_MESSAGES_DBUS_NAME,
