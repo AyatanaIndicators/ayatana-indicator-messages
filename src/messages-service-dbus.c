@@ -41,6 +41,7 @@ typedef struct _MessageServiceDbusPrivate MessageServiceDbusPrivate;
 
 struct _MessageServiceDbusPrivate
 {
+	GDBusConnection * connection;
 	gboolean dot;
 	gboolean hidden;
 };
@@ -131,6 +132,9 @@ connection_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 		return;
 	}
 
+	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(user_data);
+	priv->connection = connection;
+
 	g_dbus_connection_register_object(connection,
 	                                  INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
 	                                  bus_interface_info,
@@ -166,7 +170,12 @@ message_service_dbus_init (MessageServiceDbus *self)
 static void
 message_service_dbus_dispose (GObject *object)
 {
+	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(object);
 
+	if (priv->connection != NULL) {
+		g_object_unref(priv->connection);
+		priv->connection = NULL;
+	}
 
 	G_OBJECT_CLASS (message_service_dbus_parent_class)->dispose (object);
 	return;
