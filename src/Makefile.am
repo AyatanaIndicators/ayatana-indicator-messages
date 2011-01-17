@@ -12,7 +12,14 @@ libmessaging_la_SOURCES = \
 	gen-messages-service.xml.h \
 	gen-messages-service.xml.c \
 	dbus-data.h
-libmessaging_la_CFLAGS = $(APPLET_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror
+libmessaging_la_CFLAGS = \
+	$(APPLET_CFLAGS) \
+	-Wall \
+	-Wl,-Bsymbolic-functions \
+	-Wl,-z,defs \
+	-Wl,--as-needed \
+	-Werror \
+	-DG_LOG_DOMAIN=\"Indicator-Messages\"
 libmessaging_la_LIBADD = $(APPLET_LIBS)
 libmessaging_la_LDFLAGS = -module -avoid-version
 
@@ -38,7 +45,14 @@ indicator_messages_service_SOURCES = \
 	seen-db.h \
 	dirs.h \
 	dbus-data.h
-indicator_messages_service_CFLAGS = $(APPLET_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror
+indicator_messages_service_CFLAGS = \
+	$(APPLET_CFLAGS) \
+	-Wall \
+	-Wl,-Bsymbolic-functions \
+	-Wl,-z,defs \
+	-Wl,--as-needed \
+	-Werror \
+	-DG_LOG_DOMAIN=\"Indicator-Messages\"
 indicator_messages_service_LDADD = $(APPLET_LIBS)
 
 gen-%.xml.h: %.xml
