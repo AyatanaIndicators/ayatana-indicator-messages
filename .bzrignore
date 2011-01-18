@@ -23,3 +23,5 @@ src/messages-service-client.h
 src/messages-service-server.h
 po/indicator-messages.pot
 src/libmessaging_la-app-gtk-menu-item.lo
+src/gen-messages-service.xml.c
+src/gen-messages-service.xml.h
