@@ -1,10 +1,31 @@
-indicator-messages (0.3.90-0ubuntu1~ppa1) natty; urgency=low
+indicator-messages (0.3.90-0ubuntu1) natty; urgency=low
 
+  [ Ted Gould ]
   * New upstream release.
     * GDBus Port
     * New libindicate and dbusmenu
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 14 Jan 2011 14:25:15 -0600
+  [ Ken VanDine ]
+  * debian/control
+    - Build depends on libindicate-dev to 0.4.91
+    - Build depends on dbusmenu to 0.3.91
+    - Set Vcs to ~ubuntu-desktop
+  * data/indicator-messages.service.in
+    - Fixed dbus interface name
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Fri, 14 Jan 2011 14:50:30 -0600
+
+indicator-messages (0.3.11-0ubuntu4) natty; urgency=low
+  * debian/control
+    - Bump build depends for libdbusmenu-* to >= 0.3.90
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 09 Dec 2010 11:39:40 -0500
+
+indicator-messages (0.3.11-0ubuntu3) UNRELEASED; urgency=low
+
+  * debian/control: package description spelling (LP: #658096)
+
+ -- Greg Auger <gregory.auger@googlemail.com> Tue, 09 Nov 2010 18:49:38 +0000
 
 indicator-messages (0.3.11-0ubuntu2) maverick; urgency=low
 
