@@ -1,4 +1,4 @@
-indicator-messages (0.3.91-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.3.91-0ubuntu1~ppa1) natty; urgency=low
 
   * New upstream release.
     * Fixing the service file
@@ -6,7 +6,7 @@ indicator-messages (0.3.91-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Fixing type handler for dbusmenu 0.3.94
   * debian/control: dbusmenu to 0.3.94
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 27 Jan 2011 17:00:42 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 27 Jan 2011 17:01:34 -0600
 
 indicator-messages (0.3.90-0ubuntu1) natty; urgency=low
 
