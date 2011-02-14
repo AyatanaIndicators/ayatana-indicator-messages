@@ -23,6 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <glib.h>
 #include <glib-object.h>
+#include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <libdbusmenu-gtk/menu.h>
 #include <libdbusmenu-gtk/menuitem.h>
@@ -52,6 +53,7 @@ typedef struct _IndicatorMessagesClass IndicatorMessagesClass;
 
 struct _IndicatorMessagesClass {
 	IndicatorObjectClass parent_class;
+	void    (*update_a11y_desc) (IndicatorServiceManager * service, gpointer * user_data);
 };
 
 struct _IndicatorMessages {
@@ -71,6 +73,8 @@ static GDBusProxy * icon_proxy = NULL;
 static GtkSizeGroup * indicator_right_group = NULL;
 static GDBusNodeInfo *            bus_node_info = NULL;
 static GDBusInterfaceInfo *       bus_interface_info = NULL;
+static const gchar *              accessible_desc = NULL;
+static IndicatorObject *          indicator = NULL;
 
 /* Prototypes */
 static void indicator_messages_class_init (IndicatorMessagesClass *klass);
@@ -79,11 +83,25 @@ static void indicator_messages_dispose    (GObject *object);
 static void indicator_messages_finalize   (GObject *object);
 static GtkImage * get_icon                (IndicatorObject * io);
 static GtkMenu * get_menu                 (IndicatorObject * io);
+static const gchar * get_accessible_desc      (IndicatorObject * io);
 static void connection_change             (IndicatorServiceManager * sm,
                                            gboolean connected,
                                            gpointer user_data);
 
 G_DEFINE_TYPE (IndicatorMessages, indicator_messages, INDICATOR_OBJECT_TYPE);
+
+static void
+update_a11y_desc (void)
+{
+	g_return_if_fail(IS_INDICATOR_MESSAGES(indicator));
+
+	g_signal_emit(G_OBJECT(indicator),
+	              INDICATOR_OBJECT_SIGNAL_ACCESSIBLE_DESC_UPDATE_ID,
+                      0,
+                      (IndicatorObjectEntry *)indicator_object_get_entries(indicator)->data,
+                      TRUE);
+	return;
+}
 
 /* Initialize the one-timers */
 static void
@@ -98,6 +116,7 @@ indicator_messages_class_init (IndicatorMessagesClass *klass)
 
 	io_class->get_image = get_icon;
 	io_class->get_menu = get_menu;
+	io_class->get_accessible_desc = get_accessible_desc;
 
 	if (bus_node_info == NULL) {
 		GError * error = NULL;
@@ -130,6 +149,8 @@ indicator_messages_init (IndicatorMessages *self)
 	/* Complex stuff */
 	self->service = indicator_service_manager_new_version(INDICATOR_MESSAGES_DBUS_NAME, 1);
 	g_signal_connect(self->service, INDICATOR_SERVICE_MANAGER_SIGNAL_CONNECTION_CHANGE, G_CALLBACK(connection_change), self);
+
+	indicator = INDICATOR_OBJECT(self);
 
 	return;
 }
@@ -172,8 +193,10 @@ proxy_signal (GDBusProxy * proxy, const gchar * sender, const gchar * signal, GV
 	if (g_strcmp0("AttentionChanged", signal) == 0) {
 		if (prop) {
 			indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
+			accessible_desc = g_strdup(_("New Messages"));
 		} else {
 			indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
+			accessible_desc = g_strdup(_("Messages"));
 		}
 	} else if (g_strcmp0("IconChanged", signal) == 0) {
 		if (prop) {
@@ -184,6 +207,8 @@ proxy_signal (GDBusProxy * proxy, const gchar * sender, const gchar * signal, GV
 	} else {
 		g_warning("Unknown signal %s", signal);
 	}
+
+	update_a11y_desc();
 
 	return;
 }
@@ -205,9 +230,13 @@ attention_cb (GObject * object, GAsyncResult * ares, gpointer user_data)
 
 	if (prop) {
 		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
+		accessible_desc = g_strdup(_("New Messages"));
 	} else {
 		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
+		accessible_desc = g_strdup(_("Messages"));
 	}
+
+	update_a11y_desc();
 
 	return;
 }
@@ -704,4 +733,11 @@ get_menu (IndicatorObject * io)
 	dbusmenu_client_add_type_handler(DBUSMENU_CLIENT(client), APPLICATION_MENUITEM_TYPE, new_application_item);
 
 	return GTK_MENU(menu);
+}
+
+/* Returns the accessible description of the indicator */
+static const gchar *
+get_accessible_desc (IndicatorObject * io)
+{
+	return accessible_desc;
 }
