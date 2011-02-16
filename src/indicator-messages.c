@@ -193,10 +193,10 @@ proxy_signal (GDBusProxy * proxy, const gchar * sender, const gchar * signal, GV
 	if (g_strcmp0("AttentionChanged", signal) == 0) {
 		if (prop) {
 			indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
-			accessible_desc = g_strdup(_("New Messages"));
+			accessible_desc = _("New Messages");
 		} else {
 			indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
-			accessible_desc = g_strdup(_("Messages"));
+			accessible_desc = _("Messages");
 		}
 	} else if (g_strcmp0("IconChanged", signal) == 0) {
 		if (prop) {
