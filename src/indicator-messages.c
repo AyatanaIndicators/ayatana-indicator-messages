@@ -94,14 +94,19 @@ static void
 update_a11y_desc (void)
 {
 	g_return_if_fail(IS_INDICATOR_MESSAGES(indicator));
-	GList *entry = indicator_object_get_entries(indicator);
+
+	GList *entries = indicator_object_get_entries(indicator);
+	IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
+
+	entry->accessible_desc = get_accessible_desc(indicator);
 
 	g_signal_emit(G_OBJECT(indicator),
 	              INDICATOR_OBJECT_SIGNAL_ACCESSIBLE_DESC_UPDATE_ID,
 	              0,
-                      entry->data,
-                      TRUE);
-	g_list_free(entry);
+	              entry,
+	              TRUE);
+
+	g_list_free(entries);
 
 	return;
 }
