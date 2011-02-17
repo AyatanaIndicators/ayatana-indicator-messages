@@ -1,3 +1,10 @@
+indicator-messages (0.3.92-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Adding in accessible description support
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 17 Feb 2011 12:14:41 -0600
+
 indicator-messages (0.3.91-0ubuntu1) natty; urgency=low
 
   * New upstream release.
