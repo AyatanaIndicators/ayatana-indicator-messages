@@ -1,4 +1,4 @@
-indicator-messages (0.3.91-0ubuntu1~ppa1) natty; urgency=low
+indicator-messages (0.3.91-0ubuntu1) natty; urgency=low
 
   * New upstream release.
     * Fixing the service file
