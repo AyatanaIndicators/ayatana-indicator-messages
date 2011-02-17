@@ -238,10 +238,10 @@ attention_cb (GObject * object, GAsyncResult * ares, gpointer user_data)
 
 	if (prop) {
 		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
-		accessible_desc = g_strdup(_("New Messages"));
+		accessible_desc = _("New Messages");
 	} else {
 		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
-		accessible_desc = g_strdup(_("Messages"));
+		accessible_desc = _("Messages");
 	}
 
 	update_a11y_desc();
