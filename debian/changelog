@@ -1,3 +1,11 @@
+indicator-messages (0.3.92-0ubuntu2) natty; urgency=low
+
+  * src/launcher-menu-item.c
+    - Make sure menu entries are displayed for launchers that aren't running (LP: #723873)
+ 
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Wed, 23 Feb 2011 16:06:37 -0500
+
 indicator-messages (0.3.92-0ubuntu1) natty; urgency=low
 
   * New upstream release.
