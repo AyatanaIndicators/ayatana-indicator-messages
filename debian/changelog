@@ -1,3 +1,14 @@
+indicator-messages (0.3.92-0ubuntu3) natty; urgency=low
+
+  * debian/patches/lp_690668.patch
+    - Memory leak fixes (LP: #690668)
+  * debian/control
+    - Bump standards version to 3.9.1
+  * debian/source/format
+    - Use source format 3.0 (quilt)
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 24 Feb 2011 12:13:33 -0500
+
 indicator-messages (0.3.92-0ubuntu2) natty; urgency=low
 
   * src/launcher-menu-item.c
@@ -42,6 +53,7 @@ indicator-messages (0.3.90-0ubuntu1) natty; urgency=low
  -- Ken VanDine <ken.vandine@canonical.com>  Fri, 14 Jan 2011 14:50:30 -0600
 
 indicator-messages (0.3.11-0ubuntu4) natty; urgency=low
+
   * debian/control
     - Bump build depends for libdbusmenu-* to >= 0.3.90
 
