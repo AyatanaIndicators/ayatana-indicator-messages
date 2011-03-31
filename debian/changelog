@@ -1,3 +1,113 @@
+indicator-messages (0.3.92-1) unstable; urgency=low
+
+  * Merge new upstream from Ubuntu.
+
+ -- Evgeni Golov <evgeni@debian.org>  Thu, 31 Mar 2011 14:02:12 +0200
+
+indicator-messages (0.3.92-0ubuntu3) natty; urgency=low
+
+  * debian/patches/lp_690668.patch
+    - Memory leak fixes (LP: #690668)
+  * debian/control
+    - Bump standards version to 3.9.1
+  * debian/source/format
+    - Use source format 3.0 (quilt)
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 24 Feb 2011 12:13:33 -0500
+
+indicator-messages (0.3.92-0ubuntu2) natty; urgency=low
+
+  * src/launcher-menu-item.c
+    - Make sure menu entries are displayed for launchers that aren't running (LP: #723873)
+ 
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Wed, 23 Feb 2011 16:06:37 -0500
+
+indicator-messages (0.3.92-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    * Adding in accessible description support
+  * debian/control: libindicator version 0.3.19
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 17 Feb 2011 12:18:32 -0600
+
+indicator-messages (0.3.91-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    * Fixing the service file
+    * Adding a log domain
+    * Fixing type handler for dbusmenu 0.3.94
+  * debian/control: dbusmenu to 0.3.94
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 27 Jan 2011 17:01:34 -0600
+
+indicator-messages (0.3.90-0ubuntu1) natty; urgency=low
+
+  [ Ted Gould ]
+  * New upstream release.
+    * GDBus Port
+    * New libindicate and dbusmenu
+
+  [ Ken VanDine ]
+  * debian/control
+    - Build depends on libindicate-dev to 0.4.91
+    - Build depends on dbusmenu to 0.3.91
+    - Set Vcs to ~ubuntu-desktop
+  * data/indicator-messages.service.in
+    - Fixed dbus interface name
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Fri, 14 Jan 2011 14:50:30 -0600
+
+indicator-messages (0.3.11-0ubuntu4) natty; urgency=low
+
+  * debian/control
+    - Bump build depends for libdbusmenu-* to >= 0.3.90
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 09 Dec 2010 11:39:40 -0500
+
+indicator-messages (0.3.11-0ubuntu3) UNRELEASED; urgency=low
+
+  * debian/control: package description spelling (LP: #658096)
+
+ -- Greg Auger <gregory.auger@googlemail.com> Tue, 09 Nov 2010 18:49:38 +0000
+
+indicator-messages (0.3.11-0ubuntu2) maverick; urgency=low
+
+  * Rebuild for libindicator ABI change (LP: #637692)
+  * debian/control: depends on latest libindicator-dev 
+
+ -- Didier Roche <didrocks@ubuntu.com>  Wed, 22 Sep 2010 18:39:27 +0200
+
+indicator-messages (0.3.11-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    * Fixing triangles by passing data to callback (LP: #623453)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 09 Sep 2010 13:24:13 -0500
+
+indicator-messages (0.3.10-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    * Shifting icons into the gutter and adjusting the arrow
+      padding.
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 26 Aug 2010 15:08:31 -0500
+
+indicator-messages (0.3.9-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    * Remove parens from counts
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 12 Aug 2010 13:10:10 -0500
+
+indicator-messages (0.3.8-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    - running apps triangle indicator overlay
+    - message counters are now rendered with a nice rounded background
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 29 Jul 2010 13:33:14 -0400
+
 indicator-messages (0.3.7-1) unstable; urgency=low
 
   * Merge from Ubuntu.
@@ -360,3 +470,4 @@ indicator-messages (0.1-0ubuntu1) jaunty; urgency=low
   * debian/copyright: Properly describe license.
 
  -- Martin Pitt <martin.pitt@ubuntu.com>  Tue, 17 Feb 2009 11:35:38 +0100
+

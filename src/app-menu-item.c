@@ -70,8 +70,8 @@ static void app_menu_item_finalize   (GObject *object);
 static void activate_cb (AppMenuItem * self, guint timestamp, gpointer data);
 static void count_changed (IndicateListener * listener, IndicateListenerServer * server, guint count, gpointer data);
 static void count_cb (IndicateListener * listener, IndicateListenerServer * server, guint value, gpointer data);
-static void menu_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * menupath, gpointer data);
-static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data);
+static void menu_cb (IndicateListener * listener, IndicateListenerServer * server, const gchar * menupath, gpointer data);
+static void desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const gchar * value, gpointer data);
 static void update_label (AppMenuItem * self);
 
 /* GObject Boilerplate */
@@ -300,7 +300,7 @@ count_cb (IndicateListener * listener, IndicateListenerServer * server, guint va
    app structure and start sucking data out of it.
    Mostly the name. */
 static void 
-desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * value, gpointer data)
+desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const gchar * value, gpointer data)
 {
 	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItem * self = APP_MENU_ITEM(data);
@@ -328,6 +328,7 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, gchar 
 	priv->desktop = g_strdup(value);
 
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
+	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_RUNNING, TRUE);
 
 	update_label(self);
 
@@ -355,7 +356,6 @@ child_added_cb (DbusmenuMenuitem * root, DbusmenuMenuitem * child, guint positio
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
 	DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(child);
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(mip), DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
 
 	priv->shortcuts = g_list_insert(priv->shortcuts, mip, position);
 
@@ -456,7 +456,6 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 			g_debug("\tProcessing %d children", g_list_length(children));
 			while (children != NULL) {
 				DbusmenuMenuitemProxy * mip = dbusmenu_menuitem_proxy_new(DBUSMENU_MENUITEM(children->data));
-				dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(mip), DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
 				priv->shortcuts = g_list_append(priv->shortcuts, mip);
 				g_signal_emit(G_OBJECT(self), signals[SHORTCUT_ADDED], 0, mip, TRUE);
 				children = g_list_next(children);
@@ -470,7 +469,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * newroot, gpointer data
 /* Gets the path to menuitems if there are some.  Now we need to
    make them special. */
 static void
-menu_cb (IndicateListener * listener, IndicateListenerServer * server, gchar * menupath, gpointer data)
+menu_cb (IndicateListener * listener, IndicateListenerServer * server, const gchar * menupath, gpointer data)
 {
 	g_debug("Got Menu: %s", menupath);
 	g_return_if_fail(IS_APP_MENU_ITEM(data));

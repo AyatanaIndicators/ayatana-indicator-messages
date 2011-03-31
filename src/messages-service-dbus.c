@@ -24,9 +24,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #endif
 
-#include <dbus/dbus-glib.h>
+#include <gio/gio.h>
 #include "messages-service-dbus.h"
 #include "dbus-data.h"
+#include "gen-messages-service.xml.h"
 
 enum {
 	ATTENTION_CHANGED,
@@ -40,6 +41,7 @@ typedef struct _MessageServiceDbusPrivate MessageServiceDbusPrivate;
 
 struct _MessageServiceDbusPrivate
 {
+	GDBusConnection * connection;
 	gboolean dot;
 	gboolean hidden;
 };
@@ -51,14 +53,25 @@ static void message_service_dbus_class_init (MessageServiceDbusClass *klass);
 static void message_service_dbus_init       (MessageServiceDbus *self);
 static void message_service_dbus_dispose    (GObject *object);
 static void message_service_dbus_finalize   (GObject *object);
+static void     bus_method_call             (GDBusConnection * connection,
+                                             const gchar * sender,
+                                             const gchar * path,
+                                             const gchar * interface,
+                                             const gchar * method,
+                                             GVariant * params,
+                                             GDBusMethodInvocation * invocation,
+                                             gpointer user_data);
 
-static void _messages_service_server_watch  (void);
-static gboolean _messages_service_server_attention_requested (MessageServiceDbus * self, gboolean * dot, GError ** error);
-static gboolean _messages_service_server_icon_shown (MessageServiceDbus * self, gboolean * hidden, GError ** error);
-
-#include "messages-service-server.h"
+static GDBusNodeInfo *            bus_node_info = NULL;
+static GDBusInterfaceInfo *       bus_interface_info = NULL;
+static const GDBusInterfaceVTable bus_interface_table = {
+	method_call:    bus_method_call,
+	get_property:   NULL,  /* No properties */
+	set_property:   NULL   /* No properties */
+};
 
 G_DEFINE_TYPE (MessageServiceDbus, message_service_dbus, G_TYPE_OBJECT);
+
 
 static void
 message_service_dbus_class_init (MessageServiceDbusClass *klass)
@@ -86,8 +99,57 @@ message_service_dbus_class_init (MessageServiceDbusClass *klass)
 	                                      g_cclosure_marshal_VOID__BOOLEAN,
 	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
+	if (bus_node_info == NULL) {
+		GError * error = NULL;
 
-	dbus_g_object_type_install_info(MESSAGE_SERVICE_DBUS_TYPE, &dbus_glib__messages_service_server_object_info);
+		bus_node_info = g_dbus_node_info_new_for_xml(_messages_service, &error);
+		if (error != NULL) {
+			g_error("Unable to parse Messaging Menu Interface description: %s", error->message);
+			g_error_free(error);
+		}
+	}
+
+	if (bus_interface_info == NULL) {
+		bus_interface_info = g_dbus_node_info_lookup_interface(bus_node_info, INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE);
+
+		if (bus_interface_info == NULL) {
+			g_error("Unable to find interface '" INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE "'");
+		}
+	}
+
+	return;
+}
+
+static void
+connection_cb (GObject * object, GAsyncResult * res, gpointer user_data)
+{
+	GError * error = NULL;
+	GDBusConnection * connection = g_bus_get_finish(res, &error);
+
+	if (error != NULL) {
+		g_error("Unable to connect to the session bus: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(user_data);
+	priv->connection = connection;
+
+	g_dbus_connection_register_object(connection,
+	                                  INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+	                                  bus_interface_info,
+	                                  &bus_interface_table,
+	                                  user_data,
+	                                  NULL, /* destroy */
+	                                  &error);
+
+	if (error != NULL) {
+		g_error("Unable to register on session bus: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	g_debug("Service on session bus");
 
 	return;
 }
@@ -95,10 +157,7 @@ message_service_dbus_class_init (MessageServiceDbusClass *klass)
 static void
 message_service_dbus_init (MessageServiceDbus *self)
 {
-	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	dbus_g_connection_register_g_object(connection,
-										INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
-										G_OBJECT(self));
+	g_bus_get(G_BUS_TYPE_SESSION, NULL, connection_cb, self);
 
 	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
 
@@ -111,7 +170,12 @@ message_service_dbus_init (MessageServiceDbus *self)
 static void
 message_service_dbus_dispose (GObject *object)
 {
+	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(object);
 
+	if (priv->connection != NULL) {
+		g_object_unref(priv->connection);
+		priv->connection = NULL;
+	}
 
 	G_OBJECT_CLASS (message_service_dbus_parent_class)->dispose (object);
 	return;
@@ -132,31 +196,23 @@ message_service_dbus_new (void)
 	return MESSAGE_SERVICE_DBUS(g_object_new(MESSAGE_SERVICE_DBUS_TYPE, NULL));
 }
 
-/* DBus function to say that someone is watching */
+/* Method request off of DBus */
 static void
-_messages_service_server_watch  (void)
+bus_method_call (GDBusConnection * connection, const gchar * sender, const gchar * path, const gchar * interface, const gchar * method, GVariant * params, GDBusMethodInvocation * invocation, gpointer user_data)
 {
+	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(user_data);
 
-}
+	if (g_strcmp0("AttentionRequested", method) == 0) {
+		g_dbus_method_invocation_return_value(invocation, g_variant_new("(b)", priv->dot));
+		return;
+	} else if (g_strcmp0("IconShown", method) == 0) {
+		g_dbus_method_invocation_return_value(invocation, g_variant_new("(b)", priv->hidden));
+		return;
+	} else {
+		g_warning("Unknown function call '%s'", method);
+	}
 
-/* DBus interface to request the private variable to know
-   whether there is a green dot. */
-static gboolean
-_messages_service_server_attention_requested (MessageServiceDbus * self, gboolean * dot, GError ** error)
-{
-	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
-	*dot = priv->dot;
-	return TRUE;
-}
-
-/* DBus interface to request the private variable to know
-   whether the icon is hidden. */
-static gboolean
-_messages_service_server_icon_shown (MessageServiceDbus * self, gboolean * hidden, GError ** error)
-{
-	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(self);
-	*hidden = priv->hidden;
-	return TRUE;
+	return;
 }
 
 void
@@ -167,6 +223,16 @@ message_service_dbus_set_attention (MessageServiceDbus * self, gboolean attentio
 	if (attention != priv->dot) {
 		priv->dot = attention;
 		g_signal_emit(G_OBJECT(self), signals[ATTENTION_CHANGED], 0, priv->dot, TRUE);
+
+		if (priv->connection != NULL) {
+			g_dbus_connection_emit_signal(priv->connection,
+			                              NULL,
+			                              INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+			                              INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE,
+			                              "AttentionChanged",
+			                              g_variant_new("(b)", priv->dot),
+			                              NULL);
+		}
 	}
 	return;
 }
@@ -179,6 +245,16 @@ message_service_dbus_set_icon (MessageServiceDbus * self, gboolean hidden)
 	if (hidden != priv->hidden) {
 		priv->hidden = hidden;
 		g_signal_emit(G_OBJECT(self), signals[ICON_CHANGED], 0, priv->hidden, TRUE);
+
+		if (priv->connection != NULL) {
+			g_dbus_connection_emit_signal(priv->connection,
+			                              NULL,
+			                              INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+			                              INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE,
+			                              "IconChanged",
+			                              g_variant_new("(b)", priv->hidden),
+			                              NULL);
+		}
 	}
 	return;
 }

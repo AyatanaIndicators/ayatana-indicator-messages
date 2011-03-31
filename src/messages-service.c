@@ -25,7 +25,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libintl.h>
 #include <config.h>
 #include <pango/pango-utils.h>
-#include <dbus/dbus-glib-bindings.h>
 #include <libindicate/listener.h>
 #include <libindicator/indicator-service.h>
 #include <gio/gio.h>
@@ -1346,6 +1345,7 @@ build_launcher_core (const gchar * desktop)
 		launcherList = g_list_insert_sorted(launcherList, ll, launcherList_sort);
 
 		/* Add it to the menu */
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(ll->menuitem), DBUSMENU_MENUITEM_PROP_TYPE, APPLICATION_MENUITEM_TYPE);
 		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
 		GList * shortcuts = launcher_menu_item_get_items(ll->menuitem);
 		while (shortcuts != NULL) {

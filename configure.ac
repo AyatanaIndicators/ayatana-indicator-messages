@@ -4,7 +4,7 @@ AC_INIT(src/indicator-messages.c)
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-messages, 0.3.7)
+AM_INIT_AUTOMAKE(indicator-messages, 0.3.92)
 
 AM_MAINTAINER_MODE
 
@@ -22,6 +22,15 @@ AC_CONFIG_MACRO_DIR([m4])
 
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
+AC_ARG_ENABLE([deprecations],
+  [AS_HELP_STRING([--enable-deprecations],
+    [allow deprecated API usage @<:@default=yes@:>@])],
+  [],
+  [enable_deprecations=yes])
+AS_IF([test "x$enable_deprecations" = xno],
+  [CFLAGS="$CFLAGS -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE -DGTK_DISABLE_SINGLE_INCLUDES"]
+)
+
 ###########################
 # Dependencies 
 ###########################
@@ -29,15 +38,15 @@ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 GTK_REQUIRED_VERSION=2.12
 GIO_UNIX_REQUIRED_VERSION=2.18
 PANEL_REQUIRED_VERSION=2.0.0
-INDICATE_REQUIRED_VERSION=0.3.0
-INDICATOR_REQUIRED_VERSION=0.3.5
-DBUSMENUGTK_REQUIRED_VERSION=0.2.8
+INDICATE_REQUIRED_VERSION=0.4.90
+INDICATOR_REQUIRED_VERSION=0.3.19
+DBUSMENUGTK_REQUIRED_VERSION=0.3.94
 
 PKG_CHECK_MODULES(APPLET, gtk+-2.0 >= $GTK_REQUIRED_VERSION
                           gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                           indicator >= $INDICATOR_REQUIRED_VERSION
-                          indicate >= $INDICATE_REQUIRED_VERSION
-                          dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION)
+                          indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                          dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION)
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
