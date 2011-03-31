@@ -1,8 +1,10 @@
 indicator-messages (0.3.92-1) unstable; urgency=low
 
   * Merge new upstream from Ubuntu.
+  * Fix 0.3.11-0ubuntu3 changelog entry (missed a space), so that
+    bzr builddeb won't go crazy (see Debian Bug #620242)
 
- -- Evgeni Golov <evgeni@debian.org>  Thu, 31 Mar 2011 14:02:12 +0200
+ -- Evgeni Golov <evgeni@debian.org>  Thu, 31 Mar 2011 14:57:07 +0200
 
 indicator-messages (0.3.92-0ubuntu3) natty; urgency=low
 
@@ -69,7 +71,7 @@ indicator-messages (0.3.11-0ubuntu3) UNRELEASED; urgency=low
 
   * debian/control: package description spelling (LP: #658096)
 
- -- Greg Auger <gregory.auger@googlemail.com> Tue, 09 Nov 2010 18:49:38 +0000
+ -- Greg Auger <gregory.auger@googlemail.com>  Tue, 09 Nov 2010 18:49:38 +0000
 
 indicator-messages (0.3.11-0ubuntu2) maverick; urgency=low
 
