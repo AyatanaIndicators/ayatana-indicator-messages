@@ -3,8 +3,9 @@ indicator-messages (0.3.92-1) unstable; urgency=low
   * Merge new upstream from Ubuntu.
   * Fix 0.3.11-0ubuntu3 changelog entry (missed a space), so that
     bzr builddeb won't go crazy (see Debian Bug #620242)
+  * Fix debian/copyright, was refering to libdbusmenu by mistake.
 
- -- Evgeni Golov <evgeni@debian.org>  Thu, 31 Mar 2011 14:57:07 +0200
+ -- Evgeni Golov <evgeni@debian.org>  Sun, 03 Apr 2011 13:37:33 +0200
 
 indicator-messages (0.3.92-0ubuntu3) natty; urgency=low
 
