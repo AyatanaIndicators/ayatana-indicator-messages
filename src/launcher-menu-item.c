@@ -259,8 +259,6 @@ nick_activate_cb (LauncherMenuItem * self, guint timestamp, gpointer data)
 	return;
 }
 
-#define ICON_KEY  "X-Ayatana-Messaging-Menu-Icon"
-
 /* Figure out the appropriate icon for this launcher */
 gchar *
 launcher_menu_item_get_icon (LauncherMenuItem * appitem)
