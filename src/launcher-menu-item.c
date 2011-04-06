@@ -259,18 +259,37 @@ nick_activate_cb (LauncherMenuItem * self, guint timestamp, gpointer data)
 	return;
 }
 
+#define ICON_KEY  "X-Ayatana-Messaging-Menu-Icon"
+
+/* Figure out the appropriate icon for this launcher */
 gchar *
 launcher_menu_item_get_icon (LauncherMenuItem * appitem)
 {
 	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(appitem);
+	gchar * retval = NULL;
 
-	if (priv->appinfo == NULL) {
-		return NULL;
-	} else {
-		GIcon * icon = g_app_info_get_icon(priv->appinfo);
-		gchar * iconstr = g_icon_to_string(icon);
-		return iconstr;
+	/* Check to see if there is a specific icon for the messaging
+	   menu first.  */
+	if (g_key_file_has_key(priv->keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, NULL) && retval == NULL) {
+		GError * error = NULL;
+
+		retval = g_key_file_get_string(priv->keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, &error);
+
+		if (error != NULL) {
+			/* Can't figure out why this would happen, but sure, let's print something */
+			g_warning("Error getting '" ICON_KEY "' from desktop file: %s", error->message);
+			g_error_free(error);
+		}
 	}
+
+	/* If there's not, or there is an error, we'll use the one
+	   from the application info */
+	if (priv->appinfo != NULL && retval == NULL) {
+		GIcon * icon = g_app_info_get_icon(priv->appinfo);
+		retval = g_icon_to_string(icon);
+	}
+
+	return retval;
 }
 
 /* When the menu item is clicked on it tries to launch
