@@ -22,6 +22,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef DEFAULT_APPLICATIONS_H__
 #define DEFAULT_APPLICATIONS_H__ 1
 
+/* Used for override icons in the normal case, but didn't
+   have a better place to put it. */
+#define ICON_KEY  "X-Ayatana-Messaging-Menu-Icon"
+
 const gchar * get_default_name  (const gchar * desktop_path);
 const gchar * get_default_setup (const gchar * desktop_path);
 const gchar * get_default_icon  (const gchar * desktop_path);

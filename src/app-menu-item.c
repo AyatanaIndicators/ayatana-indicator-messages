@@ -52,6 +52,7 @@ struct _AppMenuItemPrivate
 	
 	gchar * type;
 	GAppInfo * appinfo;
+	GKeyFile * keyfile;
 	gchar * desktop;
 	guint unreadcount;
 
@@ -129,6 +130,7 @@ app_menu_item_init (AppMenuItem *self)
 	priv->server = NULL;
 	priv->type = NULL;
 	priv->appinfo = NULL;
+	priv->keyfile = NULL;
 	priv->desktop = NULL;
 	priv->unreadcount = 0;
 
@@ -179,6 +181,16 @@ app_menu_item_dispose (GObject *object)
 		priv->client = NULL;
 	}
 
+	if (priv->appinfo != NULL) {
+		g_object_unref(priv->appinfo);
+		priv->appinfo = NULL;
+	}
+
+	if (priv->keyfile != NULL) {
+		g_object_unref(priv->keyfile);
+		priv->keyfile = NULL;
+	}
+
 	G_OBJECT_CLASS (app_menu_item_parent_class)->dispose (object);
 }
 
@@ -192,14 +204,12 @@ app_menu_item_finalize (GObject *object)
 
 	if (priv->type != NULL) {
 		g_free(priv->type);
+		priv->type = NULL;
 	}
 
 	if (priv->desktop != NULL) {
 		g_free(priv->desktop);
-	}
-
-	if (priv->appinfo != NULL) {
-		g_object_unref(priv->appinfo);
+		priv->desktop = NULL;
 	}
 
 	G_OBJECT_CLASS (app_menu_item_parent_class)->finalize (object);
@@ -298,7 +308,7 @@ count_cb (IndicateListener * listener, IndicateListenerServer * server, guint va
 /* Callback for when we ask the server for the path
    to it's desktop file.  We then turn it into an
    app structure and start sucking data out of it.
-   Mostly the name. */
+   Mostly the name. And the icon. */
 static void 
 desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const gchar * value, gpointer data)
 {
@@ -325,6 +335,9 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const 
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(value));
 	g_return_if_fail(priv->appinfo != NULL);
 
+	priv->keyfile = g_key_file_new();
+	g_key_file_load_from_file(priv->keyfile, value, G_KEY_FILE_NONE, NULL);
+
 	priv->desktop = g_strdup(value);
 
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
@@ -334,8 +347,28 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const 
 
 	const gchar * def_icon = get_default_icon(priv->desktop);
 	if (def_icon == NULL) {
-		GIcon * icon = g_app_info_get_icon(priv->appinfo);
-		gchar * iconstr = g_icon_to_string(icon);
+		gchar * iconstr = NULL;
+
+		/* Check for the over ride key and see if we should be using that
+		   icon.  If we can't get it, then go back to the app info */
+		if (g_key_file_has_key(priv->keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, NULL) && iconstr == NULL) {
+			GError * error = NULL;
+
+			iconstr = g_key_file_get_string(priv->keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, &error);
+
+			if (error != NULL) {
+				/* Can't figure out why this would happen, but sure, let's print something */
+				g_warning("Error getting '" ICON_KEY "' from desktop file: %s", error->message);
+				g_error_free(error);
+			}
+		}
+
+		/* For some reason that didn't work, let's try the app info */
+		if (iconstr == NULL) {
+			GIcon * icon = g_app_info_get_icon(priv->appinfo);
+			iconstr = g_icon_to_string(icon);
+		}
+
 		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_ICON, iconstr);
 		g_free(iconstr);
 	} else {
