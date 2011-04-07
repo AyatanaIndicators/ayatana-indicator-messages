@@ -44,6 +44,7 @@ typedef struct _LauncherMenuItemPrivate LauncherMenuItemPrivate;
 struct _LauncherMenuItemPrivate
 {
 	GAppInfo * appinfo;
+	GKeyFile * keyfile;
 	gchar * desktop;
 	IndicatorDesktopShortcuts * ids;
 	GList * shortcuts;
@@ -93,9 +94,12 @@ launcher_menu_item_init (LauncherMenuItem *self)
 
 	priv->appinfo = NULL;
 	priv->desktop = NULL;
+	priv->keyfile = NULL;
 
 	priv->ids = NULL;
 	priv->shortcuts = NULL;
+
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_TYPE, APPLICATION_MENUITEM_TYPE);
 
 	return;
 }
@@ -116,6 +120,11 @@ launcher_menu_item_dispose (GObject *object)
 	if (priv->appinfo != NULL) {
 		g_object_unref(priv->appinfo);
 		priv->appinfo = NULL;
+	}
+
+	if (priv->keyfile != NULL) {
+		g_object_unref(priv->keyfile);
+		priv->keyfile = NULL;
 	}
 
 	if (priv->ids != NULL) {
@@ -158,6 +167,8 @@ launcher_menu_item_new (const gchar * desktop_file)
 
 	/* Parse the desktop file we've been given. */
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(desktop_file));
+	priv->keyfile = g_key_file_new();
+	g_key_file_load_from_file(priv->keyfile, desktop_file, G_KEY_FILE_NONE, NULL);
 	priv->desktop = g_strdup(desktop_file);
 
 	/* Set the appropriate values on this menu item based on the
@@ -248,18 +259,35 @@ nick_activate_cb (LauncherMenuItem * self, guint timestamp, gpointer data)
 	return;
 }
 
+/* Figure out the appropriate icon for this launcher */
 gchar *
 launcher_menu_item_get_icon (LauncherMenuItem * appitem)
 {
 	LauncherMenuItemPrivate * priv = LAUNCHER_MENU_ITEM_GET_PRIVATE(appitem);
+	gchar * retval = NULL;
 
-	if (priv->appinfo == NULL) {
-		return NULL;
-	} else {
-		GIcon * icon = g_app_info_get_icon(priv->appinfo);
-		gchar * iconstr = g_icon_to_string(icon);
-		return iconstr;
+	/* Check to see if there is a specific icon for the messaging
+	   menu first.  */
+	if (g_key_file_has_key(priv->keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, NULL) && retval == NULL) {
+		GError * error = NULL;
+
+		retval = g_key_file_get_string(priv->keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, &error);
+
+		if (error != NULL) {
+			/* Can't figure out why this would happen, but sure, let's print something */
+			g_warning("Error getting '" ICON_KEY "' from desktop file: %s", error->message);
+			g_error_free(error);
+		}
 	}
+
+	/* If there's not, or there is an error, we'll use the one
+	   from the application info */
+	if (priv->appinfo != NULL && retval == NULL) {
+		GIcon * icon = g_app_info_get_icon(priv->appinfo);
+		retval = g_icon_to_string(icon);
+	}
+
+	return retval;
 }
 
 /* When the menu item is clicked on it tries to launch

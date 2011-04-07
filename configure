@@ -2845,7 +2845,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=indicator-messages
- VERSION=0.3.92
+ VERSION=0.4.0
 
 
 cat >>confdefs.h <<_ACEOF
