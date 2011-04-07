@@ -97,6 +97,8 @@ launcher_menu_item_init (LauncherMenuItem *self)
 	priv->ids = NULL;
 	priv->shortcuts = NULL;
 
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_TYPE, APPLICATION_MENUITEM_TYPE);
+
 	return;
 }
 

@@ -1,0 +1,44 @@
+=== modified file 'src/indicator-messages.c'
+--- old/src/indicator-messages.c	2011-01-14 19:10:10 +0000
++++ new/src/indicator-messages.c	2011-01-21 20:08:53 +0000
+@@ -571,6 +571,7 @@
+ 				                                         width,
+ 				                                         height,
+ 				                                         GDK_INTERP_BILINEAR);
++				g_object_unref(pixbuf);
+ 			} else {
+ 				g_debug("Happy with icon sized %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf));
+ 				resized_pixbuf = pixbuf;
+@@ -578,10 +579,7 @@
+ 	  
+ 			gtk_image_set_from_pixbuf(GTK_IMAGE(mi_data->icon), resized_pixbuf);
+ 
+-			/* The other pixbuf should be free'd by the dbusmenu. */
+-			if (resized_pixbuf != pixbuf) {
+-				g_object_unref(resized_pixbuf);
+-			}
++			g_object_unref(resized_pixbuf);
+ 
+ 			gtk_widget_show(mi_data->icon);
+ 		} else {
+@@ -633,6 +631,7 @@
+ 			                                         width,
+ 			                                         height,
+ 			                                         GDK_INTERP_BILINEAR);
++			g_object_unref(pixbuf);
+ 		} else {
+ 			g_debug("Happy with icon sized %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf));
+ 			resized_pixbuf = pixbuf;
+@@ -640,10 +639,7 @@
+   
+ 		gtk_image_set_from_pixbuf(GTK_IMAGE(mi_data->icon), resized_pixbuf);
+ 
+-		/* The other pixbuf should be free'd by the dbusmenu. */
+-		if (resized_pixbuf != pixbuf) {
+-			g_object_unref(resized_pixbuf);
+-		}
++		g_object_unref(resized_pixbuf);
+ 	}
+ 	gtk_misc_set_alignment(GTK_MISC(mi_data->icon), 0.0, 0.5);
+ 	gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, padding);
+
