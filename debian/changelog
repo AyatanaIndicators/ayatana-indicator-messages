@@ -1,3 +1,13 @@
+indicator-messages (0.4.0-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    ∘ Set the type before other variables to get default handling more
+      reliable (LP: #723873)
+    ∘ Add support for overriding the default icon with a specific one
+      for the messaging menu (LP: #741068)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 07 Apr 2011 12:35:36 -0500
+
 indicator-messages (0.3.92-0ubuntu3) natty; urgency=low
 
   * debian/patches/lp_690668.patch
@@ -13,7 +23,6 @@ indicator-messages (0.3.92-0ubuntu2) natty; urgency=low
 
   * src/launcher-menu-item.c
     - Make sure menu entries are displayed for launchers that aren't running (LP: #723873)
- 
 
  -- Ken VanDine <ken.vandine@canonical.com>  Wed, 23 Feb 2011 16:06:37 -0500
 
