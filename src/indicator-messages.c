@@ -25,8 +25,14 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib-object.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+#include <libdbusmenu-gtk3/menu.h>
+#include <libdbusmenu-gtk3/menuitem.h>
+#else
 #include <libdbusmenu-gtk/menu.h>
 #include <libdbusmenu-gtk/menuitem.h>
+#endif
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
