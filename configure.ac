@@ -4,7 +4,7 @@ AC_INIT(src/indicator-messages.c)
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-messages, 0.4.0)
+AM_INIT_AUTOMAKE(indicator-messages, 0.4.90)
 
 AM_MAINTAINER_MODE
 
@@ -36,17 +36,35 @@ AS_IF([test "x$enable_deprecations" = xno],
 ###########################
 
 GTK_REQUIRED_VERSION=2.12
+GTK3_REQUIRED_VERSION=3.0
 GIO_UNIX_REQUIRED_VERSION=2.18
 PANEL_REQUIRED_VERSION=2.0.0
 INDICATE_REQUIRED_VERSION=0.4.90
 INDICATOR_REQUIRED_VERSION=0.3.19
 DBUSMENUGTK_REQUIRED_VERSION=0.3.94
 
-PKG_CHECK_MODULES(APPLET, gtk+-2.0 >= $GTK_REQUIRED_VERSION
-                          gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
-                          indicator >= $INDICATOR_REQUIRED_VERSION
-                          indicate-0.5 >= $INDICATE_REQUIRED_VERSION
-                          dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION)
+AC_ARG_WITH([indicator-gtk],
+  [AS_HELP_STRING([--with-indicator-gtk],
+    [Which version of gtk to use for the indicator @<:@default=3@:>@])],
+  [],
+  [with_indicator_gtk=3])
+
+AS_IF([test "x$with_indicator_gtk" = x3],
+        [PKG_CHECK_MODULES(APPLET, gtk+-3.0 >= $GTK3_REQUIRED_VERSION
+                                   gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
+                                   indicator3 >= $INDICATOR_REQUIRED_VERSION
+                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION)
+        ],
+      [test "x$with_indicator_gtk" = x2],
+        [PKG_CHECK_MODULES(APPLET, gtk+-2.0 >= $GTK_REQUIRED_VERSION
+                                   gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
+                                   indicator >= $INDICATOR_REQUIRED_VERSION
+                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION)
+        ],
+      [AC_MSG_FAILURE([Value for --with-indicator-gtk was neither 2 nor 3])]
+)
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
@@ -64,9 +82,12 @@ AC_ARG_ENABLE(localinstall, AS_HELP_STRING([--enable-localinstall], [install all
 if test "x$with_localinstall" = "xyes"; then
 	INDICATORDIR="${libdir}/indicators/2/"
 	INDICATORICONSDIR="${datadir}/libindicate/icons/"
-else
+elif test "x$with_indicator_gtk" = x2; then
 	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator`
 	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator`
+else
+	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator3`
+	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator3`
 fi
 AC_SUBST(INDICATORDIR)
 AC_SUBST(INDICATORICONSDIR)
