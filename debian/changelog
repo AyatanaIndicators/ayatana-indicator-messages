@@ -1,3 +1,10 @@
+indicator-messages (0.4.90-0ubuntu1~ppa1) oneiric; urgency=low
+
+  * New upstream release.
+    * GTK 3
+
+ -- Ted Gould <ted@ubuntu.com>  Tue, 21 Jun 2011 15:58:35 -0500
+
 indicator-messages (0.4.0-0ubuntu1) natty; urgency=low
 
   * New upstream release.
