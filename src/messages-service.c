@@ -1437,8 +1437,10 @@ service_shutdown (IndicatorService * service, gpointer user_data)
 int
 main (int argc, char ** argv)
 {
+	/* Glib init */
 	g_type_init();
 
+	/* Create the Indicator Service interface */
 	service = indicator_service_new_version(INDICATOR_MESSAGES_DBUS_NAME, 1);
 	g_signal_connect(service, INDICATOR_SERVICE_SIGNAL_SHUTDOWN, G_CALLBACK(service_shutdown), NULL);
 
@@ -1448,31 +1450,39 @@ main (int argc, char ** argv)
 	bindtextdomain (GETTEXT_PACKAGE, GNOMELOCALEDIR);
 	textdomain (GETTEXT_PACKAGE);
 
+	/* Create the Seen DB */
 	seen_db_init();
 
+	/* Bring up the service DBus interface */
 	dbus_interface = message_service_dbus_new();
 
-	listener = indicate_listener_ref_default();
-	serverList = NULL;
-
+	/* Build the base menu */
 	root_menuitem = dbusmenu_menuitem_new();
 	DbusmenuServer * server = dbusmenu_server_new(INDICATOR_MESSAGES_DBUS_OBJECT);
 	dbusmenu_server_set_root(server, root_menuitem);
+
+	/* Start up the libindicate listener */
+	listener = indicate_listener_ref_default();
+	serverList = NULL;
 
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added), root_menuitem);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed), root_menuitem);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_ADDED, G_CALLBACK(server_added), root_menuitem);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), root_menuitem);
 
+	/* Find launchers by looking through the config directories
+	   in the idle loop */
 	g_idle_add(blacklist_init, NULL);
 	g_idle_add(build_launchers, SYSTEM_APPS_DIR);
 	g_idle_add(build_launchers, SYSTEM_APPS_DIR_OLD);
 	gchar * userdir = g_build_filename(g_get_user_config_dir(), USER_APPS_DIR, NULL);
 	g_idle_add(build_launchers, userdir);
 
+	/* Let's run a mainloop */
 	mainloop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(mainloop);
 
+	/* Clean up */
 	g_free(userdir);
 
 	return 0;
