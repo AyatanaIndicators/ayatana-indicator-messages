@@ -1,9 +1,21 @@
-indicator-messages (0.4.90-0ubuntu1~ppa1) oneiric; urgency=low
+indicator-messages (0.4.90-0ubuntu1) oneiric; urgency=low
 
+  [ Ted Gould ]
   * New upstream release.
     * GTK 3
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 21 Jun 2011 15:58:35 -0500
+  [ Ken VanDine ]
+  * debian/control
+    - Bumped standards version to 3.9.2
+    - Add new binary for indicator-messages-gtk2 
+    - Make indicator-messages recommend indicator-messages-gtk2 (until unity 
+      can load gtk3 indicators)
+    - indicator-messages-gtk2 replaces indicator-messages << 0.4.90
+    - Added build depends for libdbusmenu-gtk3-dev and libindicator3-dev
+  * debian/rules
+    - build for both gtk2 and gtk3
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Wed, 22 Jun 2011 12:34:43 -0400
 
 indicator-messages (0.4.0-0ubuntu1) natty; urgency=low
 
