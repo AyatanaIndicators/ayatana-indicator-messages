@@ -50,6 +50,7 @@ static gboolean load_status_provider (gpointer dir);
 /* Globals */
 static StatusProviderStatus current_status = STATUS_PROVIDER_STATUS_DISCONNECTED;
 GList * menuitems = NULL;
+GList * status_providers = NULL;
 
 /* Build the inital status items and start kicking off the async code
    for handling all the statuses */
@@ -119,6 +120,25 @@ static gboolean
 load_status_provider (gpointer dir)
 {
 	gchar * provider = (gchar *)dir;
+
+	if (!g_file_test(provider, G_FILE_TEST_EXISTS)) {
+		goto exit_final;
+	}
+
+	g_debug("Loading status provider: %s", provider);
+
+	GModule * module;
+
+	module = g_module_open(provider, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+	if (module == NULL) {
+		g_warning("Unable to module for: %s", provider);
+		goto exit_final;
+	}
+
+	/* Got it */
+	g_module_close(module);
+
+exit_final:
 	g_free(provider);
 	return FALSE;
 }
