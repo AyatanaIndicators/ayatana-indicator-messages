@@ -42,6 +42,10 @@ static const gchar * panel_active_icons[STATUS_PROVIDER_STATUS_LAST] = {
   /* STATUS_PROVIDER_STATUS_DISCONNECTED */ "indicator-messages-new-user-disconnected"
 };
 
+/* Prototypes */
+static gboolean provider_directory_parse (gpointer dir);
+
+/* Globals */
 static StatusProviderStatus current_status = STATUS_PROVIDER_STATUS_DISCONNECTED;
 GList * menuitems = NULL;
 
@@ -66,6 +70,8 @@ status_items_build (void)
 		menuitems = g_list_append(menuitems, item);
 	}
 
+	g_idle_add(provider_directory_parse, STATUS_PROVIDER_DIR);
+
 	return menuitems;
 }
 
@@ -78,4 +84,18 @@ status_current_panel_icon (gboolean alert)
 	} else {
 		return panel_icons[current_status];
 	}
+}
+
+/* Start parsing a directory and setting up the entires in the idle loop */
+static gboolean
+provider_directory_parse (gpointer directory)
+{
+	const gchar * dir = (const gchar *)directory;
+
+	if (!g_file_test(dir, G_FILE_TEST_EXISTS)) {
+		return FALSE;
+	}
+
+
+	return FALSE;
 }

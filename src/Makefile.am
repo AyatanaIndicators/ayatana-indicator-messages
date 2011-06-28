@@ -67,7 +67,7 @@ indicator_messages_service_CFLAGS = \
 	-Wl,--as-needed \
 	-Werror \
 	-DG_LOG_DOMAIN=\"Indicator-Messages\" \
-	-DSTAUTS_PROVIDER_DIR=\"$(STATUS_PROVIDER_DIR)\"
+	-DSTATUS_PROVIDER_DIR=\"$(STATUS_PROVIDER_DIR)\"
 
 indicator_messages_service_LDADD = $(APPLET_LIBS)
 
