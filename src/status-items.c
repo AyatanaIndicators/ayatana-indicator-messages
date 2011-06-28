@@ -1,6 +1,7 @@
 
 #include <glib.h>
 #include <glib/gi18n.h>
+#include <gio/gio.h>
 #include <libdbusmenu-glib/dbusmenu-glib.h>
 
 #include "status-items.h"
@@ -44,6 +45,7 @@ static const gchar * panel_active_icons[STATUS_PROVIDER_STATUS_LAST] = {
 
 /* Prototypes */
 static gboolean provider_directory_parse (gpointer dir);
+static gboolean load_status_provider (gpointer dir);
 
 /* Globals */
 static StatusProviderStatus current_status = STATUS_PROVIDER_STATUS_DISCONNECTED;
@@ -90,12 +92,33 @@ status_current_panel_icon (gboolean alert)
 static gboolean
 provider_directory_parse (gpointer directory)
 {
-	const gchar * dir = (const gchar *)directory;
+	const gchar * dirname = (const gchar *)directory;
 
-	if (!g_file_test(dir, G_FILE_TEST_EXISTS)) {
+	if (!g_file_test(dirname, G_FILE_TEST_EXISTS)) {
 		return FALSE;
 	}
 
+	GDir * dir = g_dir_open(dirname, 0, NULL);
+	if (dir == NULL) {
+		return FALSE;
+	}
 
+	const gchar * name;
+	while ((name = g_dir_read_name(dir)) != NULL) {
+		gchar * fullname = g_build_filename(dirname, name, NULL);
+		g_idle_add(load_status_provider, fullname);
+	}
+
+	g_dir_close(dir);
+
+	return FALSE;
+}
+
+/* Load a particular status provider */
+static gboolean
+load_status_provider (gpointer dir)
+{
+	gchar * provider = (gchar *)dir;
+	g_free(provider);
 	return FALSE;
 }
