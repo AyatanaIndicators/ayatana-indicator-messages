@@ -54,6 +54,8 @@ indicator_messages_service_SOURCES = \
 	dirs.h \
 	dbus-data.h \
 	\
+	status-items.c \
+	status-items.h
 	status-provider.c \
 	status-provider.h
 
