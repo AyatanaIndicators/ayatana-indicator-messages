@@ -7,6 +7,7 @@
 G_BEGIN_DECLS
 
 GList * status_items_build (void);
+const gchar * status_current_panel_icon (gboolean alert);
 
 G_END_DECLS
 
