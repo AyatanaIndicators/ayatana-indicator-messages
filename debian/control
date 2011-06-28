@@ -27,8 +27,7 @@ Vcs-Browser: http://bazaar.launchpad.net/~ubuntu-desktop/indicator-messages/ubun
 Package: indicator-messages
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: indicator-applet | indicator-renderer,
-            indicator-messages-gtk2
+Recommends: indicator-applet | indicator-renderer
 Breaks: indicator-applet (<< 0.3.0)
 Description: indicator that collects messages that need a response
  A place on the user's desktop that collects messages that need a response.
