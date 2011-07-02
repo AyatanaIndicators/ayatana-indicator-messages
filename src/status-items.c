@@ -94,6 +94,7 @@ static gboolean
 provider_directory_parse (gpointer directory)
 {
 	const gchar * dirname = (const gchar *)directory;
+	g_debug("Looking for status providers in: %s", dirname);
 
 	if (!g_file_test(dirname, G_FILE_TEST_EXISTS)) {
 		return FALSE;

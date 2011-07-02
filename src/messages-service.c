@@ -40,6 +40,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "dirs.h"
 #include "messages-service-dbus.h"
 #include "seen-db.h"
+#include "status-items.h"
 
 static IndicatorService * service = NULL;
 static IndicateListener * listener = NULL;
@@ -1460,6 +1461,8 @@ main (int argc, char ** argv)
 	root_menuitem = dbusmenu_menuitem_new();
 	DbusmenuServer * server = dbusmenu_server_new(INDICATOR_MESSAGES_DBUS_OBJECT);
 	dbusmenu_server_set_root(server, root_menuitem);
+
+	status_items_build();
 
 	/* Start up the libindicate listener */
 	listener = indicate_listener_ref_default();
