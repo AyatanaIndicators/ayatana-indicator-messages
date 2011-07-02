@@ -89,7 +89,7 @@ EXTRA_DIST += \
 ######################################
 
 STATUS_PROVIDER_API_VERSION = 1
-STATUS_PROVIDER_DIR = $(libexecdir)/status-providers/$(STATUS_PROVIDER_API_VERSION)/
+STATUS_PROVIDER_DIR = $(libexecdir)/status-providers/$(STATUS_PROVIDER_API_VERSION)
 statusprovidersdir = $(STATUS_PROVIDER_DIR)
 statusproviders_LTLIBRARIES = 
 
