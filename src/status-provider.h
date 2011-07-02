@@ -28,6 +28,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 G_BEGIN_DECLS
 
+#define STATUS_PROVIDER_EXPORT_TYPE(x)  GType status_provider_export_type (void) { return (x); }
+#define STATUS_PROVIDER_EXPORT_S             "status_provider_export_type"
+
 #define STATUS_PROVIDER_TYPE            (status_provider_get_type ())
 #define STATUS_PROVIDER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), STATUS_PROVIDER_TYPE, StatusProvider))
 #define STATUS_PROVIDER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), STATUS_PROVIDER_TYPE, StatusProviderClass))

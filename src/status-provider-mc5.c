@@ -89,6 +89,8 @@ static void mc5_exists_cb (DBusGProxy * proxy, gboolean exists, GError * error, 
 
 G_DEFINE_TYPE (StatusProviderMC5, status_provider_mc5, STATUS_PROVIDER_TYPE);
 
+STATUS_PROVIDER_EXPORT_TYPE(STATUS_PROVIDER_MC5_TYPE)
+
 /* Create the class.  We over ride a few functions but nothing
    really shocking.  Most interesting is the set and get status. */
 static void

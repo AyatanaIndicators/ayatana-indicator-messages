@@ -86,6 +86,8 @@ static void get_status_async (DBusGProxy * proxy, DBusGProxyCall * call, gpointe
 
 G_DEFINE_TYPE (StatusProviderTelepathy, status_provider_telepathy, STATUS_PROVIDER_TYPE);
 
+STATUS_PROVIDER_EXPORT_TYPE(STATUS_PROVIDER_TELEPATHY_TYPE)
+
 static void
 status_provider_telepathy_class_init (StatusProviderTelepathyClass *klass)
 {

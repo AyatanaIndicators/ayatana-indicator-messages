@@ -78,6 +78,8 @@ static void dbus_namechange (DBusGProxy * proxy, const gchar * name, const gchar
 
 G_DEFINE_TYPE (StatusProviderEmesene, status_provider_emesene, STATUS_PROVIDER_TYPE);
 
+STATUS_PROVIDER_EXPORT_TYPE(STATUS_PROVIDER_EMESENE_TYPE)
+
 static void
 status_provider_emesene_class_init (StatusProviderEmeseneClass *klass)
 {

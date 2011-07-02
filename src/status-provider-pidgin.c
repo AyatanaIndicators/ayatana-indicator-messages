@@ -87,6 +87,8 @@ static void dbus_namechange (DBusGProxy * proxy, const gchar * name, const gchar
 
 G_DEFINE_TYPE (StatusProviderPidgin, status_provider_pidgin, STATUS_PROVIDER_TYPE);
 
+STATUS_PROVIDER_EXPORT_TYPE(STATUS_PROVIDER_PIDGIN_TYPE)
+
 static void
 status_provider_pidgin_class_init (StatusProviderPidginClass *klass)
 {

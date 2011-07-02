@@ -107,7 +107,7 @@ provider_directory_parse (gpointer directory)
 
 	const gchar * name;
 	while ((name = g_dir_read_name(dir)) != NULL) {
-		if (!g_str_has_suffix(name, ".so")) {
+		if (!g_str_has_suffix(name, G_MODULE_SUFFIX)) {
 			continue;
 		}
 
@@ -137,10 +137,32 @@ load_status_provider (gpointer dir)
 	module = g_module_open(provider, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
 	if (module == NULL) {
 		g_warning("Unable to module for: %s", provider);
-		goto exit_final;
+		goto exit_module_fail;
 	}
 
 	/* Got it */
+	GType (*type_func) (void);
+	if (!g_module_symbol(module, STATUS_PROVIDER_EXPORT_S, (gpointer *)&type_func)) {
+		g_warning("Unable to find type symbol in: %s", provider);
+		goto exit_module_fail;
+	}
+
+	GType provider_type = type_func();
+	if (provider_type == 0) {
+		g_warning("Unable to create type from: %s", provider);
+		goto exit_module_fail;
+	}
+
+	StatusProvider * sprovider = STATUS_PROVIDER(g_object_new(provider_type, NULL));
+	if (sprovider == NULL) {
+		g_warning("Unable to build provider from: %s", provider);
+		goto exit_module_fail;
+	}
+
+
+	goto exit_final;
+
+exit_module_fail:
 	g_module_close(module);
 
 exit_final:
