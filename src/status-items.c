@@ -107,6 +107,10 @@ provider_directory_parse (gpointer directory)
 
 	const gchar * name;
 	while ((name = g_dir_read_name(dir)) != NULL) {
+		if (!g_str_has_suffix(name, ".so")) {
+			continue;
+		}
+
 		gchar * fullname = g_build_filename(dirname, name, NULL);
 		g_idle_add(load_status_provider, fullname);
 	}
