@@ -43,3 +43,5 @@ src/status-provider-pidgin-marshal.c
 src/status-provider-pidgin-marshal.h
 src/status-provider-telepathy-marshal.c
 src/status-provider-telepathy-marshal.h
+src/libindicator-messages-status-provider.la
+src/libindicator_messages_status_provider_la-status-provider.lo
