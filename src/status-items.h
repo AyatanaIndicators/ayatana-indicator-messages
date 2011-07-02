@@ -6,8 +6,11 @@
 
 G_BEGIN_DECLS
 
-GList * status_items_build (void);
+typedef void (*StatusUpdateFunc) (void);
+
+GList * status_items_build (StatusUpdateFunc update_func);
 const gchar * status_current_panel_icon (gboolean alert);
+void status_items_cleanup (void);
 
 G_END_DECLS
 

@@ -55,7 +55,7 @@ GList * status_providers = NULL;
 /* Build the inital status items and start kicking off the async code
    for handling all the statuses */
 GList *
-status_items_build (void)
+status_items_build (StatusUpdateFunc status_update_func)
 {
 	int i;
 	for (i = STATUS_PROVIDER_STATUS_ONLINE; i < STATUS_PROVIDER_STATUS_DISCONNECTED; i++) {
@@ -76,6 +76,20 @@ status_items_build (void)
 	g_idle_add(provider_directory_parse, STATUS_PROVIDER_DIR);
 
 	return menuitems;
+}
+
+/* Clean up our globals and stop with all this allocation
+   of memory */
+void
+status_items_cleanup (void)
+{
+	while (status_providers != NULL) {
+		StatusProvider * sprovider = STATUS_PROVIDER(status_providers->data);
+		g_object_unref(sprovider);
+		status_providers = g_list_remove(status_providers, sprovider);
+	}
+
+	return;
 }
 
 /* Get the icon that should be shown on the panel */

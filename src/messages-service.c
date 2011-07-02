@@ -1433,6 +1433,12 @@ service_shutdown (IndicatorService * service, gpointer user_data)
 	return;
 }
 
+static void
+status_update_callback (void)
+{
+	return;
+}
+
 /* Oh, if you don't know what main() is for
    we really shouldn't be talking. */
 int
@@ -1462,7 +1468,7 @@ main (int argc, char ** argv)
 	DbusmenuServer * server = dbusmenu_server_new(INDICATOR_MESSAGES_DBUS_OBJECT);
 	dbusmenu_server_set_root(server, root_menuitem);
 
-	status_items_build();
+	status_items_build(&status_update_callback);
 
 	/* Start up the libindicate listener */
 	listener = indicate_listener_ref_default();
@@ -1486,6 +1492,7 @@ main (int argc, char ** argv)
 	g_main_loop_run(mainloop);
 
 	/* Clean up */
+	status_items_cleanup();
 	g_free(userdir);
 
 	return 0;
