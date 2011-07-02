@@ -120,6 +120,27 @@ provider_directory_parse (gpointer directory)
 	return FALSE;
 }
 
+/* Close the module as an idle function so that we know
+   it's all cleaned up */
+static gboolean
+module_destroy_in_idle_helper (gpointer data)
+{
+	GModule * module = (GModule *)data;
+	if (module != NULL) {
+		g_debug("Unloading module: %s", g_module_name(module));
+		g_module_close(module);
+	}
+	return FALSE;
+}
+
+/* Set up an idle function to close the module */
+static void
+module_destroy_in_idle (gpointer data)
+{
+	g_idle_add_full(G_PRIORITY_LOW, module_destroy_in_idle_helper, data, NULL);
+	return;
+}
+
 /* Load a particular status provider */
 static gboolean
 load_status_provider (gpointer dir)
@@ -159,6 +180,12 @@ load_status_provider (gpointer dir)
 		goto exit_module_fail;
 	}
 
+	/* Attach the module object to the status provider so
+	   that when the status provider is free'd the module
+	   is close automatically. */
+	g_object_set_data_full(G_OBJECT(sprovider), "status-provider-module", module, module_destroy_in_idle);
+
+	status_providers = g_list_prepend(status_providers, sprovider);
 
 	goto exit_final;
 
