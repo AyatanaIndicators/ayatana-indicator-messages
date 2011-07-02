@@ -4,10 +4,6 @@ EXTRA_DIST =
 
 libexec_PROGRAMS = indicator-messages-service
 
-STATUS_PROVIDER_API_VERSION = 1
-STATUS_PROVIDER_DIR = $(libexecdir)/status-providers/$(STATUS_PROVIDER_API_VERSION)/
-statusprovidersdir = $(STATUS_PROVIDER_DIR)
-statusproviders_LTLIBRARIES = 
 
 ######################################
 # Building the messages indicator
@@ -55,9 +51,7 @@ indicator_messages_service_SOURCES = \
 	dbus-data.h \
 	\
 	status-items.c \
-	status-items.h \
-	status-provider.c \
-	status-provider.h
+	status-items.h
 
 indicator_messages_service_CFLAGS = \
 	$(APPLET_CFLAGS) \
@@ -69,7 +63,9 @@ indicator_messages_service_CFLAGS = \
 	-DG_LOG_DOMAIN=\"Indicator-Messages\" \
 	-DSTATUS_PROVIDER_DIR=\"$(STATUS_PROVIDER_DIR)\"
 
-indicator_messages_service_LDADD = $(APPLET_LIBS)
+indicator_messages_service_LDADD = \
+	$(APPLET_LIBS) \
+	libindicator-messages-status-provider.la
 
 gen-%.xml.h: %.xml
 	@echo "Building $@ from $<"
@@ -89,6 +85,40 @@ EXTRA_DIST += \
 	messages-service.xml
 
 ######################################
+# Status Provider Library
+######################################
+
+STATUS_PROVIDER_API_VERSION = 1
+STATUS_PROVIDER_DIR = $(libexecdir)/status-providers/$(STATUS_PROVIDER_API_VERSION)/
+statusprovidersdir = $(STATUS_PROVIDER_DIR)
+statusproviders_LTLIBRARIES = 
+
+lib_LTLIBRARIES = \
+	libindicator-messages-status-provider.la
+
+libindicator_messages_status_provider_la_HEADERS = \
+	status-provider.h
+
+libindicator_messages_status_provider_la_SOURCES = \
+	$(libindicator_messages_status_provider_HEADERS) \
+	status-provider.c
+
+libindicator_messages_status_provider_ladir = \
+	$(includedir)/libindicator-messages-status-provider-$(STATUS_PROVIDER_API_VERSION)/
+
+libindicator_messages_status_provider_la_LDFLAGS = \
+	-version-info $(STATUS_PROVIDER_API_VERSION):0:0 \
+	-no-undefined \
+	-export-symbols-regex "^[^_].*"
+
+libindicator_messages_status_provider_la_LIBADD = \
+	$(APPLET_LIBS)
+
+libindicator_messages_status_provider_la_CFLAGS = \
+	$(APPLET_CFLAGS) \
+	-Wall -Werror
+
+######################################
 # Status provider: Pidgin
 ######################################
 
@@ -104,6 +134,7 @@ libpidgin_la_CFLAGS = \
 	-Wall -Werror \
 	-DG_LOG_DOMAIN=\"Status-Provider-Pidgin\"
 libpidgin_la_LIBADD = \
+	libindicator-messages-status-provider.la \
 	$(APPLET_LIBS) \
 	$(STATUS_PROVIDER_PIDGIN_LIBS)
 libpidgin_la_LDFLAGS = -module -avoid-version
@@ -141,6 +172,7 @@ libtelepathy_la_CFLAGS = \
 	-Wall -Werror \
 	-DG_LOG_DOMAIN=\"Status-Provider-Telepathy\"
 libtelepathy_la_LIBADD = \
+	libindicator-messages-status-provider.la \
 	$(APPLET_LIBS) \
 	$(STATUS_PROVIDER_TELEPATHY_LIBS)
 libtelepathy_la_LDFLAGS = -module -avoid-version
@@ -178,6 +210,7 @@ libmc5_la_CFLAGS = \
 	-Wall -Werror \
 	-DG_LOG_DOMAIN=\"Status-Provider-MC5\"
 libmc5_la_LIBADD = \
+	libindicator-messages-status-provider.la \
 	$(APPLET_LIBS) \
 	$(STATUS_PROVIDER_MC5_LIBS)
 libmc5_la_LDFLAGS = -module -avoid-version
@@ -213,6 +246,7 @@ libemesene_la_CFLAGS = \
 	-Wall -Werror \
 	-DG_LOG_DOMAIN=\"Status-Provider-Emesene\"
 libemesene_la_LIBADD = \
+	libindicator-messages-status-provider.la \
 	$(APPLET_LIBS) \
 	$(STATUS_PROVIDER_EMESENE_LIBS)
 libemesene_la_LDFLAGS = -module -avoid-version
