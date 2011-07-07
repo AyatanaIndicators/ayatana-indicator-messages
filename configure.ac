@@ -52,14 +52,14 @@ AC_ARG_WITH([indicator-gtk],
 AS_IF([test "x$with_indicator_gtk" = x3],
         [PKG_CHECK_MODULES(APPLET, gtk+-3.0 >= $GTK3_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
-                                   indicator3 >= $INDICATOR_REQUIRED_VERSION
+                                   indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
                                    indicate-0.5 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION)
         ],
       [test "x$with_indicator_gtk" = x2],
         [PKG_CHECK_MODULES(APPLET, gtk+-2.0 >= $GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
-                                   indicator >= $INDICATOR_REQUIRED_VERSION
+                                   indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
                                    indicate-0.5 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION)
         ],
