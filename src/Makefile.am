@@ -1,6 +1,8 @@
 
 BUILT_SOURCES = 
 EXTRA_DIST =
+CLEANFILES = 
+DISTCLEANFILES =
 
 libexec_PROGRAMS = indicator-messages-service
 
@@ -92,6 +94,20 @@ STATUS_PROVIDER_API_VERSION = 1
 STATUS_PROVIDER_DIR = $(libexecdir)/status-providers/$(STATUS_PROVIDER_API_VERSION)
 statusprovidersdir = $(STATUS_PROVIDER_DIR)
 statusproviders_LTLIBRARIES = 
+
+EXTRA_DIST += \
+	indicator-messages-status-provider-0.5.pc.in.in
+CLEANFILES += \
+	indicator-messages-status-provider-0.5.pc
+
+pkgconfig_DATA = indicator-messages-status-provider-0.5.pc
+pkgconfigdir = $(libdir)/pkgconfig
+
+%.pc: %.pc.in
+	sed \
+		-e "s|\@status_provider_dir\@|$(STATUS_PROVIDER_DIR)|" \
+		-e "s|\@status_provider_api_version\@|$(STATUS_PROVIDER_API_VERSION)|" \
+		$< > $@
 
 lib_LTLIBRARIES = \
 	libindicator-messages-status-provider.la
@@ -255,6 +271,6 @@ libemesene_la_LDFLAGS = -module -avoid-version
 # Extras
 ######################################
 
-CLEANFILES = \
+CLEANFILES += \
 	$(BUILT_SOURCES)
 

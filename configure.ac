@@ -159,6 +159,7 @@ AM_GLIB_GNU_GETTEXT
 AC_OUTPUT([
 Makefile
 src/Makefile
+src/indicator-messages-status-provider-0.5.pc.in
 data/Makefile
 data/icons/Makefile
 data/icons/16x16/Makefile
