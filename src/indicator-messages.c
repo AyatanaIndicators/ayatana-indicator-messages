@@ -89,6 +89,10 @@ static void indicator_messages_dispose    (GObject *object);
 static void indicator_messages_finalize   (GObject *object);
 static GtkImage * get_icon                (IndicatorObject * io);
 static GtkMenu * get_menu                 (IndicatorObject * io);
+static void indicator_messages_middle_click (IndicatorObject * io,
+                                             IndicatorObjectEntry * entry,
+                                             guint time, gint x, gint y,
+                                             gpointer data);
 static const gchar * get_accessible_desc      (IndicatorObject * io);
 static void connection_change             (IndicatorServiceManager * sm,
                                            gboolean connected,
@@ -131,6 +135,7 @@ indicator_messages_class_init (IndicatorMessagesClass *klass)
 	io_class->get_image = get_icon;
 	io_class->get_menu = get_menu;
 	io_class->get_accessible_desc = get_accessible_desc;
+	io_class->secondary_activate = indicator_messages_middle_click;
 
 	if (bus_node_info == NULL) {
 		GError * error = NULL;
@@ -754,4 +759,14 @@ static const gchar *
 get_accessible_desc (IndicatorObject * io)
 {
 	return accessible_desc;
+}
+
+/* Hide the notifications on middle-click over the indicator-messages */
+static void
+indicator_messages_middle_click (IndicatorObject * io, IndicatorObjectEntry * entry,
+                              guint time, gint x, gint y, gpointer data)
+{
+	indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
+	accessible_desc = _("Messages");
+	update_a11y_desc();
 }
