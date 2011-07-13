@@ -838,6 +838,11 @@ resort_menu (DbusmenuMenuitem * menushell)
 	DbusmenuMenuitem * last_separator = NULL;
 
 	g_debug("Reordering Menu:");
+	
+	if (DBUSMENU_IS_MENUITEM(status_separator)) {
+		position = dbusmenu_menuitem_get_position(status_separator, root_menuitem);
+		g_debug("\tPriming with location of status separator: %d", position);
+	}
 
 	for (serverentry = serverList; serverentry != NULL; serverentry = serverentry->next) {
 		serverList_t * si = (serverList_t *)serverentry->data;
