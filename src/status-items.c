@@ -103,6 +103,50 @@ status_current_panel_icon (gboolean alert)
 	}
 }
 
+/* Update status from all the providers */
+static void
+update_status (void)
+{
+	StatusProviderStatus status = STATUS_PROVIDER_STATUS_DISCONNECTED;
+	GList * provider;
+
+	for (provider = status_providers; provider != NULL; provider = g_list_next(provider)) {
+		StatusProviderStatus localstatus = status_provider_get_status(STATUS_PROVIDER(provider->data));
+
+		if (localstatus < status) {
+			status = localstatus;
+		}
+	}
+
+	if (status == current_status) {
+		return;
+	}
+
+	current_status = status;
+
+	/* TODO: Signal updated icon */
+
+	GList * menu;
+	int i;
+	for (menu = menuitems, i = 0; menu != NULL && i < STATUS_PROVIDER_STATUS_DISCONNECTED; menu = g_list_next(menu), i++) {
+		/* If we're the seleced status or if we're disconnected
+		   show the user that we're offline */
+		if (i == current_status || (current_status == STATUS_PROVIDER_STATUS_DISCONNECTED && i == STATUS_PROVIDER_STATUS_OFFLINE)) {
+			dbusmenu_menuitem_property_set_int(DBUSMENU_MENUITEM(menu->data), DBUSMENU_MENUITEM_PROP_TOGGLE_STATE, DBUSMENU_MENUITEM_TOGGLE_STATE_CHECKED);
+		} else {
+			dbusmenu_menuitem_property_set_int(DBUSMENU_MENUITEM(menu->data), DBUSMENU_MENUITEM_PROP_TOGGLE_STATE, DBUSMENU_MENUITEM_TOGGLE_STATE_UNCHECKED);
+		}
+
+		if (current_status == STATUS_PROVIDER_STATUS_DISCONNECTED) {
+			dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(menu->data), DBUSMENU_MENUITEM_PROP_ENABLED, FALSE);
+		} else {
+			dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(menu->data), DBUSMENU_MENUITEM_PROP_ENABLED, TRUE);
+		}
+	}
+
+	return;
+}
+
 /* Start parsing a directory and setting up the entires in the idle loop */
 static gboolean
 provider_directory_parse (gpointer directory)
@@ -194,12 +238,20 @@ load_status_provider (gpointer dir)
 		goto exit_module_fail;
 	}
 
+	/* On update let's talk to all of them and create the aggregate
+	   value to export */
+	g_signal_connect(G_OBJECT(sprovider), STATUS_PROVIDER_SIGNAL_STATUS_CHANGED, G_CALLBACK(update_status), NULL);
+
 	/* Attach the module object to the status provider so
 	   that when the status provider is free'd the module
 	   is close automatically. */
 	g_object_set_data_full(G_OBJECT(sprovider), "status-provider-module", module, module_destroy_in_idle);
 
 	status_providers = g_list_prepend(status_providers, sprovider);
+
+	/* Force and update every time just so we know we're
+	   in a consistent state*/
+	update_status();
 
 	goto exit_final;
 
