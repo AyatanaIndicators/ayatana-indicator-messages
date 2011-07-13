@@ -49,8 +49,9 @@ static gboolean load_status_provider (gpointer dir);
 
 /* Globals */
 static StatusProviderStatus current_status = STATUS_PROVIDER_STATUS_DISCONNECTED;
-GList * menuitems = NULL;
-GList * status_providers = NULL;
+static GList * menuitems = NULL;
+static GList * status_providers = NULL;
+static StatusUpdateFunc update_func = NULL;
 
 /* Build the inital status items and start kicking off the async code
    for handling all the statuses */
@@ -72,6 +73,8 @@ status_items_build (StatusUpdateFunc status_update_func)
 
 		menuitems = g_list_append(menuitems, item);
 	}
+
+	update_func = status_update_func;
 
 	g_idle_add(provider_directory_parse, STATUS_PROVIDER_DIR);
 
@@ -124,7 +127,9 @@ update_status (void)
 
 	current_status = status;
 
-	/* TODO: Signal updated icon */
+	if (update_func != NULL) {
+		update_func();
+	}
 
 	GList * menu;
 	int i;
