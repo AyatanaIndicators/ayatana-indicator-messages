@@ -79,7 +79,12 @@ status_items_build (StatusUpdateFunc status_update_func)
 
 	update_func = status_update_func;
 
-	g_idle_add(provider_directory_parse, STATUS_PROVIDER_DIR);
+	const gchar * status_providers_env = g_getenv("INDICATOR_MESSAGES_STATUS_PROVIDER_DIR");
+	if (status_providers_env == NULL) {
+		g_idle_add(provider_directory_parse, STATUS_PROVIDER_DIR);
+	} else {
+		g_idle_add(provider_directory_parse, (gpointer)status_providers_env);
+	}
 
 	return menuitems;
 }
