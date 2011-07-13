@@ -45,3 +45,5 @@ src/status-provider-telepathy-marshal.c
 src/status-provider-telepathy-marshal.h
 src/libindicator-messages-status-provider.la
 src/libindicator_messages_status_provider_la-status-provider.lo
+indicator-messages-status-provider-0.5.pc
+indicator-messages-status-provider-0.5.pc.in
