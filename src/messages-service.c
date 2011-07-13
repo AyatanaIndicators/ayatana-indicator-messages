@@ -840,7 +840,7 @@ resort_menu (DbusmenuMenuitem * menushell)
 	g_debug("Reordering Menu:");
 	
 	if (DBUSMENU_IS_MENUITEM(status_separator)) {
-		position = dbusmenu_menuitem_get_position(status_separator, root_menuitem);
+		position = dbusmenu_menuitem_get_position(status_separator, root_menuitem) + 1;
 		g_debug("\tPriming with location of status separator: %d", position);
 	}
 
