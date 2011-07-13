@@ -48,6 +48,7 @@ static GList * serverList = NULL;
 static GList * launcherList = NULL;
 
 static DbusmenuMenuitem * root_menuitem = NULL;
+static DbusmenuMenuitem * status_separator = NULL;
 static GMainLoop * mainloop = NULL;
 
 static MessageServiceDbus * dbus_interface = NULL;
@@ -1468,7 +1469,15 @@ main (int argc, char ** argv)
 	DbusmenuServer * server = dbusmenu_server_new(INDICATOR_MESSAGES_DBUS_OBJECT);
 	dbusmenu_server_set_root(server, root_menuitem);
 
-	status_items_build(&status_update_callback);
+	/* Add status items */
+	GList * statusitems = status_items_build(&status_update_callback);
+	while (statusitems != NULL) {
+		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(statusitems->data));
+		statusitems = g_list_next(statusitems);
+	}
+	status_separator = dbusmenu_menuitem_new();
+	dbusmenu_menuitem_property_set(status_separator, DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_SEPARATOR);
+	dbusmenu_menuitem_child_append(root_menuitem, status_separator);
 
 	/* Start up the libindicate listener */
 	listener = indicate_listener_ref_default();
