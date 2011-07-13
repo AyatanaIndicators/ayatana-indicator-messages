@@ -46,6 +46,7 @@ static const gchar * panel_active_icons[STATUS_PROVIDER_STATUS_LAST] = {
 /* Prototypes */
 static gboolean provider_directory_parse (gpointer dir);
 static gboolean load_status_provider (gpointer dir);
+static void user_status_change (DbusmenuMenuitem * item, guint timestamp, gpointer pstatus);
 
 /* Globals */
 static StatusProviderStatus current_status = STATUS_PROVIDER_STATUS_DISCONNECTED;
@@ -70,6 +71,8 @@ status_items_build (StatusUpdateFunc status_update_func)
 
 		dbusmenu_menuitem_property_set(item, DBUSMENU_MENUITEM_PROP_TOGGLE_TYPE, DBUSMENU_MENUITEM_TOGGLE_RADIO);
 		dbusmenu_menuitem_property_set(item, DBUSMENU_MENUITEM_PROP_TOGGLE_STATE, DBUSMENU_MENUITEM_TOGGLE_STATE_UNCHECKED);
+
+		g_signal_connect(G_OBJECT(item), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(user_status_change), GINT_TO_POINTER(i));
 
 		menuitems = g_list_append(menuitems, item);
 	}
@@ -149,6 +152,23 @@ update_status (void)
 		}
 	}
 
+	return;
+}
+
+/* Handle the user requesting a status change */
+static void
+user_status_change (DbusmenuMenuitem * item, guint timestamp, gpointer pstatus)
+{
+	StatusProviderStatus status = GPOINTER_TO_INT(pstatus);
+	GList * provider;
+
+	/* Set each provider to this status */
+	for (provider = status_providers; provider != NULL; provider = g_list_next(provider)) {
+		status_provider_set_status(STATUS_PROVIDER(provider->data), status);
+	}
+
+	/* See what we really are now */
+	update_status();
 	return;
 }
 
