@@ -1,3 +1,9 @@
+indicator-messages (0.4.92-0ubuntu1) UNRELEASED; urgency=low
+
+  * New upstream release.
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 14 Jul 2011 14:41:16 -0400
+
 indicator-messages (0.4.91-0ubuntu1) oneiric; urgency=low
 
   [ Ted Gould ]
