@@ -1,1 +1,2 @@
-debian/tmp/gtk3/usr /
+debian/tmp/gtk3/usr/lib/indicators3 /usr/lib/
+debian/tmp/gtk3/usr/lib/indicator-messages /usr/lib/
