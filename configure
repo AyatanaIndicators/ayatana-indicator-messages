@@ -629,6 +629,14 @@ GETTEXT_PACKAGE
 DBUSSERVICEDIR
 INDICATORICONSDIR
 INDICATORDIR
+STATUS_PROVIDER_EMESENE_LIBS
+STATUS_PROVIDER_EMESENE_CFLAGS
+STATUS_PROVIDER_MC5_LIBS
+STATUS_PROVIDER_MC5_CFLAGS
+STATUS_PROVIDER_TELEPATHY_LIBS
+STATUS_PROVIDER_TELEPATHY_CFLAGS
+STATUS_PROVIDER_PIDGIN_LIBS
+STATUS_PROVIDER_PIDGIN_CFLAGS
 APPLET_LIBS
 APPLET_CFLAGS
 PKG_CONFIG_LIBDIR
@@ -807,7 +815,15 @@ PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 APPLET_CFLAGS
-APPLET_LIBS'
+APPLET_LIBS
+STATUS_PROVIDER_PIDGIN_CFLAGS
+STATUS_PROVIDER_PIDGIN_LIBS
+STATUS_PROVIDER_TELEPATHY_CFLAGS
+STATUS_PROVIDER_TELEPATHY_LIBS
+STATUS_PROVIDER_MC5_CFLAGS
+STATUS_PROVIDER_MC5_LIBS
+STATUS_PROVIDER_EMESENE_CFLAGS
+STATUS_PROVIDER_EMESENE_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1470,6 +1486,26 @@ Some influential environment variables:
   APPLET_CFLAGS
               C compiler flags for APPLET, overriding pkg-config
   APPLET_LIBS linker flags for APPLET, overriding pkg-config
+  STATUS_PROVIDER_PIDGIN_CFLAGS
+              C compiler flags for STATUS_PROVIDER_PIDGIN, overriding
+              pkg-config
+  STATUS_PROVIDER_PIDGIN_LIBS
+              linker flags for STATUS_PROVIDER_PIDGIN, overriding pkg-config
+  STATUS_PROVIDER_TELEPATHY_CFLAGS
+              C compiler flags for STATUS_PROVIDER_TELEPATHY, overriding
+              pkg-config
+  STATUS_PROVIDER_TELEPATHY_LIBS
+              linker flags for STATUS_PROVIDER_TELEPATHY, overriding
+              pkg-config
+  STATUS_PROVIDER_MC5_CFLAGS
+              C compiler flags for STATUS_PROVIDER_MC5, overriding pkg-config
+  STATUS_PROVIDER_MC5_LIBS
+              linker flags for STATUS_PROVIDER_MC5, overriding pkg-config
+  STATUS_PROVIDER_EMESENE_CFLAGS
+              C compiler flags for STATUS_PROVIDER_EMESENE, overriding
+              pkg-config
+  STATUS_PROVIDER_EMESENE_LIBS
+              linker flags for STATUS_PROVIDER_EMESENE, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -2722,7 +2758,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=indicator-messages
- VERSION=0.4.91
+ VERSION=0.4.92
 
 
 cat >>confdefs.h <<_ACEOF
@@ -13155,6 +13191,396 @@ fi
 
 
 ###########################
+# Status Provider Deps
+###########################
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for STATUS_PROVIDER_PIDGIN" >&5
+$as_echo_n "checking for STATUS_PROVIDER_PIDGIN... " >&6; }
+
+if test -n "$STATUS_PROVIDER_PIDGIN_CFLAGS"; then
+    pkg_cv_STATUS_PROVIDER_PIDGIN_CFLAGS="$STATUS_PROVIDER_PIDGIN_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dbus-glib-1\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dbus-glib-1") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_STATUS_PROVIDER_PIDGIN_CFLAGS=`$PKG_CONFIG --cflags "dbus-glib-1" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$STATUS_PROVIDER_PIDGIN_LIBS"; then
+    pkg_cv_STATUS_PROVIDER_PIDGIN_LIBS="$STATUS_PROVIDER_PIDGIN_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dbus-glib-1\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dbus-glib-1") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_STATUS_PROVIDER_PIDGIN_LIBS=`$PKG_CONFIG --libs "dbus-glib-1" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        STATUS_PROVIDER_PIDGIN_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "dbus-glib-1" 2>&1`
+        else
+	        STATUS_PROVIDER_PIDGIN_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "dbus-glib-1" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$STATUS_PROVIDER_PIDGIN_PKG_ERRORS" >&5
+
+	as_fn_error $? "Package requirements (dbus-glib-1) were not met:
+
+$STATUS_PROVIDER_PIDGIN_PKG_ERRORS
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+Alternatively, you may set the environment variables STATUS_PROVIDER_PIDGIN_CFLAGS
+and STATUS_PROVIDER_PIDGIN_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details." "$LINENO" 5
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
+is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+
+Alternatively, you may set the environment variables STATUS_PROVIDER_PIDGIN_CFLAGS
+and STATUS_PROVIDER_PIDGIN_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.
+
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+See \`config.log' for more details" "$LINENO" 5; }
+else
+	STATUS_PROVIDER_PIDGIN_CFLAGS=$pkg_cv_STATUS_PROVIDER_PIDGIN_CFLAGS
+	STATUS_PROVIDER_PIDGIN_LIBS=$pkg_cv_STATUS_PROVIDER_PIDGIN_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for STATUS_PROVIDER_TELEPATHY" >&5
+$as_echo_n "checking for STATUS_PROVIDER_TELEPATHY... " >&6; }
+
+if test -n "$STATUS_PROVIDER_TELEPATHY_CFLAGS"; then
+    pkg_cv_STATUS_PROVIDER_TELEPATHY_CFLAGS="$STATUS_PROVIDER_TELEPATHY_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dbus-glib-1\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dbus-glib-1") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_STATUS_PROVIDER_TELEPATHY_CFLAGS=`$PKG_CONFIG --cflags "dbus-glib-1" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$STATUS_PROVIDER_TELEPATHY_LIBS"; then
+    pkg_cv_STATUS_PROVIDER_TELEPATHY_LIBS="$STATUS_PROVIDER_TELEPATHY_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dbus-glib-1\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dbus-glib-1") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_STATUS_PROVIDER_TELEPATHY_LIBS=`$PKG_CONFIG --libs "dbus-glib-1" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        STATUS_PROVIDER_TELEPATHY_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "dbus-glib-1" 2>&1`
+        else
+	        STATUS_PROVIDER_TELEPATHY_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "dbus-glib-1" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$STATUS_PROVIDER_TELEPATHY_PKG_ERRORS" >&5
+
+	as_fn_error $? "Package requirements (dbus-glib-1) were not met:
+
+$STATUS_PROVIDER_TELEPATHY_PKG_ERRORS
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+Alternatively, you may set the environment variables STATUS_PROVIDER_TELEPATHY_CFLAGS
+and STATUS_PROVIDER_TELEPATHY_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details." "$LINENO" 5
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
+is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+
+Alternatively, you may set the environment variables STATUS_PROVIDER_TELEPATHY_CFLAGS
+and STATUS_PROVIDER_TELEPATHY_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.
+
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+See \`config.log' for more details" "$LINENO" 5; }
+else
+	STATUS_PROVIDER_TELEPATHY_CFLAGS=$pkg_cv_STATUS_PROVIDER_TELEPATHY_CFLAGS
+	STATUS_PROVIDER_TELEPATHY_LIBS=$pkg_cv_STATUS_PROVIDER_TELEPATHY_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+
+TELEPATHYGLIB_REQUIRED_VERSION=0.9.0
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for STATUS_PROVIDER_MC5" >&5
+$as_echo_n "checking for STATUS_PROVIDER_MC5... " >&6; }
+
+if test -n "$STATUS_PROVIDER_MC5_CFLAGS"; then
+    pkg_cv_STATUS_PROVIDER_MC5_CFLAGS="$STATUS_PROVIDER_MC5_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dbus-glib-1
+                                       telepathy-glib >= \$TELEPATHYGLIB_REQUIRED_VERSION\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dbus-glib-1
+                                       telepathy-glib >= $TELEPATHYGLIB_REQUIRED_VERSION") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_STATUS_PROVIDER_MC5_CFLAGS=`$PKG_CONFIG --cflags "dbus-glib-1
+                                       telepathy-glib >= $TELEPATHYGLIB_REQUIRED_VERSION" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$STATUS_PROVIDER_MC5_LIBS"; then
+    pkg_cv_STATUS_PROVIDER_MC5_LIBS="$STATUS_PROVIDER_MC5_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dbus-glib-1
+                                       telepathy-glib >= \$TELEPATHYGLIB_REQUIRED_VERSION\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dbus-glib-1
+                                       telepathy-glib >= $TELEPATHYGLIB_REQUIRED_VERSION") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_STATUS_PROVIDER_MC5_LIBS=`$PKG_CONFIG --libs "dbus-glib-1
+                                       telepathy-glib >= $TELEPATHYGLIB_REQUIRED_VERSION" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        STATUS_PROVIDER_MC5_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "dbus-glib-1
+                                       telepathy-glib >= $TELEPATHYGLIB_REQUIRED_VERSION" 2>&1`
+        else
+	        STATUS_PROVIDER_MC5_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "dbus-glib-1
+                                       telepathy-glib >= $TELEPATHYGLIB_REQUIRED_VERSION" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$STATUS_PROVIDER_MC5_PKG_ERRORS" >&5
+
+	as_fn_error $? "Package requirements (dbus-glib-1
+                                       telepathy-glib >= $TELEPATHYGLIB_REQUIRED_VERSION) were not met:
+
+$STATUS_PROVIDER_MC5_PKG_ERRORS
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+Alternatively, you may set the environment variables STATUS_PROVIDER_MC5_CFLAGS
+and STATUS_PROVIDER_MC5_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details." "$LINENO" 5
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
+is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+
+Alternatively, you may set the environment variables STATUS_PROVIDER_MC5_CFLAGS
+and STATUS_PROVIDER_MC5_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.
+
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+See \`config.log' for more details" "$LINENO" 5; }
+else
+	STATUS_PROVIDER_MC5_CFLAGS=$pkg_cv_STATUS_PROVIDER_MC5_CFLAGS
+	STATUS_PROVIDER_MC5_LIBS=$pkg_cv_STATUS_PROVIDER_MC5_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for STATUS_PROVIDER_EMESENE" >&5
+$as_echo_n "checking for STATUS_PROVIDER_EMESENE... " >&6; }
+
+if test -n "$STATUS_PROVIDER_EMESENE_CFLAGS"; then
+    pkg_cv_STATUS_PROVIDER_EMESENE_CFLAGS="$STATUS_PROVIDER_EMESENE_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dbus-glib-1\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dbus-glib-1") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_STATUS_PROVIDER_EMESENE_CFLAGS=`$PKG_CONFIG --cflags "dbus-glib-1" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$STATUS_PROVIDER_EMESENE_LIBS"; then
+    pkg_cv_STATUS_PROVIDER_EMESENE_LIBS="$STATUS_PROVIDER_EMESENE_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"dbus-glib-1\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "dbus-glib-1") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_STATUS_PROVIDER_EMESENE_LIBS=`$PKG_CONFIG --libs "dbus-glib-1" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        STATUS_PROVIDER_EMESENE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "dbus-glib-1" 2>&1`
+        else
+	        STATUS_PROVIDER_EMESENE_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "dbus-glib-1" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$STATUS_PROVIDER_EMESENE_PKG_ERRORS" >&5
+
+	as_fn_error $? "Package requirements (dbus-glib-1) were not met:
+
+$STATUS_PROVIDER_EMESENE_PKG_ERRORS
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+Alternatively, you may set the environment variables STATUS_PROVIDER_EMESENE_CFLAGS
+and STATUS_PROVIDER_EMESENE_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details." "$LINENO" 5
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
+is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+
+Alternatively, you may set the environment variables STATUS_PROVIDER_EMESENE_CFLAGS
+and STATUS_PROVIDER_EMESENE_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.
+
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+See \`config.log' for more details" "$LINENO" 5; }
+else
+	STATUS_PROVIDER_EMESENE_CFLAGS=$pkg_cv_STATUS_PROVIDER_EMESENE_CFLAGS
+	STATUS_PROVIDER_EMESENE_LIBS=$pkg_cv_STATUS_PROVIDER_EMESENE_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+
+###########################
 # Check to see if we're local
 ###########################
 
@@ -13935,7 +14361,7 @@ $as_echo "$LINGUAS" >&6; }
 # Files
 ###########################
 
-ac_config_files="$ac_config_files Makefile src/Makefile data/Makefile data/icons/Makefile data/icons/16x16/Makefile data/icons/16x16/status/Makefile data/icons/16x16/categories/Makefile data/icons/22x22/Makefile data/icons/22x22/status/Makefile data/icons/22x22/categories/Makefile data/icons/24x24/Makefile data/icons/24x24/status/Makefile data/icons/32x32/Makefile data/icons/32x32/status/Makefile data/icons/32x32/categories/Makefile data/icons/48x48/Makefile data/icons/48x48/status/Makefile data/icons/scalable/Makefile data/icons/scalable/status/Makefile data/icons/scalable/categories/Makefile po/Makefile.in"
+ac_config_files="$ac_config_files Makefile src/Makefile src/indicator-messages-status-provider-0.5.pc.in data/Makefile data/icons/Makefile data/icons/16x16/Makefile data/icons/16x16/status/Makefile data/icons/16x16/categories/Makefile data/icons/22x22/Makefile data/icons/22x22/status/Makefile data/icons/22x22/categories/Makefile data/icons/24x24/Makefile data/icons/24x24/status/Makefile data/icons/32x32/Makefile data/icons/32x32/status/Makefile data/icons/32x32/categories/Makefile data/icons/48x48/Makefile data/icons/48x48/status/Makefile data/icons/scalable/Makefile data/icons/scalable/status/Makefile data/icons/scalable/categories/Makefile po/Makefile.in"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -14962,6 +15388,7 @@ do
     "default-1") CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
+    "src/indicator-messages-status-provider-0.5.pc.in") CONFIG_FILES="$CONFIG_FILES src/indicator-messages-status-provider-0.5.pc.in" ;;
     "data/Makefile") CONFIG_FILES="$CONFIG_FILES data/Makefile" ;;
     "data/icons/Makefile") CONFIG_FILES="$CONFIG_FILES data/icons/Makefile" ;;
     "data/icons/16x16/Makefile") CONFIG_FILES="$CONFIG_FILES data/icons/16x16/Makefile" ;;

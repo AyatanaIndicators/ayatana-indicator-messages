@@ -40,6 +40,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "dirs.h"
 #include "messages-service-dbus.h"
 #include "seen-db.h"
+#include "status-items.h"
 
 static IndicatorService * service = NULL;
 static IndicateListener * listener = NULL;
@@ -47,6 +48,7 @@ static GList * serverList = NULL;
 static GList * launcherList = NULL;
 
 static DbusmenuMenuitem * root_menuitem = NULL;
+static DbusmenuMenuitem * status_separator = NULL;
 static GMainLoop * mainloop = NULL;
 
 static MessageServiceDbus * dbus_interface = NULL;
@@ -836,6 +838,11 @@ resort_menu (DbusmenuMenuitem * menushell)
 	DbusmenuMenuitem * last_separator = NULL;
 
 	g_debug("Reordering Menu:");
+	
+	if (DBUSMENU_IS_MENUITEM(status_separator)) {
+		position = dbusmenu_menuitem_get_position(status_separator, root_menuitem) + 1;
+		g_debug("\tPriming with location of status separator: %d", position);
+	}
 
 	for (serverentry = serverList; serverentry != NULL; serverentry = serverentry->next) {
 		serverList_t * si = (serverList_t *)serverentry->data;
@@ -1432,13 +1439,21 @@ service_shutdown (IndicatorService * service, gpointer user_data)
 	return;
 }
 
+static void
+status_update_callback (void)
+{
+	return;
+}
+
 /* Oh, if you don't know what main() is for
    we really shouldn't be talking. */
 int
 main (int argc, char ** argv)
 {
+	/* Glib init */
 	g_type_init();
 
+	/* Create the Indicator Service interface */
 	service = indicator_service_new_version(INDICATOR_MESSAGES_DBUS_NAME, 1);
 	g_signal_connect(service, INDICATOR_SERVICE_SIGNAL_SHUTDOWN, G_CALLBACK(service_shutdown), NULL);
 
@@ -1448,31 +1463,50 @@ main (int argc, char ** argv)
 	bindtextdomain (GETTEXT_PACKAGE, GNOMELOCALEDIR);
 	textdomain (GETTEXT_PACKAGE);
 
+	/* Create the Seen DB */
 	seen_db_init();
 
+	/* Bring up the service DBus interface */
 	dbus_interface = message_service_dbus_new();
 
-	listener = indicate_listener_ref_default();
-	serverList = NULL;
-
+	/* Build the base menu */
 	root_menuitem = dbusmenu_menuitem_new();
 	DbusmenuServer * server = dbusmenu_server_new(INDICATOR_MESSAGES_DBUS_OBJECT);
 	dbusmenu_server_set_root(server, root_menuitem);
+
+	/* Add status items */
+	GList * statusitems = status_items_build(&status_update_callback);
+	while (statusitems != NULL) {
+		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(statusitems->data));
+		statusitems = g_list_next(statusitems);
+	}
+	status_separator = dbusmenu_menuitem_new();
+	dbusmenu_menuitem_property_set(status_separator, DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_SEPARATOR);
+	dbusmenu_menuitem_child_append(root_menuitem, status_separator);
+
+	/* Start up the libindicate listener */
+	listener = indicate_listener_ref_default();
+	serverList = NULL;
 
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_ADDED, G_CALLBACK(indicator_added), root_menuitem);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_INDICATOR_REMOVED, G_CALLBACK(indicator_removed), root_menuitem);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_ADDED, G_CALLBACK(server_added), root_menuitem);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), root_menuitem);
 
+	/* Find launchers by looking through the config directories
+	   in the idle loop */
 	g_idle_add(blacklist_init, NULL);
 	g_idle_add(build_launchers, SYSTEM_APPS_DIR);
 	g_idle_add(build_launchers, SYSTEM_APPS_DIR_OLD);
 	gchar * userdir = g_build_filename(g_get_user_config_dir(), USER_APPS_DIR, NULL);
 	g_idle_add(build_launchers, userdir);
 
+	/* Let's run a mainloop */
 	mainloop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(mainloop);
 
+	/* Clean up */
+	status_items_cleanup();
 	g_free(userdir);
 
 	return 0;
