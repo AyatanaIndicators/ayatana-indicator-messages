@@ -16,6 +16,8 @@
 @SET_MAKE@
 
 
+
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -37,14 +39,16 @@ build_triplet = @build@
 host_triplet = @host@
 libexec_PROGRAMS = indicator-messages-service$(EXEEXT)
 subdir = src
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+DIST_COMMON = $(libindicator_messages_status_provider_la_HEADERS) \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/indicator-messages-status-provider-0.5.pc.in.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = indicator-messages-status-provider-0.5.pc.in
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -67,20 +71,68 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(messaginglibdir)" \
-	"$(DESTDIR)$(libexecdir)"
-LTLIBRARIES = $(messaginglib_LTLIBRARIES)
+am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(messaginglibdir)" \
+	"$(DESTDIR)$(statusprovidersdir)" "$(DESTDIR)$(libexecdir)" \
+	"$(DESTDIR)$(pkgconfigdir)" \
+	"$(DESTDIR)$(libindicator_messages_status_provider_ladir)"
+LTLIBRARIES = $(lib_LTLIBRARIES) $(messaginglib_LTLIBRARIES) \
+	$(statusproviders_LTLIBRARIES)
 am__DEPENDENCIES_1 =
+libemesene_la_DEPENDENCIES = libindicator-messages-status-provider.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_libemesene_la_OBJECTS = libemesene_la-status-provider-emesene.lo
+libemesene_la_OBJECTS = $(am_libemesene_la_OBJECTS)
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
+libemesene_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libemesene_la_CFLAGS) \
+	$(CFLAGS) $(libemesene_la_LDFLAGS) $(LDFLAGS) -o $@
+libindicator_messages_status_provider_la_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_1)
+am_libindicator_messages_status_provider_la_OBJECTS =  \
+	libindicator_messages_status_provider_la-status-provider.lo
+libindicator_messages_status_provider_la_OBJECTS =  \
+	$(am_libindicator_messages_status_provider_la_OBJECTS)
+libindicator_messages_status_provider_la_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(libindicator_messages_status_provider_la_CFLAGS) \
+	$(CFLAGS) $(libindicator_messages_status_provider_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
+libmc5_la_DEPENDENCIES = libindicator-messages-status-provider.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_libmc5_la_OBJECTS = libmc5_la-status-provider-mc5.lo \
+	libmc5_la-status-provider-mc5-marshal.lo
+libmc5_la_OBJECTS = $(am_libmc5_la_OBJECTS)
+libmc5_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libmc5_la_CFLAGS) \
+	$(CFLAGS) $(libmc5_la_LDFLAGS) $(LDFLAGS) -o $@
 libmessaging_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libmessaging_la_OBJECTS = libmessaging_la-indicator-messages.lo \
 	libmessaging_la-gen-messages-service.xml.lo
 libmessaging_la_OBJECTS = $(am_libmessaging_la_OBJECTS)
-AM_V_lt = $(am__v_lt_$(V))
-am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
-am__v_lt_0 = --silent
 libmessaging_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(libmessaging_la_CFLAGS) $(CFLAGS) $(libmessaging_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
+libpidgin_la_DEPENDENCIES = libindicator-messages-status-provider.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_libpidgin_la_OBJECTS = libpidgin_la-status-provider-pidgin.lo \
+	libpidgin_la-status-provider-pidgin-marshal.lo
+libpidgin_la_OBJECTS = $(am_libpidgin_la_OBJECTS)
+libpidgin_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libpidgin_la_CFLAGS) \
+	$(CFLAGS) $(libpidgin_la_LDFLAGS) $(LDFLAGS) -o $@
+libtelepathy_la_DEPENDENCIES =  \
+	libindicator-messages-status-provider.la $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+am_libtelepathy_la_OBJECTS =  \
+	libtelepathy_la-status-provider-telepathy.lo \
+	libtelepathy_la-status-provider-telepathy-marshal.lo
+libtelepathy_la_OBJECTS = $(am_libtelepathy_la_OBJECTS)
+libtelepathy_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(libtelepathy_la_CFLAGS) $(CFLAGS) $(libtelepathy_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
 PROGRAMS = $(libexec_PROGRAMS)
 am_indicator_messages_service_OBJECTS =  \
@@ -91,10 +143,12 @@ am_indicator_messages_service_OBJECTS =  \
 	indicator_messages_service-im-menu-item.$(OBJEXT) \
 	indicator_messages_service-app-menu-item.$(OBJEXT) \
 	indicator_messages_service-launcher-menu-item.$(OBJEXT) \
-	indicator_messages_service-seen-db.$(OBJEXT)
+	indicator_messages_service-seen-db.$(OBJEXT) \
+	indicator_messages_service-status-items.$(OBJEXT)
 indicator_messages_service_OBJECTS =  \
 	$(am_indicator_messages_service_OBJECTS)
-indicator_messages_service_DEPENDENCIES = $(am__DEPENDENCIES_1)
+indicator_messages_service_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	libindicator-messages-status-provider.la
 indicator_messages_service_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(indicator_messages_service_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
@@ -125,10 +179,18 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(libmessaging_la_SOURCES) \
+SOURCES = $(libemesene_la_SOURCES) \
+	$(libindicator_messages_status_provider_la_SOURCES) \
+	$(libmc5_la_SOURCES) $(libmessaging_la_SOURCES) \
+	$(libpidgin_la_SOURCES) $(libtelepathy_la_SOURCES) \
 	$(indicator_messages_service_SOURCES)
-DIST_SOURCES = $(libmessaging_la_SOURCES) \
+DIST_SOURCES = $(libemesene_la_SOURCES) \
+	$(libindicator_messages_status_provider_la_SOURCES) \
+	$(libmc5_la_SOURCES) $(libmessaging_la_SOURCES) \
+	$(libpidgin_la_SOURCES) $(libtelepathy_la_SOURCES) \
 	$(indicator_messages_service_SOURCES)
+DATA = $(pkgconfig_DATA)
+HEADERS = $(libindicator_messages_status_provider_la_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -223,6 +285,14 @@ RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+STATUS_PROVIDER_EMESENE_CFLAGS = @STATUS_PROVIDER_EMESENE_CFLAGS@
+STATUS_PROVIDER_EMESENE_LIBS = @STATUS_PROVIDER_EMESENE_LIBS@
+STATUS_PROVIDER_MC5_CFLAGS = @STATUS_PROVIDER_MC5_CFLAGS@
+STATUS_PROVIDER_MC5_LIBS = @STATUS_PROVIDER_MC5_LIBS@
+STATUS_PROVIDER_PIDGIN_CFLAGS = @STATUS_PROVIDER_PIDGIN_CFLAGS@
+STATUS_PROVIDER_PIDGIN_LIBS = @STATUS_PROVIDER_PIDGIN_LIBS@
+STATUS_PROVIDER_TELEPATHY_CFLAGS = @STATUS_PROVIDER_TELEPATHY_CFLAGS@
+STATUS_PROVIDER_TELEPATHY_LIBS = @STATUS_PROVIDER_TELEPATHY_LIBS@
 STRIP = @STRIP@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
@@ -279,6 +349,23 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+BUILT_SOURCES = gen-messages-service.xml.h gen-messages-service.xml.c \
+	status-provider-pidgin-marshal.h \
+	status-provider-pidgin-marshal.c \
+	status-provider-telepathy-marshal.h \
+	status-provider-telepathy-marshal.c \
+	status-provider-mc5-marshal.h status-provider-mc5-marshal.c
+EXTRA_DIST = messages-service.xml \
+	indicator-messages-status-provider-0.5.pc.in.in \
+	status-provider-pidgin.list status-provider-telepathy.list \
+	status-provider-mc5.list
+
+######################################
+# Extras
+######################################
+CLEANFILES = indicator-messages-status-provider-0.5.pc \
+	$(BUILT_SOURCES)
+DISTCLEANFILES = 
 
 ######################################
 # Building the messages indicator
@@ -323,7 +410,10 @@ indicator_messages_service_SOURCES = \
 	seen-db.c \
 	seen-db.h \
 	dirs.h \
-	dbus-data.h
+	dbus-data.h \
+	\
+	status-items.c \
+	status-items.h
 
 indicator_messages_service_CFLAGS = \
 	$(APPLET_CFLAGS) \
@@ -332,19 +422,135 @@ indicator_messages_service_CFLAGS = \
 	-Wl,-z,defs \
 	-Wl,--as-needed \
 	-Werror \
-	-DG_LOG_DOMAIN=\"Indicator-Messages\"
+	-DG_LOG_DOMAIN=\"Indicator-Messages\" \
+	-DSTATUS_PROVIDER_DIR=\"$(STATUS_PROVIDER_DIR)\"
 
-indicator_messages_service_LDADD = $(APPLET_LIBS)
-BUILT_SOURCES = \
-	gen-messages-service.xml.h \
-	gen-messages-service.xml.c
+indicator_messages_service_LDADD = \
+	$(APPLET_LIBS) \
+	libindicator-messages-status-provider.la
 
-CLEANFILES = \
-	$(BUILT_SOURCES)
 
-EXTRA_DIST = \
-	messages-service.xml
+######################################
+# Status Provider Library
+######################################
+STATUS_PROVIDER_API_VERSION = 1
+STATUS_PROVIDER_DIR = $(libexecdir)/status-providers/$(STATUS_PROVIDER_API_VERSION)
+statusprovidersdir = $(STATUS_PROVIDER_DIR)
 
+######################################
+# Status provider: Pidgin
+######################################
+
+######################################
+# Status provider: Mission Control 4
+######################################
+
+######################################
+# Status provider: Mission Control 5
+######################################
+
+######################################
+# Status provider: Emesene
+######################################
+statusproviders_LTLIBRARIES = libpidgin.la libtelepathy.la libmc5.la \
+	libemesene.la
+pkgconfig_DATA = indicator-messages-status-provider-0.5.pc
+pkgconfigdir = $(libdir)/pkgconfig
+lib_LTLIBRARIES = \
+	libindicator-messages-status-provider.la
+
+libindicator_messages_status_provider_la_HEADERS = \
+	status-provider.h
+
+libindicator_messages_status_provider_la_SOURCES = \
+	$(libindicator_messages_status_provider_HEADERS) \
+	status-provider.c
+
+libindicator_messages_status_provider_ladir = \
+	$(includedir)/libindicator-messages-status-provider-$(STATUS_PROVIDER_API_VERSION)/
+
+libindicator_messages_status_provider_la_LDFLAGS = \
+	-version-info $(STATUS_PROVIDER_API_VERSION):0:0 \
+	-no-undefined \
+	-export-symbols-regex "^[^_].*"
+
+libindicator_messages_status_provider_la_LIBADD = \
+	$(APPLET_LIBS)
+
+libindicator_messages_status_provider_la_CFLAGS = \
+	$(APPLET_CFLAGS) \
+	-Wall -Werror
+
+libpidgin_la_SOURCES = \
+	status-provider-pidgin.h \
+	status-provider-pidgin.c \
+	status-provider-pidgin-marshal.h \
+	status-provider-pidgin-marshal.c
+
+libpidgin_la_CFLAGS = \
+	$(APPLET_CFLAGS) \
+	$(STATUS_PROVIDER_PIDGIN_CFLAGS) \
+	-Wall -Werror \
+	-DG_LOG_DOMAIN=\"Status-Provider-Pidgin\"
+
+libpidgin_la_LIBADD = \
+	libindicator-messages-status-provider.la \
+	$(APPLET_LIBS) \
+	$(STATUS_PROVIDER_PIDGIN_LIBS)
+
+libpidgin_la_LDFLAGS = -module -avoid-version
+libtelepathy_la_SOURCES = \
+	status-provider-telepathy.h \
+	status-provider-telepathy.c \
+	status-provider-telepathy-marshal.h \
+	status-provider-telepathy-marshal.c
+
+libtelepathy_la_CFLAGS = \
+	$(APPLET_CFLAGS) \
+	$(STATUS_PROVIDER_TELEPATHY_CFLAGS) \
+	-Wall -Werror \
+	-DG_LOG_DOMAIN=\"Status-Provider-Telepathy\"
+
+libtelepathy_la_LIBADD = \
+	libindicator-messages-status-provider.la \
+	$(APPLET_LIBS) \
+	$(STATUS_PROVIDER_TELEPATHY_LIBS)
+
+libtelepathy_la_LDFLAGS = -module -avoid-version
+libmc5_la_SOURCES = \
+	status-provider-mc5.h \
+	status-provider-mc5.c \
+	status-provider-mc5-marshal.h \
+	status-provider-mc5-marshal.c
+
+libmc5_la_CFLAGS = \
+	$(APPLET_CFLAGS) \
+	$(STATUS_PROVIDER_MC5_CFLAGS) \
+	-Wall -Werror \
+	-DG_LOG_DOMAIN=\"Status-Provider-MC5\"
+
+libmc5_la_LIBADD = \
+	libindicator-messages-status-provider.la \
+	$(APPLET_LIBS) \
+	$(STATUS_PROVIDER_MC5_LIBS)
+
+libmc5_la_LDFLAGS = -module -avoid-version
+libemesene_la_SOURCES = \
+	status-provider-emesene.h \
+	status-provider-emesene.c
+
+libemesene_la_CFLAGS = \
+	$(APPLET_CFLAGS) \
+	$(STATUS_PROVIDER_EMESENE_CFLAGS) \
+	-Wall -Werror \
+	-DG_LOG_DOMAIN=\"Status-Provider-Emesene\"
+
+libemesene_la_LIBADD = \
+	libindicator-messages-status-provider.la \
+	$(APPLET_LIBS) \
+	$(STATUS_PROVIDER_EMESENE_LIBS)
+
+libemesene_la_LDFLAGS = -module -avoid-version
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -380,6 +586,39 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+indicator-messages-status-provider-0.5.pc.in: $(top_builddir)/config.status $(srcdir)/indicator-messages-status-provider-0.5.pc.in.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	test -z "$(libdir)" || $(MKDIR_P) "$(DESTDIR)$(libdir)"
+	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
+	list2=; for p in $$list; do \
+	  if test -f $$p; then \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(libdir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(libdir)"; \
+	}
+
+uninstall-libLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(libdir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(libdir)/$$f"; \
+	done
+
+clean-libLTLIBRARIES:
+	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
+	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
 install-messaginglibLTLIBRARIES: $(messaginglib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(messaginglibdir)" || $(MKDIR_P) "$(DESTDIR)$(messaginglibdir)"
@@ -411,8 +650,49 @@ clean-messaginglibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+install-statusprovidersLTLIBRARIES: $(statusproviders_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	test -z "$(statusprovidersdir)" || $(MKDIR_P) "$(DESTDIR)$(statusprovidersdir)"
+	@list='$(statusproviders_LTLIBRARIES)'; test -n "$(statusprovidersdir)" || list=; \
+	list2=; for p in $$list; do \
+	  if test -f $$p; then \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(statusprovidersdir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(statusprovidersdir)"; \
+	}
+
+uninstall-statusprovidersLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(statusproviders_LTLIBRARIES)'; test -n "$(statusprovidersdir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(statusprovidersdir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(statusprovidersdir)/$$f"; \
+	done
+
+clean-statusprovidersLTLIBRARIES:
+	-test -z "$(statusproviders_LTLIBRARIES)" || rm -f $(statusproviders_LTLIBRARIES)
+	@list='$(statusproviders_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
+libemesene.la: $(libemesene_la_OBJECTS) $(libemesene_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libemesene_la_LINK) -rpath $(statusprovidersdir) $(libemesene_la_OBJECTS) $(libemesene_la_LIBADD) $(LIBS)
+libindicator-messages-status-provider.la: $(libindicator_messages_status_provider_la_OBJECTS) $(libindicator_messages_status_provider_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libindicator_messages_status_provider_la_LINK) -rpath $(libdir) $(libindicator_messages_status_provider_la_OBJECTS) $(libindicator_messages_status_provider_la_LIBADD) $(LIBS)
+libmc5.la: $(libmc5_la_OBJECTS) $(libmc5_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libmc5_la_LINK) -rpath $(statusprovidersdir) $(libmc5_la_OBJECTS) $(libmc5_la_LIBADD) $(LIBS)
 libmessaging.la: $(libmessaging_la_OBJECTS) $(libmessaging_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libmessaging_la_LINK) -rpath $(messaginglibdir) $(libmessaging_la_OBJECTS) $(libmessaging_la_LIBADD) $(LIBS)
+libpidgin.la: $(libpidgin_la_OBJECTS) $(libpidgin_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libpidgin_la_LINK) -rpath $(statusprovidersdir) $(libpidgin_la_OBJECTS) $(libpidgin_la_LIBADD) $(LIBS)
+libtelepathy.la: $(libtelepathy_la_OBJECTS) $(libtelepathy_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libtelepathy_la_LINK) -rpath $(statusprovidersdir) $(libtelepathy_la_OBJECTS) $(libtelepathy_la_LIBADD) $(LIBS)
 install-libexecPROGRAMS: $(libexec_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(libexecdir)" || $(MKDIR_P) "$(DESTDIR)$(libexecdir)"
@@ -474,8 +754,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-messages-service-dbus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-messages-service.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-seen-db.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-status-items.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libemesene_la-status-provider-emesene.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libindicator_messages_status_provider_la-status-provider.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmc5_la-status-provider-mc5-marshal.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmc5_la-status-provider-mc5.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmessaging_la-gen-messages-service.xml.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmessaging_la-indicator-messages.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libpidgin_la-status-provider-pidgin-marshal.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libpidgin_la-status-provider-pidgin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtelepathy_la-status-provider-telepathy-marshal.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtelepathy_la-status-provider-telepathy.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -501,6 +790,38 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
+libemesene_la-status-provider-emesene.lo: status-provider-emesene.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libemesene_la_CFLAGS) $(CFLAGS) -MT libemesene_la-status-provider-emesene.lo -MD -MP -MF $(DEPDIR)/libemesene_la-status-provider-emesene.Tpo -c -o libemesene_la-status-provider-emesene.lo `test -f 'status-provider-emesene.c' || echo '$(srcdir)/'`status-provider-emesene.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libemesene_la-status-provider-emesene.Tpo $(DEPDIR)/libemesene_la-status-provider-emesene.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='status-provider-emesene.c' object='libemesene_la-status-provider-emesene.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libemesene_la_CFLAGS) $(CFLAGS) -c -o libemesene_la-status-provider-emesene.lo `test -f 'status-provider-emesene.c' || echo '$(srcdir)/'`status-provider-emesene.c
+
+libindicator_messages_status_provider_la-status-provider.lo: status-provider.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libindicator_messages_status_provider_la_CFLAGS) $(CFLAGS) -MT libindicator_messages_status_provider_la-status-provider.lo -MD -MP -MF $(DEPDIR)/libindicator_messages_status_provider_la-status-provider.Tpo -c -o libindicator_messages_status_provider_la-status-provider.lo `test -f 'status-provider.c' || echo '$(srcdir)/'`status-provider.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libindicator_messages_status_provider_la-status-provider.Tpo $(DEPDIR)/libindicator_messages_status_provider_la-status-provider.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='status-provider.c' object='libindicator_messages_status_provider_la-status-provider.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libindicator_messages_status_provider_la_CFLAGS) $(CFLAGS) -c -o libindicator_messages_status_provider_la-status-provider.lo `test -f 'status-provider.c' || echo '$(srcdir)/'`status-provider.c
+
+libmc5_la-status-provider-mc5.lo: status-provider-mc5.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmc5_la_CFLAGS) $(CFLAGS) -MT libmc5_la-status-provider-mc5.lo -MD -MP -MF $(DEPDIR)/libmc5_la-status-provider-mc5.Tpo -c -o libmc5_la-status-provider-mc5.lo `test -f 'status-provider-mc5.c' || echo '$(srcdir)/'`status-provider-mc5.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libmc5_la-status-provider-mc5.Tpo $(DEPDIR)/libmc5_la-status-provider-mc5.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='status-provider-mc5.c' object='libmc5_la-status-provider-mc5.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmc5_la_CFLAGS) $(CFLAGS) -c -o libmc5_la-status-provider-mc5.lo `test -f 'status-provider-mc5.c' || echo '$(srcdir)/'`status-provider-mc5.c
+
+libmc5_la-status-provider-mc5-marshal.lo: status-provider-mc5-marshal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmc5_la_CFLAGS) $(CFLAGS) -MT libmc5_la-status-provider-mc5-marshal.lo -MD -MP -MF $(DEPDIR)/libmc5_la-status-provider-mc5-marshal.Tpo -c -o libmc5_la-status-provider-mc5-marshal.lo `test -f 'status-provider-mc5-marshal.c' || echo '$(srcdir)/'`status-provider-mc5-marshal.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libmc5_la-status-provider-mc5-marshal.Tpo $(DEPDIR)/libmc5_la-status-provider-mc5-marshal.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='status-provider-mc5-marshal.c' object='libmc5_la-status-provider-mc5-marshal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmc5_la_CFLAGS) $(CFLAGS) -c -o libmc5_la-status-provider-mc5-marshal.lo `test -f 'status-provider-mc5-marshal.c' || echo '$(srcdir)/'`status-provider-mc5-marshal.c
+
 libmessaging_la-indicator-messages.lo: indicator-messages.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmessaging_la_CFLAGS) $(CFLAGS) -MT libmessaging_la-indicator-messages.lo -MD -MP -MF $(DEPDIR)/libmessaging_la-indicator-messages.Tpo -c -o libmessaging_la-indicator-messages.lo `test -f 'indicator-messages.c' || echo '$(srcdir)/'`indicator-messages.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libmessaging_la-indicator-messages.Tpo $(DEPDIR)/libmessaging_la-indicator-messages.Plo
@@ -516,6 +837,38 @@ libmessaging_la-gen-messages-service.xml.lo: gen-messages-service.xml.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gen-messages-service.xml.c' object='libmessaging_la-gen-messages-service.xml.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmessaging_la_CFLAGS) $(CFLAGS) -c -o libmessaging_la-gen-messages-service.xml.lo `test -f 'gen-messages-service.xml.c' || echo '$(srcdir)/'`gen-messages-service.xml.c
+
+libpidgin_la-status-provider-pidgin.lo: status-provider-pidgin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libpidgin_la_CFLAGS) $(CFLAGS) -MT libpidgin_la-status-provider-pidgin.lo -MD -MP -MF $(DEPDIR)/libpidgin_la-status-provider-pidgin.Tpo -c -o libpidgin_la-status-provider-pidgin.lo `test -f 'status-provider-pidgin.c' || echo '$(srcdir)/'`status-provider-pidgin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libpidgin_la-status-provider-pidgin.Tpo $(DEPDIR)/libpidgin_la-status-provider-pidgin.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='status-provider-pidgin.c' object='libpidgin_la-status-provider-pidgin.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libpidgin_la_CFLAGS) $(CFLAGS) -c -o libpidgin_la-status-provider-pidgin.lo `test -f 'status-provider-pidgin.c' || echo '$(srcdir)/'`status-provider-pidgin.c
+
+libpidgin_la-status-provider-pidgin-marshal.lo: status-provider-pidgin-marshal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libpidgin_la_CFLAGS) $(CFLAGS) -MT libpidgin_la-status-provider-pidgin-marshal.lo -MD -MP -MF $(DEPDIR)/libpidgin_la-status-provider-pidgin-marshal.Tpo -c -o libpidgin_la-status-provider-pidgin-marshal.lo `test -f 'status-provider-pidgin-marshal.c' || echo '$(srcdir)/'`status-provider-pidgin-marshal.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libpidgin_la-status-provider-pidgin-marshal.Tpo $(DEPDIR)/libpidgin_la-status-provider-pidgin-marshal.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='status-provider-pidgin-marshal.c' object='libpidgin_la-status-provider-pidgin-marshal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libpidgin_la_CFLAGS) $(CFLAGS) -c -o libpidgin_la-status-provider-pidgin-marshal.lo `test -f 'status-provider-pidgin-marshal.c' || echo '$(srcdir)/'`status-provider-pidgin-marshal.c
+
+libtelepathy_la-status-provider-telepathy.lo: status-provider-telepathy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libtelepathy_la_CFLAGS) $(CFLAGS) -MT libtelepathy_la-status-provider-telepathy.lo -MD -MP -MF $(DEPDIR)/libtelepathy_la-status-provider-telepathy.Tpo -c -o libtelepathy_la-status-provider-telepathy.lo `test -f 'status-provider-telepathy.c' || echo '$(srcdir)/'`status-provider-telepathy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtelepathy_la-status-provider-telepathy.Tpo $(DEPDIR)/libtelepathy_la-status-provider-telepathy.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='status-provider-telepathy.c' object='libtelepathy_la-status-provider-telepathy.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libtelepathy_la_CFLAGS) $(CFLAGS) -c -o libtelepathy_la-status-provider-telepathy.lo `test -f 'status-provider-telepathy.c' || echo '$(srcdir)/'`status-provider-telepathy.c
+
+libtelepathy_la-status-provider-telepathy-marshal.lo: status-provider-telepathy-marshal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libtelepathy_la_CFLAGS) $(CFLAGS) -MT libtelepathy_la-status-provider-telepathy-marshal.lo -MD -MP -MF $(DEPDIR)/libtelepathy_la-status-provider-telepathy-marshal.Tpo -c -o libtelepathy_la-status-provider-telepathy-marshal.lo `test -f 'status-provider-telepathy-marshal.c' || echo '$(srcdir)/'`status-provider-telepathy-marshal.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtelepathy_la-status-provider-telepathy-marshal.Tpo $(DEPDIR)/libtelepathy_la-status-provider-telepathy-marshal.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='status-provider-telepathy-marshal.c' object='libtelepathy_la-status-provider-telepathy-marshal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libtelepathy_la_CFLAGS) $(CFLAGS) -c -o libtelepathy_la-status-provider-telepathy-marshal.lo `test -f 'status-provider-telepathy-marshal.c' || echo '$(srcdir)/'`status-provider-telepathy-marshal.c
 
 indicator_messages_service-default-applications.o: default-applications.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -MT indicator_messages_service-default-applications.o -MD -MP -MF $(DEPDIR)/indicator_messages_service-default-applications.Tpo -c -o indicator_messages_service-default-applications.o `test -f 'default-applications.c' || echo '$(srcdir)/'`default-applications.c
@@ -645,11 +998,67 @@ indicator_messages_service-seen-db.obj: seen-db.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -c -o indicator_messages_service-seen-db.obj `if test -f 'seen-db.c'; then $(CYGPATH_W) 'seen-db.c'; else $(CYGPATH_W) '$(srcdir)/seen-db.c'; fi`
 
+indicator_messages_service-status-items.o: status-items.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -MT indicator_messages_service-status-items.o -MD -MP -MF $(DEPDIR)/indicator_messages_service-status-items.Tpo -c -o indicator_messages_service-status-items.o `test -f 'status-items.c' || echo '$(srcdir)/'`status-items.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/indicator_messages_service-status-items.Tpo $(DEPDIR)/indicator_messages_service-status-items.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='status-items.c' object='indicator_messages_service-status-items.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -c -o indicator_messages_service-status-items.o `test -f 'status-items.c' || echo '$(srcdir)/'`status-items.c
+
+indicator_messages_service-status-items.obj: status-items.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -MT indicator_messages_service-status-items.obj -MD -MP -MF $(DEPDIR)/indicator_messages_service-status-items.Tpo -c -o indicator_messages_service-status-items.obj `if test -f 'status-items.c'; then $(CYGPATH_W) 'status-items.c'; else $(CYGPATH_W) '$(srcdir)/status-items.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/indicator_messages_service-status-items.Tpo $(DEPDIR)/indicator_messages_service-status-items.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='status-items.c' object='indicator_messages_service-status-items.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(indicator_messages_service_CFLAGS) $(CFLAGS) -c -o indicator_messages_service-status-items.obj `if test -f 'status-items.c'; then $(CYGPATH_W) 'status-items.c'; else $(CYGPATH_W) '$(srcdir)/status-items.c'; fi`
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-pkgconfigDATA: $(pkgconfig_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(pkgconfigdir)" || $(MKDIR_P) "$(DESTDIR)$(pkgconfigdir)"
+	@list='$(pkgconfig_DATA)'; test -n "$(pkgconfigdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(pkgconfigdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(pkgconfigdir)" || exit $$?; \
+	done
+
+uninstall-pkgconfigDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(pkgconfig_DATA)'; test -n "$(pkgconfigdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(pkgconfigdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(pkgconfigdir)" && rm -f $$files
+install-libindicator_messages_status_provider_laHEADERS: $(libindicator_messages_status_provider_la_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(libindicator_messages_status_provider_ladir)" || $(MKDIR_P) "$(DESTDIR)$(libindicator_messages_status_provider_ladir)"
+	@list='$(libindicator_messages_status_provider_la_HEADERS)'; test -n "$(libindicator_messages_status_provider_ladir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(libindicator_messages_status_provider_ladir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(libindicator_messages_status_provider_ladir)" || exit $$?; \
+	done
+
+uninstall-libindicator_messages_status_provider_laHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(libindicator_messages_status_provider_la_HEADERS)'; test -n "$(libindicator_messages_status_provider_ladir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(libindicator_messages_status_provider_ladir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(libindicator_messages_status_provider_ladir)" && rm -f $$files
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -736,9 +1145,9 @@ distdir: $(DISTFILES)
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS)
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(messaginglibdir)" "$(DESTDIR)$(libexecdir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(messaginglibdir)" "$(DESTDIR)$(statusprovidersdir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(libindicator_messages_status_provider_ladir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -764,6 +1173,7 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -771,8 +1181,9 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-generic clean-libexecPROGRAMS clean-libtool \
-	clean-messaginglibLTLIBRARIES mostlyclean-am
+clean-am: clean-generic clean-libLTLIBRARIES clean-libexecPROGRAMS \
+	clean-libtool clean-messaginglibLTLIBRARIES \
+	clean-statusprovidersLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -792,13 +1203,16 @@ info: info-am
 
 info-am:
 
-install-data-am: install-messaginglibLTLIBRARIES
+install-data-am:  \
+	install-libindicator_messages_status_provider_laHEADERS \
+	install-messaginglibLTLIBRARIES install-pkgconfigDATA \
+	install-statusprovidersLTLIBRARIES
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-libexecPROGRAMS
+install-exec-am: install-libLTLIBRARIES install-libexecPROGRAMS
 
 install-html: install-html-am
 
@@ -838,27 +1252,34 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-libexecPROGRAMS \
-	uninstall-messaginglibLTLIBRARIES
+uninstall-am: uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
+	uninstall-libindicator_messages_status_provider_laHEADERS \
+	uninstall-messaginglibLTLIBRARIES uninstall-pkgconfigDATA \
+	uninstall-statusprovidersLTLIBRARIES
 
 .MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libexecPROGRAMS clean-libtool \
-	clean-messaginglibLTLIBRARIES ctags distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libexecPROGRAMS install-man \
-	install-messaginglibLTLIBRARIES install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
+	clean-libLTLIBRARIES clean-libexecPROGRAMS clean-libtool \
+	clean-messaginglibLTLIBRARIES clean-statusprovidersLTLIBRARIES \
+	ctags distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLTLIBRARIES install-libexecPROGRAMS \
+	install-libindicator_messages_status_provider_laHEADERS \
+	install-man install-messaginglibLTLIBRARIES install-pdf \
+	install-pdf-am install-pkgconfigDATA install-ps install-ps-am \
+	install-statusprovidersLTLIBRARIES install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-libexecPROGRAMS \
-	uninstall-messaginglibLTLIBRARIES
+	tags uninstall uninstall-am uninstall-libLTLIBRARIES \
+	uninstall-libexecPROGRAMS \
+	uninstall-libindicator_messages_status_provider_laHEADERS \
+	uninstall-messaginglibLTLIBRARIES uninstall-pkgconfigDATA \
+	uninstall-statusprovidersLTLIBRARIES
 
 
 gen-%.xml.h: %.xml
@@ -870,6 +1291,42 @@ gen-%.xml.c: %.xml
 	echo "const char * _$(subst -,_,$(subst .,_,$(basename $(notdir $<)))) = " > $@
 	@sed -e "s:\":\\\\\":g" -e s:^:\": -e s:\$$:\\\\n\": $< >> $@
 	@echo ";" >> $@
+
+%.pc: %.pc.in
+	sed \
+		-e "s|\@status_provider_dir\@|$(STATUS_PROVIDER_DIR)|" \
+		-e "s|\@status_provider_api_version\@|$(STATUS_PROVIDER_API_VERSION)|" \
+		$< > $@
+
+status-provider-pidgin-marshal.h: $(srcdir)/status-provider-pidgin.list
+	glib-genmarshal --header \
+		--prefix=_status_provider_pidgin_marshal $(srcdir)/status-provider-pidgin.list \
+		> status-provider-pidgin-marshal.h
+
+status-provider-pidgin-marshal.c: $(srcdir)/status-provider-pidgin.list
+	glib-genmarshal --body \
+		--prefix=_status_provider_pidgin_marshal $(srcdir)/status-provider-pidgin.list \
+		> status-provider-pidgin-marshal.c
+
+status-provider-telepathy-marshal.h: $(srcdir)/status-provider-telepathy.list
+	glib-genmarshal --header \
+		--prefix=_status_provider_telepathy_marshal $(srcdir)/status-provider-telepathy.list \
+		> status-provider-telepathy-marshal.h
+
+status-provider-telepathy-marshal.c: $(srcdir)/status-provider-telepathy.list
+	glib-genmarshal --body \
+		--prefix=_status_provider_telepathy_marshal $(srcdir)/status-provider-telepathy.list \
+		> status-provider-telepathy-marshal.c
+
+status-provider-mc5-marshal.h: $(srcdir)/status-provider-mc5.list
+	glib-genmarshal --header \
+		--prefix=_status_provider_mc5_marshal $(srcdir)/status-provider-mc5.list \
+		> status-provider-mc5-marshal.h
+
+status-provider-mc5-marshal.c: $(srcdir)/status-provider-mc5.list
+	glib-genmarshal --body \
+		--prefix=_status_provider_mc5_marshal $(srcdir)/status-provider-mc5.list \
+		> status-provider-mc5-marshal.c
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
