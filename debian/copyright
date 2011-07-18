@@ -1,5 +1,5 @@
 Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=135
-Name: libdbusmenu
+Name: indicator-messages
 Maintainer: Ted Gould <ted@canonical.com>
 Source: https://launchpad.net/indicator-messages
 
