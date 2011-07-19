@@ -6,3 +6,4 @@ src/default-applications.c
 src/launcher-menu-item.c
 src/im-menu-item.c
 src/app-menu-item.c
+src/status-items.c

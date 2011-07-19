@@ -1,0 +1,15 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+bindir=@bindir@
+includedir=@includedir@
+
+statusproviderdir=@status_provider_dir@
+
+Cflags: -I${includedir}/indicator-messages-status-provider-0.@status_provider_api_version@
+Requires: gobject-2.0
+Libs: -L${libdir} -lindicator-messages-status-provider
+
+Name: indicator-messages-status-provider
+Description: Status providers for the indicator-messages menu.
+Version: @VERSION@

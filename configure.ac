@@ -4,7 +4,7 @@ AC_INIT(src/indicator-messages.c)
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-messages, 0.4.91)
+AM_INIT_AUTOMAKE(indicator-messages, 0.4.92)
 
 AM_MAINTAINER_MODE
 
@@ -67,6 +67,28 @@ AS_IF([test "x$with_gtk" = x3],
 )
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
+
+###########################
+# Status Provider Deps
+###########################
+
+PKG_CHECK_MODULES(STATUS_PROVIDER_PIDGIN, dbus-glib-1)
+AC_SUBST(STATUS_PROVIDER_PIDGIN_CFLAGS)
+AC_SUBST(STATUS_PROVIDER_PIDGIN_LIBS)
+
+PKG_CHECK_MODULES(STATUS_PROVIDER_TELEPATHY, dbus-glib-1)
+AC_SUBST(STATUS_PROVIDER_TELEPATHY_CFLAGS)
+AC_SUBST(STATUS_PROVIDER_TELEPATHY_LIBS)
+
+TELEPATHYGLIB_REQUIRED_VERSION=0.9.0
+PKG_CHECK_MODULES(STATUS_PROVIDER_MC5, dbus-glib-1
+                                       telepathy-glib >= $TELEPATHYGLIB_REQUIRED_VERSION)
+AC_SUBST(STATUS_PROVIDER_MC5_CFLAGS)
+AC_SUBST(STATUS_PROVIDER_MC5_LIBS)
+
+PKG_CHECK_MODULES(STATUS_PROVIDER_EMESENE, dbus-glib-1)
+AC_SUBST(STATUS_PROVIDER_EMESENE_CFLAGS)
+AC_SUBST(STATUS_PROVIDER_EMESENE_LIBS)
 
 ###########################
 # Check to see if we're local
@@ -137,6 +159,7 @@ AM_GLIB_GNU_GETTEXT
 AC_OUTPUT([
 Makefile
 src/Makefile
+src/indicator-messages-status-provider-0.5.pc.in
 data/Makefile
 data/icons/Makefile
 data/icons/16x16/Makefile
