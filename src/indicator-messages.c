@@ -75,12 +75,14 @@ INDICATOR_SET_TYPE(INDICATOR_MESSAGES_TYPE)
 
 /* Globals */
 static GtkWidget * main_image = NULL;
+static GtkWidget * clear_notifications = NULL;
 static GDBusProxy * icon_proxy = NULL;
 static GtkSizeGroup * indicator_right_group = NULL;
 static GDBusNodeInfo *            bus_node_info = NULL;
 static GDBusInterfaceInfo *       bus_interface_info = NULL;
 static const gchar *              accessible_desc = NULL;
 static IndicatorObject *          indicator = NULL;
+static gboolean                   attention = FALSE;
 
 /* Prototypes */
 static void indicator_messages_class_init (IndicatorMessagesClass *klass);
@@ -119,6 +121,33 @@ update_a11y_desc (void)
 	g_list_free(entries);
 
 	return;
+}
+
+static void
+clear_notifications_show(gboolean show)
+{
+	g_return_if_fail(clear_notifications);
+
+	GtkWidget *separator = g_object_get_data(G_OBJECT(clear_notifications), "separator");
+	g_return_if_fail(separator);
+
+	if (show) {
+		gtk_widget_show(separator);
+		gtk_widget_show(clear_notifications);
+	} else {
+		gtk_widget_hide(separator);
+		gtk_widget_hide(clear_notifications);
+	}
+}
+
+static void
+clear_attention(void) {
+	g_return_if_fail(attention);
+
+	indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
+	accessible_desc = _("Messages");
+	clear_notifications_show(FALSE);
+	update_a11y_desc();
 }
 
 /* Initialize the one-timers */
@@ -213,10 +242,13 @@ proxy_signal (GDBusProxy * proxy, const gchar * sender, const gchar * signal, GV
 		if (prop) {
 			indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
 			accessible_desc = _("New Messages");
+			attention = TRUE;
 		} else {
 			indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
 			accessible_desc = _("Messages");
+			attention = FALSE;
 		}
+		clear_notifications_show(attention);
 	} else if (g_strcmp0("IconChanged", signal) == 0) {
 		if (prop) {
 			gtk_widget_hide(main_image);
@@ -250,10 +282,14 @@ attention_cb (GObject * object, GAsyncResult * ares, gpointer user_data)
 	if (prop) {
 		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages-new");
 		accessible_desc = _("New Messages");
+		attention = TRUE;
 	} else {
 		indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
 		accessible_desc = _("Messages");
+		attention = FALSE;
 	}
+
+	clear_notifications_show(attention);
 
 	update_a11y_desc();
 
@@ -751,6 +787,18 @@ get_menu (IndicatorObject * io)
 	dbusmenu_client_add_type_handler(DBUSMENU_CLIENT(client), INDICATOR_MENUITEM_TYPE, new_indicator_item);
 	dbusmenu_client_add_type_handler(DBUSMENU_CLIENT(client), APPLICATION_MENUITEM_TYPE, new_application_item);
 
+	GtkWidget *sep = gtk_separator_menu_item_new();
+	gtk_widget_show(sep);
+	gtk_container_add (GTK_CONTAINER(menu), sep);
+
+	clear_notifications = gtk_menu_item_new_with_label(_("Clear Notifications"));
+	gtk_widget_show(clear_notifications);
+	gtk_container_add(GTK_CONTAINER(menu), clear_notifications);
+	g_object_set_data(G_OBJECT(clear_notifications), "separator", sep);
+	g_signal_connect(clear_notifications, "activate", G_CALLBACK(clear_attention), NULL);
+
+	clear_notifications_show(attention);
+
 	return GTK_MENU(menu);
 }
 
@@ -764,9 +812,9 @@ get_accessible_desc (IndicatorObject * io)
 /* Hide the notifications on middle-click over the indicator-messages */
 static void
 indicator_messages_middle_click (IndicatorObject * io, IndicatorObjectEntry * entry,
-                              guint time, gint x, gint y, gpointer data)
+                                 guint time, gint x, gint y, gpointer data)
 {
-	indicator_image_helper_update(GTK_IMAGE(main_image), "indicator-messages");
-	accessible_desc = _("Messages");
-	update_a11y_desc();
+	g_return_if_fail(attention);
+
+	clear_attention();
 }
