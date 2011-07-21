@@ -12,6 +12,7 @@
 		<method name="IconShown">
 			<arg type="b" name="hidden" direction="out" />
 		</method>
+		<method name="ClearAttention" />
 
 <!-- Signals -->
 		<signal name="AttentionChanged">
