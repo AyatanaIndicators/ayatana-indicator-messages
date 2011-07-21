@@ -93,9 +93,8 @@ static GtkImage * get_icon                (IndicatorObject * io);
 static GtkMenu * get_menu                 (IndicatorObject * io);
 static void indicator_messages_middle_click (IndicatorObject * io,
                                              IndicatorObjectEntry * entry,
-                                             guint time, gint x, gint y,
-                                             gpointer data);
-static const gchar * get_accessible_desc      (IndicatorObject * io);
+                                             guint time, gpointer data);
+static const gchar * get_accessible_desc  (IndicatorObject * io);
 static void connection_change             (IndicatorServiceManager * sm,
                                            gboolean connected,
                                            gpointer user_data);
@@ -812,7 +811,7 @@ get_accessible_desc (IndicatorObject * io)
 /* Hide the notifications on middle-click over the indicator-messages */
 static void
 indicator_messages_middle_click (IndicatorObject * io, IndicatorObjectEntry * entry,
-                                 guint time, gint x, gint y, gpointer data)
+                                 guint time, gpointer data)
 {
 	g_return_if_fail(attention);
 
