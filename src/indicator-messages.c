@@ -813,8 +813,18 @@ static void
 indicator_messages_middle_click (IndicatorObject * io, IndicatorObjectEntry * entry,
                                  guint time, gpointer data)
 {
-	if (!attention)
+	if (icon_proxy == NULL) {
 		return;
+	}
 
-	clear_attention();
+	g_dbus_proxy_call(icon_proxy,
+	                  "ClearAttention",
+	                  NULL, /* params */
+	                  G_DBUS_CALL_FLAGS_NONE,
+	                  -1, /* timeout */
+	                  NULL, /* cancel */
+	                  NULL,
+	                  NULL);
+
+	return;
 }
