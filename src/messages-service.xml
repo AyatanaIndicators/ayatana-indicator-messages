@@ -3,9 +3,6 @@
 	<interface name="com.canonical.indicator.messages.service">
 
 <!-- Methods -->
-		<method name="Watch">
-			<annotation name="org.freedesktop.DBus.GLib.Async" value="true" />
-		</method>
 		<method name="AttentionRequested">
 			<arg type="b" name="dot" direction="out" />
 		</method>
