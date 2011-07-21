@@ -813,7 +813,8 @@ static void
 indicator_messages_middle_click (IndicatorObject * io, IndicatorObjectEntry * entry,
                                  guint time, gpointer data)
 {
-	g_return_if_fail(attention);
+	if (!attention)
+		return;
 
 	clear_attention();
 }
