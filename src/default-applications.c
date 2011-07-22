@@ -21,20 +21,22 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <glib.h>
 #include <glib/gi18n.h>
+#include <gio/gio.h>
+#include <gio/gdesktopappinfo.h>
 #include "default-applications.h"
 
 struct default_db_t {
 	const gchar * desktop_file;
+	const gchar * uri_scheme;
 	const gchar * name;
 	const gchar * setupname;
 	const gchar * icon;
 };
 
 struct default_db_t default_db[] = {
-	{"evolution.desktop", N_("Mail"),           N_("Set Up Mail..."),              "applications-email-panel"},
-	{"empathy.desktop",   N_("Chat"),           N_("Set Up Chat..."),              "applications-chat-panel"},
-	{"gwibber.desktop",   N_("Broadcast"),      N_("Set Up Broadcast Account..."), "applications-microblogging-panel"},
-	{NULL, NULL}
+	{NULL,	              "mailto",   N_("Mail"),           N_("Set Up Mail..."),              "applications-email-panel"},
+	{"empathy.desktop",   NULL,       N_("Chat"),           N_("Set Up Chat..."),              "applications-chat-panel"},
+	{"gwibber.desktop",   NULL,       N_("Broadcast"),      N_("Set Up Broadcast Account..."), "applications-microblogging-panel"},
 };
 
 static struct default_db_t *
@@ -44,17 +46,40 @@ get_default_helper (const gchar * desktop_path)
 	gchar * basename = g_path_get_basename(desktop_path);
 	g_return_val_if_fail(basename != NULL, NULL);
 
+	gboolean found = FALSE;
 	gint i;
-	for (i = 0; default_db[i].desktop_file != NULL; i++) {
-		if (g_strcmp0(default_db[i].desktop_file, basename) == 0) {
-			break;
+	gint length = G_N_ELEMENTS(default_db);
+	for (i = 0; i < length && !found; i++) {
+		if (default_db[i].desktop_file) {
+			if (g_strcmp0(default_db[i].desktop_file, basename) == 0) {
+				found = TRUE;
+			}
+		} else if (default_db[i].uri_scheme) {
+			GAppInfo *info = g_app_info_get_default_for_uri_scheme(default_db[i].uri_scheme);
+			if (!info) {
+				continue;
+			}
+
+			const gchar * filename = g_desktop_app_info_get_filename(G_DESKTOP_APP_INFO(info));
+			if (!filename) {
+				g_object_unref(info);
+				continue;
+			}
+
+			gchar * default_basename = g_path_get_basename(filename);
+			g_object_unref(info);
+			if (g_strcmp0(default_basename, basename) == 0) {
+				found = TRUE;
+			}
+
+			g_free(default_basename);
 		}
 	}
 
 	g_free(basename);
 
-	if (default_db[i].desktop_file != NULL) {
-		return &default_db[i];
+	if (found) {
+		return &default_db[i - 1];
 	}
 
 	return NULL;
