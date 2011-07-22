@@ -48,7 +48,7 @@ get_default_helper (const gchar * desktop_path)
 
 	gboolean found = FALSE;
 	gint i;
-	gint length = sizeof(default_db)/sizeof(default_db[0]);
+	gint length = G_N_ELEMENTS(default_db);
 	for (i = 0; i < length && !found; i++) {
 		if (default_db[i].desktop_file) {
 			if (g_strcmp0(default_db[i].desktop_file, basename) == 0) {
