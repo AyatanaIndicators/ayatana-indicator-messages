@@ -49,11 +49,10 @@ get_default_helper (const gchar * desktop_path)
 	gboolean found = FALSE;
 	gint i;
 	gint length = sizeof(default_db)/sizeof(default_db[0]);
-	for (i = 0; i < length; i++) {
+	for (i = 0; i < length && !found; i++) {
 		if (default_db[i].desktop_file) {
 			if (g_strcmp0(default_db[i].desktop_file, basename) == 0) {
 				found = TRUE;
-				break;
 			}
 		} else if (default_db[i].uri_scheme) {
 			GAppInfo *info = g_app_info_get_default_for_uri_scheme(default_db[i].uri_scheme);
@@ -71,8 +70,6 @@ get_default_helper (const gchar * desktop_path)
 			g_object_unref(info);
 			if (g_strcmp0(default_basename, basename) == 0) {
 				found = TRUE;
-				g_free(default_basename);
-				break;
 			}
 
 			g_free(default_basename);
@@ -82,7 +79,7 @@ get_default_helper (const gchar * desktop_path)
 	g_free(basename);
 
 	if (found) {
-		return &default_db[i];
+		return &default_db[i - 1];
 	}
 
 	return NULL;
