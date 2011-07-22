@@ -965,6 +965,11 @@ resort_menu (DbusmenuMenuitem * menushell)
 		launcherentry = launcherentry->next;
 	}
 
+	if (clear_attention != NULL) {
+		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), clear_attention, position);
+		position++; /* Not needed, but reduce bugs on code tacked on here, compiler will remove */
+	}
+
 	return;
 }
 
