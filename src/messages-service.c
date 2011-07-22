@@ -837,7 +837,6 @@ resort_menu (DbusmenuMenuitem * menushell)
 	guint position = 0;
 	GList * serverentry;
 	GList * launcherentry = launcherList;
-	DbusmenuMenuitem * last_separator = NULL;
 
 	g_debug("Reordering Menu:");
 	
@@ -874,7 +873,6 @@ resort_menu (DbusmenuMenuitem * menushell)
 				if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
 					/* Only clear the visiblity if we're not eclipsed */
 					dbusmenu_menuitem_property_set_bool(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
-					last_separator = li->separator;
 				}
 				position++;
 
@@ -930,7 +928,6 @@ resort_menu (DbusmenuMenuitem * menushell)
 				/* Note, this isn't the last if we can't see it */
 			} else {
 				dbusmenu_menuitem_property_set_bool(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
-				last_separator = si->separator;
 			}
 
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->separator), position);
@@ -962,17 +959,10 @@ resort_menu (DbusmenuMenuitem * menushell)
 		if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
 			/* Only clear the visiblity if we're not eclipsed */
 			dbusmenu_menuitem_property_set_bool(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
-			last_separator = li->separator;
 		}
 		position++;
 
 		launcherentry = launcherentry->next;
-	}
-
-	if (last_separator != NULL) {
-		dbusmenu_menuitem_property_set_bool(last_separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
-	} else {
-		g_warning("No last separator on resort");
 	}
 
 	return;
