@@ -28,7 +28,7 @@ Vcs-Browser: http://bazaar.launchpad.net/~ubuntu-desktop/indicator-messages/ubun
 Package: indicator-messages
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: indicator-applet | indicator-renderer, indicator-status-provider-mc5, gwibber
+Recommends: indicator-applet | indicator-renderer, indicator-status-provider-mc5
 Replaces: indicator-me
 Breaks: indicator-applet (<< 0.3.0)
 Conflicts: indicator-me

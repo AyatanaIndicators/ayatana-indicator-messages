@@ -799,6 +799,8 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 	AppMenuItem * appmenu = APP_MENU_ITEM(data_mi);
 	if (!g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME((IndicateListenerServer*)msl->server), INDICATE_LISTENER_SERVER_DBUS_NAME(app_menu_item_get_server(appmenu)))) {
 		msl->found = TRUE;
+		/* Return a position at the end of our shortcuts */
+		msl->position += g_list_length(app_menu_item_get_items(appmenu));		
 	} else {
 		msl->position++;
 	}
