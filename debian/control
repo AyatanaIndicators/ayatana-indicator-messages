@@ -1,7 +1,7 @@
 Source: indicator-messages
 Section: gnome
 Priority: optional
-Maintainer: Ubuntu Core Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 XSBC-Original-Maintainer: The Ayatana Packagers <pkg-ayatana-devel@lists.alioth.debian.org>
 Uploaders: Evgeni Golov <evgeni@debian.org>
 Build-Depends: debhelper (>= 5.0),

@@ -799,7 +799,7 @@ with_sysroot
 enable_libtool_lock
 enable_silent_rules
 enable_deprecations
-with_indicator_gtk
+with_gtk
 enable_localinstall
 '
       ac_precious_vars='build_alias
@@ -1466,7 +1466,7 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot=DIR Search for dependent libraries within DIR
                         (or the compiler's sysroot if not specified).
-  --with-indicator-gtk    Which version of gtk to use for the indicator
+  --with-gtk              Which version of gtk to use for the indicator
                           [default=3]
 
 Some influential environment variables:
@@ -2758,7 +2758,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=indicator-messages
- VERSION=0.4.92
+ VERSION=0.4.93
 
 
 cat >>confdefs.h <<_ACEOF
@@ -12794,11 +12794,11 @@ INDICATOR_REQUIRED_VERSION=0.3.19
 DBUSMENUGTK_REQUIRED_VERSION=0.3.94
 
 
-# Check whether --with-indicator-gtk was given.
-if test "${with_indicator_gtk+set}" = set; then :
-  withval=$with_indicator_gtk;
+# Check whether --with-gtk was given.
+if test "${with_gtk+set}" = set; then :
+  withval=$with_gtk;
 else
-  with_indicator_gtk=3
+  with_gtk=3
 fi
 
 
@@ -12922,7 +12922,7 @@ $as_echo "no" >&6; }
 		PKG_CONFIG=""
 	fi
 fi
-if test "x$with_indicator_gtk" = x3; then :
+if test "x$with_gtk" = x3; then :
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for APPLET" >&5
@@ -12935,12 +12935,12 @@ if test -n "$APPLET_CFLAGS"; then
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk+-3.0 >= \$GTK3_REQUIRED_VERSION
                                    gio-unix-2.0 >= \$GIO_UNIX_REQUIRED_VERSION
                                    indicator3-0.4 >= \$INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= \$INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= \$INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk3-0.4 >= \$DBUSMENUGTK_REQUIRED_VERSION\""; } >&5
   ($PKG_CONFIG --exists --print-errors "gtk+-3.0 >= $GTK3_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
@@ -12948,7 +12948,7 @@ if test -n "$APPLET_CFLAGS"; then
   pkg_cv_APPLET_CFLAGS=`$PKG_CONFIG --cflags "gtk+-3.0 >= $GTK3_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
@@ -12964,12 +12964,12 @@ if test -n "$APPLET_LIBS"; then
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk+-3.0 >= \$GTK3_REQUIRED_VERSION
                                    gio-unix-2.0 >= \$GIO_UNIX_REQUIRED_VERSION
                                    indicator3-0.4 >= \$INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= \$INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= \$INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk3-0.4 >= \$DBUSMENUGTK_REQUIRED_VERSION\""; } >&5
   ($PKG_CONFIG --exists --print-errors "gtk+-3.0 >= $GTK3_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
@@ -12977,7 +12977,7 @@ if test -n "$APPLET_LIBS"; then
   pkg_cv_APPLET_LIBS=`$PKG_CONFIG --libs "gtk+-3.0 >= $GTK3_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
@@ -13002,13 +13002,13 @@ fi
 	        APPLET_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gtk+-3.0 >= $GTK3_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION" 2>&1`
         else
 	        APPLET_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gtk+-3.0 >= $GTK3_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
@@ -13017,7 +13017,7 @@ fi
 	as_fn_error $? "Package requirements (gtk+-3.0 >= $GTK3_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION) were not met:
 
 $APPLET_PKG_ERRORS
@@ -13051,7 +13051,7 @@ $as_echo "yes" >&6; }
 
 fi
 
-elif test "x$with_indicator_gtk" = x2; then :
+elif test "x$with_gtk" = x2; then :
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for APPLET" >&5
@@ -13064,12 +13064,12 @@ if test -n "$APPLET_CFLAGS"; then
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk+-2.0 >= \$GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= \$GIO_UNIX_REQUIRED_VERSION
                                    indicator-0.4 >= \$INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= \$INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= \$INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk-0.4 >= \$DBUSMENUGTK_REQUIRED_VERSION\""; } >&5
   ($PKG_CONFIG --exists --print-errors "gtk+-2.0 >= $GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
@@ -13077,7 +13077,7 @@ if test -n "$APPLET_CFLAGS"; then
   pkg_cv_APPLET_CFLAGS=`$PKG_CONFIG --cflags "gtk+-2.0 >= $GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
@@ -13093,12 +13093,12 @@ if test -n "$APPLET_LIBS"; then
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk+-2.0 >= \$GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= \$GIO_UNIX_REQUIRED_VERSION
                                    indicator-0.4 >= \$INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= \$INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= \$INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk-0.4 >= \$DBUSMENUGTK_REQUIRED_VERSION\""; } >&5
   ($PKG_CONFIG --exists --print-errors "gtk+-2.0 >= $GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
@@ -13106,7 +13106,7 @@ if test -n "$APPLET_LIBS"; then
   pkg_cv_APPLET_LIBS=`$PKG_CONFIG --libs "gtk+-2.0 >= $GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
@@ -13131,13 +13131,13 @@ fi
 	        APPLET_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gtk+-2.0 >= $GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION" 2>&1`
         else
 	        APPLET_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gtk+-2.0 >= $GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
@@ -13146,7 +13146,7 @@ fi
 	as_fn_error $? "Package requirements (gtk+-2.0 >= $GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.5 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION) were not met:
 
 $APPLET_PKG_ERRORS
@@ -13600,7 +13600,7 @@ fi
 if test "x$with_localinstall" = "xyes"; then
 	INDICATORDIR="${libdir}/indicators/2/"
 	INDICATORICONSDIR="${datadir}/libindicate/icons/"
-elif test "x$with_indicator_gtk" = x2; then
+elif test "x$with_gtk" = x2; then
 	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator-0.4`
 	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator-0.4`
 else

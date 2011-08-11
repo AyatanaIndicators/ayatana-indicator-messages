@@ -1,3 +1,12 @@
+indicator-messages (0.4.93-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Add an item to clear the alert
+    * Choose mail applications based on the default application
+    * Clear based on middle click
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 11 Aug 2011 09:28:30 -0500
+
 indicator-messages (0.4.92-0ubuntu4) oneiric; urgency=low
 
   * debian/control
@@ -79,6 +88,13 @@ indicator-messages (0.4.90-0ubuntu1) oneiric; urgency=low
 
  -- Ken VanDine <ken.vandine@canonical.com>  Wed, 22 Jun 2011 12:34:43 -0400
 
+indicator-messages (0.4.0-1) unstable; urgency=low
+
+  * Merge new upstream from Ubuntu.
+  * Standards-Version: 3.9.2
+
+ -- Evgeni Golov <evgeni@debian.org>  Sun, 05 Jun 2011 13:16:03 +0200
+
 indicator-messages (0.4.0-0ubuntu1) natty; urgency=low
 
   * New upstream release.
@@ -88,6 +104,15 @@ indicator-messages (0.4.0-0ubuntu1) natty; urgency=low
       for the messaging menu (LP: #741068)
 
  -- Ted Gould <ted@ubuntu.com>  Thu, 07 Apr 2011 12:35:36 -0500
+
+indicator-messages (0.3.92-1) unstable; urgency=low
+
+  * Merge new upstream from Ubuntu.
+  * Fix 0.3.11-0ubuntu3 changelog entry (missed a space), so that
+    bzr builddeb won't go crazy (see Debian Bug #620242)
+  * Fix debian/copyright, was refering to libdbusmenu by mistake.
+
+ -- Evgeni Golov <evgeni@debian.org>  Sun, 03 Apr 2011 13:37:33 +0200
 
 indicator-messages (0.3.92-0ubuntu3) natty; urgency=low
 
