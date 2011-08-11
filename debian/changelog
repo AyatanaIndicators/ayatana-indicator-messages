@@ -1,3 +1,30 @@
+indicator-messages (0.4.92-0ubuntu4) oneiric; urgency=low
+
+  * debian/control
+    - Dropped recommends for gwibber now that it is seeded
+  * cherry picked r220 from trunk 
+    - Make sure to insert in the right locations
+  * cherry picked r221 from trunk
+    - Making mail applications based on the default mail client not a 
+      hardcoded desktop file.
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Fri, 05 Aug 2011 14:33:39 -0400
+
+indicator-messages (0.4.92-0ubuntu3) oneiric; urgency=low
+
+  * debian/control
+    - Added recommends for gwibber, it got missed when we dropped indicator-me
+      should get removed after we get it seeded properly
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Sun, 31 Jul 2011 16:36:09 -0400
+
+indicator-messages (0.4.92-0ubuntu2) oneiric; urgency=low
+
+  * debian/control:
+    - use conflicts against indicator-me
+
+ -- Michael Vogt <michael.vogt@ubuntu.com>  Fri, 29 Jul 2011 15:49:40 +0200
+
 indicator-messages (0.4.92-0ubuntu1) oneiric; urgency=low
 
   * New upstream release.
