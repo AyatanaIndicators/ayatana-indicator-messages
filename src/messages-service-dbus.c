@@ -200,13 +200,20 @@ message_service_dbus_new (void)
 static void
 bus_method_call (GDBusConnection * connection, const gchar * sender, const gchar * path, const gchar * interface, const gchar * method, GVariant * params, GDBusMethodInvocation * invocation, gpointer user_data)
 {
-	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(user_data);
+	MessageServiceDbus * ms = MESSAGE_SERVICE_DBUS(user_data);
+	if (ms == NULL) { return; }
+
+	MessageServiceDbusPrivate * priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(ms);
 
 	if (g_strcmp0("AttentionRequested", method) == 0) {
 		g_dbus_method_invocation_return_value(invocation, g_variant_new("(b)", priv->dot));
 		return;
 	} else if (g_strcmp0("IconShown", method) == 0) {
 		g_dbus_method_invocation_return_value(invocation, g_variant_new("(b)", priv->hidden));
+		return;
+	} else if (g_strcmp0("ClearAttention", method) == 0) {
+		message_service_dbus_set_attention(ms, FALSE);
+		g_dbus_method_invocation_return_value(invocation, NULL);
 		return;
 	} else {
 		g_warning("Unknown function call '%s'", method);

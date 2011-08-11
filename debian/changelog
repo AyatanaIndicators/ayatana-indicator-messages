@@ -1,3 +1,12 @@
+indicator-messages (0.4.93-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Add an item to clear the alert
+    * Choose mail applications based on the default application
+    * Clear based on middle click
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 11 Aug 2011 09:28:30 -0500
+
 indicator-messages (0.4.92-0ubuntu4) oneiric; urgency=low
 
   * debian/control
