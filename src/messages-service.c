@@ -28,6 +28,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicate/listener.h>
 #include <libindicator/indicator-service.h>
 #include <gio/gio.h>
+#include <glib/gi18n.h>
 
 #include <libdbusmenu-glib/client.h>
 #include <libdbusmenu-glib/server.h>
@@ -49,6 +50,7 @@ static GList * launcherList = NULL;
 
 static DbusmenuMenuitem * root_menuitem = NULL;
 static DbusmenuMenuitem * status_separator = NULL;
+static DbusmenuMenuitem * clear_attention = NULL;
 static GMainLoop * mainloop = NULL;
 
 static MessageServiceDbus * dbus_interface = NULL;
@@ -799,6 +801,8 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 	AppMenuItem * appmenu = APP_MENU_ITEM(data_mi);
 	if (!g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME((IndicateListenerServer*)msl->server), INDICATE_LISTENER_SERVER_DBUS_NAME(app_menu_item_get_server(appmenu)))) {
 		msl->found = TRUE;
+		/* Return a position at the end of our shortcuts */
+		msl->position += g_list_length(app_menu_item_get_items(appmenu));		
 	} else {
 		msl->position++;
 	}
@@ -835,7 +839,6 @@ resort_menu (DbusmenuMenuitem * menushell)
 	guint position = 0;
 	GList * serverentry;
 	GList * launcherentry = launcherList;
-	DbusmenuMenuitem * last_separator = NULL;
 
 	g_debug("Reordering Menu:");
 	
@@ -872,7 +875,6 @@ resort_menu (DbusmenuMenuitem * menushell)
 				if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
 					/* Only clear the visiblity if we're not eclipsed */
 					dbusmenu_menuitem_property_set_bool(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
-					last_separator = li->separator;
 				}
 				position++;
 
@@ -928,7 +930,6 @@ resort_menu (DbusmenuMenuitem * menushell)
 				/* Note, this isn't the last if we can't see it */
 			} else {
 				dbusmenu_menuitem_property_set_bool(si->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
-				last_separator = si->separator;
 			}
 
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->separator), position);
@@ -960,17 +961,15 @@ resort_menu (DbusmenuMenuitem * menushell)
 		if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
 			/* Only clear the visiblity if we're not eclipsed */
 			dbusmenu_menuitem_property_set_bool(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
-			last_separator = li->separator;
 		}
 		position++;
 
 		launcherentry = launcherentry->next;
 	}
 
-	if (last_separator != NULL) {
-		dbusmenu_menuitem_property_set_bool(last_separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
-	} else {
-		g_warning("No last separator on resort");
+	if (clear_attention != NULL) {
+		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), clear_attention, position);
+		position++; /* Not needed, but reduce bugs on code tacked on here, compiler will remove */
 	}
 
 	return;
@@ -1439,9 +1438,28 @@ service_shutdown (IndicatorService * service, gpointer user_data)
 	return;
 }
 
+/* Respond to changing status by updating the icon that
+   is on the panel */
 static void
 status_update_callback (void)
 {
+	return;
+}
+
+/* The clear attention item has been clicked on, what to do? */
+static void
+clear_attention_activate (DbusmenuMenuitem * mi, guint timestamp, MessageServiceDbus * dbus)
+{
+	message_service_dbus_set_attention(dbus, FALSE);
+	return;
+}
+
+/* Handle an update of the active state to ensure that we're
+   only enabled when we could do something. */
+static void
+clear_attention_handler (MessageServiceDbus * msd, gboolean attention, DbusmenuMenuitem * clearitem)
+{
+	dbusmenu_menuitem_property_set_bool(clearitem, DBUSMENU_MENUITEM_PROP_ENABLED, attention);
 	return;
 }
 
@@ -1483,6 +1501,13 @@ main (int argc, char ** argv)
 	status_separator = dbusmenu_menuitem_new();
 	dbusmenu_menuitem_property_set(status_separator, DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_SEPARATOR);
 	dbusmenu_menuitem_child_append(root_menuitem, status_separator);
+
+	/* Add in the clear attention item */
+	clear_attention = dbusmenu_menuitem_new();
+	dbusmenu_menuitem_property_set(clear_attention, DBUSMENU_MENUITEM_PROP_LABEL, _("Clear Attention"));
+	dbusmenu_menuitem_child_append(root_menuitem, clear_attention);
+	g_signal_connect(G_OBJECT(dbus_interface), MESSAGE_SERVICE_DBUS_SIGNAL_ATTENTION_CHANGED, G_CALLBACK(clear_attention_handler), clear_attention);
+	g_signal_connect(G_OBJECT(clear_attention), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(clear_attention_activate), dbus_interface);
 
 	/* Start up the libindicate listener */
 	listener = indicate_listener_ref_default();
