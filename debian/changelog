@@ -1,4 +1,4 @@
-indicator-messages (0.4.93-0ubuntu1) UNRELEASED; urgency=low
+indicator-messages (0.4.93-0ubuntu1) oneiric; urgency=low
 
   [ Ted Gould ]
   * New upstream release.
