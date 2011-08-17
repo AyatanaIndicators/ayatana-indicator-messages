@@ -428,7 +428,6 @@ application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer
 #endif
 	GtkAllocation allocation;
 	GtkStyle *style;
-
 	int x, y, arrow_width, arrow_height;
 
 	if (!GTK_IS_WIDGET (widget)) return FALSE;
