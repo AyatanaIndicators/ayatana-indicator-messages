@@ -416,12 +416,19 @@ application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GVariant * valu
 }
 
 /* Draws a triangle on the left, using fg[STATE_TYPE] color. */
+#if GTK_CHECK_VERSION(3, 0, 0)
+static gboolean
+application_triangle_draw_cb (GtkWidget *widget, cairo_t *cr, gpointer data)
+{
+#else
 static gboolean
 application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
+	cairo_t *cr;
+#endif
 	GtkAllocation allocation;
 	GtkStyle *style;
-	cairo_t *cr;
+
 	int x, y, arrow_width, arrow_height;
 
 	if (!GTK_IS_WIDGET (widget)) return FALSE;
@@ -438,13 +445,22 @@ application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer
 	arrow_width = 5; /* the pixel-based reference triangle is 5x9 */
 	arrow_height = 9;
 	gtk_widget_get_allocation (widget, &allocation);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	x = 0;
+	y = allocation.height/2.0 - (double)arrow_height/2.0;
+#else
 	x = allocation.x;
 	y = allocation.y + allocation.height/2.0 - (double)arrow_height/2.0;
+#endif
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	cairo_save (cr);
+#else
 	/* initialize cairo drawing area */
 	cr = (cairo_t*) gdk_cairo_create (gtk_widget_get_window (widget));
+#endif
 
-	/* set line width */	
+	/* set line width */
 	cairo_set_line_width (cr, 1.0);
 
 	/* cairo drawing code */
@@ -457,8 +473,12 @@ application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer
 	                          style->fg[gtk_widget_get_state(widget)].blue/65535.0);
 	cairo_fill (cr);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	cairo_restore (cr);
+#else
 	/* remember to destroy cairo context to avoid leaks */
 	cairo_destroy (cr);
+#endif
 
 	return FALSE;
 }
@@ -478,12 +498,18 @@ custom_cairo_rounded_rectangle (cairo_t *cr,
 }
 
 /* Draws a rounded rectangle with text inside. */
+#if GTK_CHECK_VERSION(3, 0, 0)
+static gboolean
+numbers_draw_cb (GtkWidget *widget, cairo_t *cr, gpointer data)
+{
+#else
 static gboolean
 numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
+	cairo_t *cr;
+#endif
 	GtkAllocation allocation;
 	GtkStyle *style;
-	cairo_t *cr;
 	double x, y, w, h;
 	PangoLayout * layout;
 	gint font_size = RIGHT_LABEL_FONT_SIZE;
@@ -495,10 +521,15 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 
 	/* set arrow position / dimensions */
 	gtk_widget_get_allocation (widget, &allocation);
-	w = allocation.width;
-	h = allocation.height;
+#if GTK_CHECK_VERSION(3, 0, 0)
+	x = 0;
+	y = 0;
+#else
 	x = allocation.x;
 	y = allocation.y;
+#endif
+	w = allocation.width;
+	h = allocation.height;
 
 	layout = gtk_label_get_layout (GTK_LABEL(widget));
 
@@ -508,10 +539,14 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	/* const PangoFontDescription * font_description = pango_layout_get_font_description (layout);
 	font_size = pango_font_description_get_size (font_description); */
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	cairo_save (cr);
+#else
 	/* initialize cairo drawing area */
 	cr = (cairo_t*) gdk_cairo_create (gtk_widget_get_window (widget));
+#endif
 
-	/* set line width */	
+	/* set line width */
 	cairo_set_line_width (cr, 1.0);
 
 	cairo_set_fill_rule (cr, CAIRO_FILL_RULE_EVEN_ODD);
@@ -527,8 +562,12 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	pango_cairo_layout_path (cr, layout);
 	cairo_fill (cr);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	cairo_restore (cr);
+#else
 	/* remember to destroy cairo context to avoid leaks */
-        cairo_destroy (cr);
+	cairo_destroy (cr);
+#endif
 
 	return TRUE;
 }
@@ -577,8 +616,11 @@ new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbu
 	/* Make sure we can handle the label changing */
 	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_prop_change_cb), label);
 	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_icon_change_cb), icon);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_signal_connect_after(G_OBJECT (gmi), "draw", G_CALLBACK (application_triangle_draw_cb), newitem);
+#else
 	g_signal_connect_after(G_OBJECT (gmi), "expose_event", G_CALLBACK (application_triangle_draw_cb), newitem);
-
+#endif
 	return TRUE;
 }
 
@@ -710,8 +752,13 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	mi_data->right = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_RIGHT));
 	gtk_size_group_add_widget(indicator_right_group, mi_data->right);
 	/* install extra decoration overlay */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_signal_connect (G_OBJECT (mi_data->right), "draw",
+	                  G_CALLBACK (numbers_draw_cb), NULL);
+#else
 	g_signal_connect (G_OBJECT (mi_data->right), "expose_event",
 	                  G_CALLBACK (numbers_draw_cb), NULL);
+#endif
 
 	gtk_misc_set_alignment(GTK_MISC(mi_data->right), 1.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), mi_data->right, FALSE, FALSE, padding + font_size/2.0);
