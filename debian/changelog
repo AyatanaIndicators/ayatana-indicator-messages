@@ -1,3 +1,11 @@
+indicator-messages (0.4.94-0ubuntu1~ppa1) oneiric; urgency=low
+
+  * New upstream release.
+    ∘ Fix drawing of triangles and capsules in GTK3
+    ∘ Fix Emesene statuses (LP: #817504)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 18 Aug 2011 10:57:40 -0500
+
 indicator-messages (0.4.93-0ubuntu2) oneiric; urgency=low
 
   * debian/rules
