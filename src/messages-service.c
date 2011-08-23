@@ -1504,7 +1504,7 @@ main (int argc, char ** argv)
 
 	/* Add in the clear attention item */
 	clear_attention = dbusmenu_menuitem_new();
-	dbusmenu_menuitem_property_set(clear_attention, DBUSMENU_MENUITEM_PROP_LABEL, _("Clear Attention"));
+	dbusmenu_menuitem_property_set(clear_attention, DBUSMENU_MENUITEM_PROP_LABEL, _("Clear"));
 	dbusmenu_menuitem_child_append(root_menuitem, clear_attention);
 	g_signal_connect(G_OBJECT(dbus_interface), MESSAGE_SERVICE_DBUS_SIGNAL_ATTENTION_CHANGED, G_CALLBACK(clear_attention_handler), clear_attention);
 	g_signal_connect(G_OBJECT(clear_attention), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(clear_attention_activate), dbus_interface);
