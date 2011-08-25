@@ -581,9 +581,6 @@ new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbu
 	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_image_menu_item_new());
 	gtk_image_menu_item_set_always_show_image(GTK_IMAGE_MENU_ITEM(gmi), TRUE);
 
-	gint padding = 4;
-	gtk_widget_style_get(GTK_WIDGET(gmi), "horizontal-padding", &padding, NULL);
-
 	/* Set the minimum size, we always want it to take space */
 	gint width, height;
 	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
