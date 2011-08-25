@@ -3,8 +3,9 @@ indicator-messages (0.4.95-0ubuntu1~ppa1) UNRELEASED; urgency=low
   * New upstream release.
     * Fix naming of "Clear" item
     * Fix alignment of items to there is a consistent gutter
+  * debian/patches/lp_690668.patch: Updating
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 25 Aug 2011 09:04:09 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 25 Aug 2011 09:07:39 -0500
 
 indicator-messages (0.4.94-0ubuntu1) oneiric; urgency=low
 
