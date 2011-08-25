@@ -694,9 +694,9 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 
 	gint padding = 4;
 	gint font_size = RIGHT_LABEL_FONT_SIZE;
-	gtk_widget_style_get(GTK_WIDGET(gmi), "horizontal-padding", &padding, NULL);
+	gtk_widget_style_get(GTK_WIDGET(gmi), "toggle-spacing", &padding, NULL);
 
-	GtkWidget * hbox = gtk_hbox_new(FALSE, 0);
+	GtkWidget * hbox = gtk_hbox_new(FALSE, padding);
 
 	/* Icon, probably someone's face or avatar on an IM */
 	mi_data->icon = gtk_image_new();
@@ -731,7 +731,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 		}
 	}
 	gtk_misc_set_alignment(GTK_MISC(mi_data->icon), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, padding);
+	gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, 0);
 
 	if (pixbuf != NULL) {
 		gtk_widget_show(mi_data->icon);
@@ -740,7 +740,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	/* Label, probably a username, chat room or mailbox name */
 	mi_data->label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_LABEL));
 	gtk_misc_set_alignment(GTK_MISC(mi_data->label), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), mi_data->label, TRUE, TRUE, padding);
+	gtk_box_pack_start(GTK_BOX(hbox), mi_data->label, TRUE, TRUE, 0);
 	gtk_widget_show(mi_data->label);
 
 	/* Usually either the time or the count on the individual
