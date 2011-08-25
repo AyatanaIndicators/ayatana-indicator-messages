@@ -32,7 +32,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libdbusmenu-glib/client.h>
 #include <libdbusmenu-glib/server.h>
-#include <libdbusmenu-glib/menuitem-proxy.h>
 
 #include "im-menu-item.h"
 #include "app-menu-item.h"
