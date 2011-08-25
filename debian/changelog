@@ -1,4 +1,4 @@
-indicator-messages (0.4.94-0ubuntu1~ppa1) oneiric; urgency=low
+indicator-messages (0.4.94-0ubuntu1) oneiric; urgency=low
 
   * New upstream release.
     ∘ Fix drawing of triangles and capsules in GTK3
