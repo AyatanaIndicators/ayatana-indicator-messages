@@ -40,5 +40,5 @@
 +		g_object_unref(resized_pixbuf);
  	}
  	gtk_misc_set_alignment(GTK_MISC(mi_data->icon), 0.0, 0.5);
- 	gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, padding);
+ 	gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, 0);
 
