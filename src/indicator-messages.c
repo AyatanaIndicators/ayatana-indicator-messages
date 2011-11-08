@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "config.h"
+
 #include <string.h>
 #include <glib.h>
 #include <glib-object.h>
@@ -93,6 +95,7 @@ static void indicator_messages_middle_click (IndicatorObject * io,
                                              IndicatorObjectEntry * entry,
                                              guint time, gpointer data);
 static const gchar * get_accessible_desc  (IndicatorObject * io);
+static const gchar * get_name_hint        (IndicatorObject * io);
 static void connection_change             (IndicatorServiceManager * sm,
                                            gboolean connected,
                                            gpointer user_data);
@@ -134,6 +137,7 @@ indicator_messages_class_init (IndicatorMessagesClass *klass)
 	io_class->get_image = get_icon;
 	io_class->get_menu = get_menu;
 	io_class->get_accessible_desc = get_accessible_desc;
+	io_class->get_name_hint = get_name_hint;
 	io_class->secondary_activate = indicator_messages_middle_click;
 
 	if (bus_node_info == NULL) {
@@ -794,6 +798,13 @@ static const gchar *
 get_accessible_desc (IndicatorObject * io)
 {
 	return accessible_desc;
+}
+
+/* Returns the name hint of the indicator */
+static const gchar *
+get_name_hint (IndicatorObject *io)
+{
+  return PACKAGE;
 }
 
 /* Hide the notifications on middle-click over the indicator-messages */
