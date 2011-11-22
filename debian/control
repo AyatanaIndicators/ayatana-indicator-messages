@@ -1,7 +1,8 @@
 Source: indicator-messages
 Section: gnome
 Priority: optional
-Maintainer: The Ayatana Packagers <pkg-ayatana-devel@lists.alioth.debian.org>
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+XSBC-Original-Maintainer: The Ayatana Packagers <pkg-ayatana-devel@lists.alioth.debian.org>
 Uploaders: Evgeni Golov <evgeni@debian.org>
 Build-Depends: debhelper (>= 5.0),
                cdbs (>= 0.4.41),
@@ -22,8 +23,8 @@ Build-Depends: debhelper (>= 5.0),
                libtelepathy-glib-dev (>= 0.9.0)
 Standards-Version: 3.9.2
 Homepage: https://launchpad.net/indicator-messages
-Vcs-Bzr: http://bzr.debian.org/bzr/pkg-ayatana/indicator-messages/debian
-Vcs-Browser: http://bzr.debian.org/loggerhead/pkg-ayatana/indicator-messages/debian
+Vcs-Bzr: http://code.launchpad.net/~ubuntu-desktop/indicator-messages/ubuntu
+Vcs-Browser: http://bazaar.launchpad.net/~ubuntu-desktop/indicator-messages/ubuntu/files
 
 Package: indicator-messages
 Architecture: any
