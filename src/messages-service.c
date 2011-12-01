@@ -104,10 +104,15 @@ serverList_equal (gconstpointer a, gconstpointer b)
 	pa = (serverList_t *)a;
 	pb = (serverList_t *)b;
 
-	const gchar * pas = INDICATE_LISTENER_SERVER_DBUS_NAME(pa->server);
-	const gchar * pbs = INDICATE_LISTENER_SERVER_DBUS_NAME(pb->server);
+	const gchar * pan = INDICATE_LISTENER_SERVER_DBUS_NAME(pa->server);
+	const gchar * pbn = INDICATE_LISTENER_SERVER_DBUS_NAME(pb->server);
+	const gchar * pap = indicate_listener_server_get_dbuspath(pa->server);
+	const gchar * pbp = indicate_listener_server_get_dbuspath(pb->server);
 
-	return g_strcmp0(pas, pbs);
+	if (g_strcmp0(pan, pbn) == 0)
+	  return g_strcmp0(pap, pbp);
+	else
+	  return 1;
 }
 
 static gint
