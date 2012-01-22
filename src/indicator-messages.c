@@ -586,29 +586,24 @@ new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbu
 {
 	g_debug ("%s (\"%s\")", __func__, dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_NAME));
 
-	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_image_menu_item_new());
-	gtk_image_menu_item_set_always_show_image(GTK_IMAGE_MENU_ITEM(gmi), TRUE);
+	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_menu_item_new());
 
-	/* Set the minimum size, we always want it to take space */
-	gint width, height;
-	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
+	gint padding = 4;
+	gtk_widget_style_get(GTK_WIDGET(gmi), "toggle-spacing", &padding, NULL);
+
+	GtkWidget * hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, padding);
 
 	GtkWidget * icon = gtk_image_new_from_icon_name(dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_ICON), GTK_ICON_SIZE_MENU);
-	gtk_widget_set_size_request(icon, width
-								+ 5 /* ref triangle is 5x9 pixels */
-								+ 2 /* padding */,
-								height);
 	gtk_misc_set_alignment(GTK_MISC(icon), 1.0 /* right aligned */, 0.5);
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(gmi), icon);
-	gtk_widget_show(icon);
+	gtk_box_pack_start (GTK_BOX (hbox), icon, FALSE, FALSE, 0);
 
 	/* Application name in a label */
 	GtkWidget * label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_NAME));
 	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-	gtk_widget_show(label);
+	gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
 
-	/* Insert the hbox */
-	gtk_container_add(GTK_CONTAINER(gmi), label);
+	gtk_container_add(GTK_CONTAINER(gmi), hbox);
+	gtk_widget_show_all (GTK_WIDGET (gmi));
 
 	/* Attach some of the standard GTK stuff */
 	dbusmenu_gtkclient_newitem_base(DBUSMENU_GTKCLIENT(client), newitem, gmi, parent);
@@ -707,7 +702,9 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	/* Set the minimum size, we always want it to take space */
 	gint width, height;
 	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
-	gtk_widget_set_size_request(mi_data->icon, width, height);
+	gtk_widget_set_size_request(GTK_WIDGET (gmi), -1, height + 4);
+
+	gtk_widget_set_margin_left (hbox, width + padding);
 
 	GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(newitem, INDICATOR_MENUITEM_PROP_ICON);
 	if (pixbuf != NULL) {
