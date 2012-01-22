@@ -522,6 +522,7 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	GtkStyle *style;
 	double x, y, w, h;
 	PangoLayout * layout;
+	PangoRectangle layout_extents;
 	gint font_size = gtk_widget_get_font_size (widget);
 
 	if (!GTK_IS_WIDGET (widget)) return FALSE;
@@ -542,6 +543,8 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	h = allocation.height;
 
 	layout = gtk_label_get_layout (GTK_LABEL(widget));
+	pango_layout_get_extents (layout, NULL, &layout_extents);
+	pango_extents_to_pixels (&layout_extents, NULL);
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 	cairo_save (cr);
@@ -562,6 +565,7 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	                           style->fg[gtk_widget_get_state(widget)].green/65535.0,
 	                           style->fg[gtk_widget_get_state(widget)].blue/65535.0, 0.5);
 
+	y += (allocation.height - layout_extents.height) / 2.0;
 	cairo_move_to (cr, x, y);
 	pango_cairo_layout_path (cr, layout);
 	cairo_fill (cr);
