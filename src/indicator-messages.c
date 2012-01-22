@@ -53,9 +53,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define M_PI 3.1415926535897932384626433832795028841971693993751
 
-#define RIGHT_LABEL_FONT_SIZE 12
-#define RIGHT_LABEL_RADIUS 20
-
 typedef struct _IndicatorMessages      IndicatorMessages;
 typedef struct _IndicatorMessagesClass IndicatorMessagesClass;
 
@@ -485,12 +482,23 @@ application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer
 	return FALSE;
 }
 
+static gint
+gtk_widget_get_font_size (GtkWidget *widget)
+{
+    const PangoFontDescription *font;
+
+    font = gtk_style_context_get_font (gtk_widget_get_style_context (widget),
+                                       gtk_widget_get_state_flags (widget));
+
+    return pango_font_description_get_size (font) / PANGO_SCALE;
+}
+
 /* Custom function to draw rounded rectangle with max radius */
 static void
 custom_cairo_rounded_rectangle (cairo_t *cr,
                                 double x, double y, double w, double h)
 {
-	double radius = MIN (w/2.0, h/2.0);
+	double radius = h / 2.0;
 
 	cairo_move_to (cr, x+radius, y);
 	cairo_arc (cr, x+w-radius, y+radius, radius, M_PI*1.5, M_PI*2);
@@ -514,7 +522,7 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	GtkStyle *style;
 	double x, y, w, h;
 	PangoLayout * layout;
-	gint font_size = RIGHT_LABEL_FONT_SIZE;
+	gint font_size = gtk_widget_get_font_size (widget);
 
 	if (!GTK_IS_WIDGET (widget)) return FALSE;
 
@@ -534,12 +542,6 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	h = allocation.height;
 
 	layout = gtk_label_get_layout (GTK_LABEL(widget));
-
-	/* This does not work, don't ask me why but font_size is 0.
-	 * I wanted to use a dynamic font size to adjust the padding on left/right edges
-	 * of the rounded rectangle. Andrea Cimitan */
-	/* const PangoFontDescription * font_description = pango_layout_get_font_description (layout);
-	font_size = pango_font_description_get_size (font_description); */
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 	cairo_save (cr);
@@ -691,7 +693,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_menu_item_new());
 
 	gint padding = 4;
-	gint font_size = RIGHT_LABEL_FONT_SIZE;
+	gint font_size = gtk_widget_get_font_size (GTK_WIDGET (gmi));
 	gtk_widget_style_get(GTK_WIDGET(gmi), "toggle-spacing", &padding, NULL);
 
 	GtkWidget * hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, padding);
