@@ -23,6 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 
 #include <string.h>
+#include <math.h>
 #include <glib.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>
@@ -50,8 +51,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define IS_INDICATOR_MESSAGES(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), INDICATOR_MESSAGES_TYPE))
 #define IS_INDICATOR_MESSAGES_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), INDICATOR_MESSAGES_TYPE))
 #define INDICATOR_MESSAGES_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), INDICATOR_MESSAGES_TYPE, IndicatorMessagesClass))
-
-#define M_PI 3.1415926535897932384626433832795028841971693993751
 
 typedef struct _IndicatorMessages      IndicatorMessages;
 typedef struct _IndicatorMessagesClass IndicatorMessagesClass;
@@ -566,7 +565,7 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	                           style->fg[gtk_widget_get_state(widget)].blue/65535.0, 0.5);
 
 	y += (allocation.height - layout_extents.height) / 2.0;
-	cairo_move_to (cr, x, y);
+	cairo_move_to (cr, round (x), round (y));
 	pango_cairo_layout_path (cr, layout);
 	cairo_fill (cr);
 
