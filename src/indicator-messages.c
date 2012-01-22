@@ -78,7 +78,6 @@ INDICATOR_SET_TYPE(INDICATOR_MESSAGES_TYPE)
 /* Globals */
 static GtkWidget * main_image = NULL;
 static GDBusProxy * icon_proxy = NULL;
-static GtkSizeGroup * indicator_right_group = NULL;
 static GDBusNodeInfo *            bus_node_info = NULL;
 static GDBusInterfaceInfo *       bus_interface_info = NULL;
 static const gchar *              accessible_desc = NULL;
@@ -743,7 +742,6 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	/* Usually either the time or the count on the individual
 	   item. */
 	mi_data->right = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_RIGHT));
-	gtk_size_group_add_widget(indicator_right_group, mi_data->right);
 	/* install extra decoration overlay */
 #if GTK_CHECK_VERSION(3, 0, 0)
 	g_signal_connect (G_OBJECT (mi_data->right), "draw",
@@ -782,8 +780,6 @@ get_icon (IndicatorObject * io)
 static GtkMenu *
 get_menu (IndicatorObject * io)
 {
-	indicator_right_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-
 	DbusmenuGtkMenu * menu = dbusmenu_gtkmenu_new(INDICATOR_MESSAGES_DBUS_NAME, INDICATOR_MESSAGES_DBUS_OBJECT);
 	DbusmenuGtkClient * client = dbusmenu_gtkmenu_get_client(menu);
 
