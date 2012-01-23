@@ -695,7 +695,11 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	gint font_size = RIGHT_LABEL_FONT_SIZE;
 	gtk_widget_style_get(GTK_WIDGET(gmi), "toggle-spacing", &padding, NULL);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
 	GtkWidget * hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, padding);
+#else
+    GtkWidget * hbox = gtk_hbox_new(FALSE, padding);
+#endif
 
 	/* Icon, probably someone's face or avatar on an IM */
 	mi_data->icon = gtk_image_new();
