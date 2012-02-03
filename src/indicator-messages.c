@@ -559,6 +559,7 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	                           style->fg[gtk_widget_get_state(widget)].green/65535.0,
 	                           style->fg[gtk_widget_get_state(widget)].blue/65535.0, 0.5);
 
+	x += (allocation.width - layout_extents.width) / 2.0;
 	y += (allocation.height - layout_extents.height) / 2.0;
 	cairo_move_to (cr, round (x), round (y));
 	pango_cairo_layout_path (cr, layout);
@@ -750,6 +751,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 
 	gtk_misc_set_alignment(GTK_MISC(mi_data->right), 1.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), mi_data->right, FALSE, FALSE, padding + font_size/2.0);
+	gtk_label_set_width_chars (GTK_LABEL (mi_data->right), 2);
 	gtk_widget_show(mi_data->right);
 
 	gtk_container_add(GTK_CONTAINER(gmi), hbox);
