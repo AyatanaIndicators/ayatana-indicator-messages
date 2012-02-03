@@ -540,6 +540,9 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	pango_layout_get_extents (layout, NULL, &layout_extents);
 	pango_extents_to_pixels (&layout_extents, NULL);
 
+	if (layout_extents.width == 0)
+		return TRUE;
+
 #if GTK_CHECK_VERSION(3, 0, 0)
 	cairo_save (cr);
 #else
