@@ -518,8 +518,13 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	PangoLayout * layout;
 	PangoRectangle layout_extents;
 	gint font_size = gtk_widget_get_font_size (widget);
+	gboolean is_lozenge = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (widget), "is-lozenge"));
 
 	if (!GTK_IS_WIDGET (widget)) return FALSE;
+
+	/* let the label handle the drawing if it's not a lozenge */
+	if (!is_lozenge)
+		return FALSE;
 
 	/* get style */
 	style = gtk_widget_get_style (widget);
@@ -637,6 +642,9 @@ indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GVariant * value,
 	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_RIGHT)) {
 		/* Set the right label */
 		gtk_label_set_text(GTK_LABEL(mi_data->right), g_variant_get_string(value, NULL));
+	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_RIGHT_IS_LOZENGE)) {
+		g_object_set_data (G_OBJECT (mi_data->right), "is-lozenge", GINT_TO_POINTER (TRUE));
+		gtk_widget_queue_draw (mi_data->right);
 	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_ICON)) {
 		/* We don't use the value here, which is probably less efficient, 
 		   but it's easier to use the easy function.  And since th value
@@ -743,6 +751,9 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	/* Usually either the time or the count on the individual
 	   item. */
 	mi_data->right = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_RIGHT));
+	g_object_set_data (G_OBJECT (mi_data->right),
+			   "is-lozenge",
+			   GINT_TO_POINTER (dbusmenu_menuitem_property_get_bool (newitem, INDICATOR_MENUITEM_PROP_RIGHT_IS_LOZENGE)));
 	/* install extra decoration overlay */
 #if GTK_CHECK_VERSION(3, 0, 0)
 	g_signal_connect (G_OBJECT (mi_data->right), "draw",
@@ -755,6 +766,8 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	gtk_misc_set_alignment(GTK_MISC(mi_data->right), 1.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), mi_data->right, FALSE, FALSE, padding + font_size/2.0);
 	gtk_label_set_width_chars (GTK_LABEL (mi_data->right), 2);
+	gtk_style_context_add_class (gtk_widget_get_style_context (mi_data->right),
+				     "accelerator");
 	gtk_widget_show(mi_data->right);
 
 	gtk_container_add(GTK_CONTAINER(gmi), hbox);
