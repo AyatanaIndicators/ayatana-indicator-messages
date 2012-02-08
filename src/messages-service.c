@@ -1301,6 +1301,7 @@ build_launcher (gpointer data)
 	g_file_get_contents(path, &desktop, NULL, NULL);
 
 	if (desktop == NULL) {
+		g_free(path);
 		return FALSE;
 	}
 
@@ -1310,6 +1311,7 @@ build_launcher (gpointer data)
 
 	build_launcher_core(trimdesktop);
 	g_free(trimdesktop);
+	g_free(path);
 	return FALSE;
 }
 
@@ -1323,6 +1325,7 @@ build_launcher_keyfile (gpointer data)
 		build_launcher_core(desktop);
 		g_free(desktop);
 	}
+	g_free(path);
 	return FALSE;
 }
 
