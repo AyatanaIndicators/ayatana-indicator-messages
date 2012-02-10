@@ -1,3 +1,17 @@
+indicator-messages (0.5.90-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Adding code coverage targets
+    * Match libindicate 0.6.90
+    * Updating for Dbusmenu 0.5.90
+    * Plug leak in launcher_menu_item_new
+    * Fix memory leak: Free path string.
+    * Compare server and path for multi-server clients
+    * Using the new GTK3 box API to avoid deprecations
+    * Adding a name hint
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 09 Feb 2012 22:35:53 -0600
+
 indicator-messages (0.5.0-1ubuntu1) precise; urgency=low
 
   * rebuild for libindicator7
