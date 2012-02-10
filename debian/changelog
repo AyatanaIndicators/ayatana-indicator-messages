@@ -1,4 +1,20 @@
-indicator-messages (0.5.0-0ubuntu1~ppa1) oneiric; urgency=low
+indicator-messages (0.5.0-1ubuntu1) precise; urgency=low
+
+  * rebuild for libindicator7
+  * debian/rules
+    - build with no-error=deprecated-declarations
+  * debian/control
+    - set ubuntu-desktop VCS and maintainer
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Wed, 25 Jan 2012 09:56:59 -0500
+
+indicator-messages (0.5.0-1) experimental; urgency=low
+
+  * Merge new upstream from Ubuntu.
+
+ -- Evgeni Golov <evgeni@debian.org>  Wed, 19 Oct 2011 13:36:00 +0200
+
+indicator-messages (0.5.0-0ubuntu1) oneiric; urgency=low
 
   * New upstream release.
     * Fix memory leak (LP: #690668)
