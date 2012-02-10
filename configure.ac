@@ -91,6 +91,16 @@ AC_SUBST(STATUS_PROVIDER_EMESENE_CFLAGS)
 AC_SUBST(STATUS_PROVIDER_EMESENE_LIBS)
 
 ###########################
+# gcov coverage reporting
+###########################
+
+m4_include([m4/gcov.m4])
+AC_TDD_GCOV
+AC_SUBST(COVERAGE_CFLAGS)
+AC_SUBST(COVERAGE_CXXFLAGS)
+AC_SUBST(COVERAGE_LDFLAGS)
+
+###########################
 # Check to see if we're local
 ###########################
 
@@ -191,4 +201,5 @@ Messaging Indicator Configuration:
 
 	Prefix:        $prefix
 	Indicator Dir: $INDICATORDIR
+	gcov:          $use_gcov
 ])
