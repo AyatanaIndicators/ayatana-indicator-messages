@@ -20,6 +20,7 @@ libmessaging_la_SOURCES = \
 	dbus-data.h
 libmessaging_la_CFLAGS = \
 	$(APPLET_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
 	-Wall \
 	-Wl,-Bsymbolic-functions \
 	-Wl,-z,defs \
@@ -27,7 +28,9 @@ libmessaging_la_CFLAGS = \
 	-Werror \
 	-DG_LOG_DOMAIN=\"Indicator-Messages\"
 libmessaging_la_LIBADD = $(APPLET_LIBS) -lm
-libmessaging_la_LDFLAGS = -module -avoid-version
+libmessaging_la_LDFLAGS = \
+	$(COVERAGE_LDFLAGS) \
+	-module -avoid-version
 
 ######################################
 # Building the messages service
@@ -57,6 +60,7 @@ indicator_messages_service_SOURCES = \
 
 indicator_messages_service_CFLAGS = \
 	$(APPLET_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
 	-Wall \
 	-Wl,-Bsymbolic-functions \
 	-Wl,-z,defs \
@@ -68,6 +72,9 @@ indicator_messages_service_CFLAGS = \
 indicator_messages_service_LDADD = \
 	$(APPLET_LIBS) \
 	libindicator-messages-status-provider.la
+
+indicator_messages_service_LDFLAGS = \
+	$(COVERAGE_LDFLAGS)
 
 gen-%.xml.h: %.xml
 	@echo "Building $@ from $<"
