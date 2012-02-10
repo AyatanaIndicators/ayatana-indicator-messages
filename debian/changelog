@@ -4,8 +4,9 @@ indicator-messages (0.5.90-0ubuntu2~ppa1) UNRELEASED; urgency=low
     * Better lozenges that look nice
   * debian/rules: Adding autoreconf and running make check
   * debian/compat: 5
+  * debian/source/format: Dropping
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 10 Feb 2012 15:19:20 -0600
+ -- Ted Gould <ted@ubuntu.com>  Fri, 10 Feb 2012 15:21:07 -0600
 
 indicator-messages (0.5.90-0ubuntu1) precise; urgency=low
 
