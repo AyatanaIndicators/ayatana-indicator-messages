@@ -211,7 +211,10 @@ launcher_menu_item_new (const gchar * desktop_file)
 			dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_TYPE, APPLICATION_MENUITEM_TYPE);
 			g_object_set_data(G_OBJECT(mi), NICK_DATA, (gpointer)nicks[i]);
 
-			dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_LABEL, indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]));
+			gchar *name = indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]);
+			dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_LABEL, name);
+			g_free(name);
+
 			g_signal_connect(G_OBJECT(mi), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(nick_activate_cb), self);
 
 			priv->shortcuts = g_list_append(priv->shortcuts, mi);

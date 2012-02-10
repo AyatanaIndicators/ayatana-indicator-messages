@@ -4,7 +4,7 @@ AC_INIT(src/indicator-messages.c)
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-messages, 0.5.0)
+AM_INIT_AUTOMAKE(indicator-messages, 0.5.90)
 
 AM_MAINTAINER_MODE
 
@@ -39,9 +39,9 @@ GTK_REQUIRED_VERSION=2.12
 GTK3_REQUIRED_VERSION=3.0
 GIO_UNIX_REQUIRED_VERSION=2.18
 PANEL_REQUIRED_VERSION=2.0.0
-INDICATE_REQUIRED_VERSION=0.4.90
+INDICATE_REQUIRED_VERSION=0.6.90
 INDICATOR_REQUIRED_VERSION=0.3.19
-DBUSMENUGTK_REQUIRED_VERSION=0.3.94
+DBUSMENUGTK_REQUIRED_VERSION=0.5.90
 
 AC_ARG_WITH([gtk],
   [AS_HELP_STRING([--with-gtk],
@@ -53,14 +53,14 @@ AS_IF([test "x$with_gtk" = x3],
         [PKG_CHECK_MODULES(APPLET, gtk+-3.0 >= $GTK3_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.7 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION)
         ],
       [test "x$with_gtk" = x2],
         [PKG_CHECK_MODULES(APPLET, gtk+-2.0 >= $GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.7 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION)
         ],
       [AC_MSG_FAILURE([Value for --with-indicator-gtk was neither 2 nor 3])]
@@ -89,6 +89,16 @@ AC_SUBST(STATUS_PROVIDER_MC5_LIBS)
 PKG_CHECK_MODULES(STATUS_PROVIDER_EMESENE, dbus-glib-1)
 AC_SUBST(STATUS_PROVIDER_EMESENE_CFLAGS)
 AC_SUBST(STATUS_PROVIDER_EMESENE_LIBS)
+
+###########################
+# gcov coverage reporting
+###########################
+
+m4_include([m4/gcov.m4])
+AC_TDD_GCOV
+AC_SUBST(COVERAGE_CFLAGS)
+AC_SUBST(COVERAGE_CXXFLAGS)
+AC_SUBST(COVERAGE_LDFLAGS)
 
 ###########################
 # Check to see if we're local
@@ -191,4 +201,5 @@ Messaging Indicator Configuration:
 
 	Prefix:        $prefix
 	Indicator Dir: $INDICATORDIR
+	gcov:          $use_gcov
 ])
