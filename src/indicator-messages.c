@@ -711,7 +711,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
 	gtk_widget_set_size_request(GTK_WIDGET (gmi), -1, height + 4);
 
-	gtk_widget_set_margin_left (hbox, width + padding);
+	gtk_widget_set_margin_left (hbox, width + 2 * padding);
 
 	GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(newitem, INDICATOR_MENUITEM_PROP_ICON);
 	if (pixbuf != NULL) {
