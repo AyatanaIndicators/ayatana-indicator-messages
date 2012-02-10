@@ -20,19 +20,16 @@ You should have received a copy of the GNU General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "config.h"
+
 #include <string.h>
 #include <glib.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-#include <libdbusmenu-gtk3/menu.h>
-#include <libdbusmenu-gtk3/menuitem.h>
-#else
 #include <libdbusmenu-gtk/menu.h>
 #include <libdbusmenu-gtk/menuitem.h>
-#endif
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
@@ -93,6 +90,7 @@ static void indicator_messages_middle_click (IndicatorObject * io,
                                              IndicatorObjectEntry * entry,
                                              guint time, gpointer data);
 static const gchar * get_accessible_desc  (IndicatorObject * io);
+static const gchar * get_name_hint        (IndicatorObject * io);
 static void connection_change             (IndicatorServiceManager * sm,
                                            gboolean connected,
                                            gpointer user_data);
@@ -134,6 +132,7 @@ indicator_messages_class_init (IndicatorMessagesClass *klass)
 	io_class->get_image = get_icon;
 	io_class->get_menu = get_menu;
 	io_class->get_accessible_desc = get_accessible_desc;
+	io_class->get_name_hint = get_name_hint;
 	io_class->secondary_activate = indicator_messages_middle_click;
 
 	if (bus_node_info == NULL) {
@@ -691,7 +690,11 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	gint font_size = RIGHT_LABEL_FONT_SIZE;
 	gtk_widget_style_get(GTK_WIDGET(gmi), "toggle-spacing", &padding, NULL);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	GtkWidget * hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, padding);
+#else
 	GtkWidget * hbox = gtk_hbox_new(FALSE, padding);
+#endif
 
 	/* Icon, probably someone's face or avatar on an IM */
 	mi_data->icon = gtk_image_new();
@@ -794,6 +797,13 @@ static const gchar *
 get_accessible_desc (IndicatorObject * io)
 {
 	return accessible_desc;
+}
+
+/* Returns the name hint of the indicator */
+static const gchar *
+get_name_hint (IndicatorObject *io)
+{
+  return PACKAGE;
 }
 
 /* Hide the notifications on middle-click over the indicator-messages */
