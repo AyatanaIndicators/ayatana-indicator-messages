@@ -9,8 +9,9 @@ indicator-messages (0.5.90-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Compare server and path for multi-server clients
     * Using the new GTK3 box API to avoid deprecations
     * Adding a name hint
+  * debian/control: Requiring libindicate 0.6.90 and dbusmenu 0.5.90
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 09 Feb 2012 22:35:53 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 09 Feb 2012 22:37:38 -0600
 
 indicator-messages (0.5.0-1ubuntu1) precise; urgency=low
 
