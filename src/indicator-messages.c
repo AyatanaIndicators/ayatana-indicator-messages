@@ -569,7 +569,7 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 
 	x += (allocation.width - layout_extents.width) / 2.0;
 	y += (allocation.height - layout_extents.height) / 2.0;
-	cairo_move_to (cr, round (x), round (y));
+	cairo_move_to (cr, floor (x), floor (y));
 	pango_cairo_layout_path (cr, layout);
 	cairo_fill (cr);
 
