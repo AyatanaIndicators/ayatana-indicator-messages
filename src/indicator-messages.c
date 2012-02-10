@@ -479,12 +479,16 @@ application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer
 static gint
 gtk_widget_get_font_size (GtkWidget *widget)
 {
+#if GTK_CHECK_VERSION(3, 0, 0)
     const PangoFontDescription *font;
 
     font = gtk_style_context_get_font (gtk_widget_get_style_context (widget),
                                        gtk_widget_get_state_flags (widget));
 
     return pango_font_description_get_size (font) / PANGO_SCALE;
+#else
+	return 12;
+#endif
 }
 
 /* Custom function to draw rounded rectangle with max radius */
@@ -595,7 +599,11 @@ new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbu
 	gint padding = 4;
 	gtk_widget_style_get(GTK_WIDGET(gmi), "toggle-spacing", &padding, NULL);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
 	GtkWidget * hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, padding);
+#else
+	GtkWidget * hbox = gtk_hbox_new(FALSE, padding);
+#endif
 
 	GtkWidget * icon = gtk_image_new_from_icon_name(dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_ICON), GTK_ICON_SIZE_MENU);
 	gtk_misc_set_alignment(GTK_MISC(icon), 1.0 /* right aligned */, 0.5);
@@ -715,7 +723,9 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
 	gtk_widget_set_size_request(GTK_WIDGET (gmi), -1, height + 4);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_widget_set_margin_left (hbox, width + 2 * padding);
+#endif
 
 	GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(newitem, INDICATOR_MENUITEM_PROP_ICON);
 	if (pixbuf != NULL) {
@@ -770,8 +780,10 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	gtk_misc_set_alignment(GTK_MISC(mi_data->right), 1.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), mi_data->right, FALSE, FALSE, padding + font_size/2.0);
 	gtk_label_set_width_chars (GTK_LABEL (mi_data->right), 2);
+#if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_style_context_add_class (gtk_widget_get_style_context (mi_data->right),
 				     "accelerator");
+#endif
 	gtk_widget_show(mi_data->right);
 
 	gtk_container_add(GTK_CONTAINER(gmi), hbox);
