@@ -39,7 +39,7 @@ GTK_REQUIRED_VERSION=2.12
 GTK3_REQUIRED_VERSION=3.0
 GIO_UNIX_REQUIRED_VERSION=2.18
 PANEL_REQUIRED_VERSION=2.0.0
-INDICATE_REQUIRED_VERSION=0.4.90
+INDICATE_REQUIRED_VERSION=0.6.90
 INDICATOR_REQUIRED_VERSION=0.3.19
 DBUSMENUGTK_REQUIRED_VERSION=0.5.90
 
@@ -53,14 +53,14 @@ AS_IF([test "x$with_gtk" = x3],
         [PKG_CHECK_MODULES(APPLET, gtk+-3.0 >= $GTK3_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.7 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION)
         ],
       [test "x$with_gtk" = x2],
         [PKG_CHECK_MODULES(APPLET, gtk+-2.0 >= $GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.6 >= $INDICATE_REQUIRED_VERSION
+                                   indicate-0.7 >= $INDICATE_REQUIRED_VERSION
                                    dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION)
         ],
       [AC_MSG_FAILURE([Value for --with-indicator-gtk was neither 2 nor 3])]
