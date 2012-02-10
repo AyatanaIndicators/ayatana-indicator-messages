@@ -1,3 +1,10 @@
+indicator-messages (0.5.90-0ubuntu2~ppa1) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Better lozenges that look nice
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 10 Feb 2012 15:12:11 -0600
+
 indicator-messages (0.5.90-0ubuntu1) precise; urgency=low
 
   [ Ted Gould ]

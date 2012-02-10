@@ -23,6 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 
 #include <string.h>
+#include <math.h>
 #include <glib.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>
@@ -46,11 +47,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define IS_INDICATOR_MESSAGES_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), INDICATOR_MESSAGES_TYPE))
 #define INDICATOR_MESSAGES_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), INDICATOR_MESSAGES_TYPE, IndicatorMessagesClass))
 
-#define M_PI 3.1415926535897932384626433832795028841971693993751
-
-#define RIGHT_LABEL_FONT_SIZE 12
-#define RIGHT_LABEL_RADIUS 20
-
 typedef struct _IndicatorMessages      IndicatorMessages;
 typedef struct _IndicatorMessagesClass IndicatorMessagesClass;
 
@@ -73,7 +69,6 @@ INDICATOR_SET_TYPE(INDICATOR_MESSAGES_TYPE)
 /* Globals */
 static GtkWidget * main_image = NULL;
 static GDBusProxy * icon_proxy = NULL;
-static GtkSizeGroup * indicator_right_group = NULL;
 static GDBusNodeInfo *            bus_node_info = NULL;
 static GDBusInterfaceInfo *       bus_interface_info = NULL;
 static const gchar *              accessible_desc = NULL;
@@ -481,12 +476,23 @@ application_triangle_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer
 	return FALSE;
 }
 
+static gint
+gtk_widget_get_font_size (GtkWidget *widget)
+{
+    const PangoFontDescription *font;
+
+    font = gtk_style_context_get_font (gtk_widget_get_style_context (widget),
+                                       gtk_widget_get_state_flags (widget));
+
+    return pango_font_description_get_size (font) / PANGO_SCALE;
+}
+
 /* Custom function to draw rounded rectangle with max radius */
 static void
 custom_cairo_rounded_rectangle (cairo_t *cr,
                                 double x, double y, double w, double h)
 {
-	double radius = MIN (w/2.0, h/2.0);
+	double radius = h / 2.0;
 
 	cairo_move_to (cr, x+radius, y);
 	cairo_arc (cr, x+w-radius, y+radius, radius, M_PI*1.5, M_PI*2);
@@ -510,9 +516,15 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	GtkStyle *style;
 	double x, y, w, h;
 	PangoLayout * layout;
-	gint font_size = RIGHT_LABEL_FONT_SIZE;
+	PangoRectangle layout_extents;
+	gint font_size = gtk_widget_get_font_size (widget);
+	gboolean is_lozenge = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (widget), "is-lozenge"));
 
 	if (!GTK_IS_WIDGET (widget)) return FALSE;
+
+	/* let the label handle the drawing if it's not a lozenge */
+	if (!is_lozenge)
+		return FALSE;
 
 	/* get style */
 	style = gtk_widget_get_style (widget);
@@ -530,12 +542,11 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	h = allocation.height;
 
 	layout = gtk_label_get_layout (GTK_LABEL(widget));
+	pango_layout_get_extents (layout, NULL, &layout_extents);
+	pango_extents_to_pixels (&layout_extents, NULL);
 
-	/* This does not work, don't ask me why but font_size is 0.
-	 * I wanted to use a dynamic font size to adjust the padding on left/right edges
-	 * of the rounded rectangle. Andrea Cimitan */
-	/* const PangoFontDescription * font_description = pango_layout_get_font_description (layout);
-	font_size = pango_font_description_get_size (font_description); */
+	if (layout_extents.width == 0)
+		return TRUE;
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 	cairo_save (cr);
@@ -556,7 +567,9 @@ numbers_draw_cb (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	                           style->fg[gtk_widget_get_state(widget)].green/65535.0,
 	                           style->fg[gtk_widget_get_state(widget)].blue/65535.0, 0.5);
 
-	cairo_move_to (cr, x, y);
+	x += (allocation.width - layout_extents.width) / 2.0;
+	y += (allocation.height - layout_extents.height) / 2.0;
+	cairo_move_to (cr, floor (x), floor (y));
 	pango_cairo_layout_path (cr, layout);
 	cairo_fill (cr);
 
@@ -577,29 +590,24 @@ new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbu
 {
 	g_debug ("%s (\"%s\")", __func__, dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_NAME));
 
-	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_image_menu_item_new());
-	gtk_image_menu_item_set_always_show_image(GTK_IMAGE_MENU_ITEM(gmi), TRUE);
+	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_menu_item_new());
 
-	/* Set the minimum size, we always want it to take space */
-	gint width, height;
-	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
+	gint padding = 4;
+	gtk_widget_style_get(GTK_WIDGET(gmi), "toggle-spacing", &padding, NULL);
+
+	GtkWidget * hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, padding);
 
 	GtkWidget * icon = gtk_image_new_from_icon_name(dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_ICON), GTK_ICON_SIZE_MENU);
-	gtk_widget_set_size_request(icon, width
-								+ 5 /* ref triangle is 5x9 pixels */
-								+ 2 /* padding */,
-								height);
 	gtk_misc_set_alignment(GTK_MISC(icon), 1.0 /* right aligned */, 0.5);
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(gmi), icon);
-	gtk_widget_show(icon);
+	gtk_box_pack_start (GTK_BOX (hbox), icon, FALSE, FALSE, 0);
 
 	/* Application name in a label */
 	GtkWidget * label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_NAME));
 	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-	gtk_widget_show(label);
+	gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
 
-	/* Insert the hbox */
-	gtk_container_add(GTK_CONTAINER(gmi), label);
+	gtk_container_add(GTK_CONTAINER(gmi), hbox);
+	gtk_widget_show_all (GTK_WIDGET (gmi));
 
 	/* Attach some of the standard GTK stuff */
 	dbusmenu_gtkclient_newitem_base(DBUSMENU_GTKCLIENT(client), newitem, gmi, parent);
@@ -634,6 +642,9 @@ indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GVariant * value,
 	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_RIGHT)) {
 		/* Set the right label */
 		gtk_label_set_text(GTK_LABEL(mi_data->right), g_variant_get_string(value, NULL));
+	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_RIGHT_IS_LOZENGE)) {
+		g_object_set_data (G_OBJECT (mi_data->right), "is-lozenge", GINT_TO_POINTER (TRUE));
+		gtk_widget_queue_draw (mi_data->right);
 	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_ICON)) {
 		/* We don't use the value here, which is probably less efficient, 
 		   but it's easier to use the easy function.  And since th value
@@ -687,7 +698,7 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_menu_item_new());
 
 	gint padding = 4;
-	gint font_size = RIGHT_LABEL_FONT_SIZE;
+	gint font_size = gtk_widget_get_font_size (GTK_WIDGET (gmi));
 	gtk_widget_style_get(GTK_WIDGET(gmi), "toggle-spacing", &padding, NULL);
 
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -702,7 +713,9 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	/* Set the minimum size, we always want it to take space */
 	gint width, height;
 	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
-	gtk_widget_set_size_request(mi_data->icon, width, height);
+	gtk_widget_set_size_request(GTK_WIDGET (gmi), -1, height + 4);
+
+	gtk_widget_set_margin_left (hbox, width + 2 * padding);
 
 	GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(newitem, INDICATOR_MENUITEM_PROP_ICON);
 	if (pixbuf != NULL) {
@@ -742,7 +755,9 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 	/* Usually either the time or the count on the individual
 	   item. */
 	mi_data->right = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_RIGHT));
-	gtk_size_group_add_widget(indicator_right_group, mi_data->right);
+	g_object_set_data (G_OBJECT (mi_data->right),
+			   "is-lozenge",
+			   GINT_TO_POINTER (dbusmenu_menuitem_property_get_bool (newitem, INDICATOR_MENUITEM_PROP_RIGHT_IS_LOZENGE)));
 	/* install extra decoration overlay */
 #if GTK_CHECK_VERSION(3, 0, 0)
 	g_signal_connect (G_OBJECT (mi_data->right), "draw",
@@ -754,6 +769,9 @@ new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, Dbusm
 
 	gtk_misc_set_alignment(GTK_MISC(mi_data->right), 1.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), mi_data->right, FALSE, FALSE, padding + font_size/2.0);
+	gtk_label_set_width_chars (GTK_LABEL (mi_data->right), 2);
+	gtk_style_context_add_class (gtk_widget_get_style_context (mi_data->right),
+				     "accelerator");
 	gtk_widget_show(mi_data->right);
 
 	gtk_container_add(GTK_CONTAINER(gmi), hbox);
@@ -781,8 +799,6 @@ get_icon (IndicatorObject * io)
 static GtkMenu *
 get_menu (IndicatorObject * io)
 {
-	indicator_right_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-
 	DbusmenuGtkMenu * menu = dbusmenu_gtkmenu_new(INDICATOR_MESSAGES_DBUS_NAME, INDICATOR_MESSAGES_DBUS_OBJECT);
 	DbusmenuGtkClient * client = dbusmenu_gtkmenu_get_client(menu);
 
