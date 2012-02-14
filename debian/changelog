@@ -1,4 +1,4 @@
-indicator-messages (0.5.90-0ubuntu2~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.5.90-0ubuntu2~ppa1) precise; urgency=low
 
   * Upstream Merge
     * Better lozenges that look nice
@@ -7,7 +7,7 @@ indicator-messages (0.5.90-0ubuntu2~ppa1) UNRELEASED; urgency=low
   * debian/compat: 5
   * debian/source/format: Dropping
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 10 Feb 2012 15:43:05 -0600
+ -- Ted Gould <ted@ubuntu.com>  Tue, 14 Feb 2012 15:26:57 -0600
 
 indicator-messages (0.5.90-0ubuntu1) precise; urgency=low
 
