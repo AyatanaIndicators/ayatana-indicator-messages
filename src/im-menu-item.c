@@ -340,6 +340,9 @@ count_cb (IndicateListener * listener, IndicateListenerServer * server, Indicate
 			g_free(priv->count);
 			priv->count = NULL;
 			update_time(self);
+			dbusmenu_menuitem_property_set_bool (DBUSMENU_MENUITEM (self),
+							     INDICATOR_MENUITEM_PROP_RIGHT_IS_LOZENGE,
+							     FALSE);
 		}
 		return;
 	}
@@ -350,6 +353,9 @@ count_cb (IndicateListener * listener, IndicateListenerServer * server, Indicate
 
 	priv->count = g_strdup_printf("%s", propertydata);
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), INDICATOR_MENUITEM_PROP_RIGHT, priv->count);
+	dbusmenu_menuitem_property_set_bool (DBUSMENU_MENUITEM (self),
+					     INDICATOR_MENUITEM_PROP_RIGHT_IS_LOZENGE,
+					     TRUE);
 
 	return;
 }

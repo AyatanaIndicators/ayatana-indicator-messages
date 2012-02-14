@@ -27,7 +27,7 @@ libmessaging_la_CFLAGS = \
 	-Wl,--as-needed \
 	-Werror \
 	-DG_LOG_DOMAIN=\"Indicator-Messages\"
-libmessaging_la_LIBADD = $(APPLET_LIBS)
+libmessaging_la_LIBADD = $(APPLET_LIBS) -lm
 libmessaging_la_LDFLAGS = \
 	$(COVERAGE_LDFLAGS) \
 	-module -avoid-version
