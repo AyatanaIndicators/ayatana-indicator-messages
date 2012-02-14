@@ -1,8 +1,8 @@
-indicator-messages (0.5.91-0ubuntu2) UNRELEASED; urgency=low
+indicator-messages (0.5.91-0ubuntu2) precise; urgency=low
 
   * debian/control: build-depends on dh-autoreconf as well
 
- -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 14 Feb 2012 23:49:45 +0100
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 14 Feb 2012 23:50:15 +0100
 
 indicator-messages (0.5.91-0ubuntu1) precise; urgency=low
 
