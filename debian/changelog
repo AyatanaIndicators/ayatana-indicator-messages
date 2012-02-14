@@ -1,3 +1,13 @@
+indicator-messages (0.5.91-0ubuntu1) precise; urgency=low
+
+  * New upstream release.
+    * Better lozenges that look nice
+  * debian/rules: Adding autoreconf and running make check
+  * debian/compat: 5
+  * debian/source/format: Dropping
+
+ -- Ted Gould <ted@ubuntu.com>  Tue, 14 Feb 2012 15:29:52 -0600
+
 indicator-messages (0.5.90-0ubuntu1) precise; urgency=low
 
   [ Ted Gould ]
