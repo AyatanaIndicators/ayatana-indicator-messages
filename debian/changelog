@@ -2,19 +2,11 @@ indicator-messages (0.5.91-0ubuntu1~ppa1) UNRELEASED; urgency=low
 
   * New upstream release.
     * Better lozenges that look nice
-
- -- Ted Gould <ted@ubuntu.com>  Tue, 14 Feb 2012 15:27:09 -0600
-
-indicator-messages (0.5.90-0ubuntu2~ppa1) precise; urgency=low
-
-  * Upstream Merge
-    * Better lozenges that look nice
-    * Working on GTK2 as well
   * debian/rules: Adding autoreconf and running make check
   * debian/compat: 5
   * debian/source/format: Dropping
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 14 Feb 2012 15:26:57 -0600
+ -- Ted Gould <ted@ubuntu.com>  Tue, 14 Feb 2012 15:27:09 -0600
 
 indicator-messages (0.5.90-0ubuntu1) precise; urgency=low
 
