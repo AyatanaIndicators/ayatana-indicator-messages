@@ -265,7 +265,7 @@ load_status_provider (gpointer dir)
 
 	module = g_module_open(provider, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
 	if (module == NULL) {
-		g_warning("Unable to module for: %s", provider);
+		g_warning("Unable to open module: %s", provider);
 		goto exit_module_fail;
 	}
 
