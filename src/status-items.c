@@ -294,7 +294,7 @@ load_status_provider (gpointer dir)
 
 	/* Attach the module object to the status provider so
 	   that when the status provider is free'd the module
-	   is close automatically. */
+	   is closed automatically. */
 	g_object_set_data_full(G_OBJECT(sprovider), "status-provider-module", module, module_destroy_in_idle);
 
 	status_providers = g_list_prepend(status_providers, sprovider);
