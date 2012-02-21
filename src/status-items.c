@@ -253,7 +253,7 @@ module_destroy_in_idle (gpointer data)
 static gboolean
 load_status_provider (gpointer dir)
 {
-	gchar * provider = (gchar *)dir;
+	gchar * provider = dir;
 
 	if (!g_file_test(provider, G_FILE_TEST_EXISTS)) {
 		goto exit_final;
