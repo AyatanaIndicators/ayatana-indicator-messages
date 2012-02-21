@@ -299,8 +299,7 @@ load_status_provider (gpointer dir)
 
 	status_providers = g_list_prepend(status_providers, sprovider);
 
-	/* Force and update every time just so we know we're
-	   in a consistent state*/
+	/* Force an update to ensure a consistent state*/
 	update_status();
 
 	goto exit_final;
