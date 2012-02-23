@@ -253,62 +253,66 @@ module_destroy_in_idle (gpointer data)
 static gboolean
 load_status_provider (gpointer dir)
 {
-	gchar * provider = (gchar *)dir;
+	gchar * provider = dir;
 
-	if (!g_file_test(provider, G_FILE_TEST_EXISTS)) {
-		goto exit_final;
+	/* load the module */
+	GModule * module = NULL;
+	if (g_file_test(provider, G_FILE_TEST_EXISTS)) {
+		g_debug("Loading status provider: %s", provider);
+		module = g_module_open(provider, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+		if (module == NULL) {
+			g_warning("Unable to open module: %s", provider);
+		}
 	}
 
-	g_debug("Loading status provider: %s", provider);
-
-	GModule * module;
-
-	module = g_module_open(provider, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
-	if (module == NULL) {
-		g_warning("Unable to module for: %s", provider);
-		goto exit_module_fail;
+	/* find the status provider's GType */
+	GType provider_type = 0;
+	if (module != NULL) {
+		GType (*type_func) (void);
+		if (!g_module_symbol(module, STATUS_PROVIDER_EXPORT_S, (gpointer *)&type_func)) {
+			g_warning("Unable to find type symbol in: %s", provider);
+		} else {
+			provider_type = type_func();
+			if (provider_type == 0) {
+				g_warning("Unable to create type from: %s", provider);
+			}
+		}
 	}
 
-	/* Got it */
-	GType (*type_func) (void);
-	if (!g_module_symbol(module, STATUS_PROVIDER_EXPORT_S, (gpointer *)&type_func)) {
-		g_warning("Unable to find type symbol in: %s", provider);
-		goto exit_module_fail;
+	/* instantiate the status provider */
+	StatusProvider * sprovider = NULL;
+	if (provider_type != 0) {
+		sprovider = STATUS_PROVIDER(g_object_new(provider_type, NULL));
+		if (sprovider == NULL) {
+			g_warning("Unable to build provider from: %s", provider);
+		}
 	}
 
-	GType provider_type = type_func();
-	if (provider_type == 0) {
-		g_warning("Unable to create type from: %s", provider);
-		goto exit_module_fail;
+	/* use the provider */
+	if (sprovider != NULL) {
+		/* On update let's talk to all of them and create the aggregate
+		   value to export */
+		g_signal_connect(G_OBJECT(sprovider),
+		                 STATUS_PROVIDER_SIGNAL_STATUS_CHANGED,
+		                 G_CALLBACK(update_status), NULL);
+
+		/* Attach the module object to the status provider so
+		   that when the status provider is free'd the module
+		   is closed automatically. */
+		g_object_set_data_full(G_OBJECT(sprovider),
+		                       "status-provider-module",
+		                       module, module_destroy_in_idle);
+		module = NULL; /* don't close module in this func */
+
+		status_providers = g_list_prepend(status_providers, sprovider);
+
+		/* Force an update to ensure a consistent state */
+		update_status();
 	}
 
-	StatusProvider * sprovider = STATUS_PROVIDER(g_object_new(provider_type, NULL));
-	if (sprovider == NULL) {
-		g_warning("Unable to build provider from: %s", provider);
-		goto exit_module_fail;
-	}
-
-	/* On update let's talk to all of them and create the aggregate
-	   value to export */
-	g_signal_connect(G_OBJECT(sprovider), STATUS_PROVIDER_SIGNAL_STATUS_CHANGED, G_CALLBACK(update_status), NULL);
-
-	/* Attach the module object to the status provider so
-	   that when the status provider is free'd the module
-	   is close automatically. */
-	g_object_set_data_full(G_OBJECT(sprovider), "status-provider-module", module, module_destroy_in_idle);
-
-	status_providers = g_list_prepend(status_providers, sprovider);
-
-	/* Force and update every time just so we know we're
-	   in a consistent state*/
-	update_status();
-
-	goto exit_final;
-
-exit_module_fail:
-	g_module_close(module);
-
-exit_final:
+	/* cleanup */
+	if (module != NULL)
+		g_module_close(module);
 	g_free(provider);
-	return FALSE;
+	return FALSE; /* only call this idle func once */
 }
