@@ -4,8 +4,9 @@ indicator-messages (0.5.92-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Fix goto handling (by removing) (LP: #937441, LP: #937438)
     * Tell accountsservice when user has messages for the benefit of
       LightDM.
+  * Dropping debian/patches: Merged upstream
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 23 Feb 2012 00:08:08 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 23 Feb 2012 00:09:29 -0600
 
 indicator-messages (0.5.91-0ubuntu3) precise; urgency=low
 
