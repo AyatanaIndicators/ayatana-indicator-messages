@@ -321,26 +321,56 @@ desktop_file_from_keyfile (const gchar * definition_file)
 	return desktopfile;
 }
 
+static gchar *
+get_symlink_target (const gchar *path,
+		    GError **error)
+{
+	GFile *file;
+	GFileInfo *fileinfo;
+	gchar *target = NULL;
+
+	file = g_file_new_for_path (path);
+
+	fileinfo = g_file_query_info (file, "standard::*",
+				      G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
+				      NULL, error);
+	g_object_unref (file);
+
+	if (!fileinfo)
+	    return NULL;
+
+	if (!g_file_info_get_is_symlink (fileinfo) ||
+	    !(target = g_strdup (g_file_info_get_symlink_target (fileinfo))))
+	{
+	    g_set_error (error,
+			 G_IO_ERROR,
+			 G_IO_ERROR_NOT_SYMBOLIC_LINK,
+			 "'%s' is not a symbolic link",
+			 path);
+	}
+
+	g_object_unref (fileinfo);
+	return target;
+}
+
 /* Add a definition file into the black list and eclipse
    any launchers that have the same file. */
 static gboolean
 blacklist_add (gpointer udata)
 {
 	gchar * definition_file = (gchar *)udata;
-	/* Dump the file */
-	gchar * desktop;
-	g_file_get_contents(definition_file, &desktop, NULL, NULL);
-	if (desktop == NULL) {
-		g_warning("Couldn't get data out of: %s", definition_file);
-		return FALSE;
+	gchar * target;
+	GError *error = NULL;
+
+	target = get_symlink_target (definition_file, &error);
+	if (!target) {
+	    g_warning ("Error loading blacklist file: %s", error->message);
+	    g_error_free (error);
+	    return FALSE;
 	}
 
-	/* Clean up the data */
-	gchar * trimdesktop = pango_trim_string(desktop);
-	g_free(desktop);
-
-	blacklist_add_core(trimdesktop, definition_file);
-	g_free(trimdesktop);
+	blacklist_add_core(target, definition_file);
+	g_free(target);
 
 	return FALSE;
 }
