@@ -290,7 +290,7 @@ set_status (StatusProvider * sp, StatusProviderStatus status)
 	ret = dbus_g_proxy_call(priv->proxy,
 	                        "GetPresence", &error,
 	                        G_TYPE_INVALID,
-	                        G_TYPE_UINT, &priv->mc_status,
+	                        G_TYPE_UINT, &mcstatus,
 	                        G_TYPE_INVALID);
 
 	/* If we can't get the  get call to work, let's not set */

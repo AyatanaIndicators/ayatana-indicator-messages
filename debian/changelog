@@ -1,3 +1,12 @@
+indicator-messages (0.5.93-0ubuntu1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Fixing alignment of menu items (LP: #939953)
+    * Vertically centering alignment of double high items (LP: #770486)
+    * Fixing setting of status on telepathy (LP: #943757)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 08 Mar 2012 14:29:54 -0600
+
 indicator-messages (0.5.92-0ubuntu1) precise; urgency=low
 
   [ Ted Gould ]

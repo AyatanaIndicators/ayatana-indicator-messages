@@ -288,11 +288,47 @@ time_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateL
 	return;
 }
 
+/* Returns a newly allocated string which is 'str' with all occurences of
+ * consecutive whitespace collapsed into single space character. */
+static gchar *
+collapse_whitespace (const gchar *str)
+{
+	GString *result;
+	gboolean in_space = FALSE;
+
+	if (!str)
+		return NULL;
+
+	result = g_string_sized_new (strlen (str));
+
+	while (*str) {
+		gunichar c = g_utf8_get_char_validated (str, -1);
+
+		if (c < 0)
+			break;
+
+		if (!g_unichar_isspace (c)) {
+			g_string_append_unichar (result, c);
+			in_space = FALSE;
+		}
+		else if (!in_space) {
+			g_string_append_c (result, ' ');
+			in_space = TRUE;
+		}
+
+		str = g_utf8_next_char (str);
+	}
+
+	return g_string_free (result, FALSE);
+}
+
 /* Callback from libindicate that is for getting the sender information
    on a particular indicator. */
 static void
 sender_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, const gchar * propertydata, gpointer data)
 {
+	gchar *label;
+
 	g_debug("Got Sender Information: %s", propertydata);
 	ImMenuItem * self = IM_MENU_ITEM(data);
 
@@ -310,7 +346,9 @@ sender_cb (IndicateListener * listener, IndicateListenerServer * server, Indicat
 		return;
 	}
 
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), INDICATOR_MENUITEM_PROP_LABEL, propertydata);
+	label = collapse_whitespace (propertydata);
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), INDICATOR_MENUITEM_PROP_LABEL, label);
+	g_free (label);
 
 	return;
 }
