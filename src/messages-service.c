@@ -321,56 +321,14 @@ desktop_file_from_keyfile (const gchar * definition_file)
 	return desktopfile;
 }
 
-static gchar *
-get_symlink_target (const gchar *path,
-		    GError **error)
-{
-	GFile *file;
-	GFileInfo *fileinfo;
-	gchar *target = NULL;
-
-	file = g_file_new_for_path (path);
-
-	fileinfo = g_file_query_info (file, "standard::*",
-				      G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
-				      NULL, error);
-	g_object_unref (file);
-
-	if (!fileinfo)
-	    return NULL;
-
-	if (!g_file_info_get_is_symlink (fileinfo) ||
-	    !(target = g_strdup (g_file_info_get_symlink_target (fileinfo))))
-	{
-	    g_set_error (error,
-			 G_IO_ERROR,
-			 G_IO_ERROR_NOT_SYMBOLIC_LINK,
-			 "'%s' is not a symbolic link",
-			 path);
-	}
-
-	g_object_unref (fileinfo);
-	return target;
-}
-
 /* Add a definition file into the black list and eclipse
    any launchers that have the same file. */
 static gboolean
 blacklist_add (gpointer udata)
 {
 	gchar * definition_file = (gchar *)udata;
-	gchar * target;
-	GError *error = NULL;
 
-	target = get_symlink_target (definition_file, &error);
-	if (!target) {
-	    g_warning ("Error loading blacklist file: %s", error->message);
-	    g_error_free (error);
-	    return FALSE;
-	}
-
-	blacklist_add_core(target, definition_file);
-	g_free(target);
+	blacklist_add_core(definition_file, definition_file);
 
 	return FALSE;
 }
@@ -382,8 +340,10 @@ blacklist_add (gpointer udata)
 static void
 blacklist_add_core (gchar * desktop, gchar * definition)
 {
+	gchar *basename = g_path_get_basename(desktop);
+
 	/* Check for conflicts */
-	gpointer data = g_hash_table_lookup(blacklist, desktop);
+	gpointer data = g_hash_table_lookup(blacklist, basename);
 	if (data != NULL) {
 		gchar * oldfile = (gchar *)data;
 		if (!g_strcmp0(oldfile, definition)) {
@@ -392,27 +352,31 @@ blacklist_add_core (gchar * desktop, gchar * definition)
 			g_warning("Already have desktop file '%s' in blacklist file '%s' not adding from '%s'", desktop, oldfile, definition);
 		}
 
+		g_free(basename);
 		return;
 	}
 
 	/* Actually blacklist this thing */
-	g_hash_table_insert(blacklist, g_strdup(desktop), g_strdup(definition));
+	g_hash_table_insert(blacklist, g_strdup(basename), g_strdup(definition));
 	g_debug("Adding Blacklist item '%s' for desktop '%s'", definition, desktop);
 
 	/* Go through and eclipse folks */
 	GList * launcher;
 	for (launcher = launcherList; launcher != NULL; launcher = launcher->next) {
 		launcherList_t * item = (launcherList_t *)launcher->data;
-		if (!g_strcmp0(desktop, launcher_menu_item_get_desktop(item->menuitem))) {
+		gchar * item_basename = g_path_get_basename(launcher_menu_item_get_desktop(item->menuitem));
+		if (!g_strcmp0(basename, item_basename)) {
 			launcher_menu_item_set_eclipsed(item->menuitem, TRUE);
 			dbusmenu_menuitem_property_set_bool(item->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		}
+		g_free(item_basename);
 	}
 
 	check_hidden();
 	/* Shouldn't need a resort here as hiding shouldn't cause things to
 	   move other than this item disappearing. */
 
+	g_free(basename);
 	return;
 }
 
@@ -474,15 +438,20 @@ blacklist_remove (gpointer data)
 static gboolean
 blacklist_check (const gchar * desktop_file)
 {
-	g_debug("Checking blacklist for: %s", desktop_file);
-	if (blacklist == NULL) return FALSE;
+	gchar *basename = g_path_get_basename(desktop_file);
+	gboolean found;
 
-	if (g_hash_table_lookup(blacklist, desktop_file)) {
+	g_debug("Checking blacklist for: %s", basename);
+
+	if (blacklist && g_hash_table_lookup(blacklist, basename)) {
 		g_debug("\tFound!");
-		return TRUE;
+		found = TRUE;
 	}
+	else
+		found = FALSE;
 
-	return FALSE;
+	g_free(basename);
+	return found;
 }
 
 /* A callback everytime the blacklist directory changes
