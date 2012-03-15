@@ -31,6 +31,9 @@ AS_IF([test "x$enable_deprecations" = xno],
   [CFLAGS="$CFLAGS -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE -DGTK_DISABLE_SINGLE_INCLUDES"]
 )
 
+# the Google Test targets are cpp
+AC_PROG_CXX
+
 ###########################
 # Dependencies 
 ###########################
@@ -69,6 +72,15 @@ AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
 ###########################
+# Test Dependencies
+###########################
+
+AC_ARG_ENABLE([tests],
+	AC_HELP_STRING([--disable-tests], [Disable test scripts and tools]),,
+	[enable_tests=auto])
+AM_CONDITIONAL(BUILD_TESTS, test xyes = xyes)
+
+###########################
 # Status Provider Deps
 ###########################
 
@@ -102,6 +114,13 @@ AM_CONDITIONAL([HAVE_GCOVR], [test "x$ac_cv_check_gcovr" = xyes])
 AC_SUBST(COVERAGE_CFLAGS)
 AC_SUBST(COVERAGE_CXXFLAGS)
 AC_SUBST(COVERAGE_LDFLAGS)
+
+###########################
+# Google Test framework
+###########################
+
+m4_include([m4/gtest.m4])
+CHECK_GTEST
 
 ###########################
 # Check to see if we're local
@@ -192,6 +211,7 @@ data/icons/scalable/Makefile
 data/icons/scalable/status/Makefile
 data/icons/scalable/categories/Makefile
 po/Makefile.in
+test/Makefile
 ])
 
 ###########################

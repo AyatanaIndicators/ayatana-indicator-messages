@@ -4,6 +4,10 @@ SUBDIRS = \
 	data \
 	po
 
+if BUILD_TESTS
+SUBDIRS += test
+endif
+
 DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations
 
 dist-hook:
