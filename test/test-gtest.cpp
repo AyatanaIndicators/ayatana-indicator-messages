@@ -1,13 +1,16 @@
 
-#include <stdio.h>
-#include <gtest.h>
+#include <glib.h>
+#include <gtest/gtest.h>
 
+extern "C" {
+   #include "launcher-menu-item.h"
+}
 
-
-
-int
-main (int argc, char ** argv)
-{
-  printf("oheck\n");
-  return 0;
+TEST(LauncherMenuItem, EmptyAtStart) {
+  gboolean result;
+  // FIXME
+  //LauncherMenuItem * test_li = ???;
+  gboolean test_eclipsed;
+  //result = launcher_menu_item_set_eclipsed(test_li, test_eclipsed);
+  EXPECT_TRUE(false);
 }
