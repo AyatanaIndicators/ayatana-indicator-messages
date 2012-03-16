@@ -18,10 +18,12 @@ libgtest_a_CXXFLAGS = \
 TESTS += test-gtest
 
 test_gtest_SOURCES = \
+	$(top_srcdir)/src/launcher-menu-item.c \
+	$(top_srcdir)/src/default-applications.c \
+	$(top_srcdir)/src/seen-db.c \
 	test-gtest.cpp
 test_gtest_CPPFLAGS = \
-	$(APPLET_CFLAGS) \
-	-I$(top_srcdir)/src
+	$(APPLET_CFLAGS)
 test_gtest_LDFLAGS = -pthread
 test_gtest_LDADD = \
 	$(APPLET_LIBS) \
