@@ -4,10 +4,6 @@ SUBDIRS = \
 	data \
 	po
 
-if BUILD_TESTS
-SUBDIRS += test
-endif
-
 DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations
 
 dist-hook:
@@ -35,5 +31,6 @@ dist-hook:
         else \
 			echo Failed to generate AUTHORS: not a branch >&2; \
 	fi
+
 
 include $(top_srcdir)/Makefile.am.coverage
