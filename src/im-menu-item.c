@@ -175,7 +175,11 @@ im_menu_item_finalize (GObject *object)
 static void
 icon_cb (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gchar * property, const gchar * propertydata, gpointer data)
 {
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(data), INDICATOR_MENUITEM_PROP_ICON, propertydata);
+	gsize len;
+	guchar *icon;
+	icon = g_base64_decode (propertydata, &len);
+	dbusmenu_menuitem_property_set_byte_array(DBUSMENU_MENUITEM(data), INDICATOR_MENUITEM_PROP_ICON, icon, len);
+	g_free (icon);
 	return;
 }
 
