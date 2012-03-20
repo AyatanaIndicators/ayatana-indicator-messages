@@ -80,8 +80,7 @@ libindicator_messages_service_la_CFLAGS = \
 
 libindicator_messages_service_la_LIBADD = \
 	$(APPLET_LIBS) \
-	libindicator-messages-status-provider.la
+	$(top_builddir)/src/.libs/libindicator-messages-status-provider.la
 
 libindicator_messages_service_la_LDFLAGS = \
 	$(COVERAGE_LDFLAGS)
-

@@ -7,7 +7,14 @@ SUBDIRS = \
 if BUILD_TESTS
 SUBDIRS += \
 	test
+
+# build src first
+test: src
+
 endif
+
+
+
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations
 
