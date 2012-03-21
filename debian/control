@@ -19,7 +19,8 @@ Build-Depends: debhelper (>= 5.0),
                libdbusmenu-glib-dev (>= 0.5.90),
                libdbusmenu-gtk-dev (>= 0.5.90),
                libdbusmenu-gtk3-dev (>= 0.5.90),
-               libtelepathy-glib-dev (>= 0.9.0)
+               libtelepathy-glib-dev (>= 0.9.0),
+               libgtest-dev
 Standards-Version: 3.9.2
 Homepage: https://launchpad.net/indicator-messages
 Vcs-Bzr: http://code.launchpad.net/~ubuntu-desktop/indicator-messages/ubuntu
