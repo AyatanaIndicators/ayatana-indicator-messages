@@ -1,3 +1,13 @@
+indicator-messages (0.5.94-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Fix for missing icons in the messaging menu (LP: #960553)
+    * Fix i18n for description (LP: #957525)
+    * Implementing initial testing
+    * Fixing blacklists (LP: #939258)
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 21 Mar 2012 15:28:19 -0500
+
 indicator-messages (0.5.93-0ubuntu2) precise; urgency=low
 
   * src/im-menu-item.c
