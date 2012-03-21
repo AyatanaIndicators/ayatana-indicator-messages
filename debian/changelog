@@ -1,5 +1,6 @@
-indicator-messages (0.5.94-0ubuntu1~ppa1) precise; urgency=low
+indicator-messages (0.5.94-0ubuntu1) precise; urgency=low
 
+  [ Ted Gould ]
   * New upstream release.
     * Fix for missing icons in the messaging menu (LP: #960553)
     * Fix i18n for description (LP: #957525)
@@ -7,7 +8,11 @@ indicator-messages (0.5.94-0ubuntu1~ppa1) precise; urgency=low
     * Fixing blacklists (LP: #939258)
   * debian/control: Adding dep on libgtest-dev
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 21 Mar 2012 15:33:19 -0500
+  [ Ken VanDine ]
+  * debian/control: Don't build depend on libgtest-dev, it isn't in main
+  * debian/rules: disable tests, they require libgtest-dev
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Wed, 21 Mar 2012 17:00:10 -0400
 
 indicator-messages (0.5.93-0ubuntu2) precise; urgency=low
 
