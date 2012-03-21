@@ -4,7 +4,7 @@ SUBDIRS = \
 	data \
 	po
 
-if HAVE_GTEST
+if BUILD_TESTS
 SUBDIRS += \
 	test
 

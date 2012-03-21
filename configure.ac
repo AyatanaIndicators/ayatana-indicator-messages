@@ -77,6 +77,15 @@ AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
 ###########################
+# Test Dependencies
+###########################
+
+AC_ARG_ENABLE([tests],
+	AC_HELP_STRING([--disable-tests], [Disable test scripts and tools]),,
+	[enable_tests=auto])
+AM_CONDITIONAL(BUILD_TESTS, test xyes = xyes)
+
+###########################
 # Status Provider Deps
 ###########################
 
@@ -117,7 +126,6 @@ AC_SUBST(COVERAGE_LDFLAGS)
 
 m4_include([m4/gtest.m4])
 CHECK_GTEST
-AM_CONDITIONAL([HAVE_GTEST], [test "x$have_gtest" = xyes])
 
 ###########################
 # Check to see if we're local
