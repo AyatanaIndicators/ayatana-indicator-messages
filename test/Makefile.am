@@ -21,9 +21,6 @@ libgtest_a_CPPFLAGS = \
 TESTS += test-gtest
 
 test_gtest_SOURCES = \
-	$(top_srcdir)/src/launcher-menu-item.c \
-	$(top_srcdir)/src/default-applications.c \
-	$(top_srcdir)/src/seen-db.c \
 	test-gtest.cpp
 test_gtest_CPPFLAGS = \
 	$(APPLET_CFLAGS) \
@@ -31,6 +28,7 @@ test_gtest_CPPFLAGS = \
 test_gtest_LDFLAGS = -pthread
 test_gtest_LDADD = \
 	$(APPLET_LIBS) \
+	$(top_builddir)/src/.libs/libindicator-messages-status-provider.la \
 	libgtest.a
 
 
