@@ -327,20 +327,8 @@ static gboolean
 blacklist_add (gpointer udata)
 {
 	gchar * definition_file = (gchar *)udata;
-	/* Dump the file */
-	gchar * desktop;
-	g_file_get_contents(definition_file, &desktop, NULL, NULL);
-	if (desktop == NULL) {
-		g_warning("Couldn't get data out of: %s", definition_file);
-		return FALSE;
-	}
 
-	/* Clean up the data */
-	gchar * trimdesktop = pango_trim_string(desktop);
-	g_free(desktop);
-
-	blacklist_add_core(trimdesktop, definition_file);
-	g_free(trimdesktop);
+	blacklist_add_core(definition_file, definition_file);
 
 	return FALSE;
 }
@@ -352,8 +340,10 @@ blacklist_add (gpointer udata)
 static void
 blacklist_add_core (gchar * desktop, gchar * definition)
 {
+	gchar *basename = g_path_get_basename(desktop);
+
 	/* Check for conflicts */
-	gpointer data = g_hash_table_lookup(blacklist, desktop);
+	gpointer data = g_hash_table_lookup(blacklist, basename);
 	if (data != NULL) {
 		gchar * oldfile = (gchar *)data;
 		if (!g_strcmp0(oldfile, definition)) {
@@ -362,27 +352,31 @@ blacklist_add_core (gchar * desktop, gchar * definition)
 			g_warning("Already have desktop file '%s' in blacklist file '%s' not adding from '%s'", desktop, oldfile, definition);
 		}
 
+		g_free(basename);
 		return;
 	}
 
 	/* Actually blacklist this thing */
-	g_hash_table_insert(blacklist, g_strdup(desktop), g_strdup(definition));
+	g_hash_table_insert(blacklist, g_strdup(basename), g_strdup(definition));
 	g_debug("Adding Blacklist item '%s' for desktop '%s'", definition, desktop);
 
 	/* Go through and eclipse folks */
 	GList * launcher;
 	for (launcher = launcherList; launcher != NULL; launcher = launcher->next) {
 		launcherList_t * item = (launcherList_t *)launcher->data;
-		if (!g_strcmp0(desktop, launcher_menu_item_get_desktop(item->menuitem))) {
+		gchar * item_basename = g_path_get_basename(launcher_menu_item_get_desktop(item->menuitem));
+		if (!g_strcmp0(basename, item_basename)) {
 			launcher_menu_item_set_eclipsed(item->menuitem, TRUE);
 			dbusmenu_menuitem_property_set_bool(item->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		}
+		g_free(item_basename);
 	}
 
 	check_hidden();
 	/* Shouldn't need a resort here as hiding shouldn't cause things to
 	   move other than this item disappearing. */
 
+	g_free(basename);
 	return;
 }
 
@@ -444,15 +438,20 @@ blacklist_remove (gpointer data)
 static gboolean
 blacklist_check (const gchar * desktop_file)
 {
-	g_debug("Checking blacklist for: %s", desktop_file);
-	if (blacklist == NULL) return FALSE;
+	gchar *basename = g_path_get_basename(desktop_file);
+	gboolean found;
 
-	if (g_hash_table_lookup(blacklist, desktop_file)) {
+	g_debug("Checking blacklist for: %s", basename);
+
+	if (blacklist && g_hash_table_lookup(blacklist, basename)) {
 		g_debug("\tFound!");
-		return TRUE;
+		found = TRUE;
 	}
+	else
+		found = FALSE;
 
-	return FALSE;
+	g_free(basename);
+	return found;
 }
 
 /* A callback everytime the blacklist directory changes
