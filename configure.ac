@@ -4,7 +4,7 @@ AC_INIT(src/indicator-messages.c)
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-messages, 0.5.92)
+AM_INIT_AUTOMAKE(indicator-messages, 0.5.93)
 
 AM_MAINTAINER_MODE
 
@@ -31,6 +31,9 @@ AS_IF([test "x$enable_deprecations" = xno],
   [CFLAGS="$CFLAGS -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE -DGTK_DISABLE_SINGLE_INCLUDES"]
 )
 
+# the Google Test targets are cpp
+AC_PROG_CXX
+
 ###########################
 # Dependencies 
 ###########################
@@ -42,6 +45,7 @@ PANEL_REQUIRED_VERSION=2.0.0
 INDICATE_REQUIRED_VERSION=0.6.90
 INDICATOR_REQUIRED_VERSION=0.3.19
 DBUSMENUGTK_REQUIRED_VERSION=0.5.90
+GLIB_REQUIRED_VERSION=2.31.20
 
 AC_ARG_WITH([gtk],
   [AS_HELP_STRING([--with-gtk],
@@ -54,19 +58,32 @@ AS_IF([test "x$with_gtk" = x3],
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
                                    indicate-0.7 >= $INDICATE_REQUIRED_VERSION
-                                   dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION)
+                                   dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
+                                   glib-2.0 >= $GLIB_REQUIRED_VERSION
+                                   gmodule-2.0 >= $GLIB_REQUIRED_VERSION)
         ],
       [test "x$with_gtk" = x2],
         [PKG_CHECK_MODULES(APPLET, gtk+-2.0 >= $GTK_REQUIRED_VERSION
                                    gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
                                    indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
                                    indicate-0.7 >= $INDICATE_REQUIRED_VERSION
-                                   dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION)
+                                   dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
+                                   glib-2.0 >= $GLIB_REQUIRED_VERSION
+                                   gmodule-2.0 >= $GLIB_REQUIRED_VERSION)
         ],
       [AC_MSG_FAILURE([Value for --with-indicator-gtk was neither 2 nor 3])]
 )
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
+
+###########################
+# Test Dependencies
+###########################
+
+AC_ARG_ENABLE([tests],
+	AC_HELP_STRING([--disable-tests], [Disable test scripts and tools]),,
+	[enable_tests=auto])
+AM_CONDITIONAL(BUILD_TESTS, test xyes = xyes)
 
 ###########################
 # Status Provider Deps
@@ -102,6 +119,13 @@ AM_CONDITIONAL([HAVE_GCOVR], [test "x$ac_cv_check_gcovr" = xyes])
 AC_SUBST(COVERAGE_CFLAGS)
 AC_SUBST(COVERAGE_CXXFLAGS)
 AC_SUBST(COVERAGE_LDFLAGS)
+
+###########################
+# Google Test framework
+###########################
+
+m4_include([m4/gtest.m4])
+CHECK_GTEST
 
 ###########################
 # Check to see if we're local
@@ -192,6 +216,7 @@ data/icons/scalable/Makefile
 data/icons/scalable/status/Makefile
 data/icons/scalable/categories/Makefile
 po/Makefile.in
+test/Makefile
 ])
 
 ###########################

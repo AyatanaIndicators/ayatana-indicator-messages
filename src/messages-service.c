@@ -621,6 +621,7 @@ server_shortcut_added (AppMenuItem * appitem, DbusmenuMenuitem * mi, gpointer da
 	g_debug("Application Shortcut added: %s", mi != NULL ? dbusmenu_menuitem_property_get(mi, DBUSMENU_MENUITEM_PROP_LABEL) : "none");
 	DbusmenuMenuitem * shell = DBUSMENU_MENUITEM(data);
 	if (mi != NULL) {
+		dbusmenu_menuitem_property_set (mi, DBUSMENU_MENUITEM_PROP_ICON_NAME, "");
 		dbusmenu_menuitem_child_append(shell, mi);
 	}
 	resort_menu(shell);
