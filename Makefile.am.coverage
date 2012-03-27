@@ -1,13 +1,17 @@
 
 # Coverage targets
 
-.PHONY: clean-gcda \
+.PHONY: clean-gcno clean-gcda \
 	coverage-html generate-coverage-html clean-coverage-html \
 	coverage-gcovr generate-coverage-gcovr clean-coverage-gcovr
 
-clean-local: clean-coverage-html clean-coverage-gcovr
+clean-local: clean-gcno clean-coverage-html clean-coverage-gcovr
 
 if HAVE_GCOV
+
+clean-gcno:
+	@echo Removing old coverage instrumentation
+	-find -name '*.gcno' -print | xargs -r rm
 
 clean-gcda:
 	@echo Removing old coverage results
