@@ -321,14 +321,53 @@ desktop_file_from_keyfile (const gchar * definition_file)
 	return desktopfile;
 }
 
+/* Check if path is a symlink and return its target if it is */
+static gchar *
+get_symlink_target (const gchar *path)
+{
+	GFile *file;
+	GFileInfo *fileinfo;
+	gchar *target = NULL;
+
+	file = g_file_new_for_path (path);
+
+	fileinfo = g_file_query_info (file, "standard::is-symlink",
+				      G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
+				      NULL, NULL);
+	g_object_unref (file);
+
+	if (!fileinfo)
+		return NULL;
+
+	if (g_file_info_get_is_symlink (fileinfo))
+		target = g_strdup (g_file_info_get_symlink_target (fileinfo));
+
+	g_object_unref (fileinfo);
+	return target;
+}
+
 /* Add a definition file into the black list and eclipse
    any launchers that have the same file. */
 static gboolean
 blacklist_add (gpointer udata)
 {
 	gchar * definition_file = (gchar *)udata;
+	gchar * symlink_target = get_symlink_target (definition_file);
+	gchar * contents = NULL;
 
-	blacklist_add_core(definition_file, definition_file);
+	if (symlink_target)
+		blacklist_add_core (symlink_target, definition_file);
+	else if (g_str_has_suffix (definition_file, ".desktop"))
+		blacklist_add_core(definition_file, definition_file);
+	else if (g_file_get_contents (definition_file, &contents, NULL, NULL))
+	{
+		gchar *trimmed = pango_trim_string (contents);
+		blacklist_add_core (trimmed, definition_file);
+		g_free (trimmed);
+		g_free (contents);
+	}
+	else
+		g_warning ("invalid blacklist entry: %s", definition_file);
 
 	return FALSE;
 }
