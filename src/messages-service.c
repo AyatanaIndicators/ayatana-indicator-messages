@@ -356,9 +356,14 @@ blacklist_add (gpointer udata)
 	gchar * contents = NULL;
 
 	if (symlink_target)
+	{
 		blacklist_add_core (symlink_target, definition_file);
+		g_free (symlink_target);
+	}
 	else if (g_str_has_suffix (definition_file, ".desktop"))
+	{
 		blacklist_add_core(definition_file, definition_file);
+	}
 	else if (g_file_get_contents (definition_file, &contents, NULL, NULL))
 	{
 		gchar *trimmed = pango_trim_string (contents);
