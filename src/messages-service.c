@@ -29,6 +29,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator-service.h>
 #include <gio/gio.h>
 #include <glib/gi18n.h>
+#include <gtk/gtk.h>
 
 #include <libdbusmenu-glib/client.h>
 #include <libdbusmenu-glib/server.h>
@@ -321,14 +322,58 @@ desktop_file_from_keyfile (const gchar * definition_file)
 	return desktopfile;
 }
 
+/* Check if path is a symlink and return its target if it is */
+static gchar *
+get_symlink_target (const gchar *path)
+{
+	GFile *file;
+	GFileInfo *fileinfo;
+	gchar *target = NULL;
+
+	file = g_file_new_for_path (path);
+
+	fileinfo = g_file_query_info (file, "standard::is-symlink",
+				      G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
+				      NULL, NULL);
+	g_object_unref (file);
+
+	if (!fileinfo)
+		return NULL;
+
+	if (g_file_info_get_is_symlink (fileinfo))
+		target = g_strdup (g_file_info_get_symlink_target (fileinfo));
+
+	g_object_unref (fileinfo);
+	return target;
+}
+
 /* Add a definition file into the black list and eclipse
    any launchers that have the same file. */
 static gboolean
 blacklist_add (gpointer udata)
 {
 	gchar * definition_file = (gchar *)udata;
+	gchar * symlink_target = get_symlink_target (definition_file);
+	gchar * contents = NULL;
 
-	blacklist_add_core(definition_file, definition_file);
+	if (symlink_target)
+	{
+		blacklist_add_core (symlink_target, definition_file);
+		g_free (symlink_target);
+	}
+	else if (g_str_has_suffix (definition_file, ".desktop"))
+	{
+		blacklist_add_core(definition_file, definition_file);
+	}
+	else if (g_file_get_contents (definition_file, &contents, NULL, NULL))
+	{
+		gchar *trimmed = pango_trim_string (contents);
+		blacklist_add_core (trimmed, definition_file);
+		g_free (trimmed);
+		g_free (contents);
+	}
+	else
+		g_warning ("invalid blacklist entry: %s", definition_file);
 
 	return FALSE;
 }
@@ -620,7 +665,9 @@ server_shortcut_added (AppMenuItem * appitem, DbusmenuMenuitem * mi, gpointer da
 	g_debug("Application Shortcut added: %s", mi != NULL ? dbusmenu_menuitem_property_get(mi, DBUSMENU_MENUITEM_PROP_LABEL) : "none");
 	DbusmenuMenuitem * shell = DBUSMENU_MENUITEM(data);
 	if (mi != NULL) {
+#if GTK_CHECK_VERSION(3, 0, 0)
 		dbusmenu_menuitem_property_set (mi, DBUSMENU_MENUITEM_PROP_ICON_NAME, "");
+#endif
 		dbusmenu_menuitem_child_append(shell, mi);
 	}
 	resort_menu(shell);
@@ -1055,6 +1102,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 	} else {
 		g_warning("Unable to find server menu item");
 		dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
+		resort_menu (root_menuitem);
 	}
 
 	return;
