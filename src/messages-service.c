@@ -1102,6 +1102,7 @@ indicator_added (IndicateListener * listener, IndicateListenerServer * server, I
 	} else {
 		g_warning("Unable to find server menu item");
 		dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
+		resort_menu (root_menuitem);
 	}
 
 	return;
