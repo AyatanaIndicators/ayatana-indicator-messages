@@ -29,7 +29,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator-service.h>
 #include <gio/gio.h>
 #include <glib/gi18n.h>
-#include <gtk/gtk.h>
 
 #include <libdbusmenu-glib/client.h>
 #include <libdbusmenu-glib/server.h>
@@ -665,9 +664,7 @@ server_shortcut_added (AppMenuItem * appitem, DbusmenuMenuitem * mi, gpointer da
 	g_debug("Application Shortcut added: %s", mi != NULL ? dbusmenu_menuitem_property_get(mi, DBUSMENU_MENUITEM_PROP_LABEL) : "none");
 	DbusmenuMenuitem * shell = DBUSMENU_MENUITEM(data);
 	if (mi != NULL) {
-#if GTK_CHECK_VERSION(3, 0, 0)
-		dbusmenu_menuitem_property_set (mi, DBUSMENU_MENUITEM_PROP_ICON_NAME, "");
-#endif
+		dbusmenu_menuitem_property_set (mi, DBUSMENU_MENUITEM_PROP_ICON_NAME, DBUSMENU_MENUITEM_ICON_NAME_BLANK);
 		dbusmenu_menuitem_child_append(shell, mi);
 	}
 	resort_menu(shell);
