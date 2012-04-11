@@ -1,10 +1,10 @@
-indicator-messages (0.6.0-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-messages (0.6.0-0ubuntu1~ppa1) precise; urgency=low
 
   * New upstream release.
     * Handle blank icons properly (LP: #956147)
     * Fix telepathy offline/disconnected state bug 
 
- -- Charles Kerr <charles.kerr@canonical.com>  Wed, 11 Apr 2012 11:07:08 -0500
+ -- Charles Kerr <charles.kerr@canonical.com>  Wed, 11 Apr 2012 11:09:46 -0500
 
 indicator-messages (0.5.95-0ubuntu1) precise; urgency=low
 
