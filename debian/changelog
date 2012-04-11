@@ -1,4 +1,4 @@
-indicator-messages (0.6.0-0ubuntu1~ppa1) precise; urgency=low
+indicator-messages (0.6.0-0ubuntu1) precise; urgency=low
 
   * New upstream release.
     * Handle blank icons properly (LP: #956147)
