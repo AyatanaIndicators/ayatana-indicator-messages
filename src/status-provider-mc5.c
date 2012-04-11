@@ -137,7 +137,7 @@ status_provider_mc5_init (StatusProviderMC5 *self)
 {
 	StatusProviderMC5Private * priv = STATUS_PROVIDER_MC5_GET_PRIVATE(self);
 
-	priv->status = STATUS_PROVIDER_STATUS_DISCONNECTED;
+	priv->status = STATUS_PROVIDER_STATUS_OFFLINE;
 	priv->manager = NULL;
 
 	DBusGConnection * bus = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
@@ -219,7 +219,7 @@ dbus_namechange (DBusGProxy * proxy, const gchar * name, const gchar * prev, con
 			priv->manager = NULL;
 		}
 
-		priv->status = STATUS_PROVIDER_STATUS_DISCONNECTED;
+		priv->status = STATUS_PROVIDER_STATUS_OFFLINE;
 		g_signal_emit(G_OBJECT(self), STATUS_PROVIDER_SIGNAL_STATUS_CHANGED_ID, 0, priv->status, TRUE);
 	}
 
@@ -282,7 +282,7 @@ get_status (StatusProvider * sp)
 	StatusProviderMC5Private * priv = STATUS_PROVIDER_MC5_GET_PRIVATE(sp);
 
 	if (priv->manager == NULL) {
-		return STATUS_PROVIDER_STATUS_DISCONNECTED;
+		return STATUS_PROVIDER_STATUS_OFFLINE;
 	}
 
 	return priv->status;
