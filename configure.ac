@@ -77,15 +77,6 @@ AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
 ###########################
-# Test Dependencies
-###########################
-
-AC_ARG_ENABLE([tests],
-	AC_HELP_STRING([--disable-tests], [Disable test scripts and tools]),,
-	[enable_tests=auto])
-AM_CONDITIONAL(BUILD_TESTS, test xyes = xyes)
-
-###########################
 # Status Provider Deps
 ###########################
 
@@ -138,7 +129,6 @@ if test "x$enable_tests" != "xno"; then
            fi
 fi
 AM_CONDITIONAL([BUILD_TESTS],[test "x$enable_tests" = "xyes"])
-
 
 ###########################
 # Check to see if we're local
