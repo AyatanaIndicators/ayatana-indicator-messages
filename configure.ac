@@ -77,15 +77,6 @@ AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
 ###########################
-# Test Dependencies
-###########################
-
-AC_ARG_ENABLE([tests],
-	AC_HELP_STRING([--disable-tests], [Disable test scripts and tools]),,
-	[enable_tests=auto])
-AM_CONDITIONAL(BUILD_TESTS, test xyes = xyes)
-
-###########################
 # Status Provider Deps
 ###########################
 
@@ -124,8 +115,20 @@ AC_SUBST(COVERAGE_LDFLAGS)
 # Google Test framework
 ###########################
 
-m4_include([m4/gtest.m4])
-CHECK_GTEST
+AC_ARG_ENABLE([tests],
+    [AS_HELP_STRING([--disable-tests], [Disable test scripts and tools (default=auto)])],
+    [enable_tests=${enableval}],
+    [enable_tests=auto])
+if test "x$enable_tests" != "xno"; then
+    m4_include([m4/gtest.m4])
+    CHECK_GTEST
+    if test "x$enable_tests" = "xauto"; then
+        enable_tests=${have_gtest}
+    elif test "x$enable_tests" = "xyes" && test "x$have_gtest" != "xyes"; then
+        AC_MSG_ERROR([tests were requested but gtest is not installed.])
+    fi
+fi
+AM_CONDITIONAL([BUILD_TESTS],[test "x$enable_tests" = "xyes"])
 
 ###########################
 # Check to see if we're local
@@ -229,5 +232,6 @@ Messaging Indicator Configuration:
 
 	Prefix:        $prefix
 	Indicator Dir: $INDICATORDIR
+	gtest:         $enable_tests
 	gcov:          $use_gcov
 ])
