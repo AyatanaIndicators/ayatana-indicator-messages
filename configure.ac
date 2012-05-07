@@ -38,8 +38,7 @@ AC_PROG_CXX
 # Dependencies 
 ###########################
 
-GTK_REQUIRED_VERSION=2.12
-GTK3_REQUIRED_VERSION=3.0
+GTK_REQUIRED_VERSION=3.0
 GIO_UNIX_REQUIRED_VERSION=2.18
 PANEL_REQUIRED_VERSION=2.0.0
 INDICATE_REQUIRED_VERSION=0.6.90
@@ -47,32 +46,14 @@ INDICATOR_REQUIRED_VERSION=0.3.19
 DBUSMENUGTK_REQUIRED_VERSION=0.5.90
 GLIB_REQUIRED_VERSION=2.31.20
 
-AC_ARG_WITH([gtk],
-  [AS_HELP_STRING([--with-gtk],
-    [Which version of gtk to use for the indicator @<:@default=3@:>@])],
-  [],
-  [with_gtk=3])
+PKG_CHECK_MODULES(APPLET, gtk+-3.0 >= $GTK_REQUIRED_VERSION
+                          gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
+                          indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
+                          indicate-0.7 >= $INDICATE_REQUIRED_VERSION
+                          dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
+                          glib-2.0 >= $GLIB_REQUIRED_VERSION
+                          gmodule-2.0 >= $GLIB_REQUIRED_VERSION)
 
-AS_IF([test "x$with_gtk" = x3],
-        [PKG_CHECK_MODULES(APPLET, gtk+-3.0 >= $GTK3_REQUIRED_VERSION
-                                   gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
-                                   indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.7 >= $INDICATE_REQUIRED_VERSION
-                                   dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
-                                   glib-2.0 >= $GLIB_REQUIRED_VERSION
-                                   gmodule-2.0 >= $GLIB_REQUIRED_VERSION)
-        ],
-      [test "x$with_gtk" = x2],
-        [PKG_CHECK_MODULES(APPLET, gtk+-2.0 >= $GTK_REQUIRED_VERSION
-                                   gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
-                                   indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                   indicate-0.7 >= $INDICATE_REQUIRED_VERSION
-                                   dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
-                                   glib-2.0 >= $GLIB_REQUIRED_VERSION
-                                   gmodule-2.0 >= $GLIB_REQUIRED_VERSION)
-        ],
-      [AC_MSG_FAILURE([Value for --with-indicator-gtk was neither 2 nor 3])]
-)
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
@@ -144,9 +125,6 @@ AC_ARG_ENABLE(localinstall, AS_HELP_STRING([--enable-localinstall], [install all
 if test "x$with_localinstall" = "xyes"; then
 	INDICATORDIR="${libdir}/indicators/2/"
 	INDICATORICONSDIR="${datadir}/libindicate/icons/"
-elif test "x$with_gtk" = x2; then
-	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator-0.4`
-	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator-0.4`
 else
 	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator3-0.4`
 	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator3-0.4`
