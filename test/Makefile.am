@@ -43,7 +43,6 @@ libindicator_messages_service_la_HEADERS = \
 	$(top_srcdir)/src/im-menu-item.h \
 	$(top_srcdir)/src/app-menu-item.h \
 	$(top_srcdir)/src/launcher-menu-item.h \
-	$(top_srcdir)/src/seen-db.h \
 	$(top_srcdir)/src/dirs.h \
 	$(top_srcdir)/src/dbus-data.h \
 	$(top_srcdir)/src/status-items.h
@@ -55,7 +54,6 @@ libindicator_messages_service_la_SOURCES = \
 	$(top_srcdir)/src/im-menu-item.c \
 	$(top_srcdir)/src/app-menu-item.c \
 	$(top_srcdir)/src/launcher-menu-item.c \
-	$(top_srcdir)/src/seen-db.c \
 	$(top_srcdir)/src/status-items.c
 
 libindicator_messages_service_ladir = \

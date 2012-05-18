@@ -39,7 +39,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "dbus-data.h"
 #include "dirs.h"
 #include "messages-service-dbus.h"
-#include "seen-db.h"
 #include "status-items.h"
 
 static IndicatorService * service = NULL;
@@ -1532,9 +1531,6 @@ main (int argc, char ** argv)
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, GNOMELOCALEDIR);
 	textdomain (GETTEXT_PACKAGE);
-
-	/* Create the Seen DB */
-	seen_db_init();
 
 	/* Bring up the service DBus interface */
 	dbus_interface = message_service_dbus_new();

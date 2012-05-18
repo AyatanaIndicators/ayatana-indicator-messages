@@ -30,7 +30,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator-desktop-shortcuts.h>
 #include "launcher-menu-item.h"
 #include "dbus-data.h"
-#include "seen-db.h"
 
 enum {
 	NAME_CHANGED,
@@ -184,23 +183,21 @@ launcher_menu_item_new (const gchar * desktop_file)
 	g_signal_connect(G_OBJECT(self), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(activate_cb), NULL);
 
 	/* Start to build static shortcuts */
-	if (seen_db_seen(desktop_file)) {
-		priv->ids = indicator_desktop_shortcuts_new(priv->desktop, "Messaging Menu");
-		const gchar ** nicks = indicator_desktop_shortcuts_get_nicks(priv->ids);
-		gint i;
-		for (i = 0; nicks[i] != NULL; i++) {
-			DbusmenuMenuitem * mi = dbusmenu_menuitem_new();
-			dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_TYPE, APPLICATION_MENUITEM_TYPE);
-			g_object_set_data(G_OBJECT(mi), NICK_DATA, (gpointer)nicks[i]);
+	priv->ids = indicator_desktop_shortcuts_new(priv->desktop, "Messaging Menu");
+	const gchar ** nicks = indicator_desktop_shortcuts_get_nicks(priv->ids);
+	gint i;
+	for (i = 0; nicks[i] != NULL; i++) {
+		DbusmenuMenuitem * mi = dbusmenu_menuitem_new();
+		dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_TYPE, APPLICATION_MENUITEM_TYPE);
+		g_object_set_data(G_OBJECT(mi), NICK_DATA, (gpointer)nicks[i]);
 
-			gchar *name = indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]);
-			dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_LABEL, name);
-			g_free(name);
+		gchar *name = indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]);
+		dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_LABEL, name);
+		g_free(name);
 
-			g_signal_connect(G_OBJECT(mi), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(nick_activate_cb), self);
+		g_signal_connect(G_OBJECT(mi), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(nick_activate_cb), self);
 
-			priv->shortcuts = g_list_append(priv->shortcuts, mi);
-		}
+		priv->shortcuts = g_list_append(priv->shortcuts, mi);
 	}
 
 	/* Check to see if we should be eclipsed */
