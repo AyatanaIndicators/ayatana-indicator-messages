@@ -30,7 +30,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator-desktop-shortcuts.h>
 #include "launcher-menu-item.h"
 #include "dbus-data.h"
-#include "default-applications.h"
 #include "seen-db.h"
 
 enum {
@@ -175,26 +174,9 @@ launcher_menu_item_new (const gchar * desktop_file)
 	   app info that we've parsed */
 	g_debug("\tName: %s", launcher_menu_item_get_name(self));
 
-	const gchar * default_name = NULL;
-	
-	if (seen_db_seen(desktop_file)) {
-		default_name = get_default_name(desktop_file);
-	} else {
-		default_name = get_default_setup(desktop_file);
-	}
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, launcher_menu_item_get_name(self));
 
-	if (default_name == NULL) {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, launcher_menu_item_get_name(self));
-	} else {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_LABEL, _(default_name));
-	}
-
-	gchar * iconstr;
-	if (default_name == NULL) {
-		iconstr = launcher_menu_item_get_icon(self);
-	} else {
-		iconstr = g_strdup(get_default_icon(desktop_file));
-	}
+	gchar * iconstr = launcher_menu_item_get_icon(self);
 	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_ICON_NAME, iconstr);
 	g_free(iconstr);
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
@@ -357,19 +339,7 @@ launcher_menu_item_set_eclipsed (LauncherMenuItem * li, gboolean eclipsed)
 	/* If we're being reshown let's re-evaluate how we should be
 	   showing the label */
 	if (!eclipsed) {
-		const gchar * default_name = NULL;
-		
-		if (seen_db_seen(priv->desktop)) {
-			default_name = get_default_name(priv->desktop);
-		} else {
-			default_name = get_default_setup(priv->desktop);
-		}
-
-		if (default_name == NULL) {
-			dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_LABEL, launcher_menu_item_get_name(li));
-		} else {
-			dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_LABEL, _(default_name));
-		}
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(li), DBUSMENU_MENUITEM_PROP_LABEL, launcher_menu_item_get_name(li));
 	}
 
 	return;

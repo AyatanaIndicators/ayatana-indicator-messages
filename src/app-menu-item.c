@@ -30,7 +30,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libdbusmenu-glib/menuitem-proxy.h>
 #include "app-menu-item.h"
 #include "dbus-data.h"
-#include "default-applications.h"
 #include "seen-db.h"
 
 enum {
@@ -257,11 +256,7 @@ static void
 update_label (AppMenuItem * self)
 {
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
-	const gchar * name = get_default_name(priv->desktop);
-
-	if (name == NULL) {
-		name = app_menu_item_get_name(self);
-	}
+	const gchar * name = app_menu_item_get_name(self);
 
 	if (priv->unreadcount > 0) {
 		/* TRANSLATORS: This is the name of the program and the number of indicators.  So it
@@ -345,35 +340,30 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const 
 
 	update_label(self);
 
-	const gchar * def_icon = get_default_icon(priv->desktop);
-	if (def_icon == NULL) {
-		gchar * iconstr = NULL;
+	gchar * iconstr = NULL;
 
-		/* Check for the over ride key and see if we should be using that
-		   icon.  If we can't get it, then go back to the app info */
-		if (g_key_file_has_key(priv->keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, NULL) && iconstr == NULL) {
-			GError * error = NULL;
+	/* Check for the over ride key and see if we should be using that
+	   icon.  If we can't get it, then go back to the app info */
+	if (g_key_file_has_key(priv->keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, NULL) && iconstr == NULL) {
+		GError * error = NULL;
 
-			iconstr = g_key_file_get_string(priv->keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, &error);
+		iconstr = g_key_file_get_string(priv->keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, &error);
 
-			if (error != NULL) {
-				/* Can't figure out why this would happen, but sure, let's print something */
-				g_warning("Error getting '" ICON_KEY "' from desktop file: %s", error->message);
-				g_error_free(error);
-			}
+		if (error != NULL) {
+			/* Can't figure out why this would happen, but sure, let's print something */
+			g_warning("Error getting '" ICON_KEY "' from desktop file: %s", error->message);
+			g_error_free(error);
 		}
-
-		/* For some reason that didn't work, let's try the app info */
-		if (iconstr == NULL) {
-			GIcon * icon = g_app_info_get_icon(priv->appinfo);
-			iconstr = g_icon_to_string(icon);
-		}
-
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_ICON, iconstr);
-		g_free(iconstr);
-	} else {
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_ICON, def_icon);
 	}
+
+	/* For some reason that didn't work, let's try the app info */
+	if (iconstr == NULL) {
+		GIcon * icon = g_app_info_get_icon(priv->appinfo);
+		iconstr = g_icon_to_string(icon);
+	}
+
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_ICON, iconstr);
+	g_free(iconstr);
 
 	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
 

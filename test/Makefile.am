@@ -39,8 +39,6 @@ lib_LTLIBRARIES = \
 	libindicator-messages-service.la
 
 libindicator_messages_service_la_HEADERS = \
-	$(top_srcdir)/src/default-applications.h \
-	$(top_srcdir)/src/messages-service-dbus.h \
 	$(top_srcdir)/src/gen-messages-service.xml.h \
 	$(top_srcdir)/src/im-menu-item.h \
 	$(top_srcdir)/src/app-menu-item.h \
@@ -51,7 +49,6 @@ libindicator_messages_service_la_HEADERS = \
 	$(top_srcdir)/src/status-items.h
 
 libindicator_messages_service_la_SOURCES = \
-	$(top_srcdir)/src/default-applications.c \
 	$(top_srcdir)/src/messages-service.c \
 	$(top_srcdir)/src/messages-service-dbus.c \
 	$(top_srcdir)/src/gen-messages-service.xml.c \

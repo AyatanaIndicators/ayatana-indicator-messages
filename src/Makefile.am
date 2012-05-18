@@ -37,8 +37,6 @@ libmessaging_la_LDFLAGS = \
 ######################################
 
 indicator_messages_service_SOURCES = \
-	default-applications.h \
-	default-applications.c \
 	messages-service.c \
 	messages-service-dbus.c \
 	messages-service-dbus.h \
