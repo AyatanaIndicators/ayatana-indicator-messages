@@ -67,7 +67,6 @@ static void indicator_removed (IndicateListener * listener, IndicateListenerServ
 static void check_eclipses (AppMenuItem * ai);
 static void remove_eclipses (AppMenuItem * ai);
 static gboolean build_launcher (gpointer data);
-static void build_launcher_core (const gchar * desktop);
 static gboolean build_launchers (gpointer data);
 static void check_hidden (void);
 
@@ -170,7 +169,6 @@ typedef struct _launcherList_t launcherList_t;
 struct _launcherList_t {
 	LauncherMenuItem * menuitem;
 	DbusmenuMenuitem * separator;
-	GList * appdiritems;
 };
 
 static gint
@@ -928,21 +926,12 @@ static gboolean
 build_launcher (gpointer data)
 {
 	gchar *desktop_id = data;
+	const gchar *desktop = data;
 	GDesktopAppInfo *appinfo;
 
 	appinfo = g_desktop_app_info_new (desktop_id);
-	build_launcher_core(g_desktop_app_info_get_filename (appinfo));
+	desktop = g_desktop_app_info_get_filename (appinfo);
 
-	g_object_unref (appinfo);
-	g_free (desktop_id);
-	return FALSE;
-}
-
-/* The core action of dealing with a desktop file that should
-   be a launcher */
-static void
-build_launcher_core (const gchar * desktop)
-{
 	/* Check to see if we already have a launcher */
 	GList * listitem;
 	for (listitem = launcherList; listitem != NULL; listitem = listitem->next) {
@@ -957,7 +946,6 @@ build_launcher_core (const gchar * desktop)
 		/* Build the item */
 		launcherList_t * ll = g_new0(launcherList_t, 1);
 		ll->menuitem = launcher_menu_item_new(desktop);
-		ll->appdiritems = g_list_append(NULL, g_strdup(desktop));
 
 		/* Build a separator */
 		ll->separator = dbusmenu_menuitem_new();
@@ -993,13 +981,11 @@ build_launcher_core (const gchar * desktop)
 
 		resort_menu(root_menuitem);
 		check_hidden();
-	} else {
-		/* If so add ourselves */
-		launcherList_t * ll = (launcherList_t *)listitem->data;
-		ll->appdiritems = g_list_append(ll->appdiritems, g_strdup(desktop));
 	}
 
-	return;
+	g_object_unref (appinfo);
+	g_free (desktop_id);
+	return FALSE;
 }
 
 /* This function goes through all the launchers that we're
