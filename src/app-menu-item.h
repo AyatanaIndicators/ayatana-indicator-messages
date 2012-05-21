@@ -59,7 +59,9 @@ struct _AppMenuItem {
 };
 
 GType app_menu_item_get_type (void);
-AppMenuItem * app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server);
+AppMenuItem * app_menu_item_new ();
+AppMenuItem * app_menu_item_new_with_server (IndicateListener * listener, IndicateListenerServer * server);
+void app_menu_item_set_server (AppMenuItem *self, IndicateListener *listener, IndicateListenerServer *server);
 guint app_menu_item_get_count (AppMenuItem * appitem);
 IndicateListenerServer * app_menu_item_get_server (AppMenuItem * appitem);
 const gchar * app_menu_item_get_name (AppMenuItem * appitem);

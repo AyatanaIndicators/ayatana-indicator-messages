@@ -216,11 +216,28 @@ app_menu_item_finalize (GObject *object)
 }
 
 AppMenuItem *
-app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
+app_menu_item_new ()
+{
+	return g_object_new(APP_MENU_ITEM_TYPE, NULL);
+}
+
+AppMenuItem *
+app_menu_item_new_with_server (IndicateListener * listener, IndicateListenerServer * server)
 {
 	AppMenuItem * self = g_object_new(APP_MENU_ITEM_TYPE, NULL);
+	app_menu_item_set_server (self, listener, server);
+	return self;
+}
 
+void
+app_menu_item_set_server (AppMenuItem *self,
+			  IndicateListener *listener,
+			  IndicateListenerServer *server)
+{
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	/* only allow setting this once */
+	g_return_if_fail (priv->listener == NULL && priv->server == NULL);
 
 	/* Copy the listener so we can use it later */
 	priv->listener = listener;
@@ -247,8 +264,6 @@ app_menu_item_new (IndicateListener * listener, IndicateListenerServer * server)
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_DISPLAY);
 	indicate_listener_server_show_interest(listener, server, INDICATE_INTEREST_INDICATOR_SIGNAL);
 	indicate_listener_set_server_max_indicators(listener, server, MAX_NUMBER_OF_INDICATORS);
-
-	return self;
 }
 
 static void
@@ -511,6 +526,8 @@ static void
 activate_cb (AppMenuItem * self, guint timestamp, gpointer data)
 {
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+
+	g_return_if_fail (priv->listener != NULL && priv->server != NULL);
 
 	indicate_listener_display(priv->listener, priv->server, NULL, timestamp);
 

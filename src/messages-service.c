@@ -286,7 +286,7 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 	}
 
 	/* Build the Menu item */
-	AppMenuItem * menuitem = app_menu_item_new(listener, server);
+	AppMenuItem * menuitem = app_menu_item_new_with_server (listener, server);
 
 	/* Build a possible server structure */
 	serverList_t * sl_item = g_new0(serverList_t, 1);
