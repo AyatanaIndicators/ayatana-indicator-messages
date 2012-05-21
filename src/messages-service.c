@@ -28,6 +28,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicate/listener.h>
 #include <libindicator/indicator-service.h>
 #include <gio/gio.h>
+#include <gio/gdesktopappinfo.h>
 #include <glib/gi18n.h>
 
 #include <libdbusmenu-glib/client.h>
@@ -37,7 +38,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "app-menu-item.h"
 #include "launcher-menu-item.h"
 #include "dbus-data.h"
-#include "dirs.h"
 #include "messages-service-dbus.h"
 #include "status-items.h"
 
@@ -49,6 +49,7 @@ static GList * launcherList = NULL;
 static DbusmenuMenuitem * root_menuitem = NULL;
 static DbusmenuMenuitem * status_separator = NULL;
 static DbusmenuMenuitem * clear_attention = NULL;
+static GSettings *settings;
 static GMainLoop * mainloop = NULL;
 
 static MessageServiceDbus * dbus_interface = NULL;
@@ -66,18 +67,8 @@ static void indicator_removed (IndicateListener * listener, IndicateListenerServ
 static void check_eclipses (AppMenuItem * ai);
 static void remove_eclipses (AppMenuItem * ai);
 static gboolean build_launcher (gpointer data);
-static gboolean build_launcher_keyfile (gpointer data);
 static void build_launcher_core (const gchar * desktop);
 static gboolean build_launchers (gpointer data);
-static gboolean blacklist_init (gpointer data);
-static gboolean blacklist_add (gpointer data);
-static gchar * desktop_file_from_keyfile (const gchar * definition_file);
-static gboolean blacklist_keyfile_add (gpointer udata);
-static void blacklist_add_core (gchar * desktop, gchar * definition);
-static gboolean blacklist_remove (gpointer data);
-static void blacklist_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
-static void app_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data);
-static gboolean destroy_launcher (gpointer data);
 static void check_hidden (void);
 
 
@@ -217,311 +208,6 @@ launcherList_count (void)
 	g_list_foreach(launcherList, launcherList_count_helper, &count);
 
 	return count;
-}
-
-/*
- * Black List
- */
-
-static GHashTable * blacklist = NULL;
-static GFileMonitor * blacklistdirmon = NULL;
-
-/* Initialize the black list and start to setup
-   handlers for it. */
-static gboolean
-blacklist_init (gpointer data)
-{
-	blacklist = g_hash_table_new_full(g_str_hash, g_str_equal,
-	                                  g_free, g_free);
-
-	gchar * blacklistdir = g_build_filename(g_get_user_config_dir(), USER_BLACKLIST_DIR, NULL);
-	g_debug("Looking at blacklist: %s", blacklistdir);
-	if (!g_file_test(blacklistdir, G_FILE_TEST_IS_DIR)) {
-		g_free(blacklistdir);
-		return FALSE;
-	}
-
-	GFile * filedir = g_file_new_for_path(blacklistdir);
-	blacklistdirmon = g_file_monitor_directory(filedir, G_FILE_MONITOR_NONE, NULL, NULL);
-	if (blacklistdirmon != NULL) {
-		g_signal_connect(G_OBJECT(blacklistdirmon), "changed", G_CALLBACK(blacklist_dir_changed), NULL);
-	}
-
-	GError * error = NULL;
-	GDir * dir = g_dir_open(blacklistdir, 0, &error);
-	if (dir == NULL) {
-		g_warning("Unable to open blacklist directory (%s): %s", blacklistdir, error == NULL ? "No Message" : error->message);
-		g_error_free(error);
-		g_free(blacklistdir);
-		return FALSE;
-	}
-
-	const gchar * filename = NULL;
-	while ((filename = g_dir_read_name(dir)) != NULL) {
-		g_debug("Found file: %s", filename);
-		gchar * path = g_build_filename(blacklistdir, filename, NULL);
-		if (g_str_has_suffix(path, "keyfile")) {
-			g_idle_add(blacklist_keyfile_add, path);
-		} else {
-			g_idle_add(blacklist_add, path);
-		}
-	}
-
-	g_dir_close(dir);
-	g_free(blacklistdir);
-
-	return FALSE;
-}
-
-/* Parses through a keyfile to find the desktop file entry and
-   pushes them into the blacklist. */
-static gboolean
-blacklist_keyfile_add (gpointer udata)
-{
-	gchar * definition_file = (gchar *)udata;
-	gchar * desktopfile = desktop_file_from_keyfile(definition_file);
-	if (desktopfile != NULL) {
-		blacklist_add_core(desktopfile, definition_file);
-		g_free(desktopfile);
-	}
-	return FALSE;
-}
-
-/* Takes a keyfile and finds the desktop file in it for
-   us.  With some error handling. */
-static gchar *
-desktop_file_from_keyfile (const gchar * definition_file)
-{
-	GKeyFile * keyfile = g_key_file_new();
-	GError * error = NULL;
-
-	if (!g_key_file_load_from_file(keyfile, definition_file, G_KEY_FILE_NONE, &error)) {
-		g_warning("Unable to load keyfile '%s' because: %s", definition_file, error == NULL ? "unknown" : error->message);
-		g_error_free(error);
-		g_key_file_free(keyfile);
-		return NULL;
-	}
-
-	if (!g_key_file_has_group(keyfile, DESKTOP_FILE_GROUP)) {
-		g_warning("Unable to use keyfile '%s' as it has no '" DESKTOP_FILE_GROUP "' group.", definition_file);
-		g_key_file_free(keyfile);
-		return NULL;
-	}
-
-	if (!g_key_file_has_key(keyfile, DESKTOP_FILE_GROUP, DESKTOP_FILE_KEY_DESKTOP, &error)) {
-		g_warning("Unable to use keyfile '%s' as there is no key '" DESKTOP_FILE_KEY_DESKTOP "' in the group '" DESKTOP_FILE_GROUP "' because: %s", definition_file, error == NULL ? "unknown" : error->message);
-		g_error_free(error);
-		g_key_file_free(keyfile);
-		return NULL;
-	}
-
-	gchar * desktopfile = g_key_file_get_string(keyfile, DESKTOP_FILE_GROUP, DESKTOP_FILE_KEY_DESKTOP, &error);
-	g_key_file_free(keyfile);
-	return desktopfile;
-}
-
-/* Check if path is a symlink and return its target if it is */
-static gchar *
-get_symlink_target (const gchar *path)
-{
-	GFile *file;
-	GFileInfo *fileinfo;
-	gchar *target = NULL;
-
-	file = g_file_new_for_path (path);
-
-	fileinfo = g_file_query_info (file, "standard::is-symlink",
-				      G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
-				      NULL, NULL);
-	g_object_unref (file);
-
-	if (!fileinfo)
-		return NULL;
-
-	if (g_file_info_get_is_symlink (fileinfo))
-		target = g_strdup (g_file_info_get_symlink_target (fileinfo));
-
-	g_object_unref (fileinfo);
-	return target;
-}
-
-/* Add a definition file into the black list and eclipse
-   any launchers that have the same file. */
-static gboolean
-blacklist_add (gpointer udata)
-{
-	gchar * definition_file = (gchar *)udata;
-	gchar * symlink_target = get_symlink_target (definition_file);
-	gchar * contents = NULL;
-
-	if (symlink_target)
-	{
-		blacklist_add_core (symlink_target, definition_file);
-		g_free (symlink_target);
-	}
-	else if (g_str_has_suffix (definition_file, ".desktop"))
-	{
-		blacklist_add_core(definition_file, definition_file);
-	}
-	else if (g_file_get_contents (definition_file, &contents, NULL, NULL))
-	{
-		gchar *trimmed = pango_trim_string (contents);
-		blacklist_add_core (trimmed, definition_file);
-		g_free (trimmed);
-		g_free (contents);
-	}
-	else
-		g_warning ("invalid blacklist entry: %s", definition_file);
-
-	return FALSE;
-}
-
-/* This takes a desktop file and tries to add it to the black
-   list for applications in the messaging menu.  If it can,
-   then the launcher item gets marked as eclipsed and hidden
-   from the user. */
-static void
-blacklist_add_core (gchar * desktop, gchar * definition)
-{
-	gchar *basename = g_path_get_basename(desktop);
-
-	/* Check for conflicts */
-	gpointer data = g_hash_table_lookup(blacklist, basename);
-	if (data != NULL) {
-		gchar * oldfile = (gchar *)data;
-		if (!g_strcmp0(oldfile, definition)) {
-			g_warning("Already added file '%s'", oldfile);
-		} else {
-			g_warning("Already have desktop file '%s' in blacklist file '%s' not adding from '%s'", desktop, oldfile, definition);
-		}
-
-		g_free(basename);
-		return;
-	}
-
-	/* Actually blacklist this thing */
-	g_hash_table_insert(blacklist, g_strdup(basename), g_strdup(definition));
-	g_debug("Adding Blacklist item '%s' for desktop '%s'", definition, desktop);
-
-	/* Go through and eclipse folks */
-	GList * launcher;
-	for (launcher = launcherList; launcher != NULL; launcher = launcher->next) {
-		launcherList_t * item = (launcherList_t *)launcher->data;
-		gchar * item_basename = g_path_get_basename(launcher_menu_item_get_desktop(item->menuitem));
-		if (!g_strcmp0(basename, item_basename)) {
-			launcher_menu_item_set_eclipsed(item->menuitem, TRUE);
-			dbusmenu_menuitem_property_set_bool(item->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
-		}
-		g_free(item_basename);
-	}
-
-	check_hidden();
-	/* Shouldn't need a resort here as hiding shouldn't cause things to
-	   move other than this item disappearing. */
-
-	g_free(basename);
-	return;
-}
-
-/* Remove a black list item based on the definition file
-   and uneclipse those launchers blocked by it. */
-static gboolean
-blacklist_remove (gpointer data)
-{
-	gchar * definition_file = (gchar *)data;
-	g_debug("Removing: %s", definition_file);
-
-	GHashTableIter iter;
-	gpointer key, value;
-	gboolean found = FALSE;
-
-	g_hash_table_iter_init(&iter, blacklist);
-	while (g_hash_table_iter_next(&iter, &key, &value)) {
-		if (!g_strcmp0((gchar *)value, definition_file)) {
-			found = TRUE;
-			break;
-		}
-	}
-
-	if (!found) {
-		g_debug("\tNot found!");
-		return FALSE;
-	}
-
-	GList * launcheritem;
-	for (launcheritem = launcherList; launcheritem != NULL; launcheritem = launcheritem->next) {
-		launcherList_t * li = (launcherList_t *)launcheritem->data;
-		if (!g_strcmp0(launcher_menu_item_get_desktop(li->menuitem), (gchar *)key)) {
-			GList * serveritem;
-			for (serveritem = serverList; serveritem != NULL; serveritem = serveritem->next) {
-				serverList_t * si = (serverList_t *)serveritem->data;
-				if (!g_strcmp0(app_menu_item_get_desktop(si->menuitem), (gchar *)key)) {
-					break;
-				}
-			}
-			if (serveritem == NULL) {
-				launcher_menu_item_set_eclipsed(li->menuitem, FALSE);
-				dbusmenu_menuitem_property_set_bool(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
-			}
-		}
-	}
-
-	if (!g_hash_table_remove(blacklist, key)) {
-		g_warning("Unable to remove '%s' with value '%s'", definition_file, (gchar *)key);
-	}
-
-	check_hidden();
-	resort_menu(root_menuitem);
-
-	return FALSE;
-}
-
-/* Check to see if a particular desktop file is
-   in the blacklist. */
-static gboolean
-blacklist_check (const gchar * desktop_file)
-{
-	gchar *basename = g_path_get_basename(desktop_file);
-	gboolean found;
-
-	g_debug("Checking blacklist for: %s", basename);
-
-	if (blacklist && g_hash_table_lookup(blacklist, basename)) {
-		g_debug("\tFound!");
-		found = TRUE;
-	}
-	else
-		found = FALSE;
-
-	g_free(basename);
-	return found;
-}
-
-/* A callback everytime the blacklist directory changes
-   in some way.  It needs to handle that. */
-static void
-blacklist_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data)
-{
-	g_debug("Blacklist directory changed!");
-
-	switch (event_type) {
-	case G_FILE_MONITOR_EVENT_DELETED: {
-		gchar * path = g_file_get_path(file);
-		g_debug("\tDelete: %s", path);
-		g_idle_add(blacklist_remove, path);
-		break;
-	}
-	case G_FILE_MONITOR_EVENT_CREATED: {
-		gchar * path = g_file_get_path(file);
-		g_debug("\tCreate: %s", path);
-		g_idle_add(blacklist_add, path);
-		break;
-	}
-	default:
-		break;
-	}
-
-	return;
 }
 
 /*
@@ -1186,36 +872,6 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	return;
 }
 
-static void
-app_dir_changed (GFileMonitor * monitor, GFile * file, GFile * other_file, GFileMonitorEvent event_type, gpointer user_data)
-{
-	gchar * directory = (gchar *)user_data;
-	g_debug("Application directory changed: %s", directory);
-
-	switch (event_type) {
-	case G_FILE_MONITOR_EVENT_DELETED: {
-		gchar * path = g_file_get_path(file);
-		g_debug("\tDelete: %s", path);
-		g_idle_add(destroy_launcher, path);
-		break;
-	}
-	case G_FILE_MONITOR_EVENT_CREATED: {
-		gchar * path = g_file_get_path(file);
-		g_debug("\tCreate: %s", path);
-		if (g_str_has_suffix(path, "keyfile")) {
-			g_idle_add(build_launcher_keyfile, path);
-		} else {
-			g_idle_add(build_launcher, path);
-		}
-		break;
-	}
-	default:
-		break;
-	}
-
-	return;
-}
-
 /* Check to see if a new desktop file causes
    any of the launchers to be eclipsed by a running
    process */
@@ -1251,8 +907,6 @@ remove_eclipses (AppMenuItem * ai)
 	const gchar * aidesktop = app_menu_item_get_desktop(ai);
 	if (aidesktop == NULL) return;
 
-	if (blacklist_check(aidesktop)) return;
-
 	GList * llitem;
 	for (llitem = launcherList; llitem != NULL; llitem = llitem->next) {
 		launcherList_t * ll = (launcherList_t *)llitem->data;
@@ -1268,108 +922,19 @@ remove_eclipses (AppMenuItem * ai)
 	return;
 }
 
-/* Remove a launcher from the system.  We need to figure
-   out what it's up to! */
-static gboolean
-destroy_launcher (gpointer data)
-{
-	gchar * appdirentry = (gchar *)data;
-
-	GList * listitem;
-	GList * direntry;
-	launcherList_t * li;
-	gchar * appdir;
-
-	for (listitem = launcherList; listitem != NULL; listitem = listitem->next) {
-		li = (launcherList_t *)listitem->data;
-		for (direntry = li->appdiritems; direntry != NULL; direntry = direntry->next) {
-			appdir = (gchar *)direntry->data;
-			if (!g_strcmp0(appdir, appdirentry)) {
-				break;
-			}
-		}
-
-		if (direntry != NULL) {
-			break;
-		}
-	}
-
-	if (listitem == NULL) {
-		g_warning("Removed '%s' by the way of it not seeming to exist anywhere.", appdirentry);
-		return FALSE;
-	}
-
-	if (g_list_length(li->appdiritems) > 1) {
-		/* Just remove this item, and we can move on */
-		g_debug("Just removing file entry: %s", appdir);
-		li->appdiritems = g_list_remove(li->appdiritems, appdir);
-		g_free(appdir);
-		return FALSE;
-	}
-
-	/* Full Destroy */
-	g_free(appdir);
-	g_list_free(li->appdiritems);
-
-	if (li->menuitem != NULL) {
-		/* If there are shortcuts remove them */
-		GList * shortcuts = launcher_menu_item_get_items(li->menuitem);
-		while (shortcuts != NULL) {
-			dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(shortcuts->data), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
-			dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(shortcuts->data));
-			shortcuts = g_list_next(shortcuts);
-		}
-
-		dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(li->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
-		dbusmenu_menuitem_child_delete(root_menuitem, DBUSMENU_MENUITEM(li->menuitem));
-		g_object_unref(G_OBJECT(li->menuitem));
-		li->menuitem = NULL;
-	}
-
-	launcherList = g_list_remove(launcherList, li);
-	g_free(li);
-
-	return FALSE;
-}
-
 /* This function turns a specific file into a menu
    item and registers it appropriately with everyone */
 static gboolean
 build_launcher (gpointer data)
 {
-	/* Read the file get the data */
-	gchar * path = (gchar *)data;
-	g_debug("\tpath: %s", path);
-	gchar * desktop = NULL;
-	
-	g_file_get_contents(path, &desktop, NULL, NULL);
+	gchar *desktop_id = data;
+	GDesktopAppInfo *appinfo;
 
-	if (desktop == NULL) {
-		g_free(path);
-		return FALSE;
-	}
+	appinfo = g_desktop_app_info_new (desktop_id);
+	build_launcher_core(g_desktop_app_info_get_filename (appinfo));
 
-	gchar * trimdesktop = pango_trim_string(desktop);
-	g_free(desktop);
-	g_debug("\tcontents: %s", trimdesktop);
-
-	build_launcher_core(trimdesktop);
-	g_free(trimdesktop);
-	g_free(path);
-	return FALSE;
-}
-
-/* Use a key file to find the desktop file. */
-static gboolean
-build_launcher_keyfile (gpointer data)
-{
-	gchar * path = (gchar *)data;
-	gchar * desktop = desktop_file_from_keyfile (path);
-	if (desktop != NULL) {
-		build_launcher_core(desktop);
-		g_free(desktop);
-	}
-	g_free(path);
+	g_object_unref (appinfo);
+	g_free (desktop_id);
 	return FALSE;
 }
 
@@ -1411,10 +976,9 @@ build_launcher_core (const gchar * desktop)
 		}
 		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->separator));
 
-		/* If we're in the black list or we've gotten eclipsed
-		   by something else, hide the item and the separator. */
-		if (blacklist_check(launcher_menu_item_get_desktop(ll->menuitem)) ||
-				launcher_menu_item_get_eclipsed(ll->menuitem)) {
+		/* If we've gotten eclipsed by something else, hide the item
+		 * and the separator. */
+		if (launcher_menu_item_get_eclipsed(ll->menuitem)) {
 			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
 			dbusmenu_menuitem_property_set_bool(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 		}
@@ -1445,39 +1009,19 @@ build_launcher_core (const gchar * desktop)
 static gboolean
 build_launchers (gpointer data)
 {
-	gchar * directory = (gchar *)data;
+	gchar **applications = g_settings_get_strv (settings, "applications");
+	gchar **app;
 
-	if (!g_file_test(directory, G_FILE_TEST_IS_DIR)) {
-		return FALSE;
+	g_return_val_if_fail (applications != NULL, FALSE);
+
+	for (app = applications; *app; app++)
+	{
+		g_idle_add(build_launcher, g_strdup (*app));
 	}
 
-	GFile * filedir = g_file_new_for_path(directory);
-	GFileMonitor * dirmon = g_file_monitor_directory(filedir, G_FILE_MONITOR_NONE, NULL, NULL);
-	if (dirmon != NULL) {
-		g_signal_connect(G_OBJECT(dirmon), "changed", G_CALLBACK(app_dir_changed), directory);
-	}
-
-	GError * error = NULL;
-	GDir * dir = g_dir_open(directory, 0, &error);
-	if (dir == NULL) {
-		g_warning("Unable to open system apps directory: %s", error->message);
-		g_error_free(error);
-		return FALSE;
-	}
-
-	const gchar * filename = NULL;
-	while ((filename = g_dir_read_name(dir)) != NULL) {
-		g_debug("Found file: %s", filename);
-		gchar * path = g_build_filename(directory, filename, NULL);
-		if (g_str_has_suffix(path, "keyfile")) {
-			g_idle_add(build_launcher_keyfile, path);
-		} else {
-			g_idle_add(build_launcher, path);
-		}
-	}
-
-	g_dir_close(dir);
 	launcherList = g_list_sort(launcherList, launcherList_sort);
+
+	g_strfreev (applications);
 	return FALSE;
 }
 
@@ -1566,13 +1110,9 @@ main (int argc, char ** argv)
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_ADDED, G_CALLBACK(server_added), root_menuitem);
 	g_signal_connect(listener, INDICATE_LISTENER_SIGNAL_SERVER_REMOVED, G_CALLBACK(server_removed), root_menuitem);
 
-	/* Find launchers by looking through the config directories
-	   in the idle loop */
-	g_idle_add(blacklist_init, NULL);
-	g_idle_add(build_launchers, SYSTEM_APPS_DIR);
-	g_idle_add(build_launchers, SYSTEM_APPS_DIR_OLD);
-	gchar * userdir = g_build_filename(g_get_user_config_dir(), USER_APPS_DIR, NULL);
-	g_idle_add(build_launchers, userdir);
+	settings = g_settings_new ("com.canonical.indicator.messages");
+
+	g_idle_add(build_launchers, NULL);
 
 	/* Let's run a mainloop */
 	mainloop = g_main_loop_new(NULL, FALSE);
@@ -1580,7 +1120,7 @@ main (int argc, char ** argv)
 
 	/* Clean up */
 	status_items_cleanup();
-	g_free(userdir);
+	g_object_unref (settings);
 
 	return 0;
 }

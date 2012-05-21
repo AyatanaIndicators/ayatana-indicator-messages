@@ -48,7 +48,6 @@ indicator_messages_service_SOURCES = \
 	app-menu-item.h \
 	launcher-menu-item.c \
 	launcher-menu-item.h \
-	dirs.h \
 	dbus-data.h \
 	\
 	status-items.c \

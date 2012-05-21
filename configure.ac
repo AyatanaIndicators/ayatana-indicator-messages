@@ -57,6 +57,8 @@ PKG_CHECK_MODULES(APPLET, gtk+-3.0 >= $GTK_REQUIRED_VERSION
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
+GLIB_GSETTINGS
+
 ###########################
 # Status Provider Deps
 ###########################

@@ -43,7 +43,6 @@ libindicator_messages_service_la_HEADERS = \
 	$(top_srcdir)/src/im-menu-item.h \
 	$(top_srcdir)/src/app-menu-item.h \
 	$(top_srcdir)/src/launcher-menu-item.h \
-	$(top_srcdir)/src/dirs.h \
 	$(top_srcdir)/src/dbus-data.h \
 	$(top_srcdir)/src/status-items.h
 
