@@ -49,8 +49,7 @@ struct _AppMenuItemPrivate
 	IndicateListenerServer *      server;
 	
 	gchar * type;
-	GAppInfo * appinfo;
-	gchar * desktop;
+	GDesktopAppInfo * appinfo;
 	guint unreadcount;
 
 	DbusmenuClient * client;
@@ -127,7 +126,6 @@ app_menu_item_init (AppMenuItem *self)
 	priv->server = NULL;
 	priv->type = NULL;
 	priv->appinfo = NULL;
-	priv->desktop = NULL;
 	priv->unreadcount = 0;
 
 	priv->client = NULL;
@@ -196,11 +194,6 @@ app_menu_item_finalize (GObject *object)
 	if (priv->type != NULL) {
 		g_free(priv->type);
 		priv->type = NULL;
-	}
-
-	if (priv->desktop != NULL) {
-		g_free(priv->desktop);
-		priv->desktop = NULL;
 	}
 
 	G_OBJECT_CLASS (app_menu_item_parent_class)->finalize (object);
@@ -324,22 +317,15 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const 
 		priv->appinfo = NULL;
 	}
 
-	if (priv->desktop != NULL) {
-		g_free(priv->desktop);
-		priv->desktop = NULL;
-	}
-
 	if (value == NULL || value[0] == '\0') {
 		return;
 	}
 
-	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(value));
+	priv->appinfo = g_desktop_app_info_new_from_filename(value);
 	g_return_if_fail(priv->appinfo != NULL);
 
 	keyfile = g_key_file_new();
 	g_key_file_load_from_file(keyfile, value, G_KEY_FILE_NONE, NULL);
-
-	priv->desktop = g_strdup(value);
 
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_RUNNING, TRUE);
@@ -364,7 +350,7 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const 
 
 	/* For some reason that didn't work, let's try the app info */
 	if (iconstr == NULL) {
-		GIcon * icon = g_app_info_get_icon(priv->appinfo);
+		GIcon * icon = g_app_info_get_icon(G_APP_INFO(priv->appinfo));
 		iconstr = g_icon_to_string(icon);
 	}
 
@@ -555,7 +541,7 @@ app_menu_item_get_name (AppMenuItem * appitem)
 	if (priv->appinfo == NULL) {
 		return INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server);
 	} else {
-		return g_app_info_get_name(priv->appinfo);
+		return g_app_info_get_name(G_APP_INFO(priv->appinfo));
 	}
 }
 
@@ -564,7 +550,7 @@ app_menu_item_get_desktop (AppMenuItem * appitem)
 {
 	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), NULL);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
-	return priv->desktop;
+	return g_desktop_app_info_get_filename (priv->appinfo);
 }
 
 /* Get the dynamic items added onto the end of
