@@ -50,7 +50,6 @@ struct _AppMenuItemPrivate
 	
 	gchar * type;
 	GAppInfo * appinfo;
-	GKeyFile * keyfile;
 	gchar * desktop;
 	guint unreadcount;
 
@@ -128,7 +127,6 @@ app_menu_item_init (AppMenuItem *self)
 	priv->server = NULL;
 	priv->type = NULL;
 	priv->appinfo = NULL;
-	priv->keyfile = NULL;
 	priv->desktop = NULL;
 	priv->unreadcount = 0;
 
@@ -182,11 +180,6 @@ app_menu_item_dispose (GObject *object)
 	if (priv->appinfo != NULL) {
 		g_object_unref(priv->appinfo);
 		priv->appinfo = NULL;
-	}
-
-	if (priv->keyfile != NULL) {
-		g_object_unref(priv->keyfile);
-		priv->keyfile = NULL;
 	}
 
 	G_OBJECT_CLASS (app_menu_item_parent_class)->dispose (object);
@@ -324,6 +317,7 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const 
 	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItem * self = APP_MENU_ITEM(data);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+	GKeyFile *keyfile;
 
 	if (priv->appinfo != NULL) {
 		g_object_unref(G_OBJECT(priv->appinfo));
@@ -342,8 +336,8 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const 
 	priv->appinfo = G_APP_INFO(g_desktop_app_info_new_from_filename(value));
 	g_return_if_fail(priv->appinfo != NULL);
 
-	priv->keyfile = g_key_file_new();
-	g_key_file_load_from_file(priv->keyfile, value, G_KEY_FILE_NONE, NULL);
+	keyfile = g_key_file_new();
+	g_key_file_load_from_file(keyfile, value, G_KEY_FILE_NONE, NULL);
 
 	priv->desktop = g_strdup(value);
 
@@ -356,10 +350,10 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const 
 
 	/* Check for the over ride key and see if we should be using that
 	   icon.  If we can't get it, then go back to the app info */
-	if (g_key_file_has_key(priv->keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, NULL) && iconstr == NULL) {
+	if (g_key_file_has_key(keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, NULL) && iconstr == NULL) {
 		GError * error = NULL;
 
-		iconstr = g_key_file_get_string(priv->keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, &error);
+		iconstr = g_key_file_get_string(keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, &error);
 
 		if (error != NULL) {
 			/* Can't figure out why this would happen, but sure, let's print something */
@@ -379,6 +373,7 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const 
 
 	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
 
+	g_object_unref(keyfile);
 	return;
 }
 
