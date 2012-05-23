@@ -36,7 +36,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "im-menu-item.h"
 #include "app-menu-item.h"
-#include "launcher-menu-item.h"
 #include "dbus-data.h"
 #include "messages-service-dbus.h"
 #include "status-items.h"
@@ -44,7 +43,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 static IndicatorService * service = NULL;
 static IndicateListener * listener = NULL;
 static GList * serverList = NULL;
-static GList * launcherList = NULL;
 
 static DbusmenuMenuitem * root_menuitem = NULL;
 static DbusmenuMenuitem * status_separator = NULL;
@@ -64,11 +62,8 @@ static void server_name_changed (AppMenuItem * appitem, gchar * name, gpointer d
 static void im_time_changed (ImMenuItem * imitem, glong seconds, gpointer data);
 static void resort_menu (DbusmenuMenuitem * menushell);
 static void indicator_removed (IndicateListener * listener, IndicateListenerServer * server, IndicateListenerIndicator * indicator, gpointer data);
-static void check_eclipses (AppMenuItem * ai);
-static void remove_eclipses (AppMenuItem * ai);
 static gboolean build_launcher (gpointer data);
 static gboolean build_launchers (gpointer data);
-static void check_hidden (void);
 
 
 /*
@@ -161,56 +156,6 @@ imList_sort (gconstpointer a, gconstpointer b)
 	return (gint)(im_menu_item_get_seconds(IM_MENU_ITEM(pb->menuitem)) - im_menu_item_get_seconds(IM_MENU_ITEM(pa->menuitem)));
 }
 
-/*
- * Launcher List
- */
-
-typedef struct _launcherList_t launcherList_t;
-struct _launcherList_t {
-	LauncherMenuItem * menuitem;
-	DbusmenuMenuitem * separator;
-};
-
-static gint
-launcherList_sort (gconstpointer a, gconstpointer b)
-{
-	launcherList_t * pa, * pb;
-
-	pa = (launcherList_t *)a;
-	pb = (launcherList_t *)b;
-
-	const gchar * pan = launcher_menu_item_get_name(pa->menuitem);
-	const gchar * pbn = launcher_menu_item_get_name(pb->menuitem);
-
-	return g_strcmp0(pan, pbn);
-}
-
-static void
-launcherList_count_helper (gpointer data, gpointer user_data)
-{
-	guint * count = (guint *)user_data;
-	launcherList_t * li = (launcherList_t *)data;
-
-	if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
-		*count = *count + 1;
-	}
-
-	return;
-}
-
-static guint
-launcherList_count (void)
-{
-	guint count = 0;
-
-	g_list_foreach(launcherList, launcherList_count_helper, &count);
-
-	return count;
-}
-
-/*
- * More code
- */
 
 /* Goes through all the servers and sees if any of them
    want attention.  If they do, then well we'll give it
@@ -259,6 +204,84 @@ server_attention (serverList_t * slt)
 	return;
 }
 
+static void 
+desktop_cb (IndicateListener *listener,
+	    IndicateListenerServer *server,
+	    const gchar *value,
+	    gpointer data)
+{
+	DbusmenuMenuitem * menushell = DBUSMENU_MENUITEM(data);
+	GList *listitem;
+	serverList_t * sl_item = NULL;
+
+	/* Check to see if we already have a launcher for this app */
+	for (listitem = serverList; listitem != NULL; listitem = listitem->next) {
+		serverList_t * slt = listitem->data;
+		if (!g_strcmp0(app_menu_item_get_desktop(slt->menuitem), value)) {
+			sl_item = slt;
+			break;
+		}
+	}
+
+	if (!sl_item) {
+		/* Build the Menu item */
+		AppMenuItem * menuitem = app_menu_item_new_with_server (listener, server);
+
+		/* Build a possible server structure */
+		sl_item = g_new0(serverList_t, 1);
+		sl_item->server = server;
+		sl_item->menuitem = menuitem;
+		sl_item->imList = NULL;
+		sl_item->attention = FALSE;
+		sl_item->count = 0;
+
+		/* Build a separator */
+		sl_item->separator = dbusmenu_menuitem_new();
+		dbusmenu_menuitem_property_set(sl_item->separator, DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_SEPARATOR);
+
+		/* Connect the signals up to the menu item */
+		g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), sl_item);
+		g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_NAME_CHANGED,  G_CALLBACK(server_name_changed),  menushell);
+		g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_SHORTCUT_ADDED,  G_CALLBACK(server_shortcut_added),  menushell);
+		g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_SHORTCUT_REMOVED,  G_CALLBACK(server_shortcut_removed),  menushell);
+
+		/* Put our new menu item in, with the separator behind it.
+		   resort_menu will take care of whether it should be hidden
+		   or not. */
+		dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
+
+		/* Incase we got an indicator first */
+		GList * alreadythere = g_list_find_custom(serverList, sl_item, serverList_equal);
+		if (alreadythere != NULL) {
+			/* Use the one we already had */
+			g_free(sl_item);
+			sl_item = (serverList_t *)alreadythere->data;
+			sl_item->menuitem = menuitem;
+			serverList = g_list_sort(serverList, serverList_sort);
+		} else {
+			/* Insert the new one in the list */
+			serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
+		}
+
+		dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(sl_item->separator));
+	}
+	else {
+		app_menu_item_set_server (sl_item->menuitem, listener, server);
+	}
+
+	GList * shortcuts = app_menu_item_get_items(sl_item->menuitem);
+	GList * shortcut = shortcuts;
+	while (shortcut != NULL) {
+		DbusmenuMenuitem * mi = DBUSMENU_MENUITEM(shortcut->data);
+		g_debug("\tAdding shortcut: %s", dbusmenu_menuitem_property_get(mi, DBUSMENU_MENUITEM_PROP_LABEL));
+		dbusmenu_menuitem_child_append(menushell, mi);
+		shortcut = g_list_next(shortcut);
+	}
+	g_list_free (shortcuts);
+
+	resort_menu(menushell);
+}
+
 /* A new server has been created on the indicate bus.
    We need to check to see if we like it.  And build
    structures for it if so. */
@@ -279,65 +302,9 @@ server_added (IndicateListener * listener, IndicateListenerServer * server, gcha
 		return;
 	}
 
-	DbusmenuMenuitem * menushell = DBUSMENU_MENUITEM(data);
-	if (menushell == NULL) {
-		g_error("\tData in callback is not a menushell");
-		return;
-	}
-
-	/* Build the Menu item */
-	AppMenuItem * menuitem = app_menu_item_new_with_server (listener, server);
-
-	/* Build a possible server structure */
-	serverList_t * sl_item = g_new0(serverList_t, 1);
-	sl_item->server = server;
-	sl_item->menuitem = menuitem;
-	sl_item->imList = NULL;
-	sl_item->attention = FALSE;
-	sl_item->count = 0;
-
-	/* Incase we got an indicator first */
-	GList * alreadythere = g_list_find_custom(serverList, sl_item, serverList_equal);
-	if (alreadythere != NULL) {
-		/* Use the one we already had */
-		g_free(sl_item);
-		sl_item = (serverList_t *)alreadythere->data;
-		sl_item->menuitem = menuitem;
-		serverList = g_list_sort(serverList, serverList_sort);
-	} else {
-		/* Insert the new one in the list */
-		serverList = g_list_insert_sorted(serverList, sl_item, serverList_sort);
-	}
-
-	/* Build a separator */
-	sl_item->separator = dbusmenu_menuitem_new();
-	dbusmenu_menuitem_property_set(sl_item->separator, DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_SEPARATOR);
-
-	/* Connect the signals up to the menu item */
-	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_COUNT_CHANGED, G_CALLBACK(server_count_changed), sl_item);
-	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_NAME_CHANGED,  G_CALLBACK(server_name_changed),  menushell);
-	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_SHORTCUT_ADDED,  G_CALLBACK(server_shortcut_added),  menushell);
-	g_signal_connect(G_OBJECT(menuitem), APP_MENU_ITEM_SIGNAL_SHORTCUT_REMOVED,  G_CALLBACK(server_shortcut_removed),  menushell);
-
-	/* Put our new menu item in, with the separator behind it.
-	   resort_menu will take care of whether it should be hidden
-	   or not. */
-	dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(menuitem));
-
-	GList * shortcuts = app_menu_item_get_items(sl_item->menuitem);
-	while (shortcuts != NULL) {
-		DbusmenuMenuitem * mi = DBUSMENU_MENUITEM(shortcuts->data);
-		g_debug("\tAdding shortcut: %s", dbusmenu_menuitem_property_get(mi, DBUSMENU_MENUITEM_PROP_LABEL));
-		dbusmenu_menuitem_child_append(menushell, mi);
-		shortcuts = g_list_next(shortcuts);
-	}
-
-	dbusmenu_menuitem_child_append(menushell, DBUSMENU_MENUITEM(sl_item->separator));
-
-	resort_menu(menushell);
-	check_hidden();
-
-	return;
+	/* fetch the desktop file before creating the menu item, in case we
+	 * already have a launcher for it */
+	indicate_listener_server_get_desktop(listener, server, desktop_cb, data);
 }
 
 /* Server shortcut has been added */
@@ -372,7 +339,6 @@ static void
 server_name_changed (AppMenuItem * appitem, gchar * name, gpointer data)
 {
 	serverList = g_list_sort(serverList, serverList_sort);
-	check_eclipses(appitem);
 	resort_menu(DBUSMENU_MENUITEM(data));
 	return;
 }
@@ -466,19 +432,18 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 	/* Remove from the server list */
 	serverList = g_list_remove(serverList, sltp);
 
-	/* Remove launchers this could be eclipsing */
-	remove_eclipses(sltp->menuitem);
-
 	/* If there is a menu item, let's get rid of it. */
 	if (sltp->menuitem != NULL) {
 		/* If there are shortcuts remove them */
 		GList * shortcuts = app_menu_item_get_items(sltp->menuitem);
-		while (shortcuts != NULL) {
-			g_debug("\tRemoving shortcut: %s", dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(shortcuts->data), DBUSMENU_MENUITEM_PROP_LABEL));
-			dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(shortcuts->data), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
-			dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(shortcuts->data));
-			shortcuts = g_list_next(shortcuts);
+		GList * shortcut = shortcuts;
+		while (shortcut != NULL) {
+			g_debug("\tRemoving shortcut: %s", dbusmenu_menuitem_property_get(DBUSMENU_MENUITEM(shortcut->data), DBUSMENU_MENUITEM_PROP_LABEL));
+			dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(shortcut->data), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
+			dbusmenu_menuitem_child_delete(DBUSMENU_MENUITEM(data), DBUSMENU_MENUITEM(shortcut->data));
+			shortcut = g_list_next(shortcut);
 		}
+		g_list_free (shortcuts);
 
 		g_debug("\tRemoving item");
 		dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(sltp->menuitem), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
@@ -506,8 +471,6 @@ server_removed (IndicateListener * listener, IndicateListenerServer * server, gc
 
 	g_free(sltp);
 
-	check_hidden();
-
 	return;
 }
 
@@ -531,31 +494,16 @@ menushell_foreach_cb (DbusmenuMenuitem * data_mi, gpointer data_ms) {
 
 	AppMenuItem * appmenu = APP_MENU_ITEM(data_mi);
 	if (!g_strcmp0(INDICATE_LISTENER_SERVER_DBUS_NAME((IndicateListenerServer*)msl->server), INDICATE_LISTENER_SERVER_DBUS_NAME(app_menu_item_get_server(appmenu)))) {
+		GList *shortcuts = app_menu_item_get_items(appmenu);
 		msl->found = TRUE;
 		/* Return a position at the end of our shortcuts */
-		msl->position += g_list_length(app_menu_item_get_items(appmenu));		
+		msl->position += g_list_length(shortcuts);
+		g_list_free (shortcuts);
+		
 	} else {
 		msl->position++;
 	}
 
-	return;
-}
-
-static void
-check_hidden (void)
-{
-	g_debug("Checking Hidden...");
-	gboolean hide = FALSE;
-	if (launcherList_count() == 0) {
-		g_debug("\tZero Launchers");
-		/* If we don't have visible launchers we need to look more */
-		if (g_list_length(serverList) == 0) {
-			g_debug("\tZero Applications");
-			hide = TRUE;	
-		}
-	}
-
-	message_service_dbus_set_icon(dbus_interface, hide);
 	return;
 }
 
@@ -569,7 +517,6 @@ resort_menu (DbusmenuMenuitem * menushell)
 {
 	guint position = 0;
 	GList * serverentry;
-	GList * launcherentry = launcherList;
 
 	g_debug("Reordering Menu:");
 	
@@ -581,41 +528,6 @@ resort_menu (DbusmenuMenuitem * menushell)
 	for (serverentry = serverList; serverentry != NULL; serverentry = serverentry->next) {
 		serverList_t * si = (serverList_t *)serverentry->data;
 		
-		/* Looking to see if there are any launchers we need to insert
-		   into the menu structure.  We put as many as we need to. */
-		if (launcherentry != NULL) {
-			launcherList_t * li = (launcherList_t *)launcherentry->data;
-			while (launcherentry != NULL && g_strcmp0(launcher_menu_item_get_name(li->menuitem), app_menu_item_get_name(si->menuitem)) < 0) {
-				/* Putting the launcher item in */
-				g_debug("\tMoving launcher '%s' to position %d", launcher_menu_item_get_name(li->menuitem), position);
-				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->menuitem), position);
-				position++;
-
-				/* Inserting the shortcuts from the launcher */
-				GList * shortcuts = launcher_menu_item_get_items(li->menuitem);
-				while (shortcuts != NULL) {
-					g_debug("\t\tMoving shortcut to position %d", position);
-					dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(shortcuts->data), position);
-					position++;
-					shortcuts = g_list_next(shortcuts);
-				}
-
-				/* Putting the launcher separator in */
-				g_debug("\tMoving launcher separator to position %d", position);
-				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
-				if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
-					/* Only clear the visiblity if we're not eclipsed */
-					dbusmenu_menuitem_property_set_bool(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
-				}
-				position++;
-
-				launcherentry = launcherentry->next;
-				if (launcherentry != NULL) {
-					li = (launcherList_t *)launcherentry->data;
-				}
-			}
-		}
-
 		/* Putting the app menu item in */
 		if (si->menuitem != NULL) {
 			g_debug("\tMoving app %s to position %d", INDICATE_LISTENER_SERVER_DBUS_NAME(si->server), position);
@@ -624,12 +536,14 @@ resort_menu (DbusmenuMenuitem * menushell)
 
 			/* Inserting the shortcuts from the launcher */
 			GList * shortcuts = app_menu_item_get_items(si->menuitem);
-			while (shortcuts != NULL) {
+			GList * shortcut = shortcuts;
+			while (shortcut != NULL) {
 				g_debug("\t\tMoving shortcut to position %d", position);
-				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(shortcuts->data), position);
+				dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(shortcut->data), position);
 				position++;
-				shortcuts = g_list_next(shortcuts);
+				shortcut = g_list_next(shortcut);
 			}
+			g_list_free (shortcuts);
 		}
 
 		/* Putting all the indicators that are related to this application
@@ -666,36 +580,6 @@ resort_menu (DbusmenuMenuitem * menushell)
 			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(si->separator), position);
 			position++;
 		}
-	}
-
-	/* Put any leftover launchers in at the end of the list. */
-	while (launcherentry != NULL) {
-		launcherList_t * li = (launcherList_t *)launcherentry->data;
-
-		/* Putting the launcher in */
-		g_debug("\tMoving launcher '%s' to position %d", launcher_menu_item_get_name(li->menuitem), position);
-		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->menuitem), position);
-		position++;
-
-		/* Inserting the shortcuts from the launcher */
-		GList * shortcuts = launcher_menu_item_get_items(li->menuitem);
-		while (shortcuts != NULL) {
-			g_debug("\t\tMoving shortcut to position %d", position);
-			dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(shortcuts->data), position);
-			position++;
-			shortcuts = g_list_next(shortcuts);
-		}
-
-		/* Putting the launcher separator in */
-		g_debug("\tMoving launcher separator to position %d", position);
-		dbusmenu_menuitem_child_reorder(DBUSMENU_MENUITEM(menushell), DBUSMENU_MENUITEM(li->separator), position);
-		if (!launcher_menu_item_get_eclipsed(li->menuitem)) {
-			/* Only clear the visiblity if we're not eclipsed */
-			dbusmenu_menuitem_property_set_bool(li->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
-		}
-		position++;
-
-		launcherentry = launcherentry->next;
 	}
 
 	if (clear_attention != NULL) {
@@ -870,73 +754,22 @@ indicator_removed (IndicateListener * listener, IndicateListenerServer * server,
 	return;
 }
 
-/* Check to see if a new desktop file causes
-   any of the launchers to be eclipsed by a running
-   process */
-static void
-check_eclipses (AppMenuItem * ai)
-{
-	g_debug("Checking eclipsing");
-	const gchar * aidesktop = app_menu_item_get_desktop(ai);
-	if (aidesktop == NULL) return;
-	g_debug("\tApp desktop: %s", aidesktop);
-
-	GList * llitem;
-	for (llitem = launcherList; llitem != NULL; llitem = llitem->next) {
-		launcherList_t * ll = (launcherList_t *)llitem->data;
-		const gchar * lidesktop = launcher_menu_item_get_desktop(ll->menuitem);
-		g_debug("\tLauncher desktop: %s", lidesktop);
-
-		if (!g_strcmp0(aidesktop, lidesktop)) {
-			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
-			dbusmenu_menuitem_property_set_bool(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
-			break;
-		}
-	}
-
-	return;
-}
-
-/* Remove any eclipses that might have been caused
-   by this app item that is now retiring */
-static void
-remove_eclipses (AppMenuItem * ai)
-{
-	const gchar * aidesktop = app_menu_item_get_desktop(ai);
-	if (aidesktop == NULL) return;
-
-	GList * llitem;
-	for (llitem = launcherList; llitem != NULL; llitem = llitem->next) {
-		launcherList_t * ll = (launcherList_t *)llitem->data;
-		const gchar * lidesktop = launcher_menu_item_get_desktop(ll->menuitem);
-
-		if (!g_strcmp0(aidesktop, lidesktop)) {
-			launcher_menu_item_set_eclipsed(ll->menuitem, FALSE);
-			dbusmenu_menuitem_property_set_bool(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
-			break;
-		}
-	}
-
-	return;
-}
-
 /* This function turns a specific file into a menu
    item and registers it appropriately with everyone */
 static gboolean
 build_launcher (gpointer data)
 {
 	gchar *desktop_id = data;
-	const gchar *desktop = data;
 	GDesktopAppInfo *appinfo;
+	GList *listitem;
 
 	appinfo = g_desktop_app_info_new (desktop_id);
-	desktop = g_desktop_app_info_get_filename (appinfo);
 
 	/* Check to see if we already have a launcher */
-	GList * listitem;
-	for (listitem = launcherList; listitem != NULL; listitem = listitem->next) {
-		launcherList_t * li = (launcherList_t *)listitem->data;
-		if (!g_strcmp0(launcher_menu_item_get_desktop(li->menuitem), desktop)) {
+	for (listitem = serverList; listitem != NULL; listitem = listitem->next) {
+		serverList_t * slt = listitem->data;
+		if (!g_strcmp0(app_menu_item_get_desktop(slt->menuitem),
+			       g_desktop_app_info_get_filename (appinfo))) {
 			break;
 		}
 	}
@@ -944,43 +777,29 @@ build_launcher (gpointer data)
 	if (listitem == NULL) {
 		/* If not */
 		/* Build the item */
-		launcherList_t * ll = g_new0(launcherList_t, 1);
-		ll->menuitem = launcher_menu_item_new(desktop);
+		serverList_t * sl_item = g_new0(serverList_t, 1);
+		sl_item->menuitem = app_menu_item_new(appinfo);
 
 		/* Build a separator */
-		ll->separator = dbusmenu_menuitem_new();
-		dbusmenu_menuitem_property_set(ll->separator, DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_SEPARATOR);
+		sl_item->separator = dbusmenu_menuitem_new();
+		dbusmenu_menuitem_property_set(sl_item->separator, DBUSMENU_MENUITEM_PROP_TYPE, DBUSMENU_CLIENT_TYPES_SEPARATOR);
 
 		/* Add it to the list */
-		launcherList = g_list_insert_sorted(launcherList, ll, launcherList_sort);
+		serverList = g_list_insert_sorted (serverList, sl_item, serverList_sort);
 
 		/* Add it to the menu */
-		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(ll->menuitem), DBUSMENU_MENUITEM_PROP_TYPE, APPLICATION_MENUITEM_TYPE);
-		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->menuitem));
-		GList * shortcuts = launcher_menu_item_get_items(ll->menuitem);
-		while (shortcuts != NULL) {
-			dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(shortcuts->data));
-			shortcuts = g_list_next(shortcuts);
+		dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(sl_item->menuitem), DBUSMENU_MENUITEM_PROP_TYPE, APPLICATION_MENUITEM_TYPE);
+		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(sl_item->menuitem));
+		GList * shortcuts = app_menu_item_get_items(sl_item->menuitem);
+		GList * shortcut = shortcuts;
+		while (shortcut != NULL) {
+			dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(shortcut->data));
+			shortcut = g_list_next(shortcut);
 		}
-		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(ll->separator));
-
-		/* If we've gotten eclipsed by something else, hide the item
-		 * and the separator. */
-		if (launcher_menu_item_get_eclipsed(ll->menuitem)) {
-			launcher_menu_item_set_eclipsed(ll->menuitem, TRUE);
-			dbusmenu_menuitem_property_set_bool(ll->separator, DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
-		}
-
-		/* Check to see if any of the current applications should
-		   be eclipsing us. */
-		GList * server;
-		for (server = serverList; server != NULL; server = g_list_next(server)) {
-			serverList_t * slt = (serverList_t *)server->data;
-			check_eclipses(slt->menuitem);
-		}
+		g_list_free (shortcuts);
+		dbusmenu_menuitem_child_append(root_menuitem, DBUSMENU_MENUITEM(sl_item->separator));
 
 		resort_menu(root_menuitem);
-		check_hidden();
 	}
 
 	g_object_unref (appinfo);
@@ -1005,7 +824,7 @@ build_launchers (gpointer data)
 		g_idle_add(build_launcher, g_strdup (*app));
 	}
 
-	launcherList = g_list_sort(launcherList, launcherList_sort);
+	serverList = g_list_sort(serverList, serverList_sort);
 
 	g_strfreev (applications);
 	return FALSE;

@@ -28,6 +28,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gio/gdesktopappinfo.h>
 #include <libdbusmenu-glib/client.h>
 #include <libdbusmenu-glib/menuitem-proxy.h>
+#include <libindicator/indicator-desktop-shortcuts.h>
 #include "app-menu-item.h"
 #include "dbus-data.h"
 
@@ -55,6 +56,8 @@ struct _AppMenuItemPrivate
 	DbusmenuClient * client;
 	DbusmenuMenuitem * root;
 	GList * shortcuts;
+	GList * static_shortcuts;
+	IndicatorDesktopShortcuts * ids;
 };
 
 #define APP_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_MENU_ITEM_TYPE, AppMenuItemPrivate))
@@ -131,6 +134,7 @@ app_menu_item_init (AppMenuItem *self)
 	priv->client = NULL;
 	priv->root = NULL;
 	priv->shortcuts = NULL;
+	priv->static_shortcuts = NULL;
 
 	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, FALSE);
 
@@ -163,6 +167,17 @@ app_menu_item_dispose (GObject *object)
 		g_list_foreach(priv->shortcuts, func_unref, object);
 		g_list_free(priv->shortcuts);
 		priv->shortcuts = NULL;
+	}
+
+	if (priv->static_shortcuts != NULL) {
+		g_list_foreach(priv->static_shortcuts, func_unref, object);
+		g_list_free(priv->static_shortcuts);
+		priv->static_shortcuts = NULL;
+	}
+
+	if (priv->ids != NULL) {
+		g_object_unref(priv->ids);
+		priv->ids = NULL;
 	}
 
 	if (priv->root != NULL) {
@@ -200,6 +215,29 @@ app_menu_item_finalize (GObject *object)
 
 	return;
 }
+
+/* Respond to one of the shortcuts getting clicked on. */
+static void
+nick_activate_cb (DbusmenuMenuitem * self, guint timestamp, gpointer data)
+{
+	gchar * nick = g_object_get_data(G_OBJECT(self), "ids-nick-data");
+	AppMenuItem * mi = APP_MENU_ITEM(data);
+
+	g_return_if_fail(nick != NULL);
+	g_return_if_fail(mi != NULL);
+
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(mi);
+
+	g_return_if_fail(priv->ids != NULL);
+
+	if (!indicator_desktop_shortcuts_nick_exec(priv->ids, nick)) {
+		g_warning("Unable to execute nick '%s' for desktop file '%s'",
+			  nick, g_desktop_app_info_get_filename (priv->appinfo));
+	}
+
+	return;
+}
+
 
 static void
 app_menu_item_set_appinfo (AppMenuItem *self,
@@ -246,6 +284,24 @@ app_menu_item_set_appinfo (AppMenuItem *self,
 	g_free(iconstr);
 
 	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
+
+	/* Start to build static shortcuts */
+	priv->ids = indicator_desktop_shortcuts_new(g_desktop_app_info_get_filename (priv->appinfo), "Messaging Menu");
+	const gchar ** nicks = indicator_desktop_shortcuts_get_nicks(priv->ids);
+	gint i;
+	for (i = 0; nicks[i] != NULL; i++) {
+		DbusmenuMenuitem * mi = dbusmenu_menuitem_new();
+		dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_TYPE, APPLICATION_MENUITEM_TYPE);
+		g_object_set_data(G_OBJECT(mi), "ids-nick-data", (gpointer)nicks[i]);
+
+		gchar *name = indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]);
+		dbusmenu_menuitem_property_set(mi, DBUSMENU_MENUITEM_PROP_LABEL, name);
+		g_free(name);
+
+		g_signal_connect(G_OBJECT(mi), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(nick_activate_cb), self);
+
+		priv->static_shortcuts = g_list_append(priv->static_shortcuts, mi);
+	}
 
 	g_key_file_unref(keyfile);
 }
@@ -574,5 +630,6 @@ app_menu_item_get_items (AppMenuItem * appitem)
 {
 	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), NULL);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
-	return priv->shortcuts;
+	return g_list_concat (g_list_copy (priv->shortcuts),
+			      g_list_copy (priv->static_shortcuts));
 }
