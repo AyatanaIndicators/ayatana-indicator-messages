@@ -201,10 +201,62 @@ app_menu_item_finalize (GObject *object)
 	return;
 }
 
-AppMenuItem *
-app_menu_item_new ()
+static void
+app_menu_item_set_appinfo (AppMenuItem *self,
+			   GDesktopAppInfo *appinfo)
 {
-	return g_object_new(APP_MENU_ITEM_TYPE, NULL);
+	AppMenuItemPrivate *priv = APP_MENU_ITEM_GET_PRIVATE (self);
+	GKeyFile *keyfile;
+	gchar *iconstr = NULL;
+
+	g_return_if_fail (appinfo != NULL);
+
+	g_clear_object (&priv->appinfo);
+	priv->appinfo = g_object_ref (appinfo);
+
+	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
+	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_RUNNING, TRUE);
+
+	update_label(self);
+
+	keyfile = g_key_file_new();
+	g_key_file_load_from_file(keyfile, g_desktop_app_info_get_filename (appinfo), G_KEY_FILE_NONE, NULL);
+
+	/* Check for the over ride key and see if we should be using that
+	   icon.  If we can't get it, then go back to the app info */
+	if (g_key_file_has_key(keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, NULL)) {
+		GError * error = NULL;
+
+		iconstr = g_key_file_get_string(keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, &error);
+
+		if (error != NULL) {
+			/* Can't figure out why this would happen, but sure, let's print something */
+			g_warning("Error getting '" ICON_KEY "' from desktop file: %s", error->message);
+			g_error_free(error);
+		}
+	}
+
+	/* For some reason that didn't work, let's try the app info */
+	if (iconstr == NULL) {
+		GIcon * icon = g_app_info_get_icon(G_APP_INFO(priv->appinfo));
+		iconstr = g_icon_to_string(icon);
+	}
+
+	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_ICON, iconstr);
+	g_free(iconstr);
+
+	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
+
+	g_key_file_unref(keyfile);
+}
+
+AppMenuItem *
+app_menu_item_new (GDesktopAppInfo *appinfo)
+{
+	AppMenuItem *self = g_object_new(APP_MENU_ITEM_TYPE, NULL);
+	if (appinfo)
+		app_menu_item_set_appinfo (self, appinfo);
+	return self;
 }
 
 AppMenuItem *
@@ -309,58 +361,15 @@ desktop_cb (IndicateListener * listener, IndicateListenerServer * server, const 
 {
 	g_return_if_fail(IS_APP_MENU_ITEM(data));
 	AppMenuItem * self = APP_MENU_ITEM(data);
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
-	GKeyFile *keyfile;
-
-	if (priv->appinfo != NULL) {
-		g_object_unref(G_OBJECT(priv->appinfo));
-		priv->appinfo = NULL;
-	}
+	GDesktopAppInfo *appinfo;
 
 	if (value == NULL || value[0] == '\0') {
 		return;
 	}
 
-	priv->appinfo = g_desktop_app_info_new_from_filename(value);
-	g_return_if_fail(priv->appinfo != NULL);
-
-	keyfile = g_key_file_new();
-	g_key_file_load_from_file(keyfile, value, G_KEY_FILE_NONE, NULL);
-
-	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
-	dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_RUNNING, TRUE);
-
-	update_label(self);
-
-	gchar * iconstr = NULL;
-
-	/* Check for the over ride key and see if we should be using that
-	   icon.  If we can't get it, then go back to the app info */
-	if (g_key_file_has_key(keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, NULL) && iconstr == NULL) {
-		GError * error = NULL;
-
-		iconstr = g_key_file_get_string(keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, &error);
-
-		if (error != NULL) {
-			/* Can't figure out why this would happen, but sure, let's print something */
-			g_warning("Error getting '" ICON_KEY "' from desktop file: %s", error->message);
-			g_error_free(error);
-		}
-	}
-
-	/* For some reason that didn't work, let's try the app info */
-	if (iconstr == NULL) {
-		GIcon * icon = g_app_info_get_icon(G_APP_INFO(priv->appinfo));
-		iconstr = g_icon_to_string(icon);
-	}
-
-	dbusmenu_menuitem_property_set(DBUSMENU_MENUITEM(self), APPLICATION_MENUITEM_PROP_ICON, iconstr);
-	g_free(iconstr);
-
-	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
-
-	g_object_unref(keyfile);
-	return;
+	appinfo = g_desktop_app_info_new_from_filename(value);
+	app_menu_item_set_appinfo (self, appinfo);
+	g_object_unref (appinfo);
 }
 
 /* Relay this signal into causing a rebuild of the shortcuts
@@ -538,11 +547,13 @@ app_menu_item_get_name (AppMenuItem * appitem)
 	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), NULL);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
 
-	if (priv->appinfo == NULL) {
-		return INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server);
-	} else {
+	if (priv->appinfo) {
 		return g_app_info_get_name(G_APP_INFO(priv->appinfo));
 	}
+	else if (priv->server) {
+		return INDICATE_LISTENER_SERVER_DBUS_NAME(priv->server);
+	}
+	return NULL;
 }
 
 const gchar *
@@ -550,7 +561,10 @@ app_menu_item_get_desktop (AppMenuItem * appitem)
 {
 	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), NULL);
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
-	return g_desktop_app_info_get_filename (priv->appinfo);
+	if (priv->appinfo)
+		return g_desktop_app_info_get_filename (priv->appinfo);
+	else
+		return NULL;
 }
 
 /* Get the dynamic items added onto the end of
