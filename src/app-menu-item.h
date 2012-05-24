@@ -22,11 +22,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __APP_MENU_ITEM_H__
 #define __APP_MENU_ITEM_H__
 
-#include <glib.h>
-#include <glib-object.h>
-
-#include <libdbusmenu-glib/menuitem.h>
-#include <libindicate/listener.h>
+#include <gio/gio.h>
 
 G_BEGIN_DECLS
 
@@ -46,27 +42,22 @@ typedef struct _AppMenuItem      AppMenuItem;
 typedef struct _AppMenuItemClass AppMenuItemClass;
 
 struct _AppMenuItemClass {
-	DbusmenuMenuitemClass parent_class;
+	GObjectClass parent_class;
 
 	void (* count_changed) (guint count);
 	void (* name_changed) (gchar * name);
-	void (* shortcut_added) (DbusmenuMenuitem * mi);
-	void (* shortcut_removed) (DbusmenuMenuitem * mi);
 };
 
 struct _AppMenuItem {
-	DbusmenuMenuitem parent;
+	GObject parent;
 };
 
 GType app_menu_item_get_type (void);
 AppMenuItem * app_menu_item_new (GDesktopAppInfo *appinfo);
-AppMenuItem * app_menu_item_new_with_server (IndicateListener * listener, IndicateListenerServer * server);
-void app_menu_item_set_server (AppMenuItem *self, IndicateListener *listener, IndicateListenerServer *server);
 guint app_menu_item_get_count (AppMenuItem * appitem);
-IndicateListenerServer * app_menu_item_get_server (AppMenuItem * appitem);
 const gchar * app_menu_item_get_name (AppMenuItem * appitem);
 const gchar * app_menu_item_get_desktop (AppMenuItem * appitem);
-GList * app_menu_item_get_items (AppMenuItem * appitem);
+GMenuModel * app_menu_item_get_menu (AppMenuItem *appitem);
 
 G_END_DECLS
 

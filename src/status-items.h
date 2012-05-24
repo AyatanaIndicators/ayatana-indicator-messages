@@ -26,9 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 G_BEGIN_DECLS
 
-typedef void (*StatusUpdateFunc) (void);
-
-GList * status_items_build (StatusUpdateFunc update_func);
+GMenuModel * status_items_build (GAction *action);
 const gchar * status_current_panel_icon (gboolean alert);
 void status_items_cleanup (void);
 

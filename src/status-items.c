@@ -22,10 +22,19 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gio/gio.h>
-#include <libdbusmenu-glib/dbusmenu-glib.h>
 
 #include "status-items.h"
 #include "status-provider.h"
+#include "dbus-data.h"
+
+static const gchar * status_ids [STATUS_PROVIDER_STATUS_LAST] = {
+  /* STATUS_PROVIDER_STATUS_ONLINE,    */   "available",
+  /* STATUS_PROVIDER_STATUS_AWAY,      */   "away",
+  /* STATUS_PROVIDER_STATUS_DND        */   "busy",
+  /* STATUS_PROVIDER_STATUS_INVISIBLE  */   "invisible",
+  /* STATUS_PROVIDER_STATUS_OFFLINE,   */   "offline",
+  /* STATUS_PROVIDER_STATUS_DISCONNECTED*/  "offline"
+};
 
 static const gchar * status_strings [STATUS_PROVIDER_STATUS_LAST] = {
   /* STATUS_PROVIDER_STATUS_ONLINE,    */   N_("Available"),
@@ -66,38 +75,39 @@ static const gchar * panel_active_icons[STATUS_PROVIDER_STATUS_LAST] = {
 /* Prototypes */
 static gboolean provider_directory_parse (gpointer dir);
 static gboolean load_status_provider (gpointer dir);
-static void user_status_change (DbusmenuMenuitem * item, guint timestamp, gpointer pstatus);
+static void user_status_change (GSimpleAction *action,
+				GVariant *value,
+				gpointer user_data);
 
 /* Globals */
 static StatusProviderStatus current_status = STATUS_PROVIDER_STATUS_DISCONNECTED;
-static GList * menuitems = NULL;
+static GMenu * menu;
+static GAction *status_action;
 static GList * status_providers = NULL;
-static StatusUpdateFunc update_func = NULL;
 
 /* Build the inital status items and start kicking off the async code
    for handling all the statuses */
-GList *
-status_items_build (StatusUpdateFunc status_update_func)
+GMenuModel *
+status_items_build (GAction *action)
 {
 	int i;
+	menu = g_menu_new ();
+
+	status_action = action;
+	g_signal_connect (action, "change-state", G_CALLBACK (user_status_change), NULL);
+
 	for (i = STATUS_PROVIDER_STATUS_ONLINE; i < STATUS_PROVIDER_STATUS_DISCONNECTED; i++) {
-		DbusmenuMenuitem * item = dbusmenu_menuitem_new();
+		GMenuItem *item = g_menu_item_new (_(status_strings[i]), NULL);
 
-		dbusmenu_menuitem_property_set(item, DBUSMENU_MENUITEM_PROP_LABEL, _(status_strings[i]));
-		dbusmenu_menuitem_property_set(item, DBUSMENU_MENUITEM_PROP_ICON_NAME, status_icons[i]);
+		g_menu_item_set_action_and_target (item, g_action_get_name (action), "s", status_ids[i]);
 
-		dbusmenu_menuitem_property_set_bool(item, DBUSMENU_MENUITEM_PROP_VISIBLE, TRUE);
-		dbusmenu_menuitem_property_set_bool(item, DBUSMENU_MENUITEM_PROP_ENABLED, FALSE);
+		g_menu_item_set_attribute (item, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", status_icons[i]);
+		g_menu_item_set_attribute (item, INDICATOR_MENU_ATTRIBUTE_VISIBLE, "b", TRUE);
+		g_menu_item_set_attribute (item, INDICATOR_MENU_ATTRIBUTE_ENABLED, "b", FALSE);
 
-		dbusmenu_menuitem_property_set(item, DBUSMENU_MENUITEM_PROP_TOGGLE_TYPE, DBUSMENU_MENUITEM_TOGGLE_RADIO);
-		dbusmenu_menuitem_property_set(item, DBUSMENU_MENUITEM_PROP_TOGGLE_STATE, DBUSMENU_MENUITEM_TOGGLE_STATE_UNCHECKED);
-
-		g_signal_connect(G_OBJECT(item), DBUSMENU_MENUITEM_SIGNAL_ITEM_ACTIVATED, G_CALLBACK(user_status_change), GINT_TO_POINTER(i));
-
-		menuitems = g_list_append(menuitems, item);
+		g_menu_append_item (menu, item);
+		g_object_unref (item);
 	}
-
-	update_func = status_update_func;
 
 	const gchar * status_providers_env = g_getenv("INDICATOR_MESSAGES_STATUS_PROVIDER_DIR");
 	if (status_providers_env == NULL) {
@@ -106,7 +116,7 @@ status_items_build (StatusUpdateFunc status_update_func)
 		g_idle_add(provider_directory_parse, (gpointer)status_providers_env);
 	}
 
-	return menuitems;
+	return G_MENU_MODEL (menu);
 }
 
 /* Clean up our globals and stop with all this allocation
@@ -155,37 +165,32 @@ update_status (void)
 
 	current_status = status;
 
-	if (update_func != NULL) {
-		update_func();
-	}
-
-	GList * menu;
-	int i;
-	for (menu = menuitems, i = 0; menu != NULL && i < STATUS_PROVIDER_STATUS_DISCONNECTED; menu = g_list_next(menu), i++) {
-		/* If we're the seleced status or if we're disconnected
-		   show the user that we're offline */
-		if (i == current_status || (current_status == STATUS_PROVIDER_STATUS_DISCONNECTED && i == STATUS_PROVIDER_STATUS_OFFLINE)) {
-			dbusmenu_menuitem_property_set_int(DBUSMENU_MENUITEM(menu->data), DBUSMENU_MENUITEM_PROP_TOGGLE_STATE, DBUSMENU_MENUITEM_TOGGLE_STATE_CHECKED);
-		} else {
-			dbusmenu_menuitem_property_set_int(DBUSMENU_MENUITEM(menu->data), DBUSMENU_MENUITEM_PROP_TOGGLE_STATE, DBUSMENU_MENUITEM_TOGGLE_STATE_UNCHECKED);
-		}
-
-		if (current_status == STATUS_PROVIDER_STATUS_DISCONNECTED) {
-			dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(menu->data), DBUSMENU_MENUITEM_PROP_ENABLED, FALSE);
-		} else {
-			dbusmenu_menuitem_property_set_bool(DBUSMENU_MENUITEM(menu->data), DBUSMENU_MENUITEM_PROP_ENABLED, TRUE);
-		}
-	}
+	g_action_change_state (status_action, g_variant_new_string (status_ids[current_status]));
 
 	return;
 }
 
 /* Handle the user requesting a status change */
 static void
-user_status_change (DbusmenuMenuitem * item, guint timestamp, gpointer pstatus)
+user_status_change (GSimpleAction *action,
+		    GVariant *value,
+		    gpointer user_data)
 {
-	StatusProviderStatus status = GPOINTER_TO_INT(pstatus);
+	const gchar *status_id;
+	int i;
+	StatusProviderStatus status = STATUS_PROVIDER_STATUS_DISCONNECTED;
 	GList * provider;
+
+	g_return_if_fail (g_variant_is_of_type (value, G_VARIANT_TYPE_STRING));
+
+	status_id = g_variant_get_string (value, NULL);
+
+	for (i = STATUS_PROVIDER_STATUS_ONLINE; i < STATUS_PROVIDER_STATUS_DISCONNECTED; i++) {
+		if (!strcmp (status_id, status_ids [i])) {
+			status = i;
+			break;
+		}
+	}
 
 	/* Set each provider to this status */
 	for (provider = status_providers; provider != NULL; provider = g_list_next(provider)) {

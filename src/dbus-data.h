@@ -25,4 +25,8 @@
    have a better place to put it. */
 #define ICON_KEY  "X-Ayatana-Messaging-Menu-Icon"
 
+#define INDICATOR_MENU_ATTRIBUTE_VISIBLE        "indicator-visible"
+#define INDICATOR_MENU_ATTRIBUTE_ENABLED        "indicator-enabled"
+#define INDICATOR_MENU_ATTRIBUTE_ICON_NAME      "indicator-icon-name"
+
 #endif /* __DBUS_DATA_H__ */

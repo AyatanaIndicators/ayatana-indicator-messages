@@ -42,8 +42,6 @@ indicator_messages_service_SOURCES = \
 	messages-service-dbus.h \
 	gen-messages-service.xml.h \
 	gen-messages-service.xml.c \
-	im-menu-item.c \
-	im-menu-item.h \
 	app-menu-item.c \
 	app-menu-item.h \
 	dbus-data.h \
