@@ -36,7 +36,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "status-items.h"
 
 static IndicatorService * service = NULL;
-static GList * serverList = NULL;
+static GHashTable *applications;
 
 static GDBusConnection *bus;
 static GSimpleActionGroup *actions;
@@ -47,32 +47,6 @@ static GMainLoop * mainloop = NULL;
 static MessageServiceDbus * dbus_interface = NULL;
 
 
-/*
- * Server List
- */
-
-typedef struct _serverList_t serverList_t;
-struct _serverList_t {
-	AppMenuItem * menuitem;
-	gboolean attention;
-	guint count;
-	GList * imList;
-};
-
-static gint
-serverList_sort (gconstpointer a, gconstpointer b)
-{
-	serverList_t * pa, * pb;
-
-	pa = (serverList_t *)a;
-	pb = (serverList_t *)b;
-
-	const gchar * pan = app_menu_item_get_name(pa->menuitem);
-	const gchar * pbn = app_menu_item_get_name(pb->menuitem);
-
-	return g_strcmp0(pan, pbn);
-}
-
 /* This function turns a specific desktop id into a menu
    item and registers it appropriately with everyone */
 static gboolean
@@ -80,31 +54,20 @@ build_launcher (gpointer data)
 {
 	gchar *desktop_id = data;
 	GDesktopAppInfo *appinfo;
-	GList *listitem;
+	const gchar *desktop_file;
 
 	appinfo = g_desktop_app_info_new (desktop_id);
+	desktop_file = g_desktop_app_info_get_filename (appinfo);
 
-	/* Check to see if we already have a launcher */
-	for (listitem = serverList; listitem != NULL; listitem = listitem->next) {
-		serverList_t * slt = listitem->data;
-		if (!g_strcmp0(app_menu_item_get_desktop(slt->menuitem),
-			       g_desktop_app_info_get_filename (appinfo))) {
-			break;
-		}
-	}
-
-	if (listitem == NULL) {
-		/* If not */
-		/* Build the item */
-		serverList_t * sl_item = g_new0(serverList_t, 1);
-		sl_item->menuitem = app_menu_item_new(appinfo);
-
-		serverList = g_list_insert_sorted (serverList, sl_item, serverList_sort);
+	if (!g_hash_table_lookup (applications, desktop_file)) {
+		AppMenuItem *menuitem = app_menu_item_new(appinfo);
 
 		/* TODO insert it at the right position (alphabetically by application name) */
 		g_menu_insert_section (menu, 2,
-				       app_menu_item_get_name (sl_item->menuitem),
-				       app_menu_item_get_menu (sl_item->menuitem));
+				       app_menu_item_get_name (menuitem),
+				       app_menu_item_get_menu (menuitem));
+
+		g_hash_table_insert (applications, g_strdup (desktop_file), menuitem);
 	}
 
 	g_object_unref (appinfo);
@@ -128,8 +91,6 @@ build_launchers (gpointer data)
 	{
 		g_idle_add(build_launcher, g_strdup (*app));
 	}
-
-	serverList = g_list_sort(serverList, serverList_sort);
 
 	g_strfreev (applications);
 	return FALSE;
@@ -224,6 +185,8 @@ main (int argc, char ** argv)
 
 	settings = g_settings_new ("com.canonical.indicator.messages");
 
+	applications = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
+
 	g_idle_add(build_launchers, NULL);
 
 	/* Let's run a mainloop */
@@ -233,6 +196,6 @@ main (int argc, char ** argv)
 	/* Clean up */
 	status_items_cleanup();
 	g_object_unref (settings);
-
+	g_hash_table_unref (applications);
 	return 0;
 }
