@@ -144,7 +144,7 @@ app_menu_item_set_appinfo (AppMenuItem *self,
 	AppMenuItemPrivate *priv = APP_MENU_ITEM_GET_PRIVATE (self);
 	GSimpleAction *launch;
 	GMenuItem *menuitem;
-	GKeyFile *keyfile;
+	GIcon *icon;
 	gchar *iconstr = NULL;
 	gchar *label;
 
@@ -153,28 +153,8 @@ app_menu_item_set_appinfo (AppMenuItem *self,
 	g_clear_object (&priv->appinfo);
 	priv->appinfo = g_object_ref (appinfo);
 
-	keyfile = g_key_file_new();
-	g_key_file_load_from_file(keyfile, g_desktop_app_info_get_filename (appinfo), G_KEY_FILE_NONE, NULL);
-
-	/* Check for the over ride key and see if we should be using that
-	   icon.  If we can't get it, then go back to the app info */
-	if (g_key_file_has_key(keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, NULL)) {
-		GError * error = NULL;
-
-		iconstr = g_key_file_get_string(keyfile, G_KEY_FILE_DESKTOP_GROUP, ICON_KEY, &error);
-
-		if (error != NULL) {
-			/* Can't figure out why this would happen, but sure, let's print something */
-			g_warning("Error getting '" ICON_KEY "' from desktop file: %s", error->message);
-			g_error_free(error);
-		}
-	}
-
-	/* For some reason that didn't work, let's try the app info */
-	if (iconstr == NULL) {
-		GIcon * icon = g_app_info_get_icon(G_APP_INFO(priv->appinfo));
-		iconstr = g_icon_to_string(icon);
-	}
+	icon = g_app_info_get_icon (G_APP_INFO(priv->appinfo));
+	iconstr = g_icon_to_string (icon);
 
 	launch = g_simple_action_new ("launch", NULL);
 	g_signal_connect (launch, "activate", G_CALLBACK (activate_cb), self);
@@ -217,7 +197,6 @@ app_menu_item_set_appinfo (AppMenuItem *self,
 	g_free(iconstr);
 	g_object_unref (launch);
 	g_object_unref (menuitem);
-	g_key_file_unref(keyfile);
 }
 
 AppMenuItem *

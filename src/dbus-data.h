@@ -21,10 +21,6 @@
 
 #define MAX_NUMBER_OF_INDICATORS  7
 
-/* Used for override icons in the normal case, but didn't
-   have a better place to put it. */
-#define ICON_KEY  "X-Ayatana-Messaging-Menu-Icon"
-
 #define INDICATOR_MENU_ATTRIBUTE_VISIBLE        "indicator-visible"
 #define INDICATOR_MENU_ATTRIBUTE_ENABLED        "indicator-enabled"
 #define INDICATOR_MENU_ATTRIBUTE_ICON_NAME      "indicator-icon-name"
