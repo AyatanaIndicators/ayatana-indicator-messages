@@ -57,6 +57,12 @@ build_launcher (gpointer data)
 	const gchar *desktop_file;
 
 	appinfo = g_desktop_app_info_new (desktop_id);
+	if (!appinfo) {
+		g_warning ("could not find a desktop file with id '%s'\n", desktop_id);
+		g_free (desktop_id);
+		return FALSE;
+	}
+
 	desktop_file = g_desktop_app_info_get_filename (appinfo);
 
 	if (!g_hash_table_lookup (applications, desktop_file)) {
