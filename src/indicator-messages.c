@@ -29,13 +29,12 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
 
-#include <libdbusmenu-gtk/menu.h>
-#include <libdbusmenu-gtk/menuitem.h>
-
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
 #include <libindicator/indicator-image-helper.h>
 #include <libindicator/indicator-service-manager.h>
+
+#include <menu-factory-gtk.h>
 
 #include "dbus-data.h"
 #include "gen-messages-service.xml.h"
@@ -58,6 +57,8 @@ struct _IndicatorMessagesClass {
 struct _IndicatorMessages {
 	IndicatorObject parent;
 	IndicatorServiceManager * service;
+	GActionGroup *actions;
+	GMenuModel *menu;
 };
 
 GType indicator_messages_get_type (void);
@@ -155,6 +156,9 @@ indicator_messages_class_init (IndicatorMessagesClass *klass)
 static void
 indicator_messages_init (IndicatorMessages *self)
 {
+	GDBusConnection *bus;
+	GError *error = NULL;
+
 	/* Default values */
 	self->service = NULL;
 
@@ -162,9 +166,24 @@ indicator_messages_init (IndicatorMessages *self)
 	self->service = indicator_service_manager_new_version(INDICATOR_MESSAGES_DBUS_NAME, 1);
 	g_signal_connect(self->service, INDICATOR_SERVICE_MANAGER_SIGNAL_CONNECTION_CHANGE, G_CALLBACK(connection_change), self);
 
+	bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &error);
+	if (!bus) {
+		g_warning ("error connecting to the session bus: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	self->actions = G_ACTION_GROUP (g_dbus_action_group_get (bus,
+								 INDICATOR_MESSAGES_DBUS_NAME,
+								 INDICATOR_MESSAGES_DBUS_OBJECT));
+
+	self->menu = G_MENU_MODEL (g_dbus_menu_model_get (bus,
+							  INDICATOR_MESSAGES_DBUS_NAME,
+							  INDICATOR_MESSAGES_DBUS_OBJECT));
+
 	indicator = INDICATOR_OBJECT(self);
 
-	return;
+	g_object_unref (bus);
 }
 
 /* Unref stuff */
@@ -178,6 +197,9 @@ indicator_messages_dispose (GObject *object)
 		g_object_unref(self->service);
 		self->service = NULL;
 	}
+
+	g_clear_object (&self->actions);
+	g_clear_object (&self->menu);
 
 	G_OBJECT_CLASS (indicator_messages_parent_class)->dispose (object);
 	return;
@@ -376,357 +398,12 @@ connection_change (IndicatorServiceManager * sm, gboolean connected, gpointer us
 	return;
 }
 
-/* Sets the icon when it changes. */
-static void
-application_icon_change_cb (DbusmenuMenuitem * mi, gchar * prop, GVariant * value, gpointer user_data)
-{
-	if (!g_strcmp0(prop, APPLICATION_MENUITEM_PROP_ICON)) {
-		/* Set the main icon */
-		if (GTK_IS_IMAGE(user_data)) {
-			gtk_image_set_from_icon_name(GTK_IMAGE(user_data), g_variant_get_string(value, NULL), GTK_ICON_SIZE_MENU);
-		}
-	}
-
-	return;
-}
-
-/* Sets the label when it changes. */
-static void
-application_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GVariant * value, gpointer user_data)
-{
-	if (!g_strcmp0(prop, APPLICATION_MENUITEM_PROP_NAME)) {
-		/* Set the main label */
-		if (GTK_IS_LABEL(user_data)) {
-			gtk_label_set_text(GTK_LABEL(user_data), g_variant_get_string(value, NULL));
-		}
-	}
-
-	if (!g_strcmp0(prop, APPLICATION_MENUITEM_PROP_RUNNING)) {
-		/* TODO: should hide/show the triangle live if the menu was open.
-		   In practice, this is rarely needed. */
-	}
-
-	return;
-}
-
-/* Draws a triangle on the left, using fg[STATE_TYPE] color. */
-static gboolean
-application_triangle_draw_cb (GtkWidget *widget, cairo_t *cr, gpointer data)
-{
-	GtkAllocation allocation;
-	GtkStyle *style;
-	int x, y, arrow_width, arrow_height;
-
-	if (!GTK_IS_WIDGET (widget)) return FALSE;
-	if (!DBUSMENU_IS_MENUITEM (data)) return FALSE;
-
-	/* render the triangle indicator only if the application is running */
-	if (! dbusmenu_menuitem_property_get_bool (DBUSMENU_MENUITEM(data), APPLICATION_MENUITEM_PROP_RUNNING))
-		return FALSE;;
-
-	/* get style */
-	style = gtk_widget_get_style (widget);
-
-	/* set arrow position / dimensions */
-	arrow_width = 5; /* the pixel-based reference triangle is 5x9 */
-	arrow_height = 9;
-	gtk_widget_get_allocation (widget, &allocation);
-	x = 0;
-	y = allocation.height/2.0 - (double)arrow_height/2.0;
-
-	cairo_save (cr);
-
-	/* set line width */
-	cairo_set_line_width (cr, 1.0);
-
-	/* cairo drawing code */
-	cairo_move_to (cr, x, y);
-	cairo_line_to (cr, x, y + arrow_height);
-	cairo_line_to (cr, x + arrow_width, y + (double)arrow_height/2.0);
-	cairo_close_path (cr);
-	cairo_set_source_rgb (cr, style->fg[gtk_widget_get_state(widget)].red/65535.0,
-	                          style->fg[gtk_widget_get_state(widget)].green/65535.0,
-	                          style->fg[gtk_widget_get_state(widget)].blue/65535.0);
-	cairo_fill (cr);
-
-	cairo_restore (cr);
-
-	return FALSE;
-}
-
-static gint
-gtk_widget_get_font_size (GtkWidget *widget)
-{
-    const PangoFontDescription *font;
-
-    font = gtk_style_context_get_font (gtk_widget_get_style_context (widget),
-                                       gtk_widget_get_state_flags (widget));
-
-    return pango_font_description_get_size (font) / PANGO_SCALE;
-}
-
-/* Custom function to draw rounded rectangle with max radius */
-static void
-custom_cairo_rounded_rectangle (cairo_t *cr,
-                                double x, double y, double w, double h)
-{
-	double radius = h / 2.0;
-
-	cairo_move_to (cr, x+radius, y);
-	cairo_arc (cr, x+w-radius, y+radius, radius, M_PI*1.5, M_PI*2);
-	cairo_arc (cr, x+w-radius, y+h-radius, radius, 0, M_PI*0.5);
-	cairo_arc (cr, x+radius,   y+h-radius, radius, M_PI*0.5, M_PI);
-	cairo_arc (cr, x+radius,   y+radius,   radius, M_PI, M_PI*1.5);
-}
-
-/* Draws a rounded rectangle with text inside. */
-static gboolean
-numbers_draw_cb (GtkWidget *widget, cairo_t *cr, gpointer data)
-{
-	GtkAllocation allocation;
-	GtkStyle *style;
-	double x, y, w, h;
-	PangoLayout * layout;
-	PangoRectangle layout_extents;
-	gint font_size = gtk_widget_get_font_size (widget);
-	gboolean is_lozenge = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (widget), "is-lozenge"));
-
-	if (!GTK_IS_WIDGET (widget)) return FALSE;
-
-	/* let the label handle the drawing if it's not a lozenge */
-	if (!is_lozenge)
-		return FALSE;
-
-	/* get style */
-	style = gtk_widget_get_style (widget);
-
-	/* set arrow position / dimensions */
-	gtk_widget_get_allocation (widget, &allocation);
-	x = 0;
-	y = 0;
-	w = allocation.width;
-	h = allocation.height;
-
-	layout = gtk_label_get_layout (GTK_LABEL(widget));
-	pango_layout_get_extents (layout, NULL, &layout_extents);
-	pango_extents_to_pixels (&layout_extents, NULL);
-
-	if (layout_extents.width == 0)
-		return TRUE;
-
-	cairo_save (cr);
-
-	/* set line width */
-	cairo_set_line_width (cr, 1.0);
-
-	cairo_set_fill_rule (cr, CAIRO_FILL_RULE_EVEN_ODD);
-
-	/* cairo drawing code */
-	custom_cairo_rounded_rectangle (cr, x - font_size/2.0, y, w + font_size, h);
-
-	cairo_set_source_rgba (cr, style->fg[gtk_widget_get_state(widget)].red/65535.0,
-	                           style->fg[gtk_widget_get_state(widget)].green/65535.0,
-	                           style->fg[gtk_widget_get_state(widget)].blue/65535.0, 0.5);
-
-	x += (allocation.width - layout_extents.width) / 2.0;
-	y += (allocation.height - layout_extents.height) / 2.0;
-	cairo_move_to (cr, floor (x), floor (y));
-	pango_cairo_layout_path (cr, layout);
-	cairo_fill (cr);
-
-	cairo_restore (cr);
-
-	return TRUE;
-}
-
-/* Builds a menu item representing a running application in the
-   messaging menu */
-static gboolean
-new_application_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, DbusmenuClient * client, gpointer user_data)
-{
-	g_debug ("%s (\"%s\")", __func__, dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_NAME));
-
-	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_menu_item_new());
-
-	gint padding = 4;
-	gtk_widget_style_get(GTK_WIDGET(gmi), "toggle-spacing", &padding, NULL);
-
-	GtkWidget * hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, padding);
-
-	GtkWidget * icon = gtk_image_new_from_icon_name(dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_ICON), GTK_ICON_SIZE_MENU);
-	gtk_misc_set_alignment(GTK_MISC(icon), 1.0 /* right aligned */, 0.5);
-	gtk_box_pack_start (GTK_BOX (hbox), icon, FALSE, FALSE, 0);
-
-	/* Application name in a label */
-	GtkWidget * label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, APPLICATION_MENUITEM_PROP_NAME));
-	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-	gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
-
-	gtk_container_add(GTK_CONTAINER(gmi), hbox);
-	gtk_widget_show_all (GTK_WIDGET (gmi));
-
-	/* Attach some of the standard GTK stuff */
-	dbusmenu_gtkclient_newitem_base(DBUSMENU_GTKCLIENT(client), newitem, gmi, parent);
-
-	/* Make sure we can handle the label changing */
-	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_prop_change_cb), label);
-	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(application_icon_change_cb), icon);
-	g_signal_connect_after(G_OBJECT (gmi), "draw", G_CALLBACK (application_triangle_draw_cb), newitem);
-
-	return TRUE;
-}
-
 typedef struct _indicator_item_t indicator_item_t;
 struct _indicator_item_t {
 	GtkWidget * icon;
 	GtkWidget * label;
 	GtkWidget * right;
 };
-
-/* Whenever we have a property change on a DbusmenuMenuitem
-   we need to be responsive to that. */
-static void
-indicator_prop_change_cb (DbusmenuMenuitem * mi, gchar * prop, GVariant * value, indicator_item_t * mi_data)
-{
-	if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_LABEL)) {
-		/* Set the main label */
-		gtk_label_set_text(GTK_LABEL(mi_data->label), g_variant_get_string(value, NULL));
-	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_RIGHT)) {
-		/* Set the right label */
-		gtk_label_set_text(GTK_LABEL(mi_data->right), g_variant_get_string(value, NULL));
-	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_RIGHT_IS_LOZENGE)) {
-		g_object_set_data (G_OBJECT (mi_data->right), "is-lozenge", GINT_TO_POINTER (TRUE));
-		gtk_widget_queue_draw (mi_data->right);
-	} else if (!g_strcmp0(prop, INDICATOR_MENUITEM_PROP_ICON)) {
-		/* We don't use the value here, which is probably less efficient, 
-		   but it's easier to use the easy function.  And since th value
-		   is already cached, shouldn't be a big deal really.  */
-		GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(mi, INDICATOR_MENUITEM_PROP_ICON);
-		if (pixbuf != NULL) {
-			/* If we've got a pixbuf we need to make sure it's of a reasonable
-			   size to fit in the menu.  If not, rescale it. */
-			GdkPixbuf * resized_pixbuf;
-			gint width, height;
-			gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
-			if (gdk_pixbuf_get_width(pixbuf) > width ||
-					gdk_pixbuf_get_height(pixbuf) > height) {
-				g_debug("Resizing icon from %dx%d to %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf), width, height);
-				resized_pixbuf = gdk_pixbuf_scale_simple(pixbuf,
-				                                         width,
-				                                         height,
-				                                         GDK_INTERP_BILINEAR);
-				g_object_unref(pixbuf);
-			} else {
-				g_debug("Happy with icon sized %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf));
-				resized_pixbuf = pixbuf;
-			}
-	  
-			gtk_image_set_from_pixbuf(GTK_IMAGE(mi_data->icon), resized_pixbuf);
-
-			g_object_unref(resized_pixbuf);
-
-			gtk_widget_show(mi_data->icon);
-		} else {
-			gtk_widget_hide(mi_data->icon);
-		}
-	}
-
-	return;
-}
-
-/* We have a small little menuitem type that handles all
-   of the fun stuff for indicators.  Mostly this is the
-   shifting over and putting the icon in with some right
-   side text that'll be determined by the service.  */
-static gboolean
-new_indicator_item (DbusmenuMenuitem * newitem, DbusmenuMenuitem * parent, DbusmenuClient * client, gpointer user_data)
-{
-	g_return_val_if_fail(DBUSMENU_IS_MENUITEM(newitem), FALSE);
-	g_return_val_if_fail(DBUSMENU_IS_GTKCLIENT(client), FALSE);
-	/* Note: not checking parent, it's reasonable for it to be NULL */
-
-	indicator_item_t * mi_data = g_new0(indicator_item_t, 1);
-
-	GtkMenuItem * gmi = GTK_MENU_ITEM(gtk_menu_item_new());
-
-	gint padding = 4;
-	gint font_size = gtk_widget_get_font_size (GTK_WIDGET (gmi));
-	gtk_widget_style_get(GTK_WIDGET(gmi), "toggle-spacing", &padding, NULL);
-
-	GtkWidget * hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, padding);
-
-	/* Icon, probably someone's face or avatar on an IM */
-	mi_data->icon = gtk_image_new();
-
-	/* Set the minimum size, we always want it to take space */
-	gint width, height;
-	gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height);
-	gtk_widget_set_size_request(GTK_WIDGET (gmi), -1, height + 4);
-
-	gtk_widget_set_margin_left (hbox, width + padding);
-
-	GdkPixbuf * pixbuf = dbusmenu_menuitem_property_get_image(newitem, INDICATOR_MENUITEM_PROP_ICON);
-	if (pixbuf != NULL) {
-		/* If we've got a pixbuf we need to make sure it's of a reasonable
-		   size to fit in the menu.  If not, rescale it. */
-		GdkPixbuf * resized_pixbuf;
-		if (gdk_pixbuf_get_width(pixbuf) > width ||
-		        gdk_pixbuf_get_height(pixbuf) > height) {
-			g_debug("Resizing icon from %dx%d to %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf), width, height);
-			resized_pixbuf = gdk_pixbuf_scale_simple(pixbuf,
-			                                         width,
-			                                         height,
-			                                         GDK_INTERP_BILINEAR);
-			g_object_unref(pixbuf);
-		} else {
-			g_debug("Happy with icon sized %dx%d", gdk_pixbuf_get_width(pixbuf), gdk_pixbuf_get_height(pixbuf));
-			resized_pixbuf = pixbuf;
-		}
-  
-		gtk_image_set_from_pixbuf(GTK_IMAGE(mi_data->icon), resized_pixbuf);
-
-		g_object_unref(resized_pixbuf);
-	}
-	gtk_misc_set_alignment(GTK_MISC(mi_data->icon), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), mi_data->icon, FALSE, FALSE, 0);
-
-	if (pixbuf != NULL) {
-		gtk_widget_show(mi_data->icon);
-	}
-
-	/* Label, probably a username, chat room or mailbox name */
-	mi_data->label = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_LABEL));
-	gtk_misc_set_alignment(GTK_MISC(mi_data->label), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), mi_data->label, TRUE, TRUE, 0);
-	gtk_widget_show(mi_data->label);
-
-	/* Usually either the time or the count on the individual
-	   item. */
-	mi_data->right = gtk_label_new(dbusmenu_menuitem_property_get(newitem, INDICATOR_MENUITEM_PROP_RIGHT));
-	g_object_set_data (G_OBJECT (mi_data->right),
-			   "is-lozenge",
-			   GINT_TO_POINTER (dbusmenu_menuitem_property_get_bool (newitem, INDICATOR_MENUITEM_PROP_RIGHT_IS_LOZENGE)));
-	/* install extra decoration overlay */
-	g_signal_connect (G_OBJECT (mi_data->right), "draw",
-	                  G_CALLBACK (numbers_draw_cb), NULL);
-
-	gtk_misc_set_alignment(GTK_MISC(mi_data->right), 1.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), mi_data->right, FALSE, FALSE, padding + font_size/2.0);
-	gtk_label_set_width_chars (GTK_LABEL (mi_data->right), 2);
-	gtk_style_context_add_class (gtk_widget_get_style_context (mi_data->right),
-				     "accelerator");
-	gtk_widget_show(mi_data->right);
-
-	gtk_container_add(GTK_CONTAINER(gmi), hbox);
-	gtk_widget_show(hbox);
-
-	dbusmenu_gtkclient_newitem_base(DBUSMENU_GTKCLIENT(client), newitem, gmi, parent);
-
-	g_signal_connect(G_OBJECT(newitem), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(indicator_prop_change_cb), mi_data);
-	g_object_weak_ref(G_OBJECT(newitem), (GWeakNotify)g_free, mi_data);
-
-	return TRUE;
-}
 
 /* Builds the main image icon using the libindicator helper. */
 static GtkImage *
@@ -742,13 +419,13 @@ get_icon (IndicatorObject * io)
 static GtkMenu *
 get_menu (IndicatorObject * io)
 {
-	DbusmenuGtkMenu * menu = dbusmenu_gtkmenu_new(INDICATOR_MESSAGES_DBUS_NAME, INDICATOR_MESSAGES_DBUS_OBJECT);
-	DbusmenuGtkClient * client = dbusmenu_gtkmenu_get_client(menu);
+	IndicatorMessages *self = INDICATOR_MESSAGES (io);
+	GtkMenu *menu;
 
-	dbusmenu_client_add_type_handler(DBUSMENU_CLIENT(client), INDICATOR_MENUITEM_TYPE, new_indicator_item);
-	dbusmenu_client_add_type_handler(DBUSMENU_CLIENT(client), APPLICATION_MENUITEM_TYPE, new_application_item);
+	menu = menu_factory_gtk_new_menu (self->menu, self->actions);
+	gtk_widget_show_all (GTK_WIDGET (menu));
 
-	return GTK_MENU(menu);
+	return menu;
 }
 
 /* Returns the accessible description of the indicator */
