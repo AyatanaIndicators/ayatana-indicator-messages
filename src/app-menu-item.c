@@ -31,13 +31,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "app-menu-item.h"
 #include "dbus-data.h"
 
-enum {
-	NAME_CHANGED,
-	LAST_SIGNAL
-};
-
-static guint signals[LAST_SIGNAL] = { 0 };
-
 typedef struct _AppMenuItemPrivate AppMenuItemPrivate;
 
 struct _AppMenuItemPrivate
@@ -72,14 +65,6 @@ app_menu_item_class_init (AppMenuItemClass *klass)
 	g_type_class_add_private (klass, sizeof (AppMenuItemPrivate));
 
 	object_class->dispose = app_menu_item_dispose;
-
-	signals[NAME_CHANGED] =  g_signal_new(APP_MENU_ITEM_SIGNAL_NAME_CHANGED,
-	                                      G_TYPE_FROM_CLASS(klass),
-	                                      G_SIGNAL_RUN_LAST,
-	                                      G_STRUCT_OFFSET (AppMenuItemClass, name_changed),
-	                                      NULL, NULL,
-	                                      g_cclosure_marshal_VOID__STRING,
-	                                      G_TYPE_NONE, 1, G_TYPE_STRING);
 }
 
 static void
@@ -190,8 +175,6 @@ app_menu_item_set_appinfo (AppMenuItem *self,
 		g_object_unref (item);
 		g_free(name);
 	}
-
-	g_signal_emit(G_OBJECT(self), signals[NAME_CHANGED], 0, app_menu_item_get_name(self), TRUE);
 
 	g_free(label);
 	g_free(iconstr);
