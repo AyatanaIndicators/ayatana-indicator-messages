@@ -50,6 +50,7 @@ guint app_menu_item_get_count (AppMenuItem * appitem);
 const gchar * app_menu_item_get_name (AppMenuItem * appitem);
 const gchar * app_menu_item_get_desktop (AppMenuItem * appitem);
 GMenuModel * app_menu_item_get_menu (AppMenuItem *appitem);
+GAppInfo * app_menu_item_get_app_info (AppMenuItem *appitem);
 
 G_END_DECLS
 

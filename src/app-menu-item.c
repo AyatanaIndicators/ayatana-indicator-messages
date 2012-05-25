@@ -46,13 +46,31 @@ struct _AppMenuItemPrivate
 
 #define APP_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_MENU_ITEM_TYPE, AppMenuItemPrivate))
 
+enum {
+	PROP_0,
+	PROP_APPINFO,
+	NUM_PROPERTIES
+};
+
+static GParamSpec *properties[NUM_PROPERTIES];
+
 /* Prototypes */
-static void app_menu_item_class_init (AppMenuItemClass *klass);
-static void app_menu_item_init       (AppMenuItem *self);
-static void app_menu_item_dispose    (GObject *object);
-static void activate_cb (GSimpleAction *action,
-			 GVariant *param,
-			 gpointer userdata);
+static void app_menu_item_class_init    (AppMenuItemClass *klass);
+static void app_menu_item_init          (AppMenuItem *self);
+static void app_menu_item_get_property  (GObject    *object,
+					 guint       property_id,
+					 GValue     *value,
+					 GParamSpec *pspec);
+static void app_menu_item_set_property  (GObject      *object,
+					 guint         property_id,
+					 const GValue *value,
+					 GParamSpec   *pspec);
+static void app_menu_item_dispose       (GObject *object);
+static void activate_cb                 (GSimpleAction *action,
+					 GVariant *param,
+					 gpointer userdata);
+static void app_menu_item_set_app_info  (AppMenuItem *self,
+					 GDesktopAppInfo *appinfo);
 
 /* GObject Boilerplate */
 G_DEFINE_TYPE (AppMenuItem, app_menu_item, G_TYPE_OBJECT);
@@ -64,7 +82,17 @@ app_menu_item_class_init (AppMenuItemClass *klass)
 
 	g_type_class_add_private (klass, sizeof (AppMenuItemPrivate));
 
+	object_class->get_property = app_menu_item_get_property;
+	object_class->set_property = app_menu_item_set_property;
 	object_class->dispose = app_menu_item_dispose;
+
+	properties[PROP_APPINFO] = g_param_spec_object ("app-info",
+							"AppInfo",
+							"The GAppInfo for the app that this menu represents",
+							G_TYPE_APP_INFO,
+							G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+
+	g_object_class_install_properties (object_class, NUM_PROPERTIES, properties);
 }
 
 static void
@@ -82,6 +110,43 @@ app_menu_item_init (AppMenuItem *self)
 	return;
 }
 
+static void
+app_menu_item_get_property (GObject    *object,
+			    guint       property_id,
+			    GValue     *value,
+			    GParamSpec *pspec)
+{
+	AppMenuItem *self = APP_MENU_ITEM (object);
+
+	switch (property_id)
+	{
+	case PROP_APPINFO:
+		g_value_set_object (value, app_menu_item_get_app_info (self));
+		break;
+
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+	}
+}
+
+static void
+app_menu_item_set_property (GObject      *object,
+			    guint         property_id,
+			    const GValue *value,
+			    GParamSpec   *pspec)
+{
+	AppMenuItem *self = APP_MENU_ITEM (object);
+
+	switch (property_id)
+	{
+	case PROP_APPINFO:
+		app_menu_item_set_app_info (self, g_value_get_object (value));
+		break;
+
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+	}
+}
 static void
 app_menu_item_dispose (GObject *object)
 {
@@ -123,8 +188,8 @@ nick_activate_cb (GSimpleAction *action,
 }
 
 static void
-app_menu_item_set_appinfo (AppMenuItem *self,
-			   GDesktopAppInfo *appinfo)
+app_menu_item_set_app_info (AppMenuItem *self,
+			    GDesktopAppInfo *appinfo)
 {
 	AppMenuItemPrivate *priv = APP_MENU_ITEM_GET_PRIVATE (self);
 	GSimpleAction *launch;
@@ -133,9 +198,13 @@ app_menu_item_set_appinfo (AppMenuItem *self,
 	gchar *iconstr = NULL;
 	gchar *label;
 
-	g_return_if_fail (appinfo != NULL);
+	g_return_if_fail (priv->appinfo == NULL);
 
-	g_clear_object (&priv->appinfo);
+	if (appinfo == NULL) {
+		g_warning ("appinfo must not be NULL");
+		return;
+	}
+
 	priv->appinfo = g_object_ref (appinfo);
 
 	icon = g_app_info_get_icon (G_APP_INFO(priv->appinfo));
@@ -185,10 +254,9 @@ app_menu_item_set_appinfo (AppMenuItem *self,
 AppMenuItem *
 app_menu_item_new (GDesktopAppInfo *appinfo)
 {
-	AppMenuItem *self = g_object_new(APP_MENU_ITEM_TYPE, NULL);
-	if (appinfo)
-		app_menu_item_set_appinfo (self, appinfo);
-	return self;
+	return g_object_new (APP_MENU_ITEM_TYPE,
+			     "app-info", appinfo,
+			     NULL);
 }
 
 static void
@@ -243,5 +311,12 @@ app_menu_item_get_menu (AppMenuItem *appitem)
 {
 	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
 	return G_MENU_MODEL (priv->menu);
+}
+
+GAppInfo *
+app_menu_item_get_app_info (AppMenuItem *appitem)
+{
+	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
+	return G_APP_INFO (priv->appinfo);
 }
 
