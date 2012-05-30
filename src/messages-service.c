@@ -47,20 +47,17 @@ static GMainLoop * mainloop = NULL;
 static MessageServiceDbus * dbus_interface = NULL;
 
 
-/* This function turns a specific desktop id into a menu
-   item and registers it appropriately with everyone */
-static gboolean
-build_launcher (gpointer data)
+static void
+add_application (const gchar *desktop_id,
+		 const gchar *menu_path)
 {
-	gchar *desktop_id = data;
 	GDesktopAppInfo *appinfo;
 	const gchar *desktop_file;
 
 	appinfo = g_desktop_app_info_new (desktop_id);
 	if (!appinfo) {
 		g_warning ("could not find a desktop file with id '%s'\n", desktop_id);
-		g_free (desktop_id);
-		return FALSE;
+		return;
 	}
 
 	desktop_file = g_desktop_app_info_get_filename (appinfo);
@@ -77,6 +74,17 @@ build_launcher (gpointer data)
 	}
 
 	g_object_unref (appinfo);
+}
+
+/* This function turns a specific desktop id into a menu
+   item and registers it appropriately with everyone */
+static gboolean
+build_launcher (gpointer data)
+{
+	gchar *desktop_id = data;
+
+	add_application (desktop_id, NULL);
+
 	g_free (desktop_id);
 	return FALSE;
 }
@@ -128,6 +136,58 @@ clear_action_handler (MessageServiceDbus *msd,
 	g_simple_action_set_enabled (action, attention);
 }
 
+static void
+register_application (MessageServiceDbus *msd,
+		      const gchar *desktop_id,
+		      const gchar *menu_path,
+		      gpointer user_data)
+{
+	gchar **applications = g_settings_get_strv (settings, "applications");
+	gchar **app;
+
+	for (app = applications; *app; app++) {
+		if (!g_strcmp0 (desktop_id, *app))
+			break;
+	}
+
+	if (*app == NULL) {
+		GVariantBuilder builder;
+
+		g_variant_builder_init (&builder, (GVariantType *)"as");
+		for (app = applications; *app; app++)
+			g_variant_builder_add (&builder, "s", *app);
+		g_variant_builder_add (&builder, "s", desktop_id);
+
+		g_settings_set_value (settings, "applications",
+				      g_variant_builder_end (&builder));
+
+		add_application (desktop_id, menu_path);
+	}
+
+	g_strfreev (applications);
+}
+
+static void
+unregister_application (MessageServiceDbus *msd,
+			const gchar *desktop_id,
+			gpointer user_data)
+{
+	gchar **applications = g_settings_get_strv (settings, "applications");
+	gchar **app;
+	GVariantBuilder builder;
+
+	g_variant_builder_init (&builder, (GVariantType *)"as");
+	for (app = applications; *app; app++) {
+		if (g_strcmp0 (desktop_id, *app))
+			g_variant_builder_add (&builder, "s", *app);
+	}
+
+	g_settings_set_value (settings, "applications",
+			      g_variant_builder_end (&builder));
+
+	g_strfreev (applications);
+}
+
 int
 main (int argc, char ** argv)
 {
@@ -174,6 +234,11 @@ main (int argc, char ** argv)
 	g_signal_connect (dbus_interface, MESSAGE_SERVICE_DBUS_SIGNAL_ATTENTION_CHANGED,
 			  G_CALLBACK(clear_action_handler),
 			  g_action_map_lookup_action (G_ACTION_MAP (actions), "clear"));
+
+	g_signal_connect (dbus_interface, MESSAGE_SERVICE_DBUS_SIGNAL_REGISTER_APPLICATION,
+			  G_CALLBACK (register_application), NULL);
+	g_signal_connect (dbus_interface, MESSAGE_SERVICE_DBUS_SIGNAL_UNREGISTER_APPLICATION,
+			  G_CALLBACK (unregister_application), NULL);
 
 	status_items = status_items_build (g_action_map_lookup_action (G_ACTION_MAP (actions), "status"));
 

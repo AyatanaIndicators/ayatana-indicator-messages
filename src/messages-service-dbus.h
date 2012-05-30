@@ -35,8 +35,10 @@ G_BEGIN_DECLS
 #define IS_MESSAGE_SERVICE_DBUS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MESSAGE_SERVICE_DBUS_TYPE))
 #define MESSAGE_SERVICE_DBUS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MESSAGE_SERVICE_DBUS_TYPE, MessageServiceDbusClass))
 
-#define MESSAGE_SERVICE_DBUS_SIGNAL_ATTENTION_CHANGED  "attention-changed"
-#define MESSAGE_SERVICE_DBUS_SIGNAL_ICON_CHANGED       "icon-changed"
+#define MESSAGE_SERVICE_DBUS_SIGNAL_ATTENTION_CHANGED      "attention-changed"
+#define MESSAGE_SERVICE_DBUS_SIGNAL_ICON_CHANGED           "icon-changed"
+#define MESSAGE_SERVICE_DBUS_SIGNAL_REGISTER_APPLICATION   "register-application"
+#define MESSAGE_SERVICE_DBUS_SIGNAL_UNREGISTER_APPLICATION "unregister-application"
 
 typedef struct _MessageServiceDbus      MessageServiceDbus;
 typedef struct _MessageServiceDbusClass MessageServiceDbusClass;

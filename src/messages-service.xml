@@ -10,6 +10,13 @@
 			<arg type="b" name="hidden" direction="out" />
 		</method>
 		<method name="ClearAttention" />
+		<method name="RegisterApplication">
+		    <arg type="s" name="desktop_id" direction="in" />
+		    <arg type="o" name="menu_path" direction="in" />
+		</method>
+		<method name="UnregisterApplication">
+		    <arg type="s" name="desktop_id" direction="in" />
+		</method>
 
 <!-- Signals -->
 		<signal name="AttentionChanged">

@@ -32,6 +32,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 enum {
 	ATTENTION_CHANGED,
 	ICON_CHANGED,
+	REGISTER_APPLICATION,
+	UNREGISTER_APPLICATION,
 	LAST_SIGNAL
 };
 
@@ -100,6 +102,22 @@ message_service_dbus_class_init (MessageServiceDbusClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__BOOLEAN,
 	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+
+	signals[REGISTER_APPLICATION] = g_signal_new(MESSAGE_SERVICE_DBUS_SIGNAL_REGISTER_APPLICATION,
+						     G_TYPE_FROM_CLASS(klass),
+						     G_SIGNAL_RUN_LAST,
+						     0,
+						     NULL, NULL,
+						     g_cclosure_marshal_generic,
+						     G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
+
+	signals[UNREGISTER_APPLICATION] = g_signal_new(MESSAGE_SERVICE_DBUS_SIGNAL_UNREGISTER_APPLICATION,
+						       G_TYPE_FROM_CLASS(klass),
+						       G_SIGNAL_RUN_LAST,
+						       0,
+						       NULL, NULL,
+						       g_cclosure_marshal_VOID__STRING,
+						       G_TYPE_NONE, 1, G_TYPE_STRING);
 
 	if (bus_node_info == NULL) {
 		GError * error = NULL;
@@ -418,6 +436,16 @@ bus_method_call (GDBusConnection * connection, const gchar * sender, const gchar
 		message_service_dbus_set_attention(ms, FALSE);
 		g_dbus_method_invocation_return_value(invocation, NULL);
 		return;
+	} else if (g_strcmp0("RegisterApplication", method) == 0) {
+		const gchar *desktop_id, *object_path;
+		g_variant_get(params, "(&s&o)", &desktop_id, &object_path);
+		g_signal_emit(ms, signals[REGISTER_APPLICATION], 0, desktop_id, object_path);
+		g_dbus_method_invocation_return_value(invocation, NULL);
+	} else if (g_strcmp0("UnregisterApplication", method) == 0) {
+		const gchar *desktop_id;
+		g_variant_get(params, "(&s)", &desktop_id);
+		g_signal_emit(ms, signals[UNREGISTER_APPLICATION], 0, desktop_id);
+		g_dbus_method_invocation_return_value(invocation, NULL);
 	} else {
 		g_warning("Unknown function call '%s'", method);
 	}
