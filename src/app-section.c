@@ -55,22 +55,22 @@ enum {
 static GParamSpec *properties[NUM_PROPERTIES];
 
 /* Prototypes */
-static void app_section_class_init    (AppSectionClass *klass);
-static void app_section_init          (AppSection *self);
-static void app_section_get_property  (GObject    *object,
-				       guint       property_id,
-				       GValue     *value,
-				       GParamSpec *pspec);
-static void app_section_set_property  (GObject      *object,
-				       guint         property_id,
-				       const GValue *value,
-				       GParamSpec   *pspec);
-static void app_section_dispose       (GObject *object);
-static void activate_cb                 (GSimpleAction *action,
-					 GVariant *param,
-					 gpointer userdata);
-static void app_section_set_app_info  (AppSection *self,
-				       GDesktopAppInfo *appinfo);
+static void app_section_class_init   (AppSectionClass *klass);
+static void app_section_init         (AppSection *self);
+static void app_section_get_property (GObject    *object,
+				      guint       property_id,
+				      GValue     *value,
+				      GParamSpec *pspec);
+static void app_section_set_property (GObject      *object,
+				      guint         property_id,
+				      const GValue *value,
+				      GParamSpec   *pspec);
+static void app_section_dispose      (GObject *object);
+static void activate_cb              (GSimpleAction *action,
+				      GVariant *param,
+				      gpointer userdata);
+static void app_section_set_app_info (AppSection *self,
+				      GDesktopAppInfo *appinfo);
 
 /* GObject Boilerplate */
 G_DEFINE_TYPE (AppSection, app_section, G_TYPE_OBJECT);
@@ -111,9 +111,9 @@ app_section_init (AppSection *self)
 
 static void
 app_section_get_property (GObject    *object,
-			    guint       property_id,
-			    GValue     *value,
-			    GParamSpec *pspec)
+			  guint       property_id,
+			  GValue     *value,
+			  GParamSpec *pspec)
 {
 	AppSection *self = APP_SECTION (object);
 
@@ -130,9 +130,9 @@ app_section_get_property (GObject    *object,
 
 static void
 app_section_set_property (GObject      *object,
-			    guint         property_id,
-			    const GValue *value,
-			    GParamSpec   *pspec)
+			  guint         property_id,
+			  const GValue *value,
+			  GParamSpec   *pspec)
 {
 	AppSection *self = APP_SECTION (object);
 
@@ -188,7 +188,7 @@ nick_activate_cb (GSimpleAction *action,
 
 static void
 app_section_set_app_info (AppSection *self,
-			    GDesktopAppInfo *appinfo)
+			  GDesktopAppInfo *appinfo)
 {
 	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
 	GSimpleAction *launch;
