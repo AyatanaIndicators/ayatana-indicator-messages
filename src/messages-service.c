@@ -30,7 +30,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gio/gdesktopappinfo.h>
 #include <glib/gi18n.h>
 
-#include "app-menu-item.h"
+#include "app-section.h"
 #include "dbus-data.h"
 #include "messages-service-dbus.h"
 #include "status-items.h"
@@ -63,14 +63,14 @@ add_application (const gchar *desktop_id,
 	desktop_file = g_desktop_app_info_get_filename (appinfo);
 
 	if (!g_hash_table_lookup (applications, desktop_file)) {
-		AppMenuItem *menuitem = app_menu_item_new(appinfo);
+		AppSection *section = app_section_new(appinfo);
 
 		/* TODO insert it at the right position (alphabetically by application name) */
 		g_menu_insert_section (menu, 2,
-				       app_menu_item_get_name (menuitem),
-				       app_menu_item_get_menu (menuitem));
+				       app_section_get_name (section),
+				       app_section_get_menu (section));
 
-		g_hash_table_insert (applications, g_strdup (desktop_file), menuitem);
+		g_hash_table_insert (applications, g_strdup (desktop_file), section);
 	}
 
 	g_object_unref (appinfo);
@@ -101,7 +101,7 @@ remove_application (const char *desktop_id)
 {
 	GDesktopAppInfo *appinfo;
 	const gchar *desktop_file;
-	AppMenuItem *menuitem;
+	AppSection *section;
 
 	appinfo = g_desktop_app_info_new (desktop_id);
 	if (!appinfo) {
@@ -111,9 +111,9 @@ remove_application (const char *desktop_id)
 
 	desktop_file = g_desktop_app_info_get_filename (appinfo);
 
-	menuitem = g_hash_table_lookup (applications, desktop_file);
-	if (menuitem) {
-		int pos = g_menu_find_section (menu, app_menu_item_get_menu (menuitem));
+	section = g_hash_table_lookup (applications, desktop_file);
+	if (section) {
+		int pos = g_menu_find_section (menu, app_section_get_menu (section));
 		if (pos >= 0)
 			g_menu_remove (menu, pos);
 	}

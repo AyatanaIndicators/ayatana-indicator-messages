@@ -28,12 +28,12 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gio/gdesktopappinfo.h>
 #include <gio/gio.h>
 #include <libindicator/indicator-desktop-shortcuts.h>
-#include "app-menu-item.h"
+#include "app-section.h"
 #include "dbus-data.h"
 
-typedef struct _AppMenuItemPrivate AppMenuItemPrivate;
+typedef struct _AppSectionPrivate AppSectionPrivate;
 
-struct _AppMenuItemPrivate
+struct _AppSectionPrivate
 {
 	GDesktopAppInfo * appinfo;
 	guint unreadcount;
@@ -44,7 +44,7 @@ struct _AppMenuItemPrivate
 	GSimpleActionGroup *static_shortcuts;
 };
 
-#define APP_MENU_ITEM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_MENU_ITEM_TYPE, AppMenuItemPrivate))
+#define APP_SECTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_SECTION_TYPE, AppSectionPrivate))
 
 enum {
 	PROP_0,
@@ -55,36 +55,36 @@ enum {
 static GParamSpec *properties[NUM_PROPERTIES];
 
 /* Prototypes */
-static void app_menu_item_class_init    (AppMenuItemClass *klass);
-static void app_menu_item_init          (AppMenuItem *self);
-static void app_menu_item_get_property  (GObject    *object,
-					 guint       property_id,
-					 GValue     *value,
-					 GParamSpec *pspec);
-static void app_menu_item_set_property  (GObject      *object,
-					 guint         property_id,
-					 const GValue *value,
-					 GParamSpec   *pspec);
-static void app_menu_item_dispose       (GObject *object);
+static void app_section_class_init    (AppSectionClass *klass);
+static void app_section_init          (AppSection *self);
+static void app_section_get_property  (GObject    *object,
+				       guint       property_id,
+				       GValue     *value,
+				       GParamSpec *pspec);
+static void app_section_set_property  (GObject      *object,
+				       guint         property_id,
+				       const GValue *value,
+				       GParamSpec   *pspec);
+static void app_section_dispose       (GObject *object);
 static void activate_cb                 (GSimpleAction *action,
 					 GVariant *param,
 					 gpointer userdata);
-static void app_menu_item_set_app_info  (AppMenuItem *self,
-					 GDesktopAppInfo *appinfo);
+static void app_section_set_app_info  (AppSection *self,
+				       GDesktopAppInfo *appinfo);
 
 /* GObject Boilerplate */
-G_DEFINE_TYPE (AppMenuItem, app_menu_item, G_TYPE_OBJECT);
+G_DEFINE_TYPE (AppSection, app_section, G_TYPE_OBJECT);
 
 static void
-app_menu_item_class_init (AppMenuItemClass *klass)
+app_section_class_init (AppSectionClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-	g_type_class_add_private (klass, sizeof (AppMenuItemPrivate));
+	g_type_class_add_private (klass, sizeof (AppSectionPrivate));
 
-	object_class->get_property = app_menu_item_get_property;
-	object_class->set_property = app_menu_item_set_property;
-	object_class->dispose = app_menu_item_dispose;
+	object_class->get_property = app_section_get_property;
+	object_class->set_property = app_section_set_property;
+	object_class->dispose = app_section_dispose;
 
 	properties[PROP_APPINFO] = g_param_spec_object ("app-info",
 							"AppInfo",
@@ -96,10 +96,9 @@ app_menu_item_class_init (AppMenuItemClass *klass)
 }
 
 static void
-app_menu_item_init (AppMenuItem *self)
+app_section_init (AppSection *self)
 {
-	g_debug("Building new App Menu Item");
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
 
 	priv->appinfo = NULL;
 	priv->unreadcount = 0;
@@ -111,17 +110,17 @@ app_menu_item_init (AppMenuItem *self)
 }
 
 static void
-app_menu_item_get_property (GObject    *object,
+app_section_get_property (GObject    *object,
 			    guint       property_id,
 			    GValue     *value,
 			    GParamSpec *pspec)
 {
-	AppMenuItem *self = APP_MENU_ITEM (object);
+	AppSection *self = APP_SECTION (object);
 
 	switch (property_id)
 	{
 	case PROP_APPINFO:
-		g_value_set_object (value, app_menu_item_get_app_info (self));
+		g_value_set_object (value, app_section_get_app_info (self));
 		break;
 
 	default:
@@ -130,17 +129,17 @@ app_menu_item_get_property (GObject    *object,
 }
 
 static void
-app_menu_item_set_property (GObject      *object,
+app_section_set_property (GObject      *object,
 			    guint         property_id,
 			    const GValue *value,
 			    GParamSpec   *pspec)
 {
-	AppMenuItem *self = APP_MENU_ITEM (object);
+	AppSection *self = APP_SECTION (object);
 
 	switch (property_id)
 	{
 	case PROP_APPINFO:
-		app_menu_item_set_app_info (self, g_value_get_object (value));
+		app_section_set_app_info (self, g_value_get_object (value));
 		break;
 
 	default:
@@ -148,10 +147,10 @@ app_menu_item_set_property (GObject      *object,
 	}
 }
 static void
-app_menu_item_dispose (GObject *object)
+app_section_dispose (GObject *object)
 {
-	AppMenuItem * self = APP_MENU_ITEM(object);
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(self);
+	AppSection * self = APP_SECTION(object);
+	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
 
 	g_clear_object (&priv->menu);
 	g_clear_object (&priv->static_shortcuts);
@@ -166,7 +165,7 @@ app_menu_item_dispose (GObject *object)
 		priv->appinfo = NULL;
 	}
 
-	G_OBJECT_CLASS (app_menu_item_parent_class)->dispose (object);
+	G_OBJECT_CLASS (app_section_parent_class)->dispose (object);
 }
 
 /* Respond to one of the shortcuts getting clicked on. */
@@ -176,8 +175,8 @@ nick_activate_cb (GSimpleAction *action,
 		  gpointer userdata)
 {
 	const gchar * nick = g_action_get_name (G_ACTION (action));
-	AppMenuItem * mi = APP_MENU_ITEM (userdata);
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(mi);
+	AppSection * mi = APP_SECTION (userdata);
+	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(mi);
 
 	g_return_if_fail(priv->ids != NULL);
 
@@ -188,10 +187,10 @@ nick_activate_cb (GSimpleAction *action,
 }
 
 static void
-app_menu_item_set_app_info (AppMenuItem *self,
+app_section_set_app_info (AppSection *self,
 			    GDesktopAppInfo *appinfo)
 {
-	AppMenuItemPrivate *priv = APP_MENU_ITEM_GET_PRIVATE (self);
+	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
 	GSimpleAction *launch;
 	GMenuItem *menuitem;
 	GIcon *icon;
@@ -215,9 +214,9 @@ app_menu_item_set_app_info (AppMenuItem *self,
 	g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (launch));
 
 	if (priv->unreadcount > 0)
-		label = g_strdup_printf("%s (%d)", app_menu_item_get_name (self), priv->unreadcount);
+		label = g_strdup_printf("%s (%d)", app_section_get_name (self), priv->unreadcount);
 	else
-		label = g_strdup(app_menu_item_get_name (self));
+		label = g_strdup(app_section_get_name (self));
 
 	menuitem = g_menu_item_new (label, "launch");
 	g_menu_item_set_attribute (menuitem, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", iconstr);
@@ -251,10 +250,10 @@ app_menu_item_set_app_info (AppMenuItem *self,
 	g_object_unref (menuitem);
 }
 
-AppMenuItem *
-app_menu_item_new (GDesktopAppInfo *appinfo)
+AppSection *
+app_section_new (GDesktopAppInfo *appinfo)
 {
-	return g_object_new (APP_MENU_ITEM_TYPE,
+	return g_object_new (APP_SECTION_TYPE,
 			     "app-info", appinfo,
 			     NULL);
 }
@@ -264,8 +263,8 @@ activate_cb (GSimpleAction *action,
 	     GVariant *param,
 	     gpointer userdata)
 {
-	AppMenuItem * mi = APP_MENU_ITEM (userdata);
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(mi);
+	AppSection * mi = APP_SECTION (userdata);
+	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(mi);
 	GError *error = NULL;
 
 	if (!g_app_info_launch (G_APP_INFO (priv->appinfo), NULL, NULL, &error)) {
@@ -275,19 +274,19 @@ activate_cb (GSimpleAction *action,
 }
 
 guint
-app_menu_item_get_count (AppMenuItem * appitem)
+app_section_get_count (AppSection * self)
 {
-	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), 0);
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
+	g_return_val_if_fail(IS_APP_SECTION(self), 0);
+	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
 
 	return priv->unreadcount;
 }
 
 const gchar *
-app_menu_item_get_name (AppMenuItem * appitem)
+app_section_get_name (AppSection * self)
 {
-	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), NULL);
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
+	g_return_val_if_fail(IS_APP_SECTION(self), NULL);
+	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
 
 	if (priv->appinfo) {
 		return g_app_info_get_name(G_APP_INFO(priv->appinfo));
@@ -296,10 +295,10 @@ app_menu_item_get_name (AppMenuItem * appitem)
 }
 
 const gchar *
-app_menu_item_get_desktop (AppMenuItem * appitem)
+app_section_get_desktop (AppSection * self)
 {
-	g_return_val_if_fail(IS_APP_MENU_ITEM(appitem), NULL);
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
+	g_return_val_if_fail(IS_APP_SECTION(self), NULL);
+	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
 	if (priv->appinfo)
 		return g_desktop_app_info_get_filename (priv->appinfo);
 	else
@@ -307,16 +306,16 @@ app_menu_item_get_desktop (AppMenuItem * appitem)
 }
 
 GMenuModel *
-app_menu_item_get_menu (AppMenuItem *appitem)
+app_section_get_menu (AppSection *self)
 {
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
+	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
 	return G_MENU_MODEL (priv->menu);
 }
 
 GAppInfo *
-app_menu_item_get_app_info (AppMenuItem *appitem)
+app_section_get_app_info (AppSection *self)
 {
-	AppMenuItemPrivate * priv = APP_MENU_ITEM_GET_PRIVATE(appitem);
+	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
 	return G_APP_INFO (priv->appinfo);
 }
 
