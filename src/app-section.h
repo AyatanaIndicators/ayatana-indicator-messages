@@ -51,6 +51,7 @@ const gchar * app_section_get_name (AppSection * appitem);
 const gchar * app_section_get_desktop (AppSection * appitem);
 GMenuModel * app_section_get_menu (AppSection *appitem);
 GAppInfo * app_section_get_app_info (AppSection *appitem);
+GMenuItem * app_section_create_menu_item (AppSection *self);
 
 G_END_DECLS
 

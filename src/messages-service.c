@@ -64,13 +64,14 @@ add_application (const gchar *desktop_id,
 
 	if (!g_hash_table_lookup (applications, desktop_file)) {
 		AppSection *section = app_section_new(appinfo);
-
-		/* TODO insert it at the right position (alphabetically by application name) */
-		g_menu_insert_section (menu, 2,
-				       app_section_get_name (section),
-				       app_section_get_menu (section));
+		GMenuItem *item = app_section_create_menu_item (section);
 
 		g_hash_table_insert (applications, g_strdup (desktop_file), section);
+
+		/* TODO insert it at the right position (alphabetically by application name) */
+		g_menu_insert_item (menu, 2, item);
+
+		g_object_unref (item);
 	}
 
 	g_object_unref (appinfo);

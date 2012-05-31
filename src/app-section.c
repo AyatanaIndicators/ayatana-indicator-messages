@@ -192,9 +192,6 @@ app_section_set_app_info (AppSection *self,
 {
 	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
 	GSimpleAction *launch;
-	GMenuItem *menuitem;
-	GIcon *icon;
-	gchar *iconstr = NULL;
 	gchar *label;
 
 	g_return_if_fail (priv->appinfo == NULL);
@@ -206,9 +203,6 @@ app_section_set_app_info (AppSection *self,
 
 	priv->appinfo = g_object_ref (appinfo);
 
-	icon = g_app_info_get_icon (G_APP_INFO(priv->appinfo));
-	iconstr = g_icon_to_string (icon);
-
 	launch = g_simple_action_new ("launch", NULL);
 	g_signal_connect (launch, "activate", G_CALLBACK (activate_cb), self);
 	g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (launch));
@@ -217,10 +211,6 @@ app_section_set_app_info (AppSection *self,
 		label = g_strdup_printf("%s (%d)", app_section_get_name (self), priv->unreadcount);
 	else
 		label = g_strdup(app_section_get_name (self));
-
-	menuitem = g_menu_item_new (label, "launch");
-	g_menu_item_set_attribute (menuitem, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", iconstr);
-	g_menu_append_item (priv->menu, menuitem);
 
 	/* Start to build static shortcuts */
 	priv->ids = indicator_desktop_shortcuts_new(g_desktop_app_info_get_filename (priv->appinfo), "Messaging Menu");
@@ -245,9 +235,7 @@ app_section_set_app_info (AppSection *self,
 	}
 
 	g_free(label);
-	g_free(iconstr);
 	g_object_unref (launch);
-	g_object_unref (menuitem);
 }
 
 AppSection *
@@ -317,5 +305,26 @@ app_section_get_app_info (AppSection *self)
 {
 	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
 	return G_APP_INFO (priv->appinfo);
+}
+
+GMenuItem *
+app_section_create_menu_item (AppSection *self)
+{
+	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
+	GMenuItem *item;
+	const gchar *name;
+	gchar *iconstr;
+
+	g_return_val_if_fail (priv->appinfo != NULL, NULL);
+
+	name = g_app_info_get_name (G_APP_INFO (priv->appinfo));
+	iconstr = g_icon_to_string (g_app_info_get_icon (G_APP_INFO (priv->appinfo)));
+
+	item = g_menu_item_new (name, "launch");
+	g_menu_item_set_attribute (item, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", iconstr);
+	g_menu_item_set_section (item, G_MENU_MODEL (priv->menu));
+
+	g_free(iconstr);
+	return item;
 }
 
