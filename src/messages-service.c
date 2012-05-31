@@ -56,7 +56,7 @@ add_application (const gchar *desktop_id,
 
 	appinfo = g_desktop_app_info_new (desktop_id);
 	if (!appinfo) {
-		g_warning ("could not find a desktop file with id '%s'\n", desktop_id);
+		g_warning ("could not add '%s', there's no desktop file with that id", desktop_id);
 		return;
 	}
 
@@ -73,6 +73,55 @@ add_application (const gchar *desktop_id,
 		g_hash_table_insert (applications, g_strdup (desktop_file), menuitem);
 	}
 
+	g_object_unref (appinfo);
+}
+
+/* g_menu_model_find_section:
+ *
+ * @Returns the index of the first menu item that is linked to #section, or -1
+ * if there's no such item.
+ */
+static int
+g_menu_find_section (GMenu *menu,
+		     GMenuModel *section)
+{
+	int n_items = g_menu_model_get_n_items (G_MENU_MODEL (menu));
+	int i;
+
+	for (i = 0; i < n_items; i++) {
+		if (section == g_menu_model_get_item_link (G_MENU_MODEL (menu), i, G_MENU_LINK_SECTION))
+			return i;
+	}
+
+	return -1;
+}
+
+static void
+remove_application (const char *desktop_id)
+{
+	GDesktopAppInfo *appinfo;
+	const gchar *desktop_file;
+	AppMenuItem *menuitem;
+
+	appinfo = g_desktop_app_info_new (desktop_id);
+	if (!appinfo) {
+		g_warning ("could not remove '%s', there's no desktop file with that id", desktop_id);
+		return;
+	}
+
+	desktop_file = g_desktop_app_info_get_filename (appinfo);
+
+	menuitem = g_hash_table_lookup (applications, desktop_file);
+	if (menuitem) {
+		int pos = g_menu_find_section (menu, app_menu_item_get_menu (menuitem));
+		if (pos >= 0)
+			g_menu_remove (menu, pos);
+	}
+	else {
+		g_warning ("could not remove '%s', it's not registered", desktop_id);
+	}
+	
+	g_hash_table_remove (applications, desktop_file);
 	g_object_unref (appinfo);
 }
 
@@ -184,6 +233,8 @@ unregister_application (MessageServiceDbus *msd,
 
 	g_settings_set_value (settings, "applications",
 			      g_variant_builder_end (&builder));
+
+	remove_application (desktop_id);
 
 	g_strfreev (applications);
 }
