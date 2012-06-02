@@ -42,6 +42,8 @@ struct _AppSectionPrivate
 
 	GMenu *menu;
 	GSimpleActionGroup *static_shortcuts;
+
+	GMenuModel *remote_menu;
 	GActionGroup *actions;
 
 	guint name_watch_id;
@@ -158,11 +160,13 @@ app_section_dispose (GObject *object)
 	g_clear_object (&priv->menu);
 	g_clear_object (&priv->static_shortcuts);
 
-	if (priv->actions) {
-		g_clear_object (&priv->actions);
+	if (priv->name_watch_id) {
 		g_bus_unwatch_name (priv->name_watch_id);
 		priv->name_watch_id = 0;
 	}
+
+	g_clear_object (&priv->actions);
+	g_clear_object (&priv->remote_menu);
 
 	if (priv->ids != NULL) {
 		g_object_unref(priv->ids);
@@ -366,12 +370,14 @@ app_section_set_object_path (AppSection *self,
 {
 	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
 
-	if (priv->actions) {
-		g_clear_object (&priv->actions);
+	if (priv->remote_menu)
 		g_bus_unwatch_name (priv->name_watch_id);
-	}
+	g_clear_object (&priv->actions);
+	g_clear_object (&priv->remote_menu);
 
 	priv->actions = G_ACTION_GROUP (g_dbus_action_group_get (bus, bus_name, object_path));
+	priv->remote_menu = G_MENU_MODEL (g_dbus_menu_model_get (bus, bus_name, object_path));
+
 	priv->name_watch_id = g_bus_watch_name_on_connection (bus, bus_name, 0,
 							      NULL, application_vanished,
 							      self, NULL);
@@ -390,9 +396,9 @@ app_section_unset_object_path (AppSection *self)
 {
 	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
 
-	if (priv->actions) {
-		g_clear_object (&priv->actions);
+	if (priv->remote_menu)
 		g_bus_unwatch_name (priv->name_watch_id);
-	}
+	g_clear_object (&priv->actions);
+	g_clear_object (&priv->remote_menu);
 }
 
