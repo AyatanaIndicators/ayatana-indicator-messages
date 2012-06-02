@@ -47,34 +47,36 @@ static GMainLoop * mainloop = NULL;
 static MessageServiceDbus * dbus_interface = NULL;
 
 
-static void
-add_application (const gchar *desktop_id,
-		 const gchar *menu_path)
+static AppSection *
+add_application (const gchar *desktop_id)
 {
 	GDesktopAppInfo *appinfo;
 	const gchar *desktop_file;
+	AppSection *section;
 
 	appinfo = g_desktop_app_info_new (desktop_id);
 	if (!appinfo) {
 		g_warning ("could not add '%s', there's no desktop file with that id", desktop_id);
-		return;
+		return NULL;
 	}
 
 	desktop_file = g_desktop_app_info_get_filename (appinfo);
+	section = g_hash_table_lookup (applications, desktop_file);
 
-	if (!g_hash_table_lookup (applications, desktop_file)) {
-		AppSection *section = app_section_new(appinfo);
-		GMenuItem *item = app_section_create_menu_item (section);
+	if (!section) {
+		GMenuItem *item;
 
+		section = app_section_new(appinfo);
 		g_hash_table_insert (applications, g_strdup (desktop_file), section);
 
+		item = app_section_create_menu_item (section);
 		/* TODO insert it at the right position (alphabetically by application name) */
 		g_menu_insert_item (menu, 2, item);
-
 		g_object_unref (item);
 	}
 
 	g_object_unref (appinfo);
+	return section;
 }
 
 /* g_menu_model_find_section:
@@ -133,7 +135,7 @@ build_launcher (gpointer data)
 {
 	gchar *desktop_id = data;
 
-	add_application (desktop_id, NULL);
+	add_application (desktop_id);
 
 	g_free (desktop_id);
 	return FALSE;
@@ -186,22 +188,43 @@ clear_action_handler (MessageServiceDbus *msd,
 	g_simple_action_set_enabled (action, attention);
 }
 
+static gint
+g_strv_find (gchar **str_array,
+	     const gchar *key)
+{
+	gchar **it;
+
+	g_return_val_if_fail (str_array != NULL, -1);
+
+	for (it = str_array; *it; it++) {
+		if (!g_strcmp0 (key, *it))
+			return it - str_array;
+	}
+
+	return -1;
+}
+
 static void
 register_application (MessageServiceDbus *msd,
+		      const gchar *sender,
 		      const gchar *desktop_id,
 		      const gchar *menu_path,
 		      gpointer user_data)
 {
-	gchar **applications = g_settings_get_strv (settings, "applications");
-	gchar **app;
+	AppSection *section;
+	gchar **applications;
 
-	for (app = applications; *app; app++) {
-		if (!g_strcmp0 (desktop_id, *app))
-			break;
-	}
+	section = add_application (desktop_id);
+	if (!section)
+		return;
 
-	if (*app == NULL) {
+	app_section_set_object_path (section, bus, sender, menu_path);
+
+	/* remember this application in the settings key */
+	applications = g_settings_get_strv (settings, "applications");
+	if (g_strv_find (applications, desktop_id) < 0) {
 		GVariantBuilder builder;
+		gchar **app;
 
 		g_variant_builder_init (&builder, (GVariantType *)"as");
 		for (app = applications; *app; app++)
@@ -210,8 +233,6 @@ register_application (MessageServiceDbus *msd,
 
 		g_settings_set_value (settings, "applications",
 				      g_variant_builder_end (&builder));
-
-		add_application (desktop_id, menu_path);
 	}
 
 	g_strfreev (applications);

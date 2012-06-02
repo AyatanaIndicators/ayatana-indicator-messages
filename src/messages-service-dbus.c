@@ -109,7 +109,7 @@ message_service_dbus_class_init (MessageServiceDbusClass *klass)
 						     0,
 						     NULL, NULL,
 						     g_cclosure_marshal_generic,
-						     G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
+						     G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
 	signals[UNREGISTER_APPLICATION] = g_signal_new(MESSAGE_SERVICE_DBUS_SIGNAL_UNREGISTER_APPLICATION,
 						       G_TYPE_FROM_CLASS(klass),
@@ -439,7 +439,7 @@ bus_method_call (GDBusConnection * connection, const gchar * sender, const gchar
 	} else if (g_strcmp0("RegisterApplication", method) == 0) {
 		const gchar *desktop_id, *object_path;
 		g_variant_get(params, "(&s&o)", &desktop_id, &object_path);
-		g_signal_emit(ms, signals[REGISTER_APPLICATION], 0, desktop_id, object_path);
+		g_signal_emit(ms, signals[REGISTER_APPLICATION], 0, sender, desktop_id, object_path);
 		g_dbus_method_invocation_return_value(invocation, NULL);
 	} else if (g_strcmp0("UnregisterApplication", method) == 0) {
 		const gchar *desktop_id;

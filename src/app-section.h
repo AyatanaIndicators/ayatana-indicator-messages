@@ -52,6 +52,11 @@ const gchar * app_section_get_desktop (AppSection * appitem);
 GMenuModel * app_section_get_menu (AppSection *appitem);
 GAppInfo * app_section_get_app_info (AppSection *appitem);
 GMenuItem * app_section_create_menu_item (AppSection *self);
+void app_section_set_object_path (AppSection *self,
+				  GDBusConnection *bus,
+				  const gchar *bus_name,
+				  const gchar *object_path);
+void app_section_unset_object_path (AppSection *self);
 
 G_END_DECLS
 

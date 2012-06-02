@@ -42,6 +42,9 @@ struct _AppSectionPrivate
 
 	GMenu *menu;
 	GSimpleActionGroup *static_shortcuts;
+	GActionGroup *actions;
+
+	guint name_watch_id;
 };
 
 #define APP_SECTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_SECTION_TYPE, AppSectionPrivate))
@@ -154,6 +157,12 @@ app_section_dispose (GObject *object)
 
 	g_clear_object (&priv->menu);
 	g_clear_object (&priv->static_shortcuts);
+
+	if (priv->actions) {
+		g_clear_object (&priv->actions);
+		g_bus_unwatch_name (priv->name_watch_id);
+		priv->name_watch_id = 0;
+	}
 
 	if (priv->ids != NULL) {
 		g_object_unref(priv->ids);
@@ -326,5 +335,64 @@ app_section_create_menu_item (AppSection *self)
 
 	g_free(iconstr);
 	return item;
+}
+
+static void
+application_vanished (GDBusConnection *bus,
+		      const gchar *name,
+		      gpointer user_data)
+{
+	AppSection *self = user_data;
+
+	app_section_unset_object_path (self);
+}
+
+/*
+ * app_section_set_object_path:
+ * @self: an #AppSection
+ * @bus: a #GDBusConnection
+ * @bus_name: the bus name of the application
+ * @object_path: the object path on which the app exports its actions and menus
+ *
+ * Sets the D-Bus object path exported by an instance of the application
+ * associated with @self.  Actions and menus exported on that path will be
+ * shown in the section.
+ */
+void
+app_section_set_object_path (AppSection *self,
+			     GDBusConnection *bus,
+			     const gchar *bus_name,
+			     const gchar *object_path)
+{
+	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
+
+	if (priv->actions) {
+		g_clear_object (&priv->actions);
+		g_bus_unwatch_name (priv->name_watch_id);
+	}
+
+	priv->actions = G_ACTION_GROUP (g_dbus_action_group_get (bus, bus_name, object_path));
+	priv->name_watch_id = g_bus_watch_name_on_connection (bus, bus_name, 0,
+							      NULL, application_vanished,
+							      self, NULL);
+}
+
+/*
+ * app_section_unset_object_path:
+ * @self: an #AppSection
+ *
+ * Unsets the object path set with app_section_set_object_path().  The section
+ * will return to only showing application name and static shortcuts in the
+ * menu.
+ */
+void
+app_section_unset_object_path (AppSection *self)
+{
+	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
+
+	if (priv->actions) {
+		g_clear_object (&priv->actions);
+		g_bus_unwatch_name (priv->name_watch_id);
+	}
 }
 
