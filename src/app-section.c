@@ -370,7 +370,7 @@ app_section_set_object_path (AppSection *self,
 {
 	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
 
-	if (priv->remote_menu)
+	if (priv->name_watch_id)
 		g_bus_unwatch_name (priv->name_watch_id);
 	g_clear_object (&priv->actions);
 	g_clear_object (&priv->remote_menu);
@@ -396,8 +396,10 @@ app_section_unset_object_path (AppSection *self)
 {
 	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
 
-	if (priv->remote_menu)
+	if (priv->name_watch_id) {
 		g_bus_unwatch_name (priv->name_watch_id);
+		priv->name_watch_id = 0;
+	}
 	g_clear_object (&priv->actions);
 	g_clear_object (&priv->remote_menu);
 }
