@@ -54,6 +54,7 @@ struct _AppSectionPrivate
 enum {
 	PROP_0,
 	PROP_APPINFO,
+	PROP_ACTIONS,
 	NUM_PROPERTIES
 };
 
@@ -96,6 +97,12 @@ app_section_class_init (AppSectionClass *klass)
 							"The GAppInfo for the app that this menu represents",
 							G_TYPE_APP_INFO,
 							G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+
+	properties[PROP_ACTIONS] = g_param_spec_object ("actions",
+							"Actions",
+							"The actions exported by this application",
+							G_TYPE_ACTION_GROUP,
+							G_PARAM_READABLE);
 
 	g_object_class_install_properties (object_class, NUM_PROPERTIES, properties);
 }
@@ -247,6 +254,9 @@ app_section_set_app_info (AppSection *self,
 		g_free(name);
 	}
 
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_APPINFO]);
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
+
 	g_free(label);
 	g_object_unref (launch);
 }
@@ -304,6 +314,13 @@ app_section_get_desktop (AppSection * self)
 		return g_desktop_app_info_get_filename (priv->appinfo);
 	else
 		return NULL;
+}
+
+GActionGroup *
+app_section_get_actions (AppSection *self)
+{
+	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
+	return priv->actions ? priv->actions : G_ACTION_GROUP (priv->static_shortcuts);
 }
 
 GMenuModel *
@@ -381,6 +398,8 @@ app_section_set_object_path (AppSection *self,
 	priv->name_watch_id = g_bus_watch_name_on_connection (bus, bus_name, 0,
 							      NULL, application_vanished,
 							      self, NULL);
+
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
 }
 
 /*
@@ -402,5 +421,7 @@ app_section_unset_object_path (AppSection *self)
 	}
 	g_clear_object (&priv->actions);
 	g_clear_object (&priv->remote_menu);
+
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
 }
 

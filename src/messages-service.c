@@ -64,6 +64,22 @@ g_app_info_get_simple_id (GAppInfo *appinfo)
 		return g_strdup (id);
 }
 
+static void
+actions_changed (GObject *object,
+		 GParamSpec *pspec,
+		 gpointer user_data)
+{
+	AppSection *section = APP_SECTION (object);
+	gchar *id;
+	GActionGroup *actions;
+
+	id = g_app_info_get_simple_id (app_section_get_app_info (section));
+	actions = app_section_get_actions (section);
+
+	g_action_muxer_insert (action_muxer, id, actions);
+	g_free (id);
+}
+
 static AppSection *
 add_application (const gchar *desktop_id)
 {
@@ -85,6 +101,10 @@ add_application (const gchar *desktop_id)
 
 		section = app_section_new(appinfo);
 		g_hash_table_insert (applications, g_strdup (id), section);
+
+		g_action_muxer_insert (action_muxer, id, app_section_get_actions (section));
+		g_signal_connect (section, "notify::actions",
+				  G_CALLBACK (actions_changed), NULL);
 
 		item = app_section_create_menu_item (section);
 		/* TODO insert it at the right position (alphabetically by application name) */
@@ -137,6 +157,7 @@ remove_application (const char *desktop_id)
 		int pos = g_menu_find_section (menu, app_section_get_menu (section));
 		if (pos >= 0)
 			g_menu_remove (menu, pos);
+		g_action_muxer_remove (action_muxer, id);
 	}
 	else {
 		g_warning ("could not remove '%s', it's not registered", desktop_id);
