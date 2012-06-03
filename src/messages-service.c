@@ -34,12 +34,14 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "dbus-data.h"
 #include "messages-service-dbus.h"
 #include "status-items.h"
+#include "gactionmuxer.h"
 
 static IndicatorService * service = NULL;
 static GHashTable *applications;
 
 static GDBusConnection *bus;
 static GSimpleActionGroup *actions;
+static GActionMuxer *action_muxer;
 static GMenu *menu;
 static GSettings *settings;
 static GMainLoop * mainloop = NULL;
@@ -296,8 +298,11 @@ main (int argc, char ** argv)
 
 	actions = g_simple_action_group_new ();
 	g_simple_action_group_add_entries (actions, entries, G_N_ELEMENTS (entries), NULL);
+
+	action_muxer = g_action_muxer_new ();
+	g_action_muxer_insert (action_muxer, NULL, G_ACTION_GROUP (actions));
 	g_dbus_connection_export_action_group (bus, INDICATOR_MESSAGES_DBUS_OBJECT,
-                                               G_ACTION_GROUP (actions), &error);
+                                               G_ACTION_GROUP (action_muxer), &error);
 	if (error) {
 		g_warning ("unable to export action group on dbus: %s", error->message);
 		g_error_free (error);

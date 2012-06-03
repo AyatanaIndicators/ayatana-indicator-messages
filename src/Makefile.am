@@ -45,9 +45,10 @@ indicator_messages_service_SOURCES = \
 	app-section.c \
 	app-section.h \
 	dbus-data.h \
-	\
 	status-items.c \
-	status-items.h
+	status-items.h \
+	gactionmuxer.c \
+	gactionmuxer.h
 
 indicator_messages_service_CFLAGS = \
 	$(APPLET_CFLAGS) \
