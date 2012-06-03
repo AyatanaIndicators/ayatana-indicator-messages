@@ -243,11 +243,11 @@ app_section_set_app_info (AppSection *self,
 
 		name = indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]);
 
-		action = g_simple_action_new (name, NULL);
+		action = g_simple_action_new (nicks[i], NULL);
 		g_signal_connect(action, "activate", G_CALLBACK (nick_activate_cb), self);
 		g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (action));
 
-		item = g_menu_item_new (name, name);
+		item = g_menu_item_new (name, nicks[i]);
 		g_menu_append_item (priv->menu, item);
 
 		g_object_unref (item);
