@@ -49,11 +49,26 @@ static GMainLoop * mainloop = NULL;
 static MessageServiceDbus * dbus_interface = NULL;
 
 
+static gchar *
+g_app_info_get_simple_id (GAppInfo *appinfo)
+{
+	const gchar *id;
+
+	id = g_app_info_get_id (appinfo);
+	if (!id)
+		return NULL;
+
+	if (g_str_has_suffix (id, ".desktop"))
+		return g_strndup (id, strlen (id) - 8);
+	else
+		return g_strdup (id);
+}
+
 static AppSection *
 add_application (const gchar *desktop_id)
 {
 	GDesktopAppInfo *appinfo;
-	const gchar *desktop_file;
+	gchar *id;
 	AppSection *section;
 
 	appinfo = g_desktop_app_info_new (desktop_id);
@@ -62,14 +77,14 @@ add_application (const gchar *desktop_id)
 		return NULL;
 	}
 
-	desktop_file = g_desktop_app_info_get_filename (appinfo);
-	section = g_hash_table_lookup (applications, desktop_file);
+	id = g_app_info_get_simple_id (G_APP_INFO (appinfo));
+	section = g_hash_table_lookup (applications, id);
 
 	if (!section) {
 		GMenuItem *item;
 
 		section = app_section_new(appinfo);
-		g_hash_table_insert (applications, g_strdup (desktop_file), section);
+		g_hash_table_insert (applications, g_strdup (id), section);
 
 		item = app_section_create_menu_item (section);
 		/* TODO insert it at the right position (alphabetically by application name) */
@@ -77,6 +92,7 @@ add_application (const gchar *desktop_id)
 		g_object_unref (item);
 	}
 
+	g_free (id);
 	g_object_unref (appinfo);
 	return section;
 }
@@ -105,7 +121,7 @@ static void
 remove_application (const char *desktop_id)
 {
 	GDesktopAppInfo *appinfo;
-	const gchar *desktop_file;
+	gchar *id;
 	AppSection *section;
 
 	appinfo = g_desktop_app_info_new (desktop_id);
@@ -114,9 +130,9 @@ remove_application (const char *desktop_id)
 		return;
 	}
 
-	desktop_file = g_desktop_app_info_get_filename (appinfo);
+	id = g_app_info_get_simple_id (G_APP_INFO (appinfo));
 
-	section = g_hash_table_lookup (applications, desktop_file);
+	section = g_hash_table_lookup (applications, id);
 	if (section) {
 		int pos = g_menu_find_section (menu, app_section_get_menu (section));
 		if (pos >= 0)
@@ -126,7 +142,8 @@ remove_application (const char *desktop_id)
 		g_warning ("could not remove '%s', it's not registered", desktop_id);
 	}
 	
-	g_hash_table_remove (applications, desktop_file);
+	g_hash_table_remove (applications, id);
+	g_free (id);
 	g_object_unref (appinfo);
 }
 
