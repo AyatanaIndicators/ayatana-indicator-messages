@@ -360,7 +360,7 @@ g_action_muxer_new (void)
  * g_action_muxer_insert:
  * @muxer: a #GActionMuxer
  * @prefix: (allow-none): the prefix string for the action group, or NULL
- * @group: a #GActionGroup
+ * @group: (allow-none): a #GActionGroup, or NULL
  *
  * Adds the actions in @group to the list of actions provided by @muxer.
  * @prefix is prefixed to each action name, such that for each action
@@ -373,6 +373,9 @@ g_action_muxer_new (void)
  *
  * If @prefix is <literal>NULL</literal>, the actions in @group will be added
  * to @muxer without prefix.
+ *
+ * If @group is <literal>NULL</literal>, this function has the same effect as
+ * calling g_action_muxer_remove() with @prefix.
  *
  * There may only be one group per prefix (including the
  * <literal>NULL</literal>-prefix).  If a group has been added with @prefix in
@@ -393,6 +396,9 @@ g_action_muxer_insert (GActionMuxer *muxer,
   g_return_if_fail (G_IS_ACTION_GROUP (group));
 
   g_action_muxer_remove (muxer, prefix);
+
+  if (!group)
+    return;
 
   if (prefix)
     {
