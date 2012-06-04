@@ -60,6 +60,8 @@ struct _GActionMuxer
 static void     g_action_muxer_group_init             (GActionGroupInterface *iface);
 static void     g_action_muxer_dispose                (GObject *object);
 static void     g_action_muxer_finalize               (GObject *object);
+static void     g_action_muxer_disconnect_group       (GActionMuxer *muxer,
+                                                       GActionGroup *subgroup);
 static gchar ** g_action_muxer_list_actions           (GActionGroup *group);
 static void     g_action_muxer_activate_action        (GActionGroup *group,
                                                        const gchar  *action_name,
@@ -122,13 +124,20 @@ g_action_muxer_dispose (GObject *object)
 {
   GActionMuxer *muxer = G_ACTION_MUXER (object);
   GHashTableIter it;
-  gchar *prefix;
+  GActionGroup *subgroup;
 
-  g_clear_object (&muxer->global_actions);
+  if (muxer->global_actions)
+    {
+      g_action_muxer_disconnect_group (muxer, muxer->global_actions);
+      g_clear_object (&muxer->global_actions);
+    }
 
   g_hash_table_iter_init (&it, muxer->groups);
-  while (g_hash_table_iter_next (&it, (gpointer *) &prefix, NULL))
-    g_action_muxer_remove (muxer, prefix);
+  while (g_hash_table_iter_next (&it, NULL, (gpointer *) &subgroup))
+    g_action_muxer_disconnect_group (muxer, subgroup);
+
+  g_hash_table_remove_all (muxer->groups);
+  g_hash_table_remove_all (muxer->reverse);
 }
 
 static void
@@ -185,6 +194,24 @@ g_action_muxer_lookup_full_name (GActionMuxer *muxer,
     return g_strdup_printf ("%s.%s", (gchar *) prefix, action_name);
 
   return NULL;
+}
+
+static void
+g_action_muxer_disconnect_group (GActionMuxer *muxer,
+                                 GActionGroup *subgroup)
+{
+  gchar **actions;
+  gchar **action;
+
+  actions = g_action_group_list_actions (subgroup);
+  for (action = actions; *action; action++)
+    g_action_muxer_action_removed (subgroup, *action, muxer);
+  g_strfreev (actions);
+
+  g_signal_handlers_disconnect_by_func (subgroup, g_action_muxer_action_added, muxer);
+  g_signal_handlers_disconnect_by_func (subgroup, g_action_muxer_action_removed, muxer);
+  g_signal_handlers_disconnect_by_func (subgroup, g_action_muxer_action_enabled_changed, muxer);
+  g_signal_handlers_disconnect_by_func (subgroup, g_action_muxer_action_state_changed, muxer);
 }
 
 static gchar **
@@ -432,8 +459,6 @@ g_action_muxer_remove (GActionMuxer *muxer,
                        const gchar  *prefix)
 {
   GActionGroup *subgroup;
-  gchar **actions;
-  gchar **action;
 
   g_return_if_fail (G_IS_ACTION_MUXER (muxer));
 
@@ -441,15 +466,7 @@ g_action_muxer_remove (GActionMuxer *muxer,
   if (!subgroup)
     return;
 
-  actions = g_action_group_list_actions (subgroup);
-  for (action = actions; *action; action++)
-    g_action_muxer_action_removed (subgroup, *action, muxer);
-  g_strfreev (actions);
-
-  g_signal_handlers_disconnect_by_func (subgroup, g_action_muxer_action_added, muxer);
-  g_signal_handlers_disconnect_by_func (subgroup, g_action_muxer_action_removed, muxer);
-  g_signal_handlers_disconnect_by_func (subgroup, g_action_muxer_action_enabled_changed, muxer);
-  g_signal_handlers_disconnect_by_func (subgroup, g_action_muxer_action_state_changed, muxer);
+  g_action_muxer_disconnect_group (muxer, subgroup);
 
   if (prefix)
     {
