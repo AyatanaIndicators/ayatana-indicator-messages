@@ -22,6 +22,26 @@ strv_contains (gchar **str_array,
 	return FALSE;
 }
 
+TEST(GActionMuxerTest, Sanity) {
+	GActionMuxer *muxer;
+
+	g_type_init ();
+
+	g_action_muxer_insert (NULL, NULL, NULL);
+	g_action_muxer_remove (NULL, NULL);
+
+	muxer = g_action_muxer_new ();
+
+	g_action_muxer_insert (muxer, NULL, NULL);
+	g_action_muxer_remove (muxer, NULL);
+	EXPECT_FALSE (g_action_group_has_action (G_ACTION_GROUP (muxer), NULL));
+	EXPECT_FALSE (g_action_group_get_action_enabled (G_ACTION_GROUP (muxer), NULL));
+	EXPECT_FALSE (g_action_group_query_action (G_ACTION_GROUP (muxer), NULL, NULL, NULL, NULL, NULL, NULL));
+	g_action_group_activate_action (G_ACTION_GROUP (muxer), NULL, NULL);
+
+	g_object_unref (muxer);
+}
+
 TEST(GActionMuxerTest, Empty) {
 	GActionMuxer *muxer;
 	gchar **actions;
@@ -102,6 +122,16 @@ TEST(GActionMuxerTest, AddAndRemove) {
 	EXPECT_EQ (3, g_strv_length (actions));
 	EXPECT_FALSE (strv_contains (actions, "first.two"));
 	EXPECT_TRUE (strv_contains (actions, "second.es"));
+	g_strfreev (actions);
+
+	g_action_muxer_insert (muxer, "second", G_ACTION_GROUP (group2));
+	actions = g_action_group_list_actions (G_ACTION_GROUP (muxer));
+	EXPECT_EQ (3, g_strv_length (actions));
+	g_strfreev (actions);
+
+	g_action_muxer_insert (muxer, NULL, G_ACTION_GROUP (group3));
+	actions = g_action_group_list_actions (G_ACTION_GROUP (muxer));
+	EXPECT_EQ (5, g_strv_length (actions));
 	g_strfreev (actions);
 
 	g_object_unref (muxer);
@@ -190,6 +220,17 @@ action_enabled_changed (GActionGroup *group,
 }
 
 static void
+action_state_changed (GActionGroup *group,
+		      gchar *action_name,
+		      GVariant *value,
+		      gpointer user_data)
+{
+	TestSignalClosure *c = (TestSignalClosure *)user_data;
+	EXPECT_STREQ (g_variant_get_string (value, NULL), "off");
+	c->signal_ran = TRUE;
+}
+
+static void
 action_removed (GActionGroup *group,
 		gchar *action_name,
 		gpointer user_data)
@@ -217,6 +258,8 @@ TEST(GActionMuxerTest, Signals) {
 			  G_CALLBACK (action_added), (gpointer) &closure);
 	g_signal_connect (muxer, "action-enabled-changed",
 			  G_CALLBACK (action_enabled_changed), (gpointer) &closure);
+	g_signal_connect (muxer, "action-state-changed",
+			  G_CALLBACK (action_state_changed), (gpointer) &closure);
 	g_signal_connect (muxer, "action-removed",
 			  G_CALLBACK (action_removed), (gpointer) &closure);
 
@@ -229,13 +272,19 @@ TEST(GActionMuxerTest, Signals) {
 	/* add a second action after the group was added to the muxer */
 	closure.signal_ran = FALSE;
 	closure.name = "first.two";
-	action = g_simple_action_new ("two", G_VARIANT_TYPE_STRING);
+	action = g_simple_action_new_stateful ("two", G_VARIANT_TYPE_STRING,
+					       g_variant_new_string ("on"));
 	g_simple_action_group_insert (group, G_ACTION (action));
 	ASSERT_TRUE (closure.signal_ran);
 
 	/* disable the action */
 	closure.signal_ran = FALSE;
 	g_simple_action_set_enabled (action, FALSE);
+	ASSERT_TRUE (closure.signal_ran);
+
+	/* change its state */
+	closure.signal_ran = FALSE;
+	g_simple_action_set_state (action, g_variant_new_string ("off"));
 	ASSERT_TRUE (closure.signal_ran);
 	g_object_unref (action);
 
@@ -250,6 +299,66 @@ TEST(GActionMuxerTest, Signals) {
 	closure.name = "first.two";
 	g_action_muxer_remove (muxer, "first");
 	ASSERT_TRUE (closure.signal_ran);
+
+	g_object_unref (group);
+	g_object_unref (muxer);
+}
+
+static void
+action_activated (GSimpleAction *simple,
+		  GVariant      *parameter,
+		  gpointer       user_data)
+{
+	gboolean *signal_ran = (gboolean *)user_data;
+
+	ASSERT_STREQ (g_variant_get_string (parameter, NULL), "value");
+	*signal_ran = TRUE;
+}
+
+static void
+action_change_state (GSimpleAction *simple,
+		     GVariant      *value,
+		     gpointer       user_data)
+{
+	gboolean *signal_ran = (gboolean *)user_data;
+
+	ASSERT_STREQ (g_variant_get_string (value, NULL), "off");
+	*signal_ran = TRUE;
+}
+
+TEST(GActionMuxerTest, ActivateAction) {
+	GSimpleActionGroup *group;
+	GSimpleAction *action;
+	GActionMuxer *muxer;
+	gboolean signal_ran;
+
+	group = g_simple_action_group_new ();
+
+	action = g_simple_action_new ("one", G_VARIANT_TYPE_STRING);
+	g_simple_action_group_insert (group, G_ACTION (action));
+	g_signal_connect (action, "activate",
+			  G_CALLBACK (action_activated), (gpointer) &signal_ran);
+	g_object_unref (action);
+
+	action = g_simple_action_new_stateful ("two", NULL,
+					       g_variant_new_string ("on"));
+	g_simple_action_group_insert (group, G_ACTION (action));
+	g_signal_connect (action, "change-state",
+			  G_CALLBACK (action_change_state), (gpointer) &signal_ran);
+	g_object_unref (action);
+
+	muxer = g_action_muxer_new ();
+	g_action_muxer_insert (muxer, "first", G_ACTION_GROUP (group));
+
+	signal_ran = FALSE;
+	g_action_group_activate_action (G_ACTION_GROUP (muxer), "first.one",
+					g_variant_new_string  ("value"));
+	ASSERT_TRUE (signal_ran);
+
+	signal_ran = FALSE;
+	g_action_group_change_action_state (G_ACTION_GROUP (muxer), "first.two",
+					    g_variant_new_string  ("off"));
+	ASSERT_TRUE (signal_ran);
 
 	g_object_unref (group);
 	g_object_unref (muxer);
