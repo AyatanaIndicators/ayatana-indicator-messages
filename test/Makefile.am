@@ -18,12 +18,16 @@ libgtest_a_CXXFLAGS = \
 
 
 test_gactionmuxer_SOURCES = \
-	test-gactionmuxer.cpp \
-	$(top_srcdir)/src/gactionmuxer.c \
-	$(top_srcdir)/src/gactionmuxer.h
+	test-gactionmuxer.cpp
 
-test_gactionmuxer_CPPFLAGS = $(APPLET_CFLAGS) $(AM_CPPFLAGS)
-test_gactionmuxer_LDADD = $(APPLET_LIBS) libgtest.a
+test_gactionmuxer_CPPFLAGS = \
+	$(APPLET_CFLAGS) \
+	$(AM_CPPFLAGS)
+
+test_gactionmuxer_LDADD = \
+	$(APPLET_LIBS) \
+	libindicator-messages-service.la \
+	libgtest.a
 
 
 ######################################
@@ -41,7 +45,6 @@ libindicator_messages_service_la_HEADERS = \
 	$(top_srcdir)/src/gactionmuxer.h
 
 libindicator_messages_service_la_SOURCES = \
-	$(top_srcdir)/src/messages-service.c \
 	$(top_srcdir)/src/messages-service-dbus.c \
 	$(top_srcdir)/src/gen-messages-service.xml.c \
 	$(top_srcdir)/src/app-section.c \
