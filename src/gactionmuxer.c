@@ -427,9 +427,6 @@ g_action_muxer_insert (GActionMuxer *muxer,
 
   g_action_muxer_remove (muxer, prefix);
 
-  if (!group)
-    return;
-
   if (prefix)
     {
       prefix_copy = g_strdup (prefix);
