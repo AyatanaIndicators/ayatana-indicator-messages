@@ -9,6 +9,8 @@ Makefile.in.in
 .libs
 *.valid
 stamp-*
+*.gcno
+*.gcda
 
 /COPYING
 /INSTALL
@@ -23,6 +25,8 @@ stamp-*
 /autom4te.cache
 /depcomp
 /mkinstalldirs
+/coverage.info
+/coveragereport
 
 /m4/*
 /po/POTFILES
