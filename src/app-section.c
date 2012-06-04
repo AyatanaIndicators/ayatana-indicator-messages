@@ -391,10 +391,16 @@ app_section_set_object_path (AppSection *self,
 	if (priv->name_watch_id)
 		g_bus_unwatch_name (priv->name_watch_id);
 	g_clear_object (&priv->actions);
-	g_clear_object (&priv->remote_menu);
+
+	if (priv->remote_menu) {
+		g_menu_remove (priv->menu, 0);
+		g_clear_object (&priv->remote_menu);
+	}
 
 	priv->actions = G_ACTION_GROUP (g_dbus_action_group_get (bus, bus_name, object_path));
 	priv->remote_menu = G_MENU_MODEL (g_dbus_menu_model_get (bus, bus_name, object_path));
+
+	g_menu_append_section (priv->menu, NULL, priv->remote_menu);
 
 	priv->name_watch_id = g_bus_watch_name_on_connection (bus, bus_name, 0,
 							      NULL, application_vanished,
@@ -421,7 +427,11 @@ app_section_unset_object_path (AppSection *self)
 		priv->name_watch_id = 0;
 	}
 	g_clear_object (&priv->actions);
-	g_clear_object (&priv->remote_menu);
+
+	if (priv->remote_menu) {
+		g_menu_remove (priv->menu, 0);
+		g_clear_object (&priv->remote_menu);
+	}
 
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
 }
