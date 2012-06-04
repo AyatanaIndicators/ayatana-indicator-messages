@@ -23,6 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define __APP_SECTION_H__
 
 #include <gio/gio.h>
+#include <gio/gdesktopappinfo.h>
 
 G_BEGIN_DECLS
 

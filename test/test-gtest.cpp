@@ -3,10 +3,10 @@
 #include <gtest/gtest.h>
 
 extern "C" {
-   #include "launcher-menu-item.h"
+   #include "app-section.h"
 }
 
-TEST(LauncherMenuItem, NameInitialized) {
+TEST(AppSection, NameInitialized) {
   g_type_init();
   EXPECT_TRUE(true);
 }
