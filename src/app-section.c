@@ -31,8 +31,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "app-section.h"
 #include "dbus-data.h"
 
-typedef struct _AppSectionPrivate AppSectionPrivate;
-
 struct _AppSectionPrivate
 {
 	GDesktopAppInfo * appinfo;
@@ -48,8 +46,6 @@ struct _AppSectionPrivate
 
 	guint name_watch_id;
 };
-
-#define APP_SECTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), APP_SECTION_TYPE, AppSectionPrivate))
 
 enum {
 	PROP_0,
@@ -110,7 +106,12 @@ app_section_class_init (AppSectionClass *klass)
 static void
 app_section_init (AppSection *self)
 {
-	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
+	AppSectionPrivate *priv;
+
+	self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
+						  APP_SECTION_TYPE,
+						  AppSectionPrivate);
+	priv = self->priv;
 
 	priv->appinfo = NULL;
 	priv->unreadcount = 0;
@@ -162,7 +163,7 @@ static void
 app_section_dispose (GObject *object)
 {
 	AppSection * self = APP_SECTION(object);
-	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
+	AppSectionPrivate * priv = self->priv;
 
 	g_clear_object (&priv->menu);
 	g_clear_object (&priv->static_shortcuts);
@@ -196,7 +197,7 @@ nick_activate_cb (GSimpleAction *action,
 {
 	const gchar * nick = g_action_get_name (G_ACTION (action));
 	AppSection * mi = APP_SECTION (userdata);
-	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(mi);
+	AppSectionPrivate * priv = mi->priv;
 
 	g_return_if_fail(priv->ids != NULL);
 
@@ -210,7 +211,7 @@ static void
 app_section_set_app_info (AppSection *self,
 			  GDesktopAppInfo *appinfo)
 {
-	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
+	AppSectionPrivate *priv = self->priv;
 	GSimpleAction *launch;
 	gchar *label;
 
@@ -275,7 +276,7 @@ activate_cb (GSimpleAction *action,
 	     gpointer userdata)
 {
 	AppSection * mi = APP_SECTION (userdata);
-	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(mi);
+	AppSectionPrivate * priv = mi->priv;
 	GError *error = NULL;
 
 	if (!g_app_info_launch (G_APP_INFO (priv->appinfo), NULL, NULL, &error)) {
@@ -288,7 +289,7 @@ guint
 app_section_get_count (AppSection * self)
 {
 	g_return_val_if_fail(IS_APP_SECTION(self), 0);
-	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
+	AppSectionPrivate * priv = self->priv;
 
 	return priv->unreadcount;
 }
@@ -297,7 +298,7 @@ const gchar *
 app_section_get_name (AppSection * self)
 {
 	g_return_val_if_fail(IS_APP_SECTION(self), NULL);
-	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
+	AppSectionPrivate * priv = self->priv;
 
 	if (priv->appinfo) {
 		return g_app_info_get_name(G_APP_INFO(priv->appinfo));
@@ -309,7 +310,7 @@ const gchar *
 app_section_get_desktop (AppSection * self)
 {
 	g_return_val_if_fail(IS_APP_SECTION(self), NULL);
-	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
+	AppSectionPrivate * priv = self->priv;
 	if (priv->appinfo)
 		return g_desktop_app_info_get_filename (priv->appinfo);
 	else
@@ -319,28 +320,28 @@ app_section_get_desktop (AppSection * self)
 GActionGroup *
 app_section_get_actions (AppSection *self)
 {
-	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
+	AppSectionPrivate * priv = self->priv;
 	return priv->actions ? priv->actions : G_ACTION_GROUP (priv->static_shortcuts);
 }
 
 GMenuModel *
 app_section_get_menu (AppSection *self)
 {
-	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
+	AppSectionPrivate * priv = self->priv;
 	return G_MENU_MODEL (priv->menu);
 }
 
 GAppInfo *
 app_section_get_app_info (AppSection *self)
 {
-	AppSectionPrivate * priv = APP_SECTION_GET_PRIVATE(self);
+	AppSectionPrivate * priv = self->priv;
 	return G_APP_INFO (priv->appinfo);
 }
 
 GMenuItem *
 app_section_create_menu_item (AppSection *self)
 {
-	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
+	AppSectionPrivate *priv = self->priv;
 	GMenuItem *item;
 	const gchar *name;
 	gchar *iconstr;
@@ -385,7 +386,7 @@ app_section_set_object_path (AppSection *self,
 			     const gchar *bus_name,
 			     const gchar *object_path)
 {
-	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
+	AppSectionPrivate *priv = self->priv;
 
 	if (priv->name_watch_id)
 		g_bus_unwatch_name (priv->name_watch_id);
@@ -413,7 +414,7 @@ app_section_set_object_path (AppSection *self,
 void
 app_section_unset_object_path (AppSection *self)
 {
-	AppSectionPrivate *priv = APP_SECTION_GET_PRIVATE (self);
+	AppSectionPrivate *priv = self->priv;
 
 	if (priv->name_watch_id) {
 		g_bus_unwatch_name (priv->name_watch_id);

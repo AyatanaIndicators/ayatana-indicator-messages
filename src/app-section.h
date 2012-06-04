@@ -33,8 +33,10 @@ G_BEGIN_DECLS
 #define IS_APP_SECTION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), APP_SECTION_TYPE))
 #define APP_SECTION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), APP_SECTION_TYPE, AppSectionClass))
 
-typedef struct _AppSection      AppSection;
-typedef struct _AppSectionClass AppSectionClass;
+typedef struct _AppSection        AppSection;
+typedef struct _AppSectionClass   AppSectionClass;
+typedef struct _AppSectionPrivate AppSectionPrivate;
+
 
 struct _AppSectionClass {
 	GObjectClass parent_class;
@@ -42,6 +44,7 @@ struct _AppSectionClass {
 
 struct _AppSection {
 	GObject parent;
+	AppSectionPrivate *priv;
 };
 
 GType app_section_get_type (void);
