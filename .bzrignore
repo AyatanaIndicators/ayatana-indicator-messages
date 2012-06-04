@@ -38,3 +38,5 @@ stamp-*
 /src/status-provider-telepathy-marshal.h
 /src/indicator-messages-status-provider-0.5.pc
 /src/indicator-messages-status-provider-0.5.pc.in
+
+test/test-gactionmuxer
