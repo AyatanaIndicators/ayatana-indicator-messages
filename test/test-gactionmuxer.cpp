@@ -22,6 +22,21 @@ strv_contains (gchar **str_array,
 	return FALSE;
 }
 
+TEST(GActionMuxerTest, Empty) {
+	GActionMuxer *muxer;
+	gchar **actions;
+
+	g_type_init ();
+
+	muxer = g_action_muxer_new ();
+
+	actions = g_action_group_list_actions (G_ACTION_GROUP (muxer));
+	EXPECT_EQ (0, g_strv_length (actions));
+
+	g_strfreev (actions);
+	g_object_unref (muxer);
+}
+
 TEST(GActionMuxerTest, General) {
 	const GActionEntry entries1[] = { { "one" }, { "two" }, { "three" } };
 	const GActionEntry entries2[] = { { "gb" }, { "es" }, { "fr" } };

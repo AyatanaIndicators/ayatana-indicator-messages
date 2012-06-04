@@ -227,13 +227,16 @@ g_action_muxer_list_actions (GActionGroup *group)
 
   all_actions = g_array_sized_new (TRUE, FALSE, sizeof (gchar *), 8);
 
-  actions = g_action_group_list_actions (muxer->global_actions);
-  for (a = actions; *a; a++)
+  if (muxer->global_actions)
     {
-      gchar *name = g_strdup (*a);
-      g_array_append_val (all_actions, name);
+      actions = g_action_group_list_actions (muxer->global_actions);
+      for (a = actions; *a; a++)
+        {
+          gchar *name = g_strdup (*a);
+          g_array_append_val (all_actions, name);
+        }
+      g_strfreev (actions);
     }
-  g_strfreev (actions);
 
   g_hash_table_iter_init (&it, muxer->groups);
   while (g_hash_table_iter_next (&it, (gpointer *) &prefix, (gpointer *) &subgroup))
