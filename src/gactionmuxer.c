@@ -262,6 +262,8 @@ g_action_muxer_activate_action (GActionGroup  *group,
   GActionGroup *subgroup;
   const gchar *action;
 
+  g_return_if_fail (action_name != NULL);
+
   subgroup = g_action_muxer_lookup_group (muxer, action_name, &action);
 
   if (subgroup)
@@ -276,6 +278,8 @@ g_action_muxer_change_action_state (GActionGroup  *group,
   GActionMuxer *muxer = G_ACTION_MUXER (group);
   GActionGroup *subgroup;
   const gchar *action;
+
+  g_return_if_fail (action_name != NULL);
 
   subgroup = g_action_muxer_lookup_group (muxer, action_name, &action);
 
@@ -295,6 +299,8 @@ g_action_muxer_query_action (GActionGroup        *group,
   GActionMuxer *muxer = G_ACTION_MUXER (group);
   GActionGroup *subgroup;
   const gchar *action;
+
+  g_return_val_if_fail (action_name != NULL, FALSE);
 
   subgroup = g_action_muxer_lookup_group (muxer, action_name, &action);
 
