@@ -2,7 +2,7 @@
 check_LIBRARIES = libgtest.a
 check_PROGRAMS = test-gactionmuxer
 
-TESTS =
+TESTS = $(check_PROGRAMS)
 
 AM_CPPFLAGS = $(GTEST_CPPFLAGS) \
 	-I${top_srcdir}/src
@@ -11,13 +11,11 @@ nodist_libgtest_a_SOURCES = \
 	$(GTEST_SOURCE)/src/gtest-all.cc \
 	$(GTEST_SOURCE)/src/gtest_main.cc
 libgtest_a_CPPFLAGS = \
-	$(GTEST_CPPFLAGS) -w
+	$(GTEST_CPPFLAGS) -w \
+	$(AM_CPPFLAGS)
 libgtest_a_CXXFLAGS = \
 	$(AM_CXXFLAGS)
-libgtest_a_CPPFLAGS = \
-	$(AM_CPPFLAGS)
 
-TESTS += test-gactionmuxer
 
 test_gactionmuxer_SOURCES = \
 	test-gactionmuxer.cpp \
