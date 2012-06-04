@@ -1,6 +1,6 @@
 
 check_LIBRARIES = libgtest.a
-check_PROGRAMS = test-gtest
+check_PROGRAMS = test-gtest test-gactionmuxer
 
 TESTS =
 
@@ -29,6 +29,17 @@ test_gtest_LDADD = \
 	$(APPLET_LIBS) \
 	$(top_builddir)/src/.libs/libindicator-messages-status-provider.la \
 	libgtest.a
+
+
+TESTS += test-gactionmuxer
+
+test_gactionmuxer_SOURCES = \
+	test-gactionmuxer.cpp \
+	$(top_srcdir)/src/gactionmuxer.c \
+	$(top_srcdir)/src/gactionmuxer.h
+
+test_gactionmuxer_CPPFLAGS = $(APPLET_CFLAGS) $(AM_CPPFLAGS)
+test_gactionmuxer_LDADD = $(APPLET_LIBS) libgtest.a
 
 
 ######################################
