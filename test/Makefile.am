@@ -1,6 +1,6 @@
 
 check_LIBRARIES = libgtest.a
-check_PROGRAMS = test-gtest test-gactionmuxer
+check_PROGRAMS = test-gactionmuxer
 
 TESTS =
 
@@ -16,20 +16,6 @@ libgtest_a_CXXFLAGS = \
 	$(AM_CXXFLAGS)
 libgtest_a_CPPFLAGS = \
 	$(AM_CPPFLAGS)
-
-TESTS += test-gtest
-
-test_gtest_SOURCES = \
-	test-gtest.cpp
-test_gtest_CPPFLAGS = \
-	$(APPLET_CFLAGS) \
-	$(AM_CPPFLAGS)
-test_gtest_LDFLAGS = -pthread
-test_gtest_LDADD = \
-	$(APPLET_LIBS) \
-	$(top_builddir)/src/.libs/libindicator-messages-status-provider.la \
-	libgtest.a
-
 
 TESTS += test-gactionmuxer
 
