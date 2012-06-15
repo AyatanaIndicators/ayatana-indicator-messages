@@ -1,6 +1,7 @@
 
 SUBDIRS = \
 	src \
+	libmessaging-menu \
 	data \
 	po
 

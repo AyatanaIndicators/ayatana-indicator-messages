@@ -52,6 +52,8 @@ PKG_CHECK_MODULES(APPLET, gtk+-3.0 >= $GTK_REQUIRED_VERSION
                           gmodule-2.0 >= $GLIB_REQUIRED_VERSION
                           menu-factory-gtk >= $MENU_FACTORY_REQUIRED_VERSION)
 
+PKG_CHECK_MODULES(GIO, gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION)
+
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
@@ -198,6 +200,8 @@ data/icons/scalable/status/Makefile
 data/icons/scalable/categories/Makefile
 po/Makefile.in
 test/Makefile
+libmessaging-menu/Makefile
+libmessaging-menu/messaging-menu.pc
 ])
 
 ###########################

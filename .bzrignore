@@ -43,4 +43,8 @@ stamp-*
 /src/indicator-messages-status-provider-0.5.pc
 /src/indicator-messages-status-provider-0.5.pc.in
 
+/libmessaging-menu/messaging-menu.pc
+/libmessaging-menu/indicator-messages-service.c
+/libmessaging-menu/indicator-messages-service.h
+
 test/test-gactionmuxer
