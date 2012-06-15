@@ -128,7 +128,8 @@ messaging_menu_app_class_init (MessagingMenuAppClass *class)
 
   signals[ACTIVATE_SOURCE] = g_signal_new ("activate-source",
                                            MESSAGING_MENU_TYPE_APP,
-                                           G_SIGNAL_RUN_FIRST,
+                                           G_SIGNAL_RUN_FIRST |
+                                           G_SIGNAL_DETAILED,
                                            0,
                                            NULL, NULL,
                                            g_cclosure_marshal_VOID__STRING,
@@ -324,9 +325,10 @@ source_action_activated (GSimpleAction *action,
                          gpointer       user_data)
 {
   MessagingMenuApp *app = user_data;
+  const gchar *name = g_action_get_name (G_ACTION (action));
+  GQuark q = g_quark_from_string (name);
 
-  g_signal_emit (app, signals[ACTIVATE_SOURCE], 0,
-                 g_action_get_name (G_ACTION (action)));
+  g_signal_emit (app, signals[ACTIVATE_SOURCE], q, name);
 }
 
 static void
