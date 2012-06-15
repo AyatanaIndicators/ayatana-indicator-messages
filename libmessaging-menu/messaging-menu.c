@@ -265,6 +265,8 @@ messaging_menu_app_new (const gchar *desktop_id)
 void
 messaging_menu_app_register (MessagingMenuApp *app)
 {
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+
   app->registered = TRUE;
 
   /* state will be synced right after connecting to the service */
@@ -290,6 +292,8 @@ messaging_menu_app_register (MessagingMenuApp *app)
 void
 messaging_menu_app_unregister (MessagingMenuApp *app)
 {
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+
   app->registered = FALSE;
 
   /* state will be synced right after connecting to the service */
