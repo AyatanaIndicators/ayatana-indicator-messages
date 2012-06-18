@@ -41,7 +41,7 @@ lib_LTLIBRARIES = \
 libindicator_messages_service_la_HEADERS = \
 	$(top_srcdir)/src/default-applications.h \
 	$(top_srcdir)/src/messages-service-dbus.h \
-	$(top_srcdir)/src/gen-messages-service.xml.h \
+	$(top_builddir)/src/gen-messages-service.xml.h \
 	$(top_srcdir)/src/im-menu-item.h \
 	$(top_srcdir)/src/app-menu-item.h \
 	$(top_srcdir)/src/launcher-menu-item.h \
@@ -54,7 +54,7 @@ libindicator_messages_service_la_SOURCES = \
 	$(top_srcdir)/src/default-applications.c \
 	$(top_srcdir)/src/messages-service.c \
 	$(top_srcdir)/src/messages-service-dbus.c \
-	$(top_srcdir)/src/gen-messages-service.xml.c \
+	$(top_builddir)/src/gen-messages-service.xml.c \
 	$(top_srcdir)/src/im-menu-item.c \
 	$(top_srcdir)/src/app-menu-item.c \
 	$(top_srcdir)/src/launcher-menu-item.c \
@@ -67,6 +67,7 @@ libindicator_messages_service_ladir = \
 libindicator_messages_service_la_CFLAGS = \
 	$(APPLET_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
+	-I$(top_builddir)/src \
 	-Wall \
 	-Wl,-Bsymbolic-functions \
 	-Wl,-z,defs \
