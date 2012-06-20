@@ -1,3 +1,10 @@
+indicator-messages (0.6.0-0ubuntu2) UNRELEASED; urgency=low
+
+  * Drop gtk2 build from the packaging since support for it was 
+    dropped in trunk, thanks Lars Uebernickel
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 20 Jun 2012 18:59:18 +0200
+
 indicator-messages (0.6.0-0ubuntu1) precise; urgency=low
 
   * New upstream release.
