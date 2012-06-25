@@ -32,16 +32,12 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "messages-service-dbus.h"
 #include "gactionmuxer.h"
 
-static IndicatorService * service = NULL;
 static GHashTable *applications;
 
 static GSimpleActionGroup *actions;
 static GActionMuxer *action_muxer;
 static GMenu *menu;
 static GSettings *settings;
-static GMainLoop * mainloop = NULL;
-
-static MessageServiceDbus * dbus_interface = NULL;
 
 
 static gchar *
@@ -201,9 +197,10 @@ build_launchers (gpointer data)
 static void 
 service_shutdown (IndicatorService * service, gpointer user_data)
 {
+	GMainLoop *mainloop = user_data;
+
 	g_warning("Shutting down service!");
 	g_main_loop_quit(mainloop);
-	return;
 }
 
 static void
@@ -381,6 +378,9 @@ got_bus (GObject *object,
 int
 main (int argc, char ** argv)
 {
+	GMainLoop * mainloop = NULL;
+	IndicatorService * service = NULL;
+	MessageServiceDbus * dbus_interface = NULL;
 	GActionEntry entries[] = {
 		{ "status", radio_item_activate, "s", "'offline'", change_status },
 		{ "clear", clear_action_activate }
@@ -390,9 +390,11 @@ main (int argc, char ** argv)
 	/* Glib init */
 	g_type_init();
 
+	mainloop = g_main_loop_new (NULL, FALSE);
+
 	/* Create the Indicator Service interface */
 	service = indicator_service_new_version(INDICATOR_MESSAGES_DBUS_NAME, 1);
-	g_signal_connect(service, INDICATOR_SERVICE_SIGNAL_SHUTDOWN, G_CALLBACK(service_shutdown), NULL);
+	g_signal_connect(service, INDICATOR_SERVICE_SIGNAL_SHUTDOWN, G_CALLBACK(service_shutdown), mainloop);
 
 	/* Setting up i18n and gettext.  Apparently, we need
 	   all of these. */
@@ -431,8 +433,6 @@ main (int argc, char ** argv)
 
 	g_idle_add(build_launchers, NULL);
 
-	/* Let's run a mainloop */
-	mainloop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(mainloop);
 
 	/* Clean up */
