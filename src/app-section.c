@@ -30,6 +30,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator-desktop-shortcuts.h>
 #include "app-section.h"
 #include "dbus-data.h"
+#include "gmenuutils.h"
 
 struct _AppSectionPrivate
 {
@@ -208,24 +209,11 @@ nick_activate_cb (GSimpleAction *action,
 }
 
 static void
-g_menu_item_set_icon (GMenuItem *item,
-		      GIcon *icon)
-{
-	gchar *iconstr;
-
-	iconstr = g_icon_to_string (icon);
-	g_menu_item_set_attribute (item, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", iconstr);
-
-	g_free (iconstr);
-}
-
-static void
 app_section_set_app_info (AppSection *self,
 			  GDesktopAppInfo *appinfo)
 {
 	AppSectionPrivate *priv = self->priv;
 	GSimpleAction *launch;
-	GMenuItem *item;
 
 	g_return_if_fail (priv->appinfo == NULL);
 
@@ -240,9 +228,10 @@ app_section_set_app_info (AppSection *self,
 	g_signal_connect (launch, "activate", G_CALLBACK (activate_cb), self);
 	g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (launch));
 
-	item = g_menu_item_new (g_app_info_get_name (G_APP_INFO (priv->appinfo)), "launch");
-	g_menu_item_set_icon (item, g_app_info_get_icon (G_APP_INFO (priv->appinfo)));
-	g_menu_append_item (priv->menu, item);
+	g_menu_append_with_icon (priv->menu,
+				 g_app_info_get_name (G_APP_INFO (priv->appinfo)),
+				 g_app_info_get_icon (G_APP_INFO (priv->appinfo)),
+				 "launch");
 
 	/* Start to build static shortcuts */
 	priv->ids = indicator_desktop_shortcuts_new(g_desktop_app_info_get_filename (priv->appinfo), "Messaging Menu");

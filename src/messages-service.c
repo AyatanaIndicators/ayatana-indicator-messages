@@ -32,6 +32,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "messages-service-dbus.h"
 #include "gactionmuxer.h"
 #include "gsettingsstrv.h"
+#include "gmenuutils.h"
 
 static GHashTable *applications;
 
@@ -108,26 +109,6 @@ add_application (const gchar *desktop_id)
 	g_free (id);
 	g_object_unref (appinfo);
 	return section;
-}
-
-/* g_menu_model_find_section:
- *
- * @Returns the index of the first menu item that is linked to #section, or -1
- * if there's no such item.
- */
-static int
-g_menu_find_section (GMenu *menu,
-		     GMenuModel *section)
-{
-	int n_items = g_menu_model_get_n_items (G_MENU_MODEL (menu));
-	int i;
-
-	for (i = 0; i < n_items; i++) {
-		if (section == g_menu_model_get_item_link (G_MENU_MODEL (menu), i, G_MENU_LINK_SECTION))
-			return i;
-	}
-
-	return -1;
 }
 
 static void
@@ -268,32 +249,17 @@ unregister_application (MessageServiceDbus *msd,
 	g_settings_strv_remove (settings, "applications", desktop_id);
 }
 
-static void
-g_menu_append_with_icon (GMenu *menu,
-			 const gchar *label,
-			 const gchar *icon_name,
-			 const gchar *detailed_action)
-{
-	GMenuItem *item;
-
-	item = g_menu_item_new (label, detailed_action);
-	g_menu_item_set_attribute (item, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", icon_name);
-
-	g_menu_append_item (menu, item);
-	g_object_unref (item);
-}
-
 GMenuModel *
 create_status_section ()
 {
 	GMenu *menu;
 
 	menu = g_menu_new ();
-	g_menu_append_with_icon (menu, _("Available"), "user-available", "status::available");
-	g_menu_append_with_icon (menu, _("Away"),      "user-away",      "status::away");
-	g_menu_append_with_icon (menu, _("Busy"),      "user-busy",      "status::busy");
-	g_menu_append_with_icon (menu, _("Invisible"), "user-invisible", "status::invisible");
-	g_menu_append_with_icon (menu, _("Offline"),   "user-offline",   "status::offline");
+	g_menu_append_with_icon_name (menu, _("Available"), "user-available", "status::available");
+	g_menu_append_with_icon_name (menu, _("Away"),      "user-away",      "status::away");
+	g_menu_append_with_icon_name (menu, _("Busy"),      "user-busy",      "status::busy");
+	g_menu_append_with_icon_name (menu, _("Invisible"), "user-invisible", "status::invisible");
+	g_menu_append_with_icon_name (menu, _("Offline"),   "user-offline",   "status::offline");
 
 	return G_MENU_MODEL (menu);
 }

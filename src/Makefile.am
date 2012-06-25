@@ -48,7 +48,9 @@ indicator_messages_service_SOURCES = \
 	gactionmuxer.c \
 	gactionmuxer.h \
 	gsettingsstrv.c \
-	gsettingsstrv.h
+	gsettingsstrv.h \
+	gmenuutils.c \
+	gmenuutils.h
 
 indicator_messages_service_CFLAGS = \
 	$(APPLET_CFLAGS) \
