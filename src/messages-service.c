@@ -336,7 +336,7 @@ main (int argc, char ** argv)
 	}
 
 	actions = g_simple_action_group_new ();
-	g_simple_action_group_add_entries (actions, entries, G_N_ELEMENTS (entries), NULL);
+	g_simple_action_group_add_entries (actions, entries, G_N_ELEMENTS (entries), dbus_interface);
 
 	action_muxer = g_action_muxer_new ();
 	g_action_muxer_insert (action_muxer, NULL, G_ACTION_GROUP (actions));
