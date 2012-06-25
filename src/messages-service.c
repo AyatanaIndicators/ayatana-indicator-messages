@@ -97,8 +97,6 @@ add_application (const gchar *desktop_id)
 	section = g_hash_table_lookup (applications, id);
 
 	if (!section) {
-		GMenuItem *item;
-
 		section = app_section_new(appinfo);
 		g_hash_table_insert (applications, g_strdup (id), section);
 
@@ -106,10 +104,8 @@ add_application (const gchar *desktop_id)
 		g_signal_connect (section, "notify::actions",
 				  G_CALLBACK (actions_changed), NULL);
 
-		item = app_section_create_menu_item (section);
 		/* TODO insert it at the right position (alphabetically by application name) */
-		g_menu_insert_item (menu, 2, item);
-		g_object_unref (item);
+		g_menu_insert_section (menu, 2, NULL, app_section_get_menu (section));
 	}
 
 	g_free (id);

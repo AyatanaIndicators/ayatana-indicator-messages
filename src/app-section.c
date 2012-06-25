@@ -208,12 +208,24 @@ nick_activate_cb (GSimpleAction *action,
 }
 
 static void
+g_menu_item_set_icon (GMenuItem *item,
+		      GIcon *icon)
+{
+	gchar *iconstr;
+
+	iconstr = g_icon_to_string (icon);
+	g_menu_item_set_attribute (item, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", iconstr);
+
+	g_free (iconstr);
+}
+
+static void
 app_section_set_app_info (AppSection *self,
 			  GDesktopAppInfo *appinfo)
 {
 	AppSectionPrivate *priv = self->priv;
 	GSimpleAction *launch;
-	gchar *label;
+	GMenuItem *item;
 
 	g_return_if_fail (priv->appinfo == NULL);
 
@@ -228,10 +240,9 @@ app_section_set_app_info (AppSection *self,
 	g_signal_connect (launch, "activate", G_CALLBACK (activate_cb), self);
 	g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (launch));
 
-	if (priv->unreadcount > 0)
-		label = g_strdup_printf("%s (%d)", app_section_get_name (self), priv->unreadcount);
-	else
-		label = g_strdup(app_section_get_name (self));
+	item = g_menu_item_new (g_app_info_get_name (G_APP_INFO (priv->appinfo)), "launch");
+	g_menu_item_set_icon (item, g_app_info_get_icon (G_APP_INFO (priv->appinfo)));
+	g_menu_append_item (priv->menu, item);
 
 	/* Start to build static shortcuts */
 	priv->ids = indicator_desktop_shortcuts_new(g_desktop_app_info_get_filename (priv->appinfo), "Messaging Menu");
@@ -258,7 +269,6 @@ app_section_set_app_info (AppSection *self,
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_APPINFO]);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
 
-	g_free(label);
 	g_object_unref (launch);
 }
 
@@ -338,27 +348,6 @@ app_section_get_app_info (AppSection *self)
 	return G_APP_INFO (priv->appinfo);
 }
 
-GMenuItem *
-app_section_create_menu_item (AppSection *self)
-{
-	AppSectionPrivate *priv = self->priv;
-	GMenuItem *item;
-	const gchar *name;
-	gchar *iconstr;
-
-	g_return_val_if_fail (priv->appinfo != NULL, NULL);
-
-	name = g_app_info_get_name (G_APP_INFO (priv->appinfo));
-	iconstr = g_icon_to_string (g_app_info_get_icon (G_APP_INFO (priv->appinfo)));
-
-	item = g_menu_item_new (name, "launch");
-	g_menu_item_set_attribute (item, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", iconstr);
-	g_menu_item_set_section (item, G_MENU_MODEL (priv->menu));
-
-	g_free(iconstr);
-	return item;
-}
-
 static void
 application_vanished (GDBusConnection *bus,
 		      const gchar *name,
@@ -388,14 +377,8 @@ app_section_set_object_path (AppSection *self,
 {
 	AppSectionPrivate *priv = self->priv;
 
-	if (priv->name_watch_id)
-		g_bus_unwatch_name (priv->name_watch_id);
-	g_clear_object (&priv->actions);
-
-	if (priv->remote_menu) {
-		g_menu_remove (priv->menu, 0);
-		g_clear_object (&priv->remote_menu);
-	}
+	g_object_freeze_notify (G_OBJECT (self));
+	app_section_unset_object_path (self);
 
 	priv->actions = G_ACTION_GROUP (g_dbus_action_group_get (bus, bus_name, object_path));
 	priv->remote_menu = G_MENU_MODEL (g_dbus_menu_model_get (bus, bus_name, object_path));
@@ -407,6 +390,7 @@ app_section_set_object_path (AppSection *self,
 							      self, NULL);
 
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
+	g_object_thaw_notify (G_OBJECT (self));
 }
 
 /*
@@ -429,7 +413,9 @@ app_section_unset_object_path (AppSection *self)
 	g_clear_object (&priv->actions);
 
 	if (priv->remote_menu) {
-		g_menu_remove (priv->menu, 0);
+		/* the last menu item points is linked to the app's menumodel */
+		gint n_items = g_menu_model_get_n_items (G_MENU_MODEL (priv->menu));
+		g_menu_remove (priv->menu, n_items -1);
 		g_clear_object (&priv->remote_menu);
 	}
 
