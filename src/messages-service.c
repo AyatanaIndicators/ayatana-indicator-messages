@@ -31,6 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "dbus-data.h"
 #include "messages-service-dbus.h"
 #include "gactionmuxer.h"
+#include "gsettingsstrv.h"
 
 static GHashTable *applications;
 
@@ -237,22 +238,6 @@ clear_action_handler (MessageServiceDbus *msd,
 	g_simple_action_set_enabled (action, attention);
 }
 
-static gint
-g_strv_find (gchar **str_array,
-	     const gchar *key)
-{
-	gchar **it;
-
-	g_return_val_if_fail (str_array != NULL, -1);
-
-	for (it = str_array; *it; it++) {
-		if (!g_strcmp0 (key, *it))
-			return it - str_array;
-	}
-
-	return -1;
-}
-
 static void
 register_application (MessageServiceDbus *msd,
 		      const gchar *sender,
@@ -261,7 +246,6 @@ register_application (MessageServiceDbus *msd,
 		      gpointer user_data)
 {
 	AppSection *section;
-	gchar **applications;
 	GDBusConnection *bus;
 
 	section = add_application (desktop_id);
@@ -272,22 +256,7 @@ register_application (MessageServiceDbus *msd,
 
 	app_section_set_object_path (section, bus, sender, menu_path);
 
-	/* remember this application in the settings key */
-	applications = g_settings_get_strv (settings, "applications");
-	if (g_strv_find (applications, desktop_id) < 0) {
-		GVariantBuilder builder;
-		gchar **app;
-
-		g_variant_builder_init (&builder, (GVariantType *)"as");
-		for (app = applications; *app; app++)
-			g_variant_builder_add (&builder, "s", *app);
-		g_variant_builder_add (&builder, "s", desktop_id);
-
-		g_settings_set_value (settings, "applications",
-				      g_variant_builder_end (&builder));
-	}
-
-	g_strfreev (applications);
+	g_settings_strv_append_unique (settings, "applications", desktop_id);
 }
 
 static void
@@ -295,22 +264,8 @@ unregister_application (MessageServiceDbus *msd,
 			const gchar *desktop_id,
 			gpointer user_data)
 {
-	gchar **applications = g_settings_get_strv (settings, "applications");
-	gchar **app;
-	GVariantBuilder builder;
-
-	g_variant_builder_init (&builder, (GVariantType *)"as");
-	for (app = applications; *app; app++) {
-		if (g_strcmp0 (desktop_id, *app))
-			g_variant_builder_add (&builder, "s", *app);
-	}
-
-	g_settings_set_value (settings, "applications",
-			      g_variant_builder_end (&builder));
-
 	remove_application (desktop_id);
-
-	g_strfreev (applications);
+	g_settings_strv_remove (settings, "applications", desktop_id);
 }
 
 static void
