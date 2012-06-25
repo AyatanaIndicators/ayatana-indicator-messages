@@ -373,6 +373,8 @@ got_bus (GObject *object,
 		g_error_free (error);
 		return;
 	}
+
+	g_object_unref (bus);
 }
 
 int
