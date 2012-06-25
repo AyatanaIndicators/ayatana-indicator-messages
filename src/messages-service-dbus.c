@@ -498,3 +498,14 @@ message_service_dbus_set_icon (MessageServiceDbus * self, gboolean hidden)
 	}
 	return;
 }
+
+GDBusConnection *
+message_service_dbus_get_connection (MessageServiceDbus *msd)
+{
+	MessageServiceDbusPrivate * priv;
+
+	g_return_val_if_fail (IS_MESSAGE_SERVICE_DBUS (msd), NULL);
+
+        priv = MESSAGE_SERVICE_DBUS_GET_PRIVATE(msd);
+	return priv->connection;
+}

@@ -35,7 +35,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 static IndicatorService * service = NULL;
 static GHashTable *applications;
 
-static GDBusConnection *bus;
 static GSimpleActionGroup *actions;
 static GActionMuxer *action_muxer;
 static GMenu *menu;
@@ -266,10 +265,13 @@ register_application (MessageServiceDbus *msd,
 {
 	AppSection *section;
 	gchar **applications;
+	GDBusConnection *bus;
 
 	section = add_application (desktop_id);
 	if (!section)
 		return;
+
+	bus = message_service_dbus_get_connection (msd);
 
 	app_section_set_object_path (section, bus, sender, menu_path);
 
@@ -344,10 +346,41 @@ create_status_section ()
 	return G_MENU_MODEL (menu);
 }
 
+static void
+got_bus (GObject *object,
+	 GAsyncResult * res,
+	 gpointer user_data)
+{
+	GDBusConnection *bus;
+	GError *error = NULL;
+
+	bus = g_bus_get_finish (res, &error);
+	if (!bus) {
+		g_warning ("unable to connect to the session bus: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	g_dbus_connection_export_action_group (bus, INDICATOR_MESSAGES_DBUS_OBJECT,
+                                               G_ACTION_GROUP (action_muxer), &error);
+	if (error) {
+		g_warning ("unable to export action group on dbus: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	g_dbus_connection_export_menu_model (bus, INDICATOR_MESSAGES_DBUS_OBJECT,
+					     G_MENU_MODEL (menu), &error);
+	if (error) {
+		g_warning ("unable to export menu on dbus: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+}
+
 int
 main (int argc, char ** argv)
 {
-	GError *error = NULL;
 	GActionEntry entries[] = {
 		{ "status", radio_item_activate, "s", "'offline'", change_status },
 		{ "clear", clear_action_activate }
@@ -370,25 +403,13 @@ main (int argc, char ** argv)
 	/* Bring up the service DBus interface */
 	dbus_interface = message_service_dbus_new();
 
-	bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &error);
-	if (!bus) {
-		g_warning ("unable to connect to the session bus: %s", error->message);
-		g_error_free (error);
-		return 1;
-	}
+	g_bus_get (G_BUS_TYPE_SESSION, NULL, got_bus, NULL);
 
 	actions = g_simple_action_group_new ();
 	g_simple_action_group_add_entries (actions, entries, G_N_ELEMENTS (entries), dbus_interface);
 
 	action_muxer = g_action_muxer_new ();
 	g_action_muxer_insert (action_muxer, NULL, G_ACTION_GROUP (actions));
-	g_dbus_connection_export_action_group (bus, INDICATOR_MESSAGES_DBUS_OBJECT,
-                                               G_ACTION_GROUP (action_muxer), &error);
-	if (error) {
-		g_warning ("unable to export action group on dbus: %s", error->message);
-		g_error_free (error);
-		return 1;
-	}
 
 	g_signal_connect (dbus_interface, MESSAGE_SERVICE_DBUS_SIGNAL_ATTENTION_CHANGED,
 			  G_CALLBACK(clear_action_handler),
@@ -403,14 +424,6 @@ main (int argc, char ** argv)
 	status_items = create_status_section ();
 	g_menu_append_section (menu, _("Status"), status_items);
 	g_menu_append (menu, _("Clear"), "clear");
-
-	g_dbus_connection_export_menu_model (bus, INDICATOR_MESSAGES_DBUS_OBJECT,
-					     G_MENU_MODEL (menu), &error);
-	if (error) {
-		g_warning ("unable to export menu on dbus: %s", error->message);
-		g_error_free (error);
-		return 1;
-	}
 
 	settings = g_settings_new ("com.canonical.indicator.messages");
 
