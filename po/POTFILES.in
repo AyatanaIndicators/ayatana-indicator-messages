@@ -2,4 +2,3 @@
 src/messages-service-dbus.c
 src/indicator-messages.c
 src/messages-service.c
-src/status-items.c

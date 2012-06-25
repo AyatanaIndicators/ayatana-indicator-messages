@@ -43,8 +43,6 @@ libindicator_messages_service_la_SOURCES = \
 	$(top_srcdir)/src/gen-messages-service.xml.h \
 	$(top_srcdir)/src/app-section.c \
 	$(top_srcdir)/src/app-section.h \
-	$(top_srcdir)/src/status-items.c \
-	$(top_srcdir)/src/status-items.h \
 	$(top_srcdir)/src/gactionmuxer.c \
 	$(top_srcdir)/src/gactionmuxer.h
 	$(top_srcdir)/src/dbus-data.h
@@ -60,12 +58,10 @@ libindicator_messages_service_la_CFLAGS = \
 	-Wl,-z,defs \
 	-Wl,--as-needed \
 	-Werror \
-	-DG_LOG_DOMAIN=\"Indicator-Messages\" \
-	-DSTATUS_PROVIDER_DIR=\"$(STATUS_PROVIDER_DIR)\"
+	-DG_LOG_DOMAIN=\"Indicator-Messages\"
 
 libindicator_messages_service_la_LIBADD = \
-	$(APPLET_LIBS) \
-	$(top_builddir)/src/.libs/libindicator-messages-status-provider.la
+	$(APPLET_LIBS)
 
 libindicator_messages_service_la_LDFLAGS = \
 	$(COVERAGE_LDFLAGS)

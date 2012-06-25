@@ -33,7 +33,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "app-section.h"
 #include "dbus-data.h"
 #include "messages-service-dbus.h"
-#include "status-items.h"
 #include "gactionmuxer.h"
 
 static IndicatorService * service = NULL;
@@ -221,6 +220,22 @@ clear_action_activate (GSimpleAction *simple,
 }
 
 static void
+radio_item_activate (GSimpleAction *action,
+		     GVariant *parameter,
+		     gpointer user_data)
+{
+	g_action_change_state (G_ACTION (action), parameter);
+}
+
+static void
+change_status (GSimpleAction *action,
+	       GVariant *value,
+	       gpointer user_data)
+{
+	g_message ("changing status to %s", g_variant_get_string (value, NULL));
+}
+
+static void
 clear_action_handler (MessageServiceDbus *msd,
 		      gboolean attention,
 		      gpointer user_data)
@@ -302,12 +317,42 @@ unregister_application (MessageServiceDbus *msd,
 	g_strfreev (applications);
 }
 
+static void
+g_menu_append_with_icon (GMenu *menu,
+			 const gchar *label,
+			 const gchar *icon_name,
+			 const gchar *detailed_action)
+{
+	GMenuItem *item;
+
+	item = g_menu_item_new (label, detailed_action);
+	g_menu_item_set_attribute (item, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", icon_name);
+
+	g_menu_append_item (menu, item);
+	g_object_unref (item);
+}
+
+GMenuModel *
+create_status_section ()
+{
+	GMenu *menu;
+
+	menu = g_menu_new ();
+	g_menu_append_with_icon (menu, _("Available"), "user-available", "status::available");
+	g_menu_append_with_icon (menu, _("Away"),      "user-away",      "status::away");
+	g_menu_append_with_icon (menu, _("Busy"),      "user-busy",      "status::busy");
+	g_menu_append_with_icon (menu, _("Invisible"), "user-invisible", "status::invisible");
+	g_menu_append_with_icon (menu, _("Offline"),   "user-offline",   "status::offline");
+
+	return G_MENU_MODEL (menu);
+}
+
 int
 main (int argc, char ** argv)
 {
 	GError *error = NULL;
 	GActionEntry entries[] = {
-		{ "status", NULL, "s", "'offline'", NULL },
+		{ "status", radio_item_activate, "s", "'offline'", change_status },
 		{ "clear", clear_action_activate }
 	};
 	GMenuModel *status_items;
@@ -357,9 +402,8 @@ main (int argc, char ** argv)
 	g_signal_connect (dbus_interface, MESSAGE_SERVICE_DBUS_SIGNAL_UNREGISTER_APPLICATION,
 			  G_CALLBACK (unregister_application), NULL);
 
-	status_items = status_items_build (g_action_map_lookup_action (G_ACTION_MAP (actions), "status"));
-
 	menu = g_menu_new ();
+	status_items = create_status_section ();
 	g_menu_append_section (menu, _("Status"), status_items);
 	g_menu_append (menu, _("Clear"), "clear");
 
@@ -382,7 +426,7 @@ main (int argc, char ** argv)
 	g_main_loop_run(mainloop);
 
 	/* Clean up */
-	status_items_cleanup();
+	g_object_unref (status_items);
 	g_object_unref (settings);
 	g_hash_table_unref (applications);
 	return 0;
