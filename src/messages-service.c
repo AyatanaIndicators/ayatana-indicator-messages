@@ -245,6 +245,18 @@ change_status (GSimpleAction *action,
 	       GVariant *value,
 	       gpointer user_data)
 {
+	const gchar *status;
+
+	g_variant_get (value, "&s", &status);
+
+	g_return_if_fail (g_str_equal (status, "available") ||
+			  g_str_equal (status, "away")||
+			  g_str_equal (status, "busy") ||
+			  g_str_equal (status, "invisible") ||
+			  g_str_equal (status, "offline"));
+
+	g_simple_action_set_state (action, value);
+
 	g_message ("changing status to %s", g_variant_get_string (value, NULL));
 }
 
