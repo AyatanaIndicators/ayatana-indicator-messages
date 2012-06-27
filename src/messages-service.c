@@ -29,13 +29,14 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "app-section.h"
 #include "dbus-data.h"
-#include "messages-service-dbus.h"
 #include "gactionmuxer.h"
 #include "gsettingsstrv.h"
 #include "gmenuutils.h"
+#include "indicator-messages-service.h"
 
 static GHashTable *applications;
 
+IndicatorMessagesService *messages_service;
 static GSimpleActionGroup *actions;
 static GActionMuxer *action_muxer;
 static GMenu *toplevel_menu;
@@ -266,33 +267,39 @@ change_status (GSimpleAction *action,
 }
 
 static void
-register_application (MessageServiceDbus *msd,
-		      const gchar *sender,
+register_application (IndicatorMessagesService *service,
+		      GDBusMethodInvocation *invocation,
 		      const gchar *desktop_id,
 		      const gchar *menu_path,
 		      gpointer user_data)
 {
 	AppSection *section;
 	GDBusConnection *bus;
+	const gchar *sender;
 
 	section = add_application (desktop_id);
 	if (!section)
 		return;
 
-	bus = message_service_dbus_get_connection (msd);
+	bus = g_dbus_interface_skeleton_get_connection (G_DBUS_INTERFACE_SKELETON (service));
+	sender = g_dbus_method_invocation_get_sender (invocation);
 
 	app_section_set_object_path (section, bus, sender, menu_path);
-
 	g_settings_strv_append_unique (settings, "applications", desktop_id);
+
+	indicator_messages_service_complete_register_application (service, invocation);
 }
 
 static void
-unregister_application (MessageServiceDbus *msd,
+unregister_application (IndicatorMessagesService *service,
+			GDBusMethodInvocation *invocation,
 			const gchar *desktop_id,
 			gpointer user_data)
 {
 	remove_application (desktop_id);
 	g_settings_strv_remove (settings, "applications", desktop_id);
+
+	indicator_messages_service_complete_unregister_application (service, invocation);
 }
 
 GSimpleActionGroup *
@@ -371,6 +378,15 @@ got_bus (GObject *object,
 		return;
 	}
 
+	g_dbus_interface_skeleton_export (G_DBUS_INTERFACE_SKELETON (messages_service),
+					  bus, INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT,
+					  &error);
+	if (error) {
+		g_warning ("unable to export messages service on dbus: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
 	g_object_unref (bus);
 }
 
@@ -379,7 +395,6 @@ main (int argc, char ** argv)
 {
 	GMainLoop * mainloop = NULL;
 	IndicatorService * service = NULL;
-	MessageServiceDbus * dbus_interface = NULL;
 	GMenuModel *status_items;
 	GMenuItem *header;
 
@@ -399,7 +414,7 @@ main (int argc, char ** argv)
 	textdomain (GETTEXT_PACKAGE);
 
 	/* Bring up the service DBus interface */
-	dbus_interface = message_service_dbus_new();
+	messages_service = indicator_messages_service_skeleton_new ();
 
 	g_bus_get (G_BUS_TYPE_SESSION, NULL, got_bus, NULL);
 
@@ -408,9 +423,9 @@ main (int argc, char ** argv)
 	action_muxer = g_action_muxer_new ();
 	g_action_muxer_insert (action_muxer, NULL, G_ACTION_GROUP (actions));
 
-	g_signal_connect (dbus_interface, MESSAGE_SERVICE_DBUS_SIGNAL_REGISTER_APPLICATION,
+	g_signal_connect (messages_service, "handle-register-application",
 			  G_CALLBACK (register_application), NULL);
-	g_signal_connect (dbus_interface, MESSAGE_SERVICE_DBUS_SIGNAL_UNREGISTER_APPLICATION,
+	g_signal_connect (messages_service, "handle-unregister-application",
 			  G_CALLBACK (unregister_application), NULL);
 
 	menu = g_menu_new ();
@@ -434,6 +449,7 @@ main (int argc, char ** argv)
 	g_main_loop_run(mainloop);
 
 	/* Clean up */
+	g_object_unref (messages_service);
 	g_object_unref (status_items);
 	g_object_unref (settings);
 	g_hash_table_unref (applications);

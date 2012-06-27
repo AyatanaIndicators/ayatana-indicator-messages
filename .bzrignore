@@ -32,8 +32,8 @@ stamp-*
 /po/POTFILES
 /data/indicator-messages.service
 /src/indicator-messages-service
-/src/gen-messages-service.xml.c
-/src/gen-messages-service.xml.h
+/src/indicator-messages-service.c
+/src/indicator-messages-service.h
 /src/status-provider-mc5-marshal.c
 /src/status-provider-mc5-marshal.h
 /src/status-provider-pidgin-marshal.c

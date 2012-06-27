@@ -35,7 +35,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator-service-manager.h>
 
 #include "dbus-data.h"
-#include "gen-messages-service.xml.h"
 
 #define INDICATOR_MESSAGES_TYPE            (indicator_messages_get_type ())
 #define INDICATOR_MESSAGES(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), INDICATOR_MESSAGES_TYPE, IndicatorMessages))

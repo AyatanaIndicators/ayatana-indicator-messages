@@ -15,8 +15,8 @@ messaginglibdir = $(INDICATORDIR)
 messaginglib_LTLIBRARIES = libmessaging.la
 libmessaging_la_SOURCES = \
 	indicator-messages.c \
-	gen-messages-service.xml.h \
-	gen-messages-service.xml.c \
+	indicator-messages-service.c \
+	indicator-messages-service.h
 	dbus-data.h
 libmessaging_la_CFLAGS = \
 	$(APPLET_CFLAGS) \
@@ -38,10 +38,8 @@ libmessaging_la_LDFLAGS = \
 
 indicator_messages_service_SOURCES = \
 	messages-service.c \
-	messages-service-dbus.c \
-	messages-service-dbus.h \
-	gen-messages-service.xml.h \
-	gen-messages-service.xml.c \
+	indicator-messages-service.c \
+	indicator-messages-service.h \
 	app-section.c \
 	app-section.h \
 	dbus-data.h \
@@ -68,19 +66,17 @@ indicator_messages_service_LDADD = \
 indicator_messages_service_LDFLAGS = \
 	$(COVERAGE_LDFLAGS)
 
-gen-%.xml.h: %.xml
-	@echo "Building $@ from $<"
-	@echo "extern const char * _$(subst -,_,$(subst .,_,$(basename $(notdir $<))));" > $@
-
-gen-%.xml.c: %.xml
-	@echo "Building $@ from $<"
-	echo "const char * _$(subst -,_,$(subst .,_,$(basename $(notdir $<)))) = " > $@
-	@sed -e "s:\":\\\\\":g" -e s:^:\": -e s:\$$:\\\\n\": $< >> $@
-	@echo ";" >> $@
+indicator-messages-service.c: $(top_srcdir)/src/messages-service.xml
+	$(AM_V_GEN) gdbus-codegen \
+	    --interface-prefix com.canonical.indicator.messages. \
+	    --generate-c-code indicator-messages-service \
+	    --c-namespace IndicatorMessages \
+	    $^
+indicator-messages-service.h: indicator-messages-service.c
 
 BUILT_SOURCES += \
-	gen-messages-service.xml.h \
-	gen-messages-service.xml.c
+	indicator-messages-service.c \
+	indicator-messages-service.h
 
 EXTRA_DIST += \
 	messages-service.xml
