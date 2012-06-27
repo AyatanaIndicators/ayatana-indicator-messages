@@ -2,14 +2,6 @@
 <node name="/">
 	<interface name="com.canonical.indicator.messages.service">
 
-<!-- Methods -->
-		<method name="AttentionRequested">
-			<arg type="b" name="dot" direction="out" />
-		</method>
-		<method name="IconShown">
-			<arg type="b" name="hidden" direction="out" />
-		</method>
-		<method name="ClearAttention" />
 		<method name="RegisterApplication">
 		    <arg type="s" name="desktop_id" direction="in" />
 		    <arg type="o" name="menu_path" direction="in" />
@@ -17,14 +9,6 @@
 		<method name="UnregisterApplication">
 		    <arg type="s" name="desktop_id" direction="in" />
 		</method>
-
-<!-- Signals -->
-		<signal name="AttentionChanged">
-			<arg type="b" name="dot" direction="out" />
-		</signal>
-		<signal name="IconChanged">
-			<arg type="b" name="hidden" direction="out" />
-		</signal>
 
 	</interface>
 </node>
