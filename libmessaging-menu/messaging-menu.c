@@ -52,11 +52,18 @@ enum {
 
 enum {
   ACTIVATE_SOURCE,
+  STATUS_CHANGED,
   N_SIGNALS
 };
 
 static GParamSpec *properties[N_PROPERTIES];
 static guint signals[N_SIGNALS];
+
+static const gchar *status_ids[] = { "available", "away", "busy", "invisible", "offline" };
+
+static void global_status_changed (IndicatorMessagesService *service,
+                                   const gchar *status_str,
+                                   gpointer user_data);
 
 static void
 messaging_menu_app_set_property (GObject      *object,
@@ -100,6 +107,14 @@ messaging_menu_app_dispose (GObject *object)
       app->cancellable = NULL;
     }
 
+  if (app->messages_service)
+    {
+      g_signal_handlers_disconnect_by_func (app->messages_service,
+                                            global_status_changed,
+                                            app);
+      g_clear_object (&app->messages_service);
+    }
+
   g_clear_object (&app->appinfo);
   g_clear_object (&app->source_actions);
   g_clear_object (&app->menu);
@@ -134,6 +149,14 @@ messaging_menu_app_class_init (MessagingMenuAppClass *class)
                                            NULL, NULL,
                                            g_cclosure_marshal_VOID__STRING,
                                            G_TYPE_NONE, 1, G_TYPE_STRING);
+
+  signals[STATUS_CHANGED] = g_signal_new ("status-changed",
+                                          MESSAGING_MENU_TYPE_APP,
+                                          G_SIGNAL_RUN_FIRST,
+                                          0,
+                                          NULL, NULL,
+                                          g_cclosure_marshal_VOID__INT,
+                                          G_TYPE_NONE, 1, G_TYPE_INT);
 }
 
 static void
@@ -152,11 +175,15 @@ created_messages_service (GObject      *source_object,
       return;
     }
 
+  g_signal_connect (app->messages_service, "status-changed",
+                    G_CALLBACK (global_status_changed), app);
+
   /* sync current status */
   if (app->registered == TRUE)
     messaging_menu_app_register (app);
   else if (app->registered == FALSE)
     messaging_menu_app_unregister (app);
+  messaging_menu_app_set_status (app, app->status);
 }
 
 static void
@@ -316,7 +343,52 @@ void
 messaging_menu_app_set_status (MessagingMenuApp    *app,
                                MessagingMenuStatus  status)
 {
-  g_warning ("%s: not yet implemented", G_STRFUNC);
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (status >= MESSAGING_MENU_STATUS_AVAILABLE &&
+                    status <= MESSAGING_MENU_STATUS_OFFLINE);
+
+  app->status = status;
+
+  /* state will be synced right after connecting to the service */
+  if (!app->messages_service)
+    return;
+
+  indicator_messages_service_call_set_status (app->messages_service,
+                                              status_ids [status],
+                                              app->cancellable,
+                                              NULL, NULL);
+}
+
+static int
+status_from_string (const gchar *s)
+{
+  int i;
+
+  if (!s)
+    return -1;
+
+  for (i = 0; i <= MESSAGING_MENU_STATUS_OFFLINE; i++)
+    {
+      if (g_str_equal (s, status_ids[i]))
+        return i;
+    }
+
+  return -1;
+}
+
+static void
+global_status_changed (IndicatorMessagesService *service,
+                       const gchar *status_str,
+                       gpointer user_data)
+{
+  MessagingMenuApp *app = user_data;
+  int status;
+
+  status = status_from_string (status_str);
+  g_return_if_fail (status >= 0);
+
+  app->status = (MessagingMenuStatus)status;
+  g_signal_emit (app, signals[STATUS_CHANGED], 0, app->status);
 }
 
 static void

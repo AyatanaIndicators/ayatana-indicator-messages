@@ -246,10 +246,26 @@ radio_item_activate (GSimpleAction *action,
 	g_action_change_state (G_ACTION (action), parameter);
 }
 
+static gboolean
+g_action_state_equal (GAction *action,
+		      GVariant *value)
+{
+	GVariant *state;
+	gboolean eq;
+
+	state = g_action_get_state (action);
+	g_return_val_if_fail (state != NULL, FALSE);
+
+	eq = g_variant_equal (state, value);
+
+	g_variant_unref (state);
+	return eq;
+}
+
 static void
-change_status (GSimpleAction *action,
-	       GVariant *value,
-	       gpointer user_data)
+change_status_action (GSimpleAction *action,
+		      GVariant *value,
+		      gpointer user_data)
 {
 	const gchar *status;
 
@@ -261,9 +277,11 @@ change_status (GSimpleAction *action,
 			  g_str_equal (status, "invisible") ||
 			  g_str_equal (status, "offline"));
 
-	g_simple_action_set_state (action, value);
-
-	g_message ("changing status to %s", g_variant_get_string (value, NULL));
+	if (!g_action_state_equal (G_ACTION (action), value)) {
+		g_message ("%s", status);
+		g_simple_action_set_state (action, value);
+		indicator_messages_service_emit_status_changed (messages_service, status);
+	}
 }
 
 static void
@@ -302,6 +320,22 @@ unregister_application (IndicatorMessagesService *service,
 	indicator_messages_service_complete_unregister_application (service, invocation);
 }
 
+static void
+set_status (IndicatorMessagesService *service,
+	    GDBusMethodInvocation *invocation,
+	    const gchar *status_str,
+	    gpointer user_data)
+{
+	GAction *status;
+
+	status = g_simple_action_group_lookup (actions, "status");
+	g_return_if_fail (status != NULL);
+
+	g_action_change_state (status, g_variant_new_string (status_str));
+
+	indicator_messages_service_complete_set_status (service, invocation);
+}
+
 GSimpleActionGroup *
 create_action_group ()
 {
@@ -319,7 +353,7 @@ create_action_group ()
 	status = g_simple_action_new_stateful ("status", G_VARIANT_TYPE ("s"),
 					       g_variant_new ("s", "offline"));
 	g_signal_connect (status, "activate", G_CALLBACK (radio_item_activate), NULL);
-	g_signal_connect (status, "change-state", G_CALLBACK (change_status), NULL);
+	g_signal_connect (status, "change-state", G_CALLBACK (change_status_action), NULL);
 
 	clear = g_simple_action_new ("clear", NULL);
 	g_simple_action_set_enabled (clear, FALSE);
@@ -427,6 +461,8 @@ main (int argc, char ** argv)
 			  G_CALLBACK (register_application), NULL);
 	g_signal_connect (messages_service, "handle-unregister-application",
 			  G_CALLBACK (unregister_application), NULL);
+	g_signal_connect (messages_service, "handle-set-status",
+			  G_CALLBACK (set_status), NULL);
 
 	menu = g_menu_new ();
 	status_items = create_status_section ();
