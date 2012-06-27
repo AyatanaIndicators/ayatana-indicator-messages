@@ -38,6 +38,7 @@ static GHashTable *applications;
 
 static GSimpleActionGroup *actions;
 static GActionMuxer *action_muxer;
+static GMenu *toplevel_menu;
 static GMenu *menu;
 static GSettings *settings;
 
@@ -88,13 +89,17 @@ draws_attention_changed (GObject *object,
 			 GParamSpec *pspec,
 			 gpointer user_data)
 {
+	GSimpleAction *messages;
 	GSimpleAction *clear;
 	gboolean attention;
 
+	messages = G_SIMPLE_ACTION (g_simple_action_group_lookup (actions, "messages"));
 	clear = G_SIMPLE_ACTION (g_simple_action_group_lookup (actions, "clear"));
-	g_return_if_fail (clear != NULL);
+	g_return_if_fail (messages != NULL && clear != NULL);
 
 	attention = g_hash_table_find (applications, app_section_draws_attention, NULL) != NULL;
+
+	g_simple_action_set_state (messages, g_variant_new_boolean (attention));
 	g_simple_action_set_enabled (clear, attention);
 }
 
@@ -294,10 +299,15 @@ GSimpleActionGroup *
 create_action_group ()
 {
 	GSimpleActionGroup *actions;
+	GSimpleAction *messages;
 	GSimpleAction *clear;
 	GSimpleAction *status;
 
 	actions = g_simple_action_group_new ();
+
+	/* state of the messages action mirrors "draws-attention" */
+	messages = g_simple_action_new_stateful ("messages", G_VARIANT_TYPE ("b"),
+						 g_variant_new_boolean (FALSE));
 
 	status = g_simple_action_new_stateful ("status", G_VARIANT_TYPE ("s"),
 					       g_variant_new ("s", "offline"));
@@ -308,6 +318,7 @@ create_action_group ()
 	g_simple_action_set_enabled (clear, FALSE);
 	g_signal_connect (clear, "activate", G_CALLBACK (clear_action_activate), NULL);
 
+	g_simple_action_group_insert (actions, G_ACTION (messages));
 	g_simple_action_group_insert (actions, G_ACTION (status));
 	g_simple_action_group_insert (actions, G_ACTION (clear));
 
@@ -353,7 +364,7 @@ got_bus (GObject *object,
 	}
 
 	g_dbus_connection_export_menu_model (bus, INDICATOR_MESSAGES_DBUS_OBJECT,
-					     G_MENU_MODEL (menu), &error);
+					     G_MENU_MODEL (toplevel_menu), &error);
 	if (error) {
 		g_warning ("unable to export menu on dbus: %s", error->message);
 		g_error_free (error);
@@ -370,6 +381,7 @@ main (int argc, char ** argv)
 	IndicatorService * service = NULL;
 	MessageServiceDbus * dbus_interface = NULL;
 	GMenuModel *status_items;
+	GMenuItem *header;
 
 	/* Glib init */
 	g_type_init();
@@ -405,6 +417,13 @@ main (int argc, char ** argv)
 	status_items = create_status_section ();
 	g_menu_append_section (menu, _("Status"), status_items);
 	g_menu_append (menu, _("Clear"), "clear");
+
+	toplevel_menu = g_menu_new ();
+	header = g_menu_item_new (NULL, "messages");
+	g_menu_item_set_submenu (header, G_MENU_MODEL (menu));
+	g_menu_item_set_attribute (header, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", "indicator-messages");
+	g_menu_append_item (toplevel_menu, header);
+	g_object_unref (header);
 
 	settings = g_settings_new ("com.canonical.indicator.messages");
 
