@@ -56,6 +56,7 @@ const gchar * app_section_get_desktop (AppSection * appitem);
 GActionGroup * app_section_get_actions (AppSection *self);
 GMenuModel * app_section_get_menu (AppSection *appitem);
 GAppInfo * app_section_get_app_info (AppSection *appitem);
+gboolean app_section_get_draws_attention (AppSection *appitem);
 void app_section_set_object_path (AppSection *self,
 				  GDBusConnection *bus,
 				  const gchar *bus_name,

@@ -73,6 +73,31 @@ actions_changed (GObject *object,
 	g_free (id);
 }
 
+
+static gboolean
+app_section_draws_attention (gpointer key,
+			     gpointer value,
+			     gpointer user_data)
+{
+	AppSection *section = value;
+	return app_section_get_draws_attention (section);
+}
+
+static void
+draws_attention_changed (GObject *object,
+			 GParamSpec *pspec,
+			 gpointer user_data)
+{
+	GSimpleAction *clear;
+	gboolean attention;
+
+	clear = G_SIMPLE_ACTION (g_simple_action_group_lookup (actions, "clear"));
+	g_return_if_fail (clear != NULL);
+
+	attention = g_hash_table_find (applications, app_section_draws_attention, NULL) != NULL;
+	g_simple_action_set_enabled (clear, attention);
+}
+
 static AppSection *
 add_application (const gchar *desktop_id)
 {
@@ -98,6 +123,8 @@ add_application (const gchar *desktop_id)
 		g_action_muxer_insert (action_muxer, id, app_section_get_actions (section));
 		g_signal_connect (section, "notify::actions",
 				  G_CALLBACK (actions_changed), NULL);
+		g_signal_connect (section, "notify::draws-attention",
+				  G_CALLBACK (draws_attention_changed), NULL);
 
 		/* TODO insert it at the right position (alphabetically by application name) */
 		menuitem = g_menu_item_new_section (NULL, app_section_get_menu (section));
@@ -132,6 +159,9 @@ remove_application (const char *desktop_id)
 		if (pos >= 0)
 			g_menu_remove (menu, pos);
 		g_action_muxer_remove (action_muxer, id);
+
+		g_signal_handlers_disconnect_by_func (section, actions_changed, NULL);
+		g_signal_handlers_disconnect_by_func (section, draws_attention_changed, NULL);
 	}
 	else {
 		g_warning ("could not remove '%s', it's not registered", desktop_id);
@@ -208,15 +238,6 @@ change_status (GSimpleAction *action,
 	       gpointer user_data)
 {
 	g_message ("changing status to %s", g_variant_get_string (value, NULL));
-}
-
-static void
-clear_action_handler (MessageServiceDbus *msd,
-		      gboolean attention,
-		      gpointer user_data)
-{
-	GSimpleAction *action = user_data;
-	g_simple_action_set_enabled (action, attention);
 }
 
 static void
@@ -335,10 +356,6 @@ main (int argc, char ** argv)
 
 	action_muxer = g_action_muxer_new ();
 	g_action_muxer_insert (action_muxer, NULL, G_ACTION_GROUP (actions));
-
-	g_signal_connect (dbus_interface, MESSAGE_SERVICE_DBUS_SIGNAL_ATTENTION_CHANGED,
-			  G_CALLBACK(clear_action_handler),
-			  g_action_map_lookup_action (G_ACTION_MAP (actions), "clear"));
 
 	g_signal_connect (dbus_interface, MESSAGE_SERVICE_DBUS_SIGNAL_REGISTER_APPLICATION,
 			  G_CALLBACK (register_application), NULL);

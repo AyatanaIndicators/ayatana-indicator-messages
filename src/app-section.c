@@ -45,6 +45,8 @@ struct _AppSectionPrivate
 	GMenuModel *remote_menu;
 	GActionGroup *actions;
 
+	gboolean draws_attention;
+
 	guint name_watch_id;
 };
 
@@ -52,6 +54,7 @@ enum {
 	PROP_0,
 	PROP_APPINFO,
 	PROP_ACTIONS,
+	PROP_DRAWS_ATTENTION,
 	NUM_PROPERTIES
 };
 
@@ -74,6 +77,18 @@ static void activate_cb              (GSimpleAction *action,
 				      gpointer userdata);
 static void app_section_set_app_info (AppSection *self,
 				      GDesktopAppInfo *appinfo);
+static gboolean any_action_draws_attention	(GActionGroup *group,
+						 const gchar *ignored_action);
+static void	action_added			(GActionGroup *group,
+						 const gchar *action_name,
+						 gpointer user_data);
+static void	action_state_changed		(GActionGroup *group,
+						 const gchar *action_name,
+						 GVariant *value,
+						 gpointer user_data);
+static void	action_removed			(GActionGroup *group,
+						 const gchar *action_name,
+						 gpointer user_data);
 
 /* GObject Boilerplate */
 G_DEFINE_TYPE (AppSection, app_section, G_TYPE_OBJECT);
@@ -101,6 +116,12 @@ app_section_class_init (AppSectionClass *klass)
 							G_TYPE_ACTION_GROUP,
 							G_PARAM_READABLE);
 
+	properties[PROP_DRAWS_ATTENTION] = g_param_spec_boolean ("draws-attention",
+								 "Draws attention",
+								 "Whether the section currently draws attention",
+								 FALSE,
+								 G_PARAM_READABLE);
+
 	g_object_class_install_properties (object_class, NUM_PROPERTIES, properties);
 }
 
@@ -120,6 +141,8 @@ app_section_init (AppSection *self)
 	priv->menu = g_menu_new ();
 	priv->static_shortcuts = g_simple_action_group_new ();
 
+	priv->draws_attention = FALSE;
+
 	return;
 }
 
@@ -135,6 +158,10 @@ app_section_get_property (GObject    *object,
 	{
 	case PROP_APPINFO:
 		g_value_set_object (value, app_section_get_app_info (self));
+		break;
+
+	case PROP_DRAWS_ATTENTION:
+		g_value_set_boolean (value, app_section_get_draws_attention (self));
 		break;
 
 	default:
@@ -174,7 +201,15 @@ app_section_dispose (GObject *object)
 		priv->name_watch_id = 0;
 	}
 
-	g_clear_object (&priv->actions);
+	if (priv->actions) {
+		g_object_disconnect (priv->actions,
+				     "any_signal::action-added", action_added, self,
+				     "any_signal::action-state-changed", action_state_changed, self,
+				     "any_signal::action-removed", action_removed, self,
+				     NULL);
+		g_clear_object (&priv->actions);
+	}
+
 	g_clear_object (&priv->remote_menu);
 
 	if (priv->ids != NULL) {
@@ -334,6 +369,13 @@ app_section_get_app_info (AppSection *self)
 	return G_APP_INFO (priv->appinfo);
 }
 
+gboolean
+app_section_get_draws_attention (AppSection *self)
+{
+	AppSectionPrivate * priv = self->priv;
+	return priv->draws_attention;
+}
+
 static void
 application_vanished (GDBusConnection *bus,
 		      const gchar *name,
@@ -367,6 +409,14 @@ app_section_set_object_path (AppSection *self,
 	app_section_unset_object_path (self);
 
 	priv->actions = G_ACTION_GROUP (g_dbus_action_group_get (bus, bus_name, object_path));
+
+	priv->draws_attention = any_action_draws_attention (priv->actions, NULL);
+	g_object_connect (priv->actions,
+			  "signal::action-added", action_added, self,
+			  "signal::action-state-changed", action_state_changed, self,
+			  "signal::action-removed", action_removed, self,
+			  NULL);
+
 	priv->remote_menu = G_MENU_MODEL (g_dbus_menu_model_get (bus, bus_name, object_path));
 
 	g_menu_append_section (priv->menu, NULL, priv->remote_menu);
@@ -376,6 +426,7 @@ app_section_set_object_path (AppSection *self,
 							      self, NULL);
 
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
 	g_object_thaw_notify (G_OBJECT (self));
 }
 
@@ -396,7 +447,15 @@ app_section_unset_object_path (AppSection *self)
 		g_bus_unwatch_name (priv->name_watch_id);
 		priv->name_watch_id = 0;
 	}
-	g_clear_object (&priv->actions);
+
+	if (priv->actions) {
+		g_object_disconnect (priv->actions,
+				     "any_signal::action-added", action_added, self,
+				     "any_signal::action-state-changed", action_state_changed, self,
+				     "any_signal::action-removed", action_removed, self,
+				     NULL);
+		g_clear_object (&priv->actions);
+	}
 
 	if (priv->remote_menu) {
 		/* the last menu item points is linked to the app's menumodel */
@@ -405,6 +464,94 @@ app_section_unset_object_path (AppSection *self)
 		g_clear_object (&priv->remote_menu);
 	}
 
+	priv->draws_attention = FALSE;
+
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
 }
 
+static gboolean
+action_draws_attention (GVariant *state)
+{
+	gboolean attention;
+
+	if (state && g_variant_is_of_type (state, G_VARIANT_TYPE ("(uxsb)")))
+		g_variant_get_child (state, 3, "b", &attention);
+	else
+		attention = FALSE;
+
+	return attention;
+}
+
+static gboolean
+any_action_draws_attention (GActionGroup *group,
+			    const gchar *ignored_action)
+{
+	gchar **actions;
+	gchar **it;
+	gboolean attention = FALSE;
+
+	actions = g_action_group_list_actions (group);
+
+	for (it = actions; *it && !attention; it++) {
+		GVariant *state;
+
+		if (ignored_action && g_str_equal (ignored_action, *it))
+			continue;
+
+		state = g_action_group_get_action_state (group, *it);
+		if (state) {
+			attention = action_draws_attention (state);
+			g_variant_unref (state);
+		}
+	}
+
+	g_strfreev (actions);
+	return attention;
+}
+
+static void
+action_added (GActionGroup *group,
+	      const gchar *action_name,
+	      gpointer user_data)
+{
+	AppSection *self = user_data;
+	GVariant *state;
+
+	state = g_action_group_get_action_state (group, action_name);
+	if (state) {
+		self->priv->draws_attention |= action_draws_attention (state);
+		g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
+		g_variant_unref (state);
+	}
+}
+
+static void
+action_state_changed (GActionGroup *group,
+		      const gchar *action_name,
+		      GVariant *value,
+		      gpointer user_data)
+{
+	AppSection *self = user_data;
+
+	self->priv->draws_attention = any_action_draws_attention (group, NULL);
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
+}
+
+static void
+action_removed (GActionGroup *group,
+		const gchar *action_name,
+		gpointer user_data)
+{
+	AppSection *self = user_data;
+	GVariant *state;
+
+	state = g_action_group_get_action_state (group, action_name);
+	if (!state)
+		return;
+
+	self->priv->draws_attention = any_action_draws_attention (group, action_name);
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
+
+	g_variant_unref (state);
+}

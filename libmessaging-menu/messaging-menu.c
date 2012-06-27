@@ -463,7 +463,7 @@ messaging_menu_app_insert_source_with_count (MessagingMenuApp *app,
                                              guint             count)
 {
   messaging_menu_app_insert_source_action (app, position, id, icon, label,
-                                           g_variant_new ("(uxs)", count, 0, ""));
+                                           g_variant_new ("(uxsb)", count, 0, "", FALSE));
 }
 
 /**
@@ -517,7 +517,7 @@ messaging_menu_app_insert_source_with_time (MessagingMenuApp *app,
                                             gint64            time)
 {
   messaging_menu_app_insert_source_action (app, position, id, icon, label,
-                                           g_variant_new ("(uxs)", 0, time, ""));
+                                           g_variant_new ("(uxsb)", 0, time, "", FALSE));
 }
 
 /**
@@ -573,7 +573,7 @@ messaging_menu_app_insert_source_with_string (MessagingMenuApp *app,
                                               const gchar      *str)
 {
   messaging_menu_app_insert_source_action (app, position, id, icon, label,
-                                           g_variant_new ("(uxs)", 0, 0, str));
+                                           g_variant_new ("(uxsb)", 0, 0, str, FALSE));
 }
 
 /**
@@ -673,7 +673,7 @@ void messaging_menu_app_set_source_count (MessagingMenuApp *app,
                                           guint             count)
 {
   messaging_menu_app_set_source_action (app, source_id,
-                                        g_variant_new ("(uxs)", count, 0, ""));
+                                        g_variant_new ("(uxsb)", count, 0, "", FALSE));
 }
 
 /**
@@ -693,7 +693,7 @@ messaging_menu_app_set_source_time (MessagingMenuApp *app,
                                     gint64            time)
 {
   messaging_menu_app_set_source_action (app, source_id,
-                                        g_variant_new ("(uxs)", 0, time, ""));
+                                        g_variant_new ("(uxsb)", 0, time, "", FALSE));
 }
 
 /**
@@ -713,7 +713,36 @@ messaging_menu_app_set_source_string (MessagingMenuApp *app,
                                       const gchar      *str)
 {
   messaging_menu_app_set_source_action (app, source_id,
-                                        g_variant_new ("(uxs)", 0, 0, str));
+                                        g_variant_new ("(uxsb)", 0, 0, str, FALSE));
+}
+
+static void
+messaging_menu_app_set_attention (MessagingMenuApp *app,
+                                  const gchar      *source_id,
+                                  gboolean          attention)
+{
+  GAction *action;
+  GVariant *state;
+  guint32 count;
+  gint64 time;
+  const gchar *str ="";
+
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (source_id != NULL);
+
+  action = g_simple_action_group_lookup (app->source_actions, source_id);
+  if (action == NULL)
+    {
+      g_warning ("a source with id '%s' doesn't exist", source_id);
+      return;
+    }
+
+  state = g_action_get_state (action);
+  g_variant_get (state, "(ux&sb)", &count, &time, &str, NULL);
+  g_variant_unref (state);
+
+  g_simple_action_set_state (G_SIMPLE_ACTION (action),
+                             g_variant_new ("(uxsb)", count, time, str, attention));
 }
 
 /**
@@ -731,7 +760,7 @@ void
 messaging_menu_app_draw_attention (MessagingMenuApp *app,
                                    const gchar      *source_id)
 {
-  g_warning ("%s: not yet implemented", G_STRFUNC);
+  messaging_menu_app_set_attention (app, source_id, TRUE);
 }
 
 /**
@@ -748,5 +777,5 @@ void
 messaging_menu_app_remove_attention (MessagingMenuApp *app,
                                      const gchar      *source_id)
 {
-  g_warning ("%s: not yet implemented", G_STRFUNC);
+  messaging_menu_app_set_attention (app, source_id, FALSE);
 }
