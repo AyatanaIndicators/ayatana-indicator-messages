@@ -34,8 +34,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator-image-helper.h>
 #include <libindicator/indicator-service-manager.h>
 
-#include <menu-factory-gtk.h>
-
 #include "dbus-data.h"
 #include "gen-messages-service.xml.h"
 
@@ -81,7 +79,8 @@ static void indicator_messages_init       (IndicatorMessages *self);
 static void indicator_messages_dispose    (GObject *object);
 static void indicator_messages_finalize   (GObject *object);
 static GtkImage * get_icon                (IndicatorObject * io);
-static GtkMenu * get_menu                 (IndicatorObject * io);
+static GMenuModel * get_menu_model        (IndicatorObject * io);
+static GActionGroup * get_actions         (IndicatorObject * io);
 static void indicator_messages_middle_click (IndicatorObject * io,
                                              IndicatorObjectEntry * entry,
                                              guint time, gpointer data);
@@ -126,7 +125,8 @@ indicator_messages_class_init (IndicatorMessagesClass *klass)
 	IndicatorObjectClass * io_class = INDICATOR_OBJECT_CLASS(klass);
 
 	io_class->get_image = get_icon;
-	io_class->get_menu = get_menu;
+	io_class->get_menu_model = get_menu_model;
+	io_class->get_actions = get_actions;
 	io_class->get_accessible_desc = get_accessible_desc;
 	io_class->get_name_hint = get_name_hint;
 	io_class->secondary_activate = indicator_messages_middle_click;
@@ -416,16 +416,18 @@ get_icon (IndicatorObject * io)
 }
 
 /* Builds the menu for the indicator */
-static GtkMenu *
-get_menu (IndicatorObject * io)
+static GMenuModel *
+get_menu_model (IndicatorObject * io)
 {
 	IndicatorMessages *self = INDICATOR_MESSAGES (io);
-	GtkMenu *menu;
+	return self->menu;
+}
 
-	menu = menu_factory_gtk_new_menu (self->menu, self->actions);
-	gtk_widget_show_all (GTK_WIDGET (menu));
-
-	return menu;
+static GActionGroup *
+get_actions (IndicatorObject *io)
+{
+	IndicatorMessages *self = INDICATOR_MESSAGES (io);
+	return self->actions;
 }
 
 /* Returns the accessible description of the indicator */
