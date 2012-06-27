@@ -41,6 +41,7 @@ static GSimpleActionGroup *actions;
 static GActionMuxer *action_muxer;
 static GMenu *toplevel_menu;
 static GMenu *menu;
+static GMenuModel *chat_section;
 static GSettings *settings;
 
 
@@ -104,6 +105,36 @@ draws_attention_changed (GObject *object,
 	g_simple_action_set_enabled (clear, attention);
 }
 
+static gboolean
+app_section_uses_chat (gpointer key,
+		       gpointer value,
+		       gpointer user_data)
+{
+	AppSection *section = value;
+	return app_section_get_uses_chat_status (section);
+}
+
+static void
+uses_chat_status_changed (GObject *object,
+			  GParamSpec *pspec,
+			  gpointer user_data)
+{
+	gboolean show_chat;
+	GMenuModel *first_section;
+
+	show_chat = g_hash_table_find (applications, app_section_uses_chat, NULL) != NULL;
+
+	first_section = g_menu_model_get_item_link (G_MENU_MODEL (menu), 0, G_MENU_LINK_SECTION);
+	if (first_section == chat_section) {
+		if (!show_chat)
+			g_menu_remove (menu, 0);
+	}
+	else {
+		if (show_chat)
+			g_menu_insert_section (menu, 0, NULL, chat_section);
+	}
+}
+
 static AppSection *
 add_application (const gchar *desktop_id)
 {
@@ -131,6 +162,8 @@ add_application (const gchar *desktop_id)
 				  G_CALLBACK (actions_changed), NULL);
 		g_signal_connect (section, "notify::draws-attention",
 				  G_CALLBACK (draws_attention_changed), NULL);
+		g_signal_connect (section, "notify::uses-chat-status",
+				  G_CALLBACK (uses_chat_status_changed), NULL);
 
 		/* TODO insert it at the right position (alphabetically by application name) */
 		menuitem = g_menu_item_new_section (NULL, app_section_get_menu (section));
@@ -429,7 +462,6 @@ main (int argc, char ** argv)
 {
 	GMainLoop * mainloop = NULL;
 	IndicatorService * service = NULL;
-	GMenuModel *status_items;
 	GMenuItem *header;
 
 	/* Glib init */
@@ -465,8 +497,7 @@ main (int argc, char ** argv)
 			  G_CALLBACK (set_status), NULL);
 
 	menu = g_menu_new ();
-	status_items = create_status_section ();
-	g_menu_append_section (menu, NULL, status_items);
+	chat_section = create_status_section ();
 	g_menu_append (menu, _("Clear"), "clear");
 
 	toplevel_menu = g_menu_new ();
@@ -486,7 +517,7 @@ main (int argc, char ** argv)
 
 	/* Clean up */
 	g_object_unref (messages_service);
-	g_object_unref (status_items);
+	g_object_unref (chat_section);
 	g_object_unref (settings);
 	g_hash_table_unref (applications);
 	return 0;

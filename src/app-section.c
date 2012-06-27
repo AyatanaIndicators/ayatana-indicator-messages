@@ -46,6 +46,7 @@ struct _AppSectionPrivate
 	GActionGroup *actions;
 
 	gboolean draws_attention;
+	gboolean uses_chat_status;
 
 	guint name_watch_id;
 };
@@ -55,6 +56,7 @@ enum {
 	PROP_APPINFO,
 	PROP_ACTIONS,
 	PROP_DRAWS_ATTENTION,
+	PROP_USES_CHAT_STATUS,
 	NUM_PROPERTIES
 };
 
@@ -123,6 +125,12 @@ app_section_class_init (AppSectionClass *klass)
 								 FALSE,
 								 G_PARAM_READABLE);
 
+	properties[PROP_USES_CHAT_STATUS] = g_param_spec_boolean ("uses-chat-status",
+								  "Uses chat status",
+								  "Whether the section uses the global chat status",
+								  FALSE,
+								  G_PARAM_READABLE);
+
 	g_object_class_install_properties (object_class, NUM_PROPERTIES, properties);
 }
 
@@ -163,6 +171,10 @@ app_section_get_property (GObject    *object,
 
 	case PROP_DRAWS_ATTENTION:
 		g_value_set_boolean (value, app_section_get_draws_attention (self));
+		break;
+
+	case PROP_USES_CHAT_STATUS:
+		g_value_set_boolean (value, app_section_get_uses_chat_status (self));
 		break;
 
 	default:
@@ -245,11 +257,58 @@ nick_activate_cb (GSimpleAction *action,
 }
 
 static void
+keyfile_loaded (GObject *source_object,
+		GAsyncResult *result,
+		 gpointer user_data)
+{
+	AppSection *self = user_data;
+	gchar *contents;
+	gsize length;
+	GKeyFile *keyfile;
+	GError *error = NULL;
+
+	if (!g_file_load_contents_finish (G_FILE (source_object), result,
+					 &contents, &length, NULL, &error)) {
+		g_warning ("could not read key file: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	keyfile = g_key_file_new ();
+	if (!g_key_file_load_from_data (keyfile, contents, length, 0, &error)) {
+		g_warning ("could not read key file: %s", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	self->priv->uses_chat_status = g_key_file_get_boolean (keyfile,
+							       G_KEY_FILE_DESKTOP_GROUP,
+							       "X-MessagingMenu-UsesChatStatus",
+							       &error);
+	if (error) {
+		if (error->code != G_KEY_FILE_ERROR_KEY_NOT_FOUND) {
+			g_warning ("could not read X-MessagingMenu-UsesChatSection: %s",
+				   error->message);
+		}
+		g_error_free (error);
+		goto out;
+	}
+
+	if (self->priv->uses_chat_status)
+		g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USES_CHAT_STATUS]);
+
+out:
+	g_key_file_free (keyfile);
+	g_free (contents);
+}
+
+static void
 app_section_set_app_info (AppSection *self,
 			  GDesktopAppInfo *appinfo)
 {
 	AppSectionPrivate *priv = self->priv;
 	GSimpleAction *launch;
+	GFile *keyfile;
 
 	g_return_if_fail (priv->appinfo == NULL);
 
@@ -287,6 +346,10 @@ app_section_set_app_info (AppSection *self,
 
 		g_free(name);
 	}
+
+	keyfile = g_file_new_for_path (g_desktop_app_info_get_filename (priv->appinfo));
+	g_file_load_contents_async (keyfile, NULL, keyfile_loaded, self);
+	g_object_unref (keyfile);
 
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_APPINFO]);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
@@ -466,6 +529,7 @@ app_section_set_object_path (AppSection *self,
 
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USES_CHAT_STATUS]);
 	g_object_thaw_notify (G_OBJECT (self));
 }
 
@@ -507,6 +571,7 @@ app_section_unset_object_path (AppSection *self)
 
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USES_CHAT_STATUS]);
 }
 
 static gboolean
@@ -593,4 +658,13 @@ action_removed (GActionGroup *group,
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
 
 	g_variant_unref (state);
+}
+
+gboolean
+app_section_get_uses_chat_status (AppSection *self)
+{
+	AppSectionPrivate * priv = self->priv;
+
+	/* chat status is only useful when the app is running */
+	return priv->uses_chat_status && priv->actions;
 }
