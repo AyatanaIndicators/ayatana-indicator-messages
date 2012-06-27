@@ -466,7 +466,7 @@ main (int argc, char ** argv)
 
 	menu = g_menu_new ();
 	status_items = create_status_section ();
-	g_menu_append_section (menu, _("Status"), status_items);
+	g_menu_append_section (menu, NULL, status_items);
 	g_menu_append (menu, _("Clear"), "clear");
 
 	toplevel_menu = g_menu_new ();
