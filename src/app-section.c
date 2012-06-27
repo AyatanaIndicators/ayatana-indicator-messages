@@ -89,6 +89,7 @@ static void	action_state_changed		(GActionGroup *group,
 static void	action_removed			(GActionGroup *group,
 						 const gchar *action_name,
 						 gpointer user_data);
+static gboolean	action_draws_attention		(GVariant *state);
 
 /* GObject Boilerplate */
 G_DEFINE_TYPE (AppSection, app_section, G_TYPE_OBJECT);
@@ -374,6 +375,44 @@ app_section_get_draws_attention (AppSection *self)
 {
 	AppSectionPrivate * priv = self->priv;
 	return priv->draws_attention;
+}
+
+void
+app_section_clear_draws_attention (AppSection *self)
+{
+	AppSectionPrivate * priv = self->priv;
+	gchar **action_names;
+	gchar **it;
+
+	if (priv->actions == NULL)
+		return;
+
+	action_names = g_action_group_list_actions (priv->actions);
+
+	for (it = action_names; *it; it++) {
+		GVariant *state;
+
+		state = g_action_group_get_action_state (priv->actions, *it);
+		if (!state)
+			continue;
+
+		/* clear draws-attention while preserving other state */
+		if (action_draws_attention (state)) {
+			guint32 count;
+			gint64 time;
+			const gchar *str;
+			GVariant *new_state;
+
+			g_variant_get (state, "(ux&sb)", &count, &time, &str, NULL);
+
+			new_state = g_variant_new ("(uxsb)", count, time, str, FALSE);
+			g_action_group_change_action_state (priv->actions, *it, new_state);
+		}
+
+		g_variant_unref (state);
+	}
+
+	g_strfreev (action_names);
 }
 
 static void

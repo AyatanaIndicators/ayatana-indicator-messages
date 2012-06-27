@@ -216,12 +216,20 @@ service_shutdown (IndicatorService * service, gpointer user_data)
 }
 
 static void
+app_section_remove_attention (gpointer key,
+			      gpointer value,
+			      gpointer user_data)
+{
+	AppSection *section = value;
+	app_section_clear_draws_attention (section);
+}
+
+static void
 clear_action_activate (GSimpleAction *simple,
 		       GVariant *param,
 		       gpointer user_data)
 {
-	MessageServiceDbus *msg_service = user_data;
-	message_service_dbus_set_attention(msg_service, FALSE);
+	g_hash_table_foreach (applications, app_section_remove_attention, NULL);
 }
 
 static void
@@ -352,7 +360,7 @@ main (int argc, char ** argv)
 	g_bus_get (G_BUS_TYPE_SESSION, NULL, got_bus, NULL);
 
 	actions = g_simple_action_group_new ();
-	g_simple_action_group_add_entries (actions, entries, G_N_ELEMENTS (entries), dbus_interface);
+	g_simple_action_group_add_entries (actions, entries, G_N_ELEMENTS (entries), NULL);
 
 	action_muxer = g_action_muxer_new ();
 	g_action_muxer_insert (action_muxer, NULL, G_ACTION_GROUP (actions));
