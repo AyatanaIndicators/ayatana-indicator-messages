@@ -278,6 +278,30 @@ unregister_application (MessageServiceDbus *msd,
 	g_settings_strv_remove (settings, "applications", desktop_id);
 }
 
+GSimpleActionGroup *
+create_action_group ()
+{
+	GSimpleActionGroup *actions;
+	GSimpleAction *clear;
+	GSimpleAction *status;
+
+	actions = g_simple_action_group_new ();
+
+	status = g_simple_action_new_stateful ("status", G_VARIANT_TYPE ("s"),
+					       g_variant_new ("s", "offline"));
+	g_signal_connect (status, "activate", G_CALLBACK (radio_item_activate), NULL);
+	g_signal_connect (status, "change-state", G_CALLBACK (change_status), NULL);
+
+	clear = g_simple_action_new ("clear", NULL);
+	g_simple_action_set_enabled (clear, FALSE);
+	g_signal_connect (clear, "activate", G_CALLBACK (clear_action_activate), NULL);
+
+	g_simple_action_group_insert (actions, G_ACTION (status));
+	g_simple_action_group_insert (actions, G_ACTION (clear));
+
+	return actions;
+}
+
 GMenuModel *
 create_status_section ()
 {
@@ -333,10 +357,6 @@ main (int argc, char ** argv)
 	GMainLoop * mainloop = NULL;
 	IndicatorService * service = NULL;
 	MessageServiceDbus * dbus_interface = NULL;
-	GActionEntry entries[] = {
-		{ "status", radio_item_activate, "s", "'offline'", change_status },
-		{ "clear", clear_action_activate }
-	};
 	GMenuModel *status_items;
 
 	/* Glib init */
@@ -359,8 +379,7 @@ main (int argc, char ** argv)
 
 	g_bus_get (G_BUS_TYPE_SESSION, NULL, got_bus, NULL);
 
-	actions = g_simple_action_group_new ();
-	g_simple_action_group_add_entries (actions, entries, G_N_ELEMENTS (entries), NULL);
+	actions = create_action_group ();
 
 	action_muxer = g_action_muxer_new ();
 	g_action_muxer_insert (action_muxer, NULL, G_ACTION_GROUP (actions));
