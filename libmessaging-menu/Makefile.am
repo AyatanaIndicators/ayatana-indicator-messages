@@ -5,6 +5,8 @@ libmessaging_menu_ladir = $(includedir)/messaging-menu
 
 libmessaging_menu_la_SOURCES = \
 	messaging-menu.c \
+	gtupleaction.c \
+	gtupleaction.h \
 	$(BUILT_SOURCES)
 
 libmessaging_menu_la_HEADERS = \

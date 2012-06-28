@@ -19,6 +19,7 @@
 
 #include "messaging-menu.h"
 #include "indicator-messages-service.h"
+#include "gtupleaction.h"
 
 #include <gio/gdesktopappinfo.h>
 
@@ -43,6 +44,14 @@ struct _MessagingMenuApp
 };
 
 G_DEFINE_TYPE (MessagingMenuApp, messaging_menu_app, G_TYPE_OBJECT);
+
+enum
+{
+  INDEX_COUNT,
+  INDEX_TIME,
+  INDEX_STRING,
+  INDEX_DRAWS_ATTENTION
+};
 
 enum {
   PROP_0,
@@ -392,9 +401,9 @@ global_status_changed (IndicatorMessagesService *service,
 }
 
 static void
-source_action_activated (GSimpleAction *action,
-                         GVariant      *parameter,
-                         gpointer       user_data)
+source_action_activated (GTupleAction *action,
+                         GVariant     *parameter,
+                         gpointer      user_data)
 {
   MessagingMenuApp *app = user_data;
   const gchar *name = g_action_get_name (G_ACTION (action));
@@ -411,7 +420,7 @@ messaging_menu_app_insert_source_action (MessagingMenuApp *app,
                                          const gchar      *label,
                                          GVariant         *state)
 {
-  GSimpleAction *action;
+  GTupleAction *action;
   GMenuItem *menuitem;
 
   g_return_if_fail (MESSAGING_MENU_IS_APP (app));
@@ -423,7 +432,7 @@ messaging_menu_app_insert_source_action (MessagingMenuApp *app,
       return;
     }
 
-  action = g_simple_action_new_stateful (id, NULL, state);
+  action = g_tuple_action_new (id, state);
   g_signal_connect (action, "activate",
                     G_CALLBACK (source_action_activated), app);
   g_simple_action_group_insert (app->source_actions, G_ACTION (action));
@@ -443,7 +452,8 @@ messaging_menu_app_insert_source_action (MessagingMenuApp *app,
 static void
 messaging_menu_app_set_source_action (MessagingMenuApp *app,
                                       const gchar      *source_id,
-                                      GVariant         *state)
+                                      gsize             index,
+                                      GVariant         *child)
 {
   GAction *action;
 
@@ -457,7 +467,7 @@ messaging_menu_app_set_source_action (MessagingMenuApp *app,
       return;
     }
 
-  g_simple_action_set_state (G_SIMPLE_ACTION (action), state);
+  g_tuple_action_set_child (G_TUPLE_ACTION (action), index, child);
 }
 
 /**
@@ -744,8 +754,8 @@ void messaging_menu_app_set_source_count (MessagingMenuApp *app,
                                           const gchar      *source_id,
                                           guint             count)
 {
-  messaging_menu_app_set_source_action (app, source_id,
-                                        g_variant_new ("(uxsb)", count, 0, "", FALSE));
+  messaging_menu_app_set_source_action (app, source_id, INDEX_COUNT,
+                                        g_variant_new_uint32 (count));
 }
 
 /**
@@ -764,8 +774,8 @@ messaging_menu_app_set_source_time (MessagingMenuApp *app,
                                     const gchar      *source_id,
                                     gint64            time)
 {
-  messaging_menu_app_set_source_action (app, source_id,
-                                        g_variant_new ("(uxsb)", 0, time, "", FALSE));
+  messaging_menu_app_set_source_action (app, source_id, INDEX_TIME,
+                                        g_variant_new_int64 (time));
 }
 
 /**
@@ -784,37 +794,8 @@ messaging_menu_app_set_source_string (MessagingMenuApp *app,
                                       const gchar      *source_id,
                                       const gchar      *str)
 {
-  messaging_menu_app_set_source_action (app, source_id,
-                                        g_variant_new ("(uxsb)", 0, 0, str, FALSE));
-}
-
-static void
-messaging_menu_app_set_attention (MessagingMenuApp *app,
-                                  const gchar      *source_id,
-                                  gboolean          attention)
-{
-  GAction *action;
-  GVariant *state;
-  guint32 count;
-  gint64 time;
-  const gchar *str ="";
-
-  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
-  g_return_if_fail (source_id != NULL);
-
-  action = g_simple_action_group_lookup (app->source_actions, source_id);
-  if (action == NULL)
-    {
-      g_warning ("a source with id '%s' doesn't exist", source_id);
-      return;
-    }
-
-  state = g_action_get_state (action);
-  g_variant_get (state, "(ux&sb)", &count, &time, &str, NULL);
-  g_variant_unref (state);
-
-  g_simple_action_set_state (G_SIMPLE_ACTION (action),
-                             g_variant_new ("(uxsb)", count, time, str, attention));
+  messaging_menu_app_set_source_action (app, source_id, INDEX_STRING,
+                                        g_variant_new_string (str));
 }
 
 /**
@@ -832,7 +813,8 @@ void
 messaging_menu_app_draw_attention (MessagingMenuApp *app,
                                    const gchar      *source_id)
 {
-  messaging_menu_app_set_attention (app, source_id, TRUE);
+  messaging_menu_app_set_source_action (app, source_id, INDEX_DRAWS_ATTENTION,
+                                        g_variant_new_boolean (TRUE));
 }
 
 /**
@@ -849,5 +831,6 @@ void
 messaging_menu_app_remove_attention (MessagingMenuApp *app,
                                      const gchar      *source_id)
 {
-  messaging_menu_app_set_attention (app, source_id, FALSE);
+  messaging_menu_app_set_source_action (app, source_id, INDEX_DRAWS_ATTENTION,
+                                        g_variant_new_boolean (FALSE));
 }
