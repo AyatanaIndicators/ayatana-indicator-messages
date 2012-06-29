@@ -283,7 +283,7 @@ keyfile_loaded (GObject *source_object,
 
 	self->priv->uses_chat_status = g_key_file_get_boolean (keyfile,
 							       G_KEY_FILE_DESKTOP_GROUP,
-							       "X-MessagingMenu-UsesChatStatus",
+							       "X-MessagingMenu-UsesChatSection",
 							       &error);
 	if (error) {
 		if (error->code != G_KEY_FILE_ERROR_KEY_NOT_FOUND) {
