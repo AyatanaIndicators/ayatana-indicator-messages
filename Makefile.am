@@ -17,7 +17,7 @@ endif
 
 
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations
+DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations --enable-introspection
 
 dist-hook:
 	@if test -d "$(top_srcdir)/.bzr"; \

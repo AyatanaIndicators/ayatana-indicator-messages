@@ -35,3 +35,28 @@ indicator-messages-service.h: indicator-messages-service.c
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = messaging-menu.pc
 
+
+-include $(INTROSPECTION_MAKEFILE)
+
+INTROSPECTION_GIRS =
+INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
+INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
+
+if HAVE_INTROSPECTION
+
+MessagingMenu-1.0.gir: libmessaging-menu.la
+MessagingMenu_1_0_gir_NAMESPACE = MessagingMenu
+MessagingMenu_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
+MessagingMenu_1_0_gir_CFLAGS = $(INCLUDES) $(GIO_CFLAGS)
+MessagingMenu_1_0_gir_LIBS = libmessaging-menu.la
+MessagingMenu_1_0_gir_FILES = $(libmessaging_menu_la_SOURCES) $(libmessaging_menu_la_HEADERS)
+INTROSPECTION_GIRS += MessagingMenu-1.0.gir
+
+girdir = $(datadir)/gir-1.0
+gir_DATA = $(INTROSPECTION_GIRS)
+
+typelibdir = $(libdir)/girepository-1.0
+typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
+
+CLEANFILES +=$(gir_DATA) $(typelib_DATA)
+endif
