@@ -1,10 +1,10 @@
 
-AC_INIT(src/indicator-messages.c)
+AC_INIT(indicator-messages, 0.6.0)
 
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-messages, 0.6.0)
+AM_INIT_AUTOMAKE()
 
 AM_MAINTAINER_MODE
 
@@ -191,4 +191,5 @@ Messaging Indicator Configuration:
 	Indicator Dir: $INDICATORDIR
 	gtest:         $enable_tests
 	gcov:          $use_gcov
+        introspecion:  $enable_introspection
 ])
