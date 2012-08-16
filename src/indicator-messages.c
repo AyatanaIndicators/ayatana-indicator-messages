@@ -54,7 +54,9 @@ struct _IndicatorMessages {
 	IndicatorObject parent;
 	IndicatorServiceManager * service;
 	GActionGroup *actions;
+	GMenu *menu_wrapper;
 	GMenuModel *menu;
+	GtkWidget *image;
 };
 
 GType indicator_messages_get_type (void);
@@ -72,10 +74,17 @@ static void indicator_messages_class_init (IndicatorMessagesClass *klass);
 static void indicator_messages_init       (IndicatorMessages *self);
 static void indicator_messages_dispose    (GObject *object);
 static void indicator_messages_finalize   (GObject *object);
-static GMenuModel * get_menu_model        (IndicatorObject * io);
-static GActionGroup * get_actions         (IndicatorObject * io);
+static GtkImage * get_image               (IndicatorObject * io);
+static GtkMenu * get_menu                 (IndicatorObject * io);
 static const gchar * get_accessible_desc  (IndicatorObject * io);
 static const gchar * get_name_hint        (IndicatorObject * io);
+static void update_icon                   (IndicatorMessages * self);
+static void update_menu                   (IndicatorMessages *self);
+static void menu_items_changed            (GMenuModel *menu,
+                                           gint        position,
+                                           gint        removed,
+                                           gint        added,
+                                           gpointer    user_data);
 
 G_DEFINE_TYPE (IndicatorMessages, indicator_messages, INDICATOR_OBJECT_TYPE);
 
@@ -90,8 +99,8 @@ indicator_messages_class_init (IndicatorMessagesClass *klass)
 
 	IndicatorObjectClass * io_class = INDICATOR_OBJECT_CLASS(klass);
 
-	io_class->get_menu_model = get_menu_model;
-	io_class->get_actions = get_actions;
+	io_class->get_image = get_image;
+	io_class->get_menu = get_menu;
 	io_class->get_accessible_desc = get_accessible_desc;
 	io_class->get_name_hint = get_name_hint;
 }
@@ -124,6 +133,15 @@ indicator_messages_init (IndicatorMessages *self)
 							  INDICATOR_MESSAGES_DBUS_NAME,
 							  INDICATOR_MESSAGES_DBUS_OBJECT));
 
+	g_signal_connect (self->menu, "items-changed", G_CALLBACK (menu_items_changed), self);
+
+	self->image = g_object_ref_sink (gtk_image_new ());
+	gtk_widget_show (self->image);
+	update_icon (self);
+
+	self->menu_wrapper = g_menu_new ();
+	update_menu (self);
+
 	indicator = INDICATOR_OBJECT(self);
 
 	g_object_unref (bus);
@@ -141,8 +159,10 @@ indicator_messages_dispose (GObject *object)
 		self->service = NULL;
 	}
 
+	g_clear_object (&self->menu_wrapper);
 	g_clear_object (&self->actions);
 	g_clear_object (&self->menu);
+	g_clear_object (&self->image);
 
 	G_OBJECT_CLASS (indicator_messages_parent_class)->dispose (object);
 	return;
@@ -168,31 +188,88 @@ struct _indicator_item_t {
 	GtkWidget * right;
 };
 
-/* Builds the menu for the indicator */
-static GMenuModel *
-get_menu_model (IndicatorObject * io)
+static GtkImage *
+get_image (IndicatorObject * io)
 {
 	IndicatorMessages *self = INDICATOR_MESSAGES (io);
-	return self->menu;
+
+	return GTK_IMAGE (self->image);
 }
 
-static GActionGroup *
-get_actions (IndicatorObject *io)
+static GtkMenu *
+get_menu (IndicatorObject * io)
 {
 	IndicatorMessages *self = INDICATOR_MESSAGES (io);
-	return self->actions;
+	GtkWidget *menu;
+
+	menu = gtk_menu_new_from_model (G_MENU_MODEL (self->menu_wrapper));
+	gtk_widget_insert_action_group (menu, get_name_hint (io), self->actions);
+
+	return GTK_MENU (menu);
 }
 
-/* Returns the accessible description of the indicator */
 static const gchar *
 get_accessible_desc (IndicatorObject * io)
 {
 	return accessible_desc;
 }
 
-/* Returns the name hint of the indicator */
 static const gchar *
 get_name_hint (IndicatorObject *io)
 {
   return PACKAGE;
+}
+
+static void
+update_icon (IndicatorMessages * self)
+{
+	const gchar *icon_name;
+
+	if (g_menu_model_get_n_items (self->menu) == 0)
+		return;
+
+	g_menu_model_get_item_attribute (self->menu, 0, INDICATOR_MENU_ATTRIBUTE_ICON_NAME,
+					 "&s", &icon_name);
+
+	gtk_image_set_from_icon_name (GTK_IMAGE (self->image), icon_name, GTK_ICON_SIZE_MENU);
+}
+
+static void
+update_menu (IndicatorMessages *self)
+{
+	GMenuModel *popup;
+	GMenuItem *item;
+
+	if (g_menu_model_get_n_items (self->menu) == 0)
+		return;
+
+	popup = g_menu_model_get_item_link (self->menu, 0, G_MENU_LINK_SUBMENU);
+	if (popup == NULL)
+		return;
+
+	if (g_menu_model_get_n_items (G_MENU_MODEL (self->menu_wrapper)) == 1)
+		g_menu_remove (self->menu_wrapper, 0);
+
+	item = g_menu_item_new_section (NULL, popup);
+	g_menu_item_set_attribute (item, "action-namespace",
+				   "s", get_name_hint (INDICATOR_OBJECT (self)));
+	g_menu_append_item (self->menu_wrapper, item);
+
+	g_object_unref (item);
+	g_object_unref (popup);
+}
+
+static void
+menu_items_changed (GMenuModel *menu,
+                    gint        position,
+                    gint        removed,
+                    gint        added,
+                    gpointer    user_data)
+{
+	IndicatorMessages *self = user_data;
+
+	if (position == 0) {
+		update_icon (self);
+		update_menu (self);
+	}
 }
