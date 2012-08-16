@@ -65,10 +65,6 @@ GType indicator_messages_get_type (void);
 INDICATOR_SET_VERSION
 INDICATOR_SET_TYPE(INDICATOR_MESSAGES_TYPE)
 
-/* Globals */
-static const gchar *              accessible_desc = NULL;
-static IndicatorObject *          indicator = NULL;
-
 /* Prototypes */
 static void indicator_messages_class_init (IndicatorMessagesClass *klass);
 static void indicator_messages_init       (IndicatorMessages *self);
@@ -142,8 +138,6 @@ indicator_messages_init (IndicatorMessages *self)
 	self->menu_wrapper = g_menu_new ();
 	update_menu (self);
 
-	indicator = INDICATOR_OBJECT(self);
-
 	g_object_unref (bus);
 }
 
@@ -181,13 +175,6 @@ indicator_messages_finalize (GObject *object)
 
 /* Functions */
 
-typedef struct _indicator_item_t indicator_item_t;
-struct _indicator_item_t {
-	GtkWidget * icon;
-	GtkWidget * label;
-	GtkWidget * right;
-};
-
 static GtkImage *
 get_image (IndicatorObject * io)
 {
@@ -211,7 +198,7 @@ get_menu (IndicatorObject * io)
 static const gchar *
 get_accessible_desc (IndicatorObject * io)
 {
-	return accessible_desc;
+	return NULL;
 }
 
 static const gchar *
