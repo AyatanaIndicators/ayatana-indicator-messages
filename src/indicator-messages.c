@@ -57,6 +57,7 @@ struct _IndicatorMessages {
 	GMenu *menu_wrapper;
 	GMenuModel *menu;
 	GtkWidget *image;
+	gchar *accessible_desc;
 };
 
 GType indicator_messages_get_type (void);
@@ -74,7 +75,7 @@ static GtkImage * get_image               (IndicatorObject * io);
 static GtkMenu * get_menu                 (IndicatorObject * io);
 static const gchar * get_accessible_desc  (IndicatorObject * io);
 static const gchar * get_name_hint        (IndicatorObject * io);
-static void update_icon                   (IndicatorMessages * self);
+static void update_root_item              (IndicatorMessages * self);
 static void update_menu                   (IndicatorMessages *self);
 static void menu_items_changed            (GMenuModel *menu,
                                            gint        position,
@@ -133,7 +134,7 @@ indicator_messages_init (IndicatorMessages *self)
 
 	self->image = g_object_ref_sink (gtk_image_new ());
 	gtk_widget_show (self->image);
-	update_icon (self);
+	update_root_item (self);
 
 	self->menu_wrapper = g_menu_new ();
 	update_menu (self);
@@ -166,6 +167,9 @@ indicator_messages_dispose (GObject *object)
 static void
 indicator_messages_finalize (GObject *object)
 {
+	IndicatorMessages *self = INDICATOR_MESSAGES (object);
+
+	g_free (self->accessible_desc);
 
 	G_OBJECT_CLASS (indicator_messages_parent_class)->finalize (object);
 	return;
@@ -198,7 +202,8 @@ get_menu (IndicatorObject * io)
 static const gchar *
 get_accessible_desc (IndicatorObject * io)
 {
-	return NULL;
+	IndicatorMessages *self = INDICATOR_MESSAGES (io);
+	return self->accessible_desc;
 }
 
 static const gchar *
@@ -208,7 +213,18 @@ get_name_hint (IndicatorObject *io)
 }
 
 static void
-update_icon (IndicatorMessages * self)
+indicator_messages_accessible_desc_updated (IndicatorMessages *self)
+{
+	GList *entries;
+
+	entries = indicator_object_get_entries (INDICATOR_OBJECT (self));
+	g_return_if_fail (entries != NULL);
+
+	g_signal_emit_by_name (self, INDICATOR_OBJECT_SIGNAL_ACCESSIBLE_DESC_UPDATE, entries->data);
+}
+
+static void
+update_root_item (IndicatorMessages * self)
 {
 	const gchar *icon_name;
 
@@ -217,6 +233,12 @@ update_icon (IndicatorMessages * self)
 
 	g_menu_model_get_item_attribute (self->menu, 0, INDICATOR_MENU_ATTRIBUTE_ICON_NAME,
 					 "&s", &icon_name);
+
+	g_free (self->accessible_desc);
+
+	g_menu_model_get_item_attribute (self->menu, 0, INDICATOR_MENU_ATTRIBUTE_ACCESSIBLE_DESCRIPTION,
+					 "s", &self->accessible_desc);
+	indicator_messages_accessible_desc_updated (self);
 
 	gtk_image_set_from_icon_name (GTK_IMAGE (self->image), icon_name, GTK_ICON_SIZE_MENU);
 }
@@ -256,7 +278,7 @@ menu_items_changed (GMenuModel *menu,
 	IndicatorMessages *self = user_data;
 
 	if (position == 0) {
-		update_icon (self);
+		update_root_item (self);
 		update_menu (self);
 	}
 }

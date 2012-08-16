@@ -504,6 +504,7 @@ main (int argc, char ** argv)
 	header = g_menu_item_new (NULL, "messages");
 	g_menu_item_set_submenu (header, G_MENU_MODEL (menu));
 	g_menu_item_set_attribute (header, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", "indicator-messages");
+	g_menu_item_set_attribute (header, INDICATOR_MENU_ATTRIBUTE_ACCESSIBLE_DESCRIPTION, "s", _("Messages"));
 	g_menu_append_item (toplevel_menu, header);
 	g_object_unref (header);
 

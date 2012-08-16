@@ -24,5 +24,6 @@
 #define INDICATOR_MENU_ATTRIBUTE_VISIBLE        "indicator-visible"
 #define INDICATOR_MENU_ATTRIBUTE_ENABLED        "indicator-enabled"
 #define INDICATOR_MENU_ATTRIBUTE_ICON_NAME      "indicator-icon-name"
+#define INDICATOR_MENU_ATTRIBUTE_ACCESSIBLE_DESCRIPTION  "indicator-accessible-description"
 
 #endif /* __DBUS_DATA_H__ */
