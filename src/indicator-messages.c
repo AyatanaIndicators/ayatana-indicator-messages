@@ -149,11 +149,7 @@ indicator_messages_dispose (GObject *object)
 	IndicatorMessages * self = INDICATOR_MESSAGES(object);
 	g_return_if_fail(self != NULL);
 
-	if (self->service != NULL) {
-		g_object_unref(self->service);
-		self->service = NULL;
-	}
-
+	g_clear_object (&self->service);
 	g_clear_object (&self->menu_wrapper);
 	g_clear_object (&self->actions);
 	g_clear_object (&self->menu);
