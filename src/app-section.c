@@ -252,7 +252,7 @@ nick_activate_cb (GSimpleAction *action,
 static void
 keyfile_loaded (GObject *source_object,
 		GAsyncResult *result,
-		 gpointer user_data)
+		gpointer user_data)
 {
 	AppSection *self = user_data;
 	gchar *contents;
@@ -408,6 +408,7 @@ app_section_get_desktop (AppSection * self)
 GActionGroup *
 app_section_get_actions (AppSection *self)
 {
+	g_return_val_if_fail(IS_APP_SECTION(self), NULL);
 	AppSectionPrivate * priv = self->priv;
 	return priv->actions ? priv->actions : G_ACTION_GROUP (priv->static_shortcuts);
 }
@@ -415,6 +416,7 @@ app_section_get_actions (AppSection *self)
 GMenuModel *
 app_section_get_menu (AppSection *self)
 {
+	g_return_val_if_fail(IS_APP_SECTION(self), NULL);
 	AppSectionPrivate * priv = self->priv;
 	return G_MENU_MODEL (priv->menu);
 }
@@ -422,6 +424,7 @@ app_section_get_menu (AppSection *self)
 GAppInfo *
 app_section_get_app_info (AppSection *self)
 {
+	g_return_val_if_fail(IS_APP_SECTION(self), NULL);
 	AppSectionPrivate * priv = self->priv;
 	return G_APP_INFO (priv->appinfo);
 }
@@ -429,6 +432,7 @@ app_section_get_app_info (AppSection *self)
 gboolean
 app_section_get_draws_attention (AppSection *self)
 {
+	g_return_val_if_fail(IS_APP_SECTION(self), FALSE);
 	AppSectionPrivate * priv = self->priv;
 	return priv->draws_attention;
 }
@@ -436,6 +440,7 @@ app_section_get_draws_attention (AppSection *self)
 void
 app_section_clear_draws_attention (AppSection *self)
 {
+	g_return_if_fail (IS_APP_SECTION(self));
 	AppSectionPrivate * priv = self->priv;
 	gchar **action_names;
 	gchar **it;
@@ -498,6 +503,7 @@ app_section_set_object_path (AppSection *self,
 			     const gchar *bus_name,
 			     const gchar *object_path)
 {
+	g_return_if_fail (IS_APP_SECTION(self));
 	AppSectionPrivate *priv = self->priv;
 
 	g_object_freeze_notify (G_OBJECT (self));
@@ -537,6 +543,7 @@ app_section_set_object_path (AppSection *self,
 void
 app_section_unset_object_path (AppSection *self)
 {
+	g_return_if_fail (IS_APP_SECTION(self));
 	AppSectionPrivate *priv = self->priv;
 
 	if (priv->name_watch_id) {
@@ -656,6 +663,7 @@ action_removed (GActionGroup *group,
 gboolean
 app_section_get_uses_chat_status (AppSection *self)
 {
+	g_return_val_if_fail (IS_APP_SECTION(self), FALSE);
 	AppSectionPrivate * priv = self->priv;
 
 	/* chat status is only useful when the app is running */
