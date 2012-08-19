@@ -225,16 +225,8 @@ app_section_dispose (GObject *object)
 	}
 
 	g_clear_object (&priv->remote_menu);
-
-	if (priv->ids != NULL) {
-		g_object_unref(priv->ids);
-		priv->ids = NULL;
-	}
-
-	if (priv->appinfo != NULL) {
-		g_object_unref(priv->appinfo);
-		priv->appinfo = NULL;
-	}
+	g_clear_object (&priv->ids);
+	g_clear_object (&priv->appinfo);
 
 	G_OBJECT_CLASS (app_section_parent_class)->dispose (object);
 }
