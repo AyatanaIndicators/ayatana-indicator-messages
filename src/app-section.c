@@ -77,6 +77,9 @@ static void app_section_dispose      (GObject *object);
 static void activate_cb              (GSimpleAction *action,
 				      GVariant *param,
 				      gpointer userdata);
+static void launch_action_change_state (GSimpleAction *action,
+					GVariant      *value,
+					gpointer       user_data);
 static void app_section_set_app_info (AppSection *self,
 				      GDesktopAppInfo *appinfo);
 static gboolean any_action_draws_attention	(GActionGroup *group,
@@ -309,6 +312,8 @@ app_section_set_app_info (AppSection *self,
 	AppSectionPrivate *priv = self->priv;
 	GSimpleAction *launch;
 	GFile *keyfile;
+	GMenuItem *item;
+	gchar *iconname;
 
 	g_return_if_fail (priv->appinfo == NULL);
 
@@ -319,14 +324,19 @@ app_section_set_app_info (AppSection *self,
 
 	priv->appinfo = g_object_ref (appinfo);
 
-	launch = g_simple_action_new ("launch", NULL);
+	launch = g_simple_action_new_stateful ("launch", NULL, g_variant_new_boolean (FALSE));
 	g_signal_connect (launch, "activate", G_CALLBACK (activate_cb), self);
+	g_signal_connect (launch, "change-state", G_CALLBACK (launch_action_change_state), self);
 	g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (launch));
 
-	g_menu_append_with_icon (priv->menu,
-				 g_app_info_get_name (G_APP_INFO (priv->appinfo)),
-				 g_app_info_get_icon (G_APP_INFO (priv->appinfo)),
-				 "launch");
+	item = g_menu_item_new (g_app_info_get_name (G_APP_INFO (priv->appinfo)), "launch");
+	g_menu_item_set_attribute (item, "x-canonical-type", "s", "ImAppMenuItem");
+	iconname = g_icon_to_string (g_app_info_get_icon (G_APP_INFO (priv->appinfo)));
+	g_menu_item_set_attribute (item, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", iconname);
+	g_free (iconname);
+
+	g_menu_append_item (priv->menu, item);
+	g_object_unref (item);
 
 	/* Start to build static shortcuts */
 	priv->ids = indicator_desktop_shortcuts_new(g_desktop_app_info_get_filename (priv->appinfo), "Messaging Menu");
@@ -378,6 +388,14 @@ activate_cb (GSimpleAction *action,
 		g_warning("Unable to execute application for desktop file '%s'",
 			  g_desktop_app_info_get_filename (priv->appinfo));
 	}
+}
+
+static void
+launch_action_change_state (GSimpleAction *action,
+			    GVariant      *value,
+			    gpointer       user_data)
+{
+	g_simple_action_set_state (action, value);
 }
 
 guint
@@ -531,6 +549,9 @@ app_section_set_object_path (AppSection *self,
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USES_CHAT_STATUS]);
 	g_object_thaw_notify (G_OBJECT (self));
+
+	g_action_group_change_action_state (G_ACTION_GROUP (priv->static_shortcuts),
+					    "launch", g_variant_new_boolean (TRUE));
 }
 
 /*
@@ -572,6 +593,9 @@ app_section_unset_object_path (AppSection *self)
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USES_CHAT_STATUS]);
+
+	g_action_group_change_action_state (G_ACTION_GROUP (priv->static_shortcuts),
+					    "launch", g_variant_new_boolean (FALSE));
 }
 
 static gboolean
