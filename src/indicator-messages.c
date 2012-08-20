@@ -217,6 +217,8 @@ indicator_messages_accessible_desc_updated (IndicatorMessages *self)
 	g_return_if_fail (entries != NULL);
 
 	g_signal_emit_by_name (self, INDICATOR_OBJECT_SIGNAL_ACCESSIBLE_DESC_UPDATE, entries->data);
+
+	g_list_free (entries);
 }
 
 static void
