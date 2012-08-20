@@ -155,11 +155,7 @@ indicator_messages_dispose (GObject *object)
 	IndicatorMessages * self = INDICATOR_MESSAGES(object);
 	g_return_if_fail(self != NULL);
 
-	if (self->service != NULL) {
-		g_object_unref(self->service);
-		self->service = NULL;
-	}
-
+	g_clear_object (&self->service);
 	g_clear_object (&self->menu_wrapper);
 	g_clear_object (&self->actions);
 	g_clear_object (&self->menu);
@@ -227,6 +223,8 @@ indicator_messages_accessible_desc_updated (IndicatorMessages *self)
 	g_return_if_fail (entries != NULL);
 
 	g_signal_emit_by_name (self, INDICATOR_OBJECT_SIGNAL_ACCESSIBLE_DESC_UPDATE, entries->data);
+
+	g_list_free (entries);
 }
 
 static void

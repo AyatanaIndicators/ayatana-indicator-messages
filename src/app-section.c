@@ -2,9 +2,10 @@
 An indicator to show information that is in messaging applications
 that the user is using.
 
-Copyright 2009 Canonical Ltd.
+Copyright 2012 Canonical Ltd.
 
 Authors:
+    Lars Uebernickel <lars.uebernickel@canonical.com>
     Ted Gould <ted@canonical.com>
 
 This program is free software: you can redistribute it and/or modify it 
@@ -233,16 +234,8 @@ app_section_dispose (GObject *object)
 	}
 
 	g_clear_object (&priv->source_menu);
-
-	if (priv->ids != NULL) {
-		g_object_unref(priv->ids);
-		priv->ids = NULL;
-	}
-
-	if (priv->appinfo != NULL) {
-		g_object_unref(priv->appinfo);
-		priv->appinfo = NULL;
-	}
+	g_clear_object (&priv->ids);
+	g_clear_object (&priv->appinfo);
 
 	G_OBJECT_CLASS (app_section_parent_class)->dispose (object);
 }
@@ -268,7 +261,7 @@ nick_activate_cb (GSimpleAction *action,
 static void
 keyfile_loaded (GObject *source_object,
 		GAsyncResult *result,
-		 gpointer user_data)
+		gpointer user_data)
 {
 	AppSection *self = user_data;
 	gchar *contents;
@@ -407,7 +400,6 @@ launch_action_change_state (GSimpleAction *action,
 guint
 app_section_get_count (AppSection * self)
 {
-	g_return_val_if_fail(IS_APP_SECTION(self), 0);
 	AppSectionPrivate * priv = self->priv;
 
 	return priv->unreadcount;
@@ -416,7 +408,6 @@ app_section_get_count (AppSection * self)
 const gchar *
 app_section_get_name (AppSection * self)
 {
-	g_return_val_if_fail(IS_APP_SECTION(self), NULL);
 	AppSectionPrivate * priv = self->priv;
 
 	if (priv->appinfo) {
@@ -428,7 +419,6 @@ app_section_get_name (AppSection * self)
 const gchar *
 app_section_get_desktop (AppSection * self)
 {
-	g_return_val_if_fail(IS_APP_SECTION(self), NULL);
 	AppSectionPrivate * priv = self->priv;
 	if (priv->appinfo)
 		return g_desktop_app_info_get_filename (priv->appinfo);
