@@ -41,7 +41,7 @@ struct _AppSectionPrivate
 	IndicatorDesktopShortcuts * ids;
 
 	GMenu *menu;
-	GMenuModel *remote_menu;
+	GMenuModel *source_menu;
 
 	GSimpleActionGroup *static_shortcuts;
 	GActionGroup *source_actions;
@@ -232,7 +232,7 @@ app_section_dispose (GObject *object)
 		g_clear_object (&priv->source_actions);
 	}
 
-	g_clear_object (&priv->remote_menu);
+	g_clear_object (&priv->source_menu);
 
 	if (priv->ids != NULL) {
 		g_object_unref(priv->ids);
@@ -545,9 +545,9 @@ app_section_set_object_path (AppSection *self,
 			  "signal::action-removed", action_removed, self,
 			  NULL);
 
-	priv->remote_menu = G_MENU_MODEL (g_dbus_menu_model_get (bus, bus_name, object_path));
+	priv->source_menu = G_MENU_MODEL (g_dbus_menu_model_get (bus, bus_name, object_path));
 
-	item = g_menu_item_new_section (NULL, priv->remote_menu);
+	item = g_menu_item_new_section (NULL, priv->source_menu);
 	g_menu_item_set_attribute (item, "action-namespace", "s", "source");
 	g_menu_append_item (priv->menu, item);
 	g_object_unref (item);
@@ -592,11 +592,11 @@ app_section_unset_object_path (AppSection *self)
 		g_clear_object (&priv->source_actions);
 	}
 
-	if (priv->remote_menu) {
+	if (priv->source_menu) {
 		/* the last menu item points is linked to the app's menumodel */
 		gint n_items = g_menu_model_get_n_items (G_MENU_MODEL (priv->menu));
 		g_menu_remove (priv->menu, n_items -1);
-		g_clear_object (&priv->remote_menu);
+		g_clear_object (&priv->source_menu);
 	}
 
 	priv->draws_attention = FALSE;
