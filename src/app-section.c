@@ -31,6 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "app-section.h"
 #include "dbus-data.h"
 #include "gmenuutils.h"
+#include "gactionmuxer.h"
 
 struct _AppSectionPrivate
 {
@@ -40,10 +41,11 @@ struct _AppSectionPrivate
 	IndicatorDesktopShortcuts * ids;
 
 	GMenu *menu;
-	GSimpleActionGroup *static_shortcuts;
-
 	GMenuModel *remote_menu;
-	GActionGroup *actions;
+
+	GSimpleActionGroup *static_shortcuts;
+	GActionGroup *source_actions;
+	GActionMuxer *muxer;
 
 	gboolean draws_attention;
 	gboolean uses_chat_status;
@@ -153,6 +155,9 @@ app_section_init (AppSection *self)
 	priv->menu = g_menu_new ();
 	priv->static_shortcuts = g_simple_action_group_new ();
 
+	priv->muxer = g_action_muxer_new ();
+	g_action_muxer_insert (priv->muxer, NULL, G_ACTION_GROUP (priv->static_shortcuts));
+
 	priv->draws_attention = FALSE;
 
 	return;
@@ -217,13 +222,14 @@ app_section_dispose (GObject *object)
 		priv->name_watch_id = 0;
 	}
 
-	if (priv->actions) {
-		g_object_disconnect (priv->actions,
+	if (priv->source_actions) {
+		g_action_muxer_remove  (priv->muxer, "source");
+		g_object_disconnect (priv->source_actions,
 				     "any_signal::action-added", action_added, self,
 				     "any_signal::action-state-changed", action_state_changed, self,
 				     "any_signal::action-removed", action_removed, self,
 				     NULL);
-		g_clear_object (&priv->actions);
+		g_clear_object (&priv->source_actions);
 	}
 
 	g_clear_object (&priv->remote_menu);
@@ -434,7 +440,7 @@ GActionGroup *
 app_section_get_actions (AppSection *self)
 {
 	AppSectionPrivate * priv = self->priv;
-	return priv->actions ? priv->actions : G_ACTION_GROUP (priv->static_shortcuts);
+	return G_ACTION_GROUP (priv->muxer);
 }
 
 GMenuModel *
@@ -465,15 +471,15 @@ app_section_clear_draws_attention (AppSection *self)
 	gchar **action_names;
 	gchar **it;
 
-	if (priv->actions == NULL)
+	if (priv->source_actions == NULL)
 		return;
 
-	action_names = g_action_group_list_actions (priv->actions);
+	action_names = g_action_group_list_actions (priv->source_actions);
 
 	for (it = action_names; *it; it++) {
 		GVariant *state;
 
-		state = g_action_group_get_action_state (priv->actions, *it);
+		state = g_action_group_get_action_state (priv->source_actions, *it);
 		if (!state)
 			continue;
 
@@ -487,7 +493,7 @@ app_section_clear_draws_attention (AppSection *self)
 			g_variant_get (state, "(ux&sb)", &count, &time, &str, NULL);
 
 			new_state = g_variant_new ("(uxsb)", count, time, str, FALSE);
-			g_action_group_change_action_state (priv->actions, *it, new_state);
+			g_action_group_change_action_state (priv->source_actions, *it, new_state);
 		}
 
 		g_variant_unref (state);
@@ -524,14 +530,16 @@ app_section_set_object_path (AppSection *self,
 			     const gchar *object_path)
 {
 	AppSectionPrivate *priv = self->priv;
+	GMenuItem *item;
 
 	g_object_freeze_notify (G_OBJECT (self));
 	app_section_unset_object_path (self);
 
-	priv->actions = G_ACTION_GROUP (g_dbus_action_group_get (bus, bus_name, object_path));
+	priv->source_actions = G_ACTION_GROUP (g_dbus_action_group_get (bus, bus_name, object_path));
+	g_action_muxer_insert (priv->muxer, "source", priv->source_actions);
 
-	priv->draws_attention = any_action_draws_attention (priv->actions, NULL);
-	g_object_connect (priv->actions,
+	priv->draws_attention = any_action_draws_attention (priv->source_actions, NULL);
+	g_object_connect (priv->source_actions,
 			  "signal::action-added", action_added, self,
 			  "signal::action-state-changed", action_state_changed, self,
 			  "signal::action-removed", action_removed, self,
@@ -539,7 +547,10 @@ app_section_set_object_path (AppSection *self,
 
 	priv->remote_menu = G_MENU_MODEL (g_dbus_menu_model_get (bus, bus_name, object_path));
 
-	g_menu_append_section (priv->menu, NULL, priv->remote_menu);
+	item = g_menu_item_new_section (NULL, priv->remote_menu);
+	g_menu_item_set_attribute (item, "action-namespace", "s", "source");
+	g_menu_append_item (priv->menu, item);
+	g_object_unref (item);
 
 	priv->name_watch_id = g_bus_watch_name_on_connection (bus, bus_name, 0,
 							      NULL, application_vanished,
@@ -572,13 +583,13 @@ app_section_unset_object_path (AppSection *self)
 		priv->name_watch_id = 0;
 	}
 
-	if (priv->actions) {
-		g_object_disconnect (priv->actions,
+	if (priv->source_actions) {
+		g_object_disconnect (priv->source_actions,
 				     "any_signal::action-added", action_added, self,
 				     "any_signal::action-state-changed", action_state_changed, self,
 				     "any_signal::action-removed", action_removed, self,
 				     NULL);
-		g_clear_object (&priv->actions);
+		g_clear_object (&priv->source_actions);
 	}
 
 	if (priv->remote_menu) {
@@ -690,5 +701,5 @@ app_section_get_uses_chat_status (AppSection *self)
 	AppSectionPrivate * priv = self->priv;
 
 	/* chat status is only useful when the app is running */
-	return priv->uses_chat_status && priv->actions;
+	return priv->uses_chat_status && priv->source_actions;
 }
