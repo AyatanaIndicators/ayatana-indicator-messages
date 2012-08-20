@@ -370,8 +370,8 @@ set_status (IndicatorMessagesService *service,
 	indicator_messages_service_complete_set_status (service, invocation);
 }
 
-GSimpleActionGroup *
-create_action_group ()
+static GSimpleActionGroup *
+create_action_group (void)
 {
 	GSimpleActionGroup *actions;
 	GSimpleAction *messages;
@@ -400,8 +400,8 @@ create_action_group ()
 	return actions;
 }
 
-GMenuModel *
-create_status_section ()
+static GMenuModel *
+create_status_section (void)
 {
 	GMenu *menu;
 
