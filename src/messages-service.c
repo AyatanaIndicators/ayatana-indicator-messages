@@ -168,7 +168,7 @@ add_application (const gchar *desktop_id)
 		/* TODO insert it at the right position (alphabetically by application name) */
 		menuitem = g_menu_item_new_section (NULL, app_section_get_menu (section));
 		g_menu_item_set_attribute (menuitem, "action-namespace", "s", id);
-		g_menu_insert_item (menu, 2, menuitem);
+		g_menu_insert_item (menu, g_menu_model_get_n_items (G_MENU_MODEL (menu)) -1, menuitem);
 		g_object_unref (menuitem);
 	}
 
