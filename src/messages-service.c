@@ -201,6 +201,7 @@ remove_application (const char *desktop_id)
 
 		g_signal_handlers_disconnect_by_func (section, actions_changed, NULL);
 		g_signal_handlers_disconnect_by_func (section, draws_attention_changed, NULL);
+		g_signal_handlers_disconnect_by_func (section, uses_chat_status_changed, NULL);
 	}
 	else {
 		g_warning ("could not remove '%s', it's not registered", desktop_id);
