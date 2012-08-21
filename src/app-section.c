@@ -233,6 +233,8 @@ app_section_dispose (GObject *object)
 		g_clear_object (&priv->source_actions);
 	}
 
+	g_clear_object (&priv->muxer);
+
 	g_clear_object (&priv->source_menu);
 	g_clear_object (&priv->ids);
 	g_clear_object (&priv->appinfo);
