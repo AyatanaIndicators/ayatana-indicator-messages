@@ -2,10 +2,11 @@
 An indicator to show information that is in messaging applications
 that the user is using.
 
-Copyright 2009 Canonical Ltd.
+Copyright 2012 Canonical Ltd.
 
 Authors:
     Ted Gould <ted@canonical.com>
+    Lars Uebernickel <lars.uebernickel@canonical.com>
 
 This program is free software: you can redistribute it and/or modify it 
 under the terms of the GNU General Public License version 3, as published 
