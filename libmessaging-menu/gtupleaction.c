@@ -312,6 +312,7 @@ g_tuple_action_class_init (GTupleActionClass *class)
 static void
 g_tuple_action_init (GTupleAction *action)
 {
+  action->enabled = TRUE;
 }
 
 GTupleAction *

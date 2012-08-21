@@ -36,6 +36,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "dbus-data.h"
 
+#include "im-app-menu-item.h"
+#include "im-source-menu-item.h"
+
 #define INDICATOR_MESSAGES_TYPE            (indicator_messages_get_type ())
 #define INDICATOR_MESSAGES(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), INDICATOR_MESSAGES_TYPE, IndicatorMessages))
 #define INDICATOR_MESSAGES_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), INDICATOR_MESSAGES_TYPE, IndicatorMessagesClass))
@@ -140,6 +143,11 @@ indicator_messages_init (IndicatorMessages *self)
 	update_menu (self);
 
 	g_object_unref (bus);
+
+	/* make sure custom menu item types are registered (so that
+         * gtk_model_new_from_menu can pick them up */
+	im_app_menu_item_get_type ();
+	im_source_menu_item_get_type ();
 }
 
 /* Unref stuff */
