@@ -8,7 +8,4 @@
 #define INDICATOR_MESSAGES_DBUS_SERVICE_OBJECT     "/com/canonical/indicator/messages/service"
 #define INDICATOR_MESSAGES_DBUS_SERVICE_INTERFACE  "com.canonical.indicator.messages.service"
 
-#define INDICATOR_MENU_ATTRIBUTE_ICON_NAME               "indicator-icon-name"
-#define INDICATOR_MENU_ATTRIBUTE_ACCESSIBLE_DESCRIPTION  "indicator-accessible-description"
-
 #endif /* __DBUS_DATA_H__ */

@@ -464,6 +464,8 @@ main (int argc, char ** argv)
 	GMainLoop * mainloop = NULL;
 	IndicatorService * service = NULL;
 	GMenuItem *header;
+	GIcon *icon;
+	gchar *iconstr;
 
 	/* Glib init */
 	g_type_init();
@@ -501,11 +503,14 @@ main (int argc, char ** argv)
 	chat_section = create_status_section ();
 	g_menu_append (menu, _("Clear"), "clear");
 
+	icon = g_themed_icon_new ("indicator-messages");
+	iconstr = g_icon_to_string (icon);
+
 	toplevel_menu = g_menu_new ();
 	header = g_menu_item_new (NULL, "messages");
 	g_menu_item_set_submenu (header, G_MENU_MODEL (menu));
-	g_menu_item_set_attribute (header, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", "indicator-messages");
-	g_menu_item_set_attribute (header, INDICATOR_MENU_ATTRIBUTE_ACCESSIBLE_DESCRIPTION, "s", _("Messages"));
+	g_menu_item_set_attribute (header, "x-canonical-icon", "s", iconstr);
+	g_menu_item_set_attribute (header, "x-canonical-accessible-description", "s", _("Messages"));
 	g_menu_append_item (toplevel_menu, header);
 	g_object_unref (header);
 
@@ -518,6 +523,8 @@ main (int argc, char ** argv)
 	g_main_loop_run(mainloop);
 
 	/* Clean up */
+	g_free (iconstr);
+	g_object_unref (icon);
 	g_object_unref (messages_service);
 	g_object_unref (chat_section);
 	g_object_unref (settings);

@@ -442,9 +442,9 @@ messaging_menu_app_insert_source_action (MessagingMenuApp *app,
   g_menu_item_set_attribute (menuitem, "x-canonical-type", "s", "ImSourceMenuItem");
   if (icon)
     {
-      gchar *icon_name = g_icon_to_string (icon);
-      g_menu_item_set_attribute (menuitem, "indicator-icon-name", icon_name);
-      g_free (icon_name);
+      gchar *iconstr = g_icon_to_string (icon);
+      g_menu_item_set_attribute (menuitem, "x-canonical-icon", "s", iconstr);
+      g_free (iconstr);
     }
   g_menu_insert_item (app->menu, position, menuitem);
   g_object_unref (menuitem);

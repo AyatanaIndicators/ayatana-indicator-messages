@@ -71,7 +71,7 @@ g_menu_append_with_icon_name (GMenu *menu,
   GMenuItem *item;
 
   item = g_menu_item_new (label, detailed_action);
-  g_menu_item_set_attribute (item, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", icon_name);
+  g_menu_item_set_attribute (item, "x-canonical-icon", "s", icon_name);
 
   g_menu_append_item (menu, item);
 

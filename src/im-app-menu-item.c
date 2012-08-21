@@ -24,6 +24,9 @@ struct _ImAppMenuItemPrivate
   GActionGroup *action_group;
   gchar *action;
   gboolean is_running;
+
+  GtkWidget *icon;
+  GtkWidget *label;
 };
 
 enum
@@ -37,6 +40,26 @@ enum
 static GParamSpec *properties[NUM_PROPERTIES];
 
 G_DEFINE_TYPE (ImAppMenuItem, im_app_menu_item, GTK_TYPE_MENU_ITEM);
+
+static void
+im_app_menu_item_constructed (GObject *object)
+{
+  ImAppMenuItemPrivate *priv = IM_APP_MENU_ITEM (object)->priv;
+  GtkWidget *grid;
+
+  priv->icon = g_object_ref (gtk_image_new ());
+
+  priv->label = g_object_ref (gtk_label_new (""));
+
+  grid = gtk_grid_new ();
+  gtk_grid_attach (GTK_GRID (grid), priv->icon, 0, 0, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), priv->label, 1, 0, 1, 1);
+
+  gtk_container_add (GTK_CONTAINER (object), grid);
+  gtk_widget_show_all (grid);
+
+  G_OBJECT_CLASS (im_app_menu_item_parent_class)->constructed (object);
+}
 
 static void
 im_app_menu_item_set_action_name (ImAppMenuItem *self,
@@ -156,6 +179,9 @@ im_app_menu_item_dispose (GObject *object)
   if (self->priv->action_group)
       im_app_menu_item_set_action_group (self, NULL);
 
+  g_clear_object (&self->priv->icon);
+  g_clear_object (&self->priv->label);
+
   G_OBJECT_CLASS (im_app_menu_item_parent_class)->dispose (object);
 }
 
@@ -223,6 +249,7 @@ im_app_menu_item_class_init (ImAppMenuItemClass *klass)
 
   g_type_class_add_private (klass, sizeof (ImAppMenuItemPrivate));
 
+  object_class->constructed = im_app_menu_item_constructed;
   object_class->set_property = im_app_menu_set_property;
   object_class->dispose = im_app_menu_item_dispose;
   object_class->finalize = im_app_menu_item_finalize;
@@ -260,15 +287,33 @@ void
 im_app_menu_item_set_menu_item (ImAppMenuItem *self,
                                 GMenuItem     *menuitem)
 {
+  gchar *iconstr = NULL;
+  GIcon *icon = NULL;
   gchar *label;
   gchar *action = NULL;
 
+  if (g_menu_item_get_attribute (menuitem, "x-canonical-icon", "s", &iconstr))
+    {
+      GError *error;
+
+      icon = g_icon_new_for_string (iconstr, &error);
+      if (icon == NULL)
+        {
+          g_warning ("unable to set icon: %s", error->message);
+          g_error_free (error);
+        }
+      g_free (iconstr);
+    }
+  gtk_image_set_from_gicon (GTK_IMAGE (self->priv->icon), icon, GTK_ICON_SIZE_MENU);
+
   g_menu_item_get_attribute (menuitem, "label", "s", &label);
-  gtk_menu_item_set_label (GTK_MENU_ITEM (self), label ? label : "");
+  gtk_label_set_label (GTK_LABEL (self->priv->label), label ? label : "");
 
   g_menu_item_get_attribute (menuitem, "action", "s", &action);
   im_app_menu_item_set_action_name (self, action);
 
+  if (icon)
+    g_object_unref (icon);
   g_free (label);
   g_free (action);
 }

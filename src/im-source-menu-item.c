@@ -26,6 +26,7 @@ struct _ImSourceMenuItemPrivate
   GActionGroup *action_group;
   gchar *action;
 
+  GtkWidget *icon;
   GtkWidget *label;
   GtkWidget *detail;
 };
@@ -51,8 +52,10 @@ im_source_menu_item_constructed (GObject *object)
 
   gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &icon_width, NULL);
 
+  priv->icon = g_object_ref (gtk_image_new ());
+  gtk_widget_set_margin_left (priv->icon, icon_width + 2);
+
   priv->label = g_object_ref (gtk_label_new (""));
-  gtk_widget_set_margin_left (priv->label, icon_width + 2);
 
   priv->detail = g_object_ref (gtk_label_new (""));
   gtk_widget_set_halign (priv->detail, GTK_ALIGN_END);
@@ -61,8 +64,9 @@ im_source_menu_item_constructed (GObject *object)
   gtk_style_context_add_class (gtk_widget_get_style_context (priv->detail), "accelerator");
 
   grid = gtk_grid_new ();
-  gtk_grid_attach (GTK_GRID (grid), priv->label, 0, 0, 1, 1);
-  gtk_grid_attach (GTK_GRID (grid), priv->detail, 1, 0, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), priv->icon, 0, 0, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), priv->label, 1, 0, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), priv->detail, 2, 0, 1, 1);
 
   gtk_container_add (GTK_CONTAINER (object), grid);
   gtk_widget_show_all (grid);
@@ -274,6 +278,7 @@ im_source_menu_item_dispose (GObject *object)
   if (self->priv->action_group)
       im_source_menu_item_set_action_group (self, NULL);
 
+  g_clear_object (&self->priv->icon);
   g_clear_object (&self->priv->label);
   g_clear_object (&self->priv->detail);
 
@@ -343,8 +348,23 @@ void
 im_source_menu_item_set_menu_item (ImSourceMenuItem *self,
                                    GMenuItem        *menuitem)
 {
+  gchar *iconstr = NULL;
+  GIcon *icon = NULL;
   gchar *label;
   gchar *action = NULL;
+
+  if (g_menu_item_get_attribute (menuitem, "x-canonical-icon", "s", &iconstr))
+    {
+      GError *error;
+      icon = g_icon_new_for_string (iconstr, &error);
+      if (icon == NULL)
+        {
+          g_warning ("unable to set icon: %s", error->message);
+          g_error_free (error);
+        }
+      g_free (iconstr);
+    }
+  gtk_image_set_from_gicon (GTK_IMAGE (self->priv->icon), icon, GTK_ICON_SIZE_MENU);
 
   g_menu_item_get_attribute (menuitem, "label", "s", &label);
   gtk_label_set_label (GTK_LABEL (self->priv->label), label ? label : "");
@@ -352,6 +372,8 @@ im_source_menu_item_set_menu_item (ImSourceMenuItem *self,
   g_menu_item_get_attribute (menuitem, "action", "s", &action);
   im_source_menu_item_set_action_name (self, action);
 
+  if (icon)
+    g_object_unref (icon);
   g_free (label);
   g_free (action);
 }

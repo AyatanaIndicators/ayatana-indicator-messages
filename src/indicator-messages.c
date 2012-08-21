@@ -232,21 +232,34 @@ indicator_messages_accessible_desc_updated (IndicatorMessages *self)
 static void
 update_root_item (IndicatorMessages * self)
 {
-	const gchar *icon_name;
+	gchar *iconstr;
 
 	if (g_menu_model_get_n_items (self->menu) == 0)
 		return;
 
-	g_menu_model_get_item_attribute (self->menu, 0, INDICATOR_MENU_ATTRIBUTE_ICON_NAME,
-					 "&s", &icon_name);
+	if (g_menu_model_get_item_attribute (self->menu, 0, "x-canonical-icon", "s", &iconstr)) {
+		GIcon *icon;
+		GError *error;
+
+		icon = g_icon_new_for_string (iconstr, &error);
+		if (icon) {
+			gtk_image_set_from_gicon (GTK_IMAGE (self->image), icon, GTK_ICON_SIZE_MENU);
+			g_object_unref (icon);
+		}
+		else {
+			g_warning ("unable to load icon: %s", error->message);
+			g_error_free (error);
+		}
+
+		g_free (iconstr);
+	}
 
 	g_free (self->accessible_desc);
+	self->accessible_desc = NULL;
 
-	g_menu_model_get_item_attribute (self->menu, 0, INDICATOR_MENU_ATTRIBUTE_ACCESSIBLE_DESCRIPTION,
+	g_menu_model_get_item_attribute (self->menu, 0, "x-canonical-accessible-description",
 					 "s", &self->accessible_desc);
 	indicator_messages_accessible_desc_updated (self);
-
-	gtk_image_set_from_icon_name (GTK_IMAGE (self->image), icon_name, GTK_ICON_SIZE_MENU);
 }
 
 static void

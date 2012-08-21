@@ -312,7 +312,7 @@ app_section_set_app_info (AppSection *self,
 	GSimpleAction *launch;
 	GFile *keyfile;
 	GMenuItem *item;
-	gchar *iconname;
+	gchar *iconstr;
 
 	g_return_if_fail (priv->appinfo == NULL);
 
@@ -330,9 +330,9 @@ app_section_set_app_info (AppSection *self,
 
 	item = g_menu_item_new (g_app_info_get_name (G_APP_INFO (priv->appinfo)), "launch");
 	g_menu_item_set_attribute (item, "x-canonical-type", "s", "ImAppMenuItem");
-	iconname = g_icon_to_string (g_app_info_get_icon (G_APP_INFO (priv->appinfo)));
-	g_menu_item_set_attribute (item, INDICATOR_MENU_ATTRIBUTE_ICON_NAME, "s", iconname);
-	g_free (iconname);
+	iconstr = g_icon_to_string (g_app_info_get_icon (G_APP_INFO (priv->appinfo)));
+	g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
+	g_free (iconstr);
 
 	g_menu_append_item (priv->menu, item);
 	g_object_unref (item);
