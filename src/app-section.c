@@ -387,8 +387,10 @@ activate_cb (GSimpleAction *action,
 	GError *error = NULL;
 
 	if (!g_app_info_launch (G_APP_INFO (priv->appinfo), NULL, NULL, &error)) {
-		g_warning("Unable to execute application for desktop file '%s'",
-			  g_desktop_app_info_get_filename (priv->appinfo));
+		g_warning("Unable to execute application for desktop file '%s': %s",
+			  g_desktop_app_info_get_filename (priv->appinfo),
+			  error->message);
+		g_error_free (error);
 	}
 }
 
