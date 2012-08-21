@@ -352,6 +352,7 @@ app_section_set_app_info (AppSection *self,
 		action = g_simple_action_new (nicks[i], NULL);
 		g_signal_connect(action, "activate", G_CALLBACK (nick_activate_cb), self);
 		g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (action));
+		g_object_unref (action);
 
 		g_menu_append (priv->menu, name, nicks[i]);
 
