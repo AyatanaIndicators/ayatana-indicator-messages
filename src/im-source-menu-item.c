@@ -19,12 +19,15 @@
 
 #include "im-source-menu-item.h"
 
+#include <libintl.h>
+
 struct _ImSourceMenuItemPrivate
 {
   GActionGroup *action_group;
   gchar *action;
 
   GtkWidget *label;
+  GtkWidget *detail;
 };
 
 enum
@@ -51,13 +54,118 @@ im_source_menu_item_constructed (GObject *object)
   priv->label = g_object_ref (gtk_label_new (""));
   gtk_widget_set_margin_left (priv->label, icon_width + 2);
 
+  priv->detail = g_object_ref (gtk_label_new (""));
+  gtk_widget_set_halign (priv->detail, GTK_ALIGN_END);
+  gtk_widget_set_hexpand (priv->detail, TRUE);
+  gtk_misc_set_alignment (GTK_MISC (priv->label), 1.0, 0.5);
+  gtk_style_context_add_class (gtk_widget_get_style_context (priv->detail), "accelerator");
+
   grid = gtk_grid_new ();
   gtk_grid_attach (GTK_GRID (grid), priv->label, 0, 0, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), priv->detail, 1, 0, 1, 1);
 
   gtk_container_add (GTK_CONTAINER (object), grid);
   gtk_widget_show_all (grid);
 
   G_OBJECT_CLASS (im_source_menu_item_parent_class)->constructed (object);
+}
+
+/* collapse_whitespace:
+ * @str: the source string
+ *
+ * Collapses all occurences of consecutive whitespace charactes in @str
+ * into a single space.
+ *
+ * Returns: (transfer full): a newly-allocated string
+ */
+static gchar *
+collapse_whitespace (const gchar *str)
+{
+  GString *result;
+  gboolean in_space = FALSE;
+
+  if (str == NULL)
+    return NULL;
+
+  result = g_string_new ("");
+
+  while (*str)
+    {
+      gunichar c = g_utf8_get_char_validated (str, -1);
+
+      if (c < 0)
+        break;
+
+      if (!g_unichar_isspace (c))
+        {
+          g_string_append_unichar (result, c);
+          in_space = FALSE;
+        }
+      else if (!in_space)
+        {
+          g_string_append_c (result, ' ');
+          in_space = TRUE;
+        }
+
+      str = g_utf8_next_char (str);
+    }
+
+  return g_string_free (result, FALSE);
+}
+
+static gchar *
+im_source_menu_item_time_span_string (gint64 timestamp)
+{
+  gchar *str;
+  gint64 span;
+  gint hours;
+  gint minutes;
+
+  span = MAX (g_get_real_time () - timestamp, 0) / G_USEC_PER_SEC;
+  hours = span / 3600;
+  minutes = (span / 60) % 60;
+
+  if (hours == 0)
+    {
+      /* TRANSLATORS: number of minutes that have passed */
+      str = g_strdup_printf (ngettext ("%d m", "%d m", minutes), minutes);
+    }
+  else
+    {
+      /* TRANSLATORS: number of hours that have passed */
+      str = g_strdup_printf (ngettext ("%d h", "%d h", hours), hours);
+    }
+
+  return str;
+}
+
+static gboolean
+im_source_menu_item_set_state (ImSourceMenuItem *self,
+                               GVariant         *state)
+{
+  ImSourceMenuItemPrivate *priv = self->priv;
+  guint32 count;
+  gint64 time;
+  const gchar *str;
+  gchar *detail;
+
+  g_return_val_if_fail (g_variant_is_of_type (state, G_VARIANT_TYPE ("(uxsb)")), FALSE);
+
+  g_variant_get (state, "(ux&sb)", &count, &time, &str, NULL);
+
+  if (count != 0)
+    detail = g_strdup_printf ("%d", count);
+  else if (time != 0)
+    detail = im_source_menu_item_time_span_string (time);
+  else if (str != NULL && *str)
+    detail = collapse_whitespace (str);
+  else
+    detail = NULL;
+
+  gtk_label_set_text (GTK_LABEL (priv->detail), detail ? detail : "");
+
+  g_free (detail);
+  return TRUE;
 }
 
 static void
@@ -77,7 +185,7 @@ im_source_menu_item_set_action_name (ImSourceMenuItem *self,
       g_action_group_query_action (priv->action_group, priv->action,
                                    &enabled, NULL, NULL, NULL, &state))
     {
-      if (!state || !g_variant_is_of_type (state, G_VARIANT_TYPE ("(uxsb)")))
+      if (!state || !im_source_menu_item_set_state (self, state))
         enabled = FALSE;
 
       if (state)
@@ -132,7 +240,7 @@ im_source_menu_item_action_state_changed (GActionGroup *action_group,
   ImSourceMenuItem *self = user_data;
 
   if (g_strcmp0 (self->priv->action, action_name) == 0)
-      g_return_if_fail (g_variant_is_of_type (value, G_VARIANT_TYPE ("(uxsb)")));
+    im_source_menu_item_set_state (self, value);
 }
 
 static void
@@ -165,6 +273,9 @@ im_source_menu_item_dispose (GObject *object)
 
   if (self->priv->action_group)
       im_source_menu_item_set_action_group (self, NULL);
+
+  g_clear_object (&self->priv->label);
+  g_clear_object (&self->priv->detail);
 
   G_OBJECT_CLASS (im_source_menu_item_parent_class)->dispose (object);
 }
@@ -226,7 +337,6 @@ im_source_menu_item_init (ImSourceMenuItem *self)
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
                                             IM_TYPE_SOURCE_MENU_ITEM,
                                             ImSourceMenuItemPrivate);
-  g_message (G_STRFUNC);
 }
 
 void
