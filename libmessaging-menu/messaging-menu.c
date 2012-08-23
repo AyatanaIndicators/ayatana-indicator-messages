@@ -75,6 +75,21 @@ static void global_status_changed (IndicatorMessagesService *service,
                                    gpointer user_data);
 
 static void
+messaging_menu_app_set_desktop_id (MessagingMenuApp *app,
+                                   const gchar      *desktop_id)
+{
+  g_return_if_fail (desktop_id != NULL);
+
+  /* no need to clean up, it's construct only */
+  app->appinfo = g_desktop_app_info_new (desktop_id);
+  if (app->appinfo == NULL)
+    {
+      g_warning ("could not find the desktop file for '%s'",
+                 desktop_id);
+    }
+}
+
+static void
 messaging_menu_app_set_property (GObject      *object,
                                  guint         prop_id,
                                  const GValue *value,
@@ -85,12 +100,7 @@ messaging_menu_app_set_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_DESKTOP_ID:
-      app->appinfo = g_desktop_app_info_new (g_value_get_string (value));
-      if (app->appinfo == NULL)
-        {
-          g_warning ("could not find the desktop file for '%s'",
-                     g_value_get_string (value));
-        }
+      messaging_menu_app_set_desktop_id (app, g_value_get_string (value));
       break;
 
     default:
