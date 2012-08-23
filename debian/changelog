@@ -12,6 +12,8 @@ indicator-messages (12.10.0-0ubuntu1) UNRELEASED; urgency=low
   * Updated packaging to dh9, current standards
   * Drop gtk2 build from the packaging since support for it was 
     dropped in trunk, thanks Lars Uebernickel
+  * Backported fixes from trunk up to r284, some of those are needed for the
+    bindings to work
 
  -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 21 Aug 2012 18:17:34 +0200
 

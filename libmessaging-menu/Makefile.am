@@ -18,7 +18,7 @@ libmessaging_menu_la_CFLAGS = \
 	$(GIO_CFLAGS) \
 	-Wall
 
-libmessaging_menu_la_LDFLAGS = -export-symbols-regex="^messaging_menu_.*"
+libmessaging_menu_la_LDFLAGS = -export-symbols-regex "^messaging_menu_.*"
 
 BUILT_SOURCES = \
 	indicator-messages-service.c \

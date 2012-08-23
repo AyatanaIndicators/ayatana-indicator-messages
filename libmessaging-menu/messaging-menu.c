@@ -75,6 +75,21 @@ static void global_status_changed (IndicatorMessagesService *service,
                                    gpointer user_data);
 
 static void
+messaging_menu_app_set_desktop_id (MessagingMenuApp *app,
+                                   const gchar      *desktop_id)
+{
+  g_return_if_fail (desktop_id != NULL);
+
+  /* no need to clean up, it's construct only */
+  app->appinfo = g_desktop_app_info_new (desktop_id);
+  if (app->appinfo == NULL)
+    {
+      g_warning ("could not find the desktop file for '%s'",
+                 desktop_id);
+    }
+}
+
+static void
 messaging_menu_app_set_property (GObject      *object,
                                  guint         prop_id,
                                  const GValue *value,
@@ -85,12 +100,7 @@ messaging_menu_app_set_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_DESKTOP_ID:
-      app->appinfo = g_desktop_app_info_new (g_value_get_string (value));
-      if (app->appinfo == NULL)
-        {
-          g_warning ("could not find the desktop file for '%s'",
-                     g_value_get_string (value));
-        }
+      messaging_menu_app_set_desktop_id (app, g_value_get_string (value));
       break;
 
     default:
@@ -409,6 +419,8 @@ source_action_activated (GTupleAction *action,
   const gchar *name = g_action_get_name (G_ACTION (action));
   GQuark q = g_quark_from_string (name);
 
+  messaging_menu_app_remove_source (app, name);
+
   g_signal_emit (app, signals[ACTIVATE_SOURCE], q, name);
 }
 
@@ -501,7 +513,7 @@ messaging_menu_app_insert_source (MessagingMenuApp *app,
  * messaging_menu_app_append_source:
  * @app: a #MessagingMenuApp
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  *
  * Appends a new message source to the end of the section representing @app.
@@ -525,7 +537,7 @@ messaging_menu_app_append_source (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @count: the count for the source
  *
@@ -553,7 +565,7 @@ messaging_menu_app_insert_source_with_count (MessagingMenuApp *app,
  * messaging_menu_app_append_source_with_count:
  * @app: a #MessagingMenuApp
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @count: the count for the source
  *
@@ -579,7 +591,7 @@ void messaging_menu_app_append_source_with_count (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @time: the time when the source was created
  *
@@ -608,7 +620,7 @@ messaging_menu_app_insert_source_with_time (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @time: the time when the source was created
  *
@@ -635,7 +647,7 @@ messaging_menu_app_append_source_with_time (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @str: a string associated with the source
  *
@@ -664,7 +676,7 @@ messaging_menu_app_insert_source_with_string (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @str: a string associated with the source
  *
@@ -704,10 +716,7 @@ messaging_menu_app_remove_source (MessagingMenuApp *app,
   g_return_if_fail (source_id != NULL);
 
   if (g_simple_action_group_lookup (app->source_actions, source_id) == NULL)
-    {
-      g_warning ("%s: a source with id '%s' doesn't exist", G_STRFUNC, source_id);
       return;
-    }
 
   n_items = g_menu_model_get_n_items (G_MENU_MODEL (app->menu));
   for (i = 0; i < n_items; i++)

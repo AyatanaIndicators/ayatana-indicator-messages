@@ -233,6 +233,8 @@ app_section_dispose (GObject *object)
 		g_clear_object (&priv->source_actions);
 	}
 
+	g_clear_object (&priv->muxer);
+
 	g_clear_object (&priv->source_menu);
 	g_clear_object (&priv->ids);
 	g_clear_object (&priv->appinfo);
@@ -350,6 +352,7 @@ app_section_set_app_info (AppSection *self,
 		action = g_simple_action_new (nicks[i], NULL);
 		g_signal_connect(action, "activate", G_CALLBACK (nick_activate_cb), self);
 		g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (action));
+		g_object_unref (action);
 
 		g_menu_append (priv->menu, name, nicks[i]);
 
@@ -384,8 +387,10 @@ activate_cb (GSimpleAction *action,
 	GError *error = NULL;
 
 	if (!g_app_info_launch (G_APP_INFO (priv->appinfo), NULL, NULL, &error)) {
-		g_warning("Unable to execute application for desktop file '%s'",
-			  g_desktop_app_info_get_filename (priv->appinfo));
+		g_warning("Unable to execute application for desktop file '%s': %s",
+			  g_desktop_app_info_get_filename (priv->appinfo),
+			  error->message);
+		g_error_free (error);
 	}
 }
 
