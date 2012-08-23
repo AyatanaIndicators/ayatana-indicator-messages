@@ -25,9 +25,6 @@ Package: indicator-messages
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: indicator-applet | indicator-renderer, indicator-status-provider-mc5
-Replaces: indicator-me
-Breaks: indicator-applet (<< 0.3.0)
-Conflicts: indicator-me
 Description: indicator that collects messages that need a response
  A place on the user's desktop that collects messages that need a response.
  This menu provides a condensed and collected view of all of those messages
