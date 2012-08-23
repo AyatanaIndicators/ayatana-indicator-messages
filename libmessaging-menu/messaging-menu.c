@@ -511,7 +511,7 @@ messaging_menu_app_insert_source (MessagingMenuApp *app,
  * messaging_menu_app_append_source:
  * @app: a #MessagingMenuApp
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  *
  * Appends a new message source to the end of the section representing @app.
@@ -535,7 +535,7 @@ messaging_menu_app_append_source (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @count: the count for the source
  *
@@ -563,7 +563,7 @@ messaging_menu_app_insert_source_with_count (MessagingMenuApp *app,
  * messaging_menu_app_append_source_with_count:
  * @app: a #MessagingMenuApp
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @count: the count for the source
  *
@@ -589,7 +589,7 @@ void messaging_menu_app_append_source_with_count (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @time: the time when the source was created
  *
@@ -618,7 +618,7 @@ messaging_menu_app_insert_source_with_time (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @time: the time when the source was created
  *
@@ -645,7 +645,7 @@ messaging_menu_app_append_source_with_time (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @str: a string associated with the source
  *
@@ -674,7 +674,7 @@ messaging_menu_app_insert_source_with_string (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @str: a string associated with the source
  *
