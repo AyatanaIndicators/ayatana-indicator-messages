@@ -716,10 +716,7 @@ messaging_menu_app_remove_source (MessagingMenuApp *app,
   g_return_if_fail (source_id != NULL);
 
   if (g_simple_action_group_lookup (app->source_actions, source_id) == NULL)
-    {
-      g_warning ("%s: a source with id '%s' doesn't exist", G_STRFUNC, source_id);
       return;
-    }
 
   n_items = g_menu_model_get_n_items (G_MENU_MODEL (app->menu));
   for (i = 0; i < n_items; i++)
