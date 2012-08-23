@@ -419,6 +419,8 @@ source_action_activated (GTupleAction *action,
   const gchar *name = g_action_get_name (G_ACTION (action));
   GQuark q = g_quark_from_string (name);
 
+  messaging_menu_app_remove_source (app, name);
+
   g_signal_emit (app, signals[ACTIVATE_SOURCE], q, name);
 }
 
