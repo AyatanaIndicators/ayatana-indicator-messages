@@ -327,7 +327,7 @@ messaging_menu_app_init (MessagingMenuApp *app)
  * The messaging menu will return to marking the application as not running as
  * soon as the returned #MessagingMenuApp is destroyed.
  *
- * Returns: (transfer-full): a new #MessagingMenuApp
+ * Returns: (transfer full): a new #MessagingMenuApp
  */
 MessagingMenuApp *
 messaging_menu_app_new (const gchar *desktop_id)
@@ -658,7 +658,6 @@ messaging_menu_app_insert_source_with_time (MessagingMenuApp *app,
 /**
  * messaging_menu_app_append_source_with_time:
  * @app: a #MessagingMenuApp
- * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
  * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
@@ -714,7 +713,6 @@ messaging_menu_app_insert_source_with_string (MessagingMenuApp *app,
 /**
  * messaging_menu_app_append_source_with_string:
  * @app: a #MessagingMenuApp
- * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
  * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
@@ -761,14 +759,18 @@ messaging_menu_app_remove_source (MessagingMenuApp *app,
   n_items = g_menu_model_get_n_items (G_MENU_MODEL (app->menu));
   for (i = 0; i < n_items; i++)
     {
-      const gchar *action = NULL;
+      gchar *action;
 
-      g_menu_model_get_item_attribute (G_MENU_MODEL (app->menu), i,
-                                       "action", "&s", &action);
-      if (!g_strcmp0 (action, source_id))
+      if (g_menu_model_get_item_attribute (G_MENU_MODEL (app->menu), i,
+                                           "action", "s", &action))
         {
-          g_menu_remove (app->menu, i);
-          break;
+          if (!g_strcmp0 (action, source_id))
+            {
+              g_menu_remove (app->menu, i);
+              break;
+            }
+
+          g_free (action);
         }
     }
 
@@ -832,7 +834,7 @@ messaging_menu_app_set_source_time (MessagingMenuApp *app,
  * messaging_menu_app_set_source_string:
  * @app: a #MessagingMenuApp
  * @source_id: a source id
- * @string: the new string for the source
+ * @str: the new string for the source
  *
  * Updates the string displayed next to @source_id to @str.
  *
