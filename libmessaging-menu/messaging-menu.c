@@ -759,14 +759,18 @@ messaging_menu_app_remove_source (MessagingMenuApp *app,
   n_items = g_menu_model_get_n_items (G_MENU_MODEL (app->menu));
   for (i = 0; i < n_items; i++)
     {
-      const gchar *action = NULL;
+      gchar *action;
 
-      g_menu_model_get_item_attribute (G_MENU_MODEL (app->menu), i,
-                                       "action", "&s", &action);
-      if (!g_strcmp0 (action, source_id))
+      if (g_menu_model_get_item_attribute (G_MENU_MODEL (app->menu), i,
+                                           "action", "s", &action))
         {
-          g_menu_remove (app->menu, i);
-          break;
+          if (!g_strcmp0 (action, source_id))
+            {
+              g_menu_remove (app->menu, i);
+              break;
+            }
+
+          g_free (action);
         }
     }
 
