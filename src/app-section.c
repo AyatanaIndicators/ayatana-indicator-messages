@@ -695,6 +695,5 @@ app_section_get_uses_chat_status (AppSection *self)
 {
 	AppSectionPrivate * priv = self->priv;
 
-	/* chat status is only useful when the app is running */
-	return priv->uses_chat_status && priv->source_actions;
+	return priv->uses_chat_status;
 }

@@ -313,7 +313,6 @@ change_status_action (GSimpleAction *action,
 			  g_str_equal (status, "offline"));
 
 	if (!g_action_state_equal (G_ACTION (action), value)) {
-		g_message ("%s", status);
 		g_simple_action_set_state (action, value);
 		indicator_messages_service_emit_status_changed (messages_service, status);
 	}
