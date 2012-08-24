@@ -39,6 +39,7 @@ struct _MessagingMenuApp
   GMenu *menu;
 
   IndicatorMessagesService *messages_service;
+  guint watch_id;
 
   GCancellable *cancellable;
 };
@@ -118,6 +119,12 @@ static void
 messaging_menu_app_dispose (GObject *object)
 {
   MessagingMenuApp *app = MESSAGING_MENU_APP (object);
+
+  if (app->watch_id > 0)
+    {
+      g_bus_unwatch_name (app->watch_id);
+      app->watch_id = 0;
+    }
 
   if (app->cancellable)
     {
@@ -243,6 +250,17 @@ got_session_bus (GObject      *source,
       g_error_free (error);
     }
 
+  g_object_unref (bus);
+}
+
+static void
+indicator_messages_appeared (GDBusConnection *bus,
+                             const gchar     *name,
+                             const gchar     *name_owner,
+                             gpointer         user_data)
+{
+  MessagingMenuApp *app = user_data;
+
   indicator_messages_service_proxy_new (bus,
                                         G_DBUS_PROXY_FLAGS_NONE,
                                         "com.canonical.indicator.messages",
@@ -250,8 +268,22 @@ got_session_bus (GObject      *source,
                                         app->cancellable,
                                         created_messages_service,
                                         app);
+}
 
-  g_object_unref (bus);
+static void
+indicator_messages_vanished (GDBusConnection *bus,
+                             const gchar     *name,
+                             gpointer         user_data)
+{
+  MessagingMenuApp *app = user_data;
+
+  if (app->messages_service)
+    {
+      g_signal_handlers_disconnect_by_func (app->messages_service,
+                                            global_status_changed,
+                                            app);
+      g_clear_object (&app->messages_service);
+    }
 }
 
 static void
@@ -272,6 +304,14 @@ messaging_menu_app_init (MessagingMenuApp *app)
              app->cancellable,
              got_session_bus,
              app);
+
+  app->watch_id = g_bus_watch_name (G_BUS_TYPE_SESSION,
+                                    "com.canonical.indicator.messages",
+                                    G_BUS_NAME_WATCHER_FLAGS_NONE,
+                                    indicator_messages_appeared,
+                                    indicator_messages_vanished,
+                                    app,
+                                    NULL);
 }
 
 /**
