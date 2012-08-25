@@ -118,8 +118,9 @@ indicator_messages_init (IndicatorMessages *self)
 	g_signal_connect (self->service, "connection-change",
 			  G_CALLBACK (service_connection_changed), self);
 
-	self->menu_wrapper = g_object_ref_sink (g_menu_new ());
+	self->menu_wrapper = g_menu_new ();
 	self->gtkmenu = gtk_menu_new_from_model (G_MENU_MODEL (self->menu_wrapper));
+	g_object_ref_sink (self->gtkmenu);
 
 	self->image = g_object_ref_sink (gtk_image_new ());
 
