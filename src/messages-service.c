@@ -134,6 +134,8 @@ uses_chat_status_changed (GObject *object,
 		if (show_chat)
 			g_menu_insert_section (menu, 0, NULL, chat_section);
 	}
+
+	g_object_unref (first_section);
 }
 
 static AppSection *
