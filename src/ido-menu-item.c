@@ -324,11 +324,22 @@ ido_menu_item_set_menu_item (IdoMenuItem *self,
     {
       GError *error;
 
-      icon = g_icon_new_for_string (iconstr, &error);
-      if (icon == NULL)
+      /* only indent the label if icon is set to "" */
+      if (iconstr[0] == '\0')
         {
-          g_warning ("unable to set icon: %s", error->message);
-          g_error_free (error);
+          gint width;
+
+          gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &width, NULL);
+          gtk_widget_set_size_request (self->priv->icon, width, -1);
+        }
+      else
+        {
+          icon = g_icon_new_for_string (iconstr, &error);
+          if (icon == NULL)
+            {
+              g_warning ("unable to set icon: %s", error->message);
+              g_error_free (error);
+            }
         }
       g_free (iconstr);
     }
