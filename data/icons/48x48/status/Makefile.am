@@ -1,5 +1,5 @@
 
-iconsdir = $(INDICATORICONSDIR)/hicolor/48x48/status
+iconsdir = $(datadir)/icons/hicolor/48x48/status
 
 icons_DATA =  \
 	application-running.png \

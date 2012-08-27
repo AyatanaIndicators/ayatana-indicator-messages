@@ -60,7 +60,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/gcov.m4 \
 	$(top_srcdir)/m4/gtest.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
@@ -97,6 +97,7 @@ LTLIBRARIES = $(messaginglib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libmessaging_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libmessaging_la_OBJECTS = libmessaging_la-indicator-messages.lo \
+	libmessaging_la-ido-menu-item.lo \
 	libmessaging_la-im-app-menu-item.lo \
 	libmessaging_la-im-source-menu-item.lo \
 	libmessaging_la-indicator-messages-service.lo
@@ -220,7 +221,6 @@ GTKDOC_MKPDF = @GTKDOC_MKPDF@
 GTKDOC_REBASE = @GTKDOC_REBASE@
 HTML_DIR = @HTML_DIR@
 INDICATORDIR = @INDICATORDIR@
-INDICATORICONSDIR = @INDICATORICONSDIR@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -360,6 +360,8 @@ messaginglibdir = $(INDICATORDIR)
 messaginglib_LTLIBRARIES = libmessaging.la
 libmessaging_la_SOURCES = \
 	indicator-messages.c \
+	ido-menu-item.c \
+	ido-menu-item.h \
 	im-app-menu-item.c \
 	im-app-menu-item.h \
 	im-source-menu-item.c \
@@ -547,6 +549,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-gsettingsstrv.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-indicator-messages-service.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/indicator_messages_service-messages-service.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmessaging_la-ido-menu-item.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmessaging_la-im-app-menu-item.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmessaging_la-im-source-menu-item.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmessaging_la-indicator-messages-service.Plo@am__quote@
@@ -579,6 +582,13 @@ libmessaging_la-indicator-messages.lo: indicator-messages.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='indicator-messages.c' object='libmessaging_la-indicator-messages.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmessaging_la_CFLAGS) $(CFLAGS) -c -o libmessaging_la-indicator-messages.lo `test -f 'indicator-messages.c' || echo '$(srcdir)/'`indicator-messages.c
+
+libmessaging_la-ido-menu-item.lo: ido-menu-item.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmessaging_la_CFLAGS) $(CFLAGS) -MT libmessaging_la-ido-menu-item.lo -MD -MP -MF $(DEPDIR)/libmessaging_la-ido-menu-item.Tpo -c -o libmessaging_la-ido-menu-item.lo `test -f 'ido-menu-item.c' || echo '$(srcdir)/'`ido-menu-item.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libmessaging_la-ido-menu-item.Tpo $(DEPDIR)/libmessaging_la-ido-menu-item.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ido-menu-item.c' object='libmessaging_la-ido-menu-item.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmessaging_la_CFLAGS) $(CFLAGS) -c -o libmessaging_la-ido-menu-item.lo `test -f 'ido-menu-item.c' || echo '$(srcdir)/'`ido-menu-item.c
 
 libmessaging_la-im-app-menu-item.lo: im-app-menu-item.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmessaging_la_CFLAGS) $(CFLAGS) -MT libmessaging_la-im-app-menu-item.lo -MD -MP -MF $(DEPDIR)/libmessaging_la-im-app-menu-item.Tpo -c -o libmessaging_la-im-app-menu-item.lo `test -f 'im-app-menu-item.c' || echo '$(srcdir)/'`im-app-menu-item.c

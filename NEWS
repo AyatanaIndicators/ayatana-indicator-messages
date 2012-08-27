@@ -1,0 +1,9 @@
+Overview of changes from 12.10.0 to 12.10.1
+===========================================
+
+* presence icons are shown again
+* the icon is changed when a source draws attention
+* the time in source menu items is always kep current
+* fixed all g-ir-scanner warnings
+* libmessaging-menu now removes sources when they are activated
+* fixed several bugs

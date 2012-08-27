@@ -38,6 +38,11 @@ Conflicts: libindicator-messages-status-provider1,
            indicator-status-provider-pidgin,
            indicator-status-provider-telepathy,
            indicator-status-provider-emesene
+Breaks: gwibber-services (<< 3.5.4-0ubuntu1~),
+        telepathy-indicator (<< 0.3.0-0ubuntu1~),
+        thunderbird (<< 15.0+build1-0ubuntu1~),
+        xchat-indicator (<< 0.3.11-0ubuntu2~),
+        xchat-gnome-indicator (<< 0.3.11-0ubuntu2~),
 Description: indicator that collects messages that need a response
  A place on the user's desktop that collects messages that need a response.
  This menu provides a condensed and collected view of all of those messages

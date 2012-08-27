@@ -1,7 +1,8 @@
-indicator-messages (12.10.0-0ubuntu1) UNRELEASED; urgency=low
+indicator-messages (12.10.1-0ubuntu1) UNRELEASED; urgency=low
 
   * New upstream version
   * debian/control:
+    - breaks on version of ported clients using libindicate
     - set some conflicts on the old deprecated status provider binaries
     - updated Build-Depends
   * debian/control, debian/*.install:
@@ -12,9 +13,8 @@ indicator-messages (12.10.0-0ubuntu1) UNRELEASED; urgency=low
   * Updated packaging to dh9, current standards
   * Drop gtk2 build from the packaging since support for it was 
     dropped in trunk, thanks Lars Uebernickel
-  * Backported fixes from trunk up to r295
 
- -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 21 Aug 2012 18:17:34 +0200
+ -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 27 Aug 2012 18:38:55 +0200
 
 indicator-messages (0.6.0-0ubuntu1) precise; urgency=low
 

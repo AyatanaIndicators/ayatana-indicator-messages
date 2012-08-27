@@ -1,5 +1,5 @@
 
-iconsdir = $(INDICATORICONSDIR)/hicolor/22x22/status
+iconsdir = $(datadir)/icons/hicolor/22x22/status
 
 icons_DATA =  \
 	indicator-messages.png \

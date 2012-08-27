@@ -1,5 +1,5 @@
 
-AC_INIT(indicator-messages, 12.10.0)
+AC_INIT(indicator-messages, 12.10.1)
 
 AC_PREREQ(2.62)
 
@@ -106,13 +106,10 @@ AC_ARG_ENABLE(localinstall, AS_HELP_STRING([--enable-localinstall], [install all
 
 if test "x$with_localinstall" = "xyes"; then
 	INDICATORDIR="${libdir}/indicators/2/"
-	INDICATORICONSDIR="${datadir}/libindicate/icons/"
 else
 	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator3-0.4`
-	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator3-0.4`
 fi
 AC_SUBST(INDICATORDIR)
-AC_SUBST(INDICATORICONSDIR)
 
 ###########################
 # DBus Service Info
