@@ -231,7 +231,10 @@ ido_menu_item_dispose (GObject *object)
   g_clear_object (&self->priv->label);
 
   if (self->priv->target)
-    g_variant_unref (self->priv->target);
+    {
+      g_variant_unref (self->priv->target);
+      self->priv->target = NULL;
+    }
 
   G_OBJECT_CLASS (ido_menu_item_parent_class)->dispose (object);
 }
