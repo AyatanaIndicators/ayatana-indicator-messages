@@ -321,7 +321,7 @@ ido_menu_item_set_menu_item (IdoMenuItem *self,
 {
   gchar *iconstr = NULL;
   GIcon *icon = NULL;
-  gchar *label;
+  gchar *label = NULL;
   gchar *action = NULL;
 
   if (g_menu_item_get_attribute (menuitem, "x-canonical-icon", "s", &iconstr))
