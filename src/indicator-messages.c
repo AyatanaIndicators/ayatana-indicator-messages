@@ -32,11 +32,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
-#include <libindicator/indicator-image-helper.h>
 #include <libindicator/indicator-service-manager.h>
 
 #include "dbus-data.h"
 
+#include "ido-menu-item.h"
 #include "im-app-menu-item.h"
 #include "im-source-menu-item.h"
 
@@ -130,6 +130,7 @@ indicator_messages_init (IndicatorMessages *self)
 
 	/* make sure custom menu item types are registered (so that
          * gtk_model_new_from_menu can pick them up */
+	ido_menu_item_get_type ();
 	im_app_menu_item_get_type ();
 	im_source_menu_item_get_type ();
 }

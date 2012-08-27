@@ -1,5 +1,5 @@
 
-iconsdir = $(INDICATORICONSDIR)/hicolor/16x16/categories
+iconsdir = $(datadir)/icons/hicolor/16x16/categories
 
 icons_DATA =  \
 	applications-email-panel.png \

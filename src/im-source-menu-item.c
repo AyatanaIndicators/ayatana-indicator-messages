@@ -56,7 +56,7 @@ im_source_menu_item_constructed (GObject *object)
   gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &icon_width, NULL);
 
   priv->icon = g_object_ref (gtk_image_new ());
-  gtk_widget_set_margin_left (priv->icon, icon_width + 2);
+  gtk_widget_set_margin_left (priv->icon, icon_width + 6);
 
   priv->label = g_object_ref (gtk_label_new (""));
 

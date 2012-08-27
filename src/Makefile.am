@@ -15,6 +15,8 @@ messaginglibdir = $(INDICATORDIR)
 messaginglib_LTLIBRARIES = libmessaging.la
 libmessaging_la_SOURCES = \
 	indicator-messages.c \
+	ido-menu-item.c \
+	ido-menu-item.h \
 	im-app-menu-item.c \
 	im-app-menu-item.h \
 	im-source-menu-item.c \
