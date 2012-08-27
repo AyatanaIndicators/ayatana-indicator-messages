@@ -1,5 +1,5 @@
 
-AC_INIT(indicator-messages, 12.10.0)
+AC_INIT(indicator-messages, 12.10.1)
 
 AC_PREREQ(2.62)
 
