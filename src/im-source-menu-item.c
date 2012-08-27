@@ -29,6 +29,9 @@ struct _ImSourceMenuItemPrivate
   GtkWidget *icon;
   GtkWidget *label;
   GtkWidget *detail;
+
+  gint64 time;
+  guint timer_id;
 };
 
 enum
@@ -53,7 +56,7 @@ im_source_menu_item_constructed (GObject *object)
   gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &icon_width, NULL);
 
   priv->icon = g_object_ref (gtk_image_new ());
-  gtk_widget_set_margin_left (priv->icon, icon_width + 2);
+  gtk_widget_set_margin_left (priv->icon, icon_width + 6);
 
   priv->label = g_object_ref (gtk_label_new (""));
 
@@ -144,6 +147,19 @@ im_source_menu_item_time_span_string (gint64 timestamp)
 }
 
 static gboolean
+im_source_menu_item_update_time (gpointer data)
+{
+  ImSourceMenuItem *self = data;
+  gchar *str;
+
+  str = im_source_menu_item_time_span_string (self->priv->time);
+  gtk_label_set_text (GTK_LABEL (self->priv->detail), str);
+
+  g_free (str);
+  return TRUE;
+}
+
+static gboolean
 im_source_menu_item_set_state (ImSourceMenuItem *self,
                                GVariant         *state)
 {
@@ -153,6 +169,12 @@ im_source_menu_item_set_state (ImSourceMenuItem *self,
   const gchar *str;
   gchar *detail;
 
+  if (priv->timer_id != 0)
+    {
+      g_source_remove (priv->timer_id);
+      priv->timer_id = 0;
+    }
+
   g_return_val_if_fail (g_variant_is_of_type (state, G_VARIANT_TYPE ("(uxsb)")), FALSE);
 
   g_variant_get (state, "(ux&sb)", &count, &time, &str, NULL);
@@ -160,7 +182,11 @@ im_source_menu_item_set_state (ImSourceMenuItem *self,
   if (count != 0)
     detail = g_strdup_printf ("%d", count);
   else if (time != 0)
-    detail = im_source_menu_item_time_span_string (time);
+    {
+      priv->time = time;
+      detail = im_source_menu_item_time_span_string (time);
+      priv->timer_id = g_timeout_add_seconds (59, im_source_menu_item_update_time, self);
+    }
   else if (str != NULL && *str)
     detail = collapse_whitespace (str);
   else
@@ -274,6 +300,12 @@ static void
 im_source_menu_item_dispose (GObject *object)
 {
   ImSourceMenuItem *self = IM_SOURCE_MENU_ITEM (object);
+
+  if (self->priv->timer_id != 0)
+    {
+      g_source_remove (self->priv->timer_id);
+      self->priv->timer_id = 0;
+    }
 
   if (self->priv->action_group)
       im_source_menu_item_set_action_group (self, NULL);

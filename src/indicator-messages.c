@@ -32,11 +32,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
-#include <libindicator/indicator-image-helper.h>
 #include <libindicator/indicator-service-manager.h>
 
 #include "dbus-data.h"
 
+#include "ido-menu-item.h"
 #include "im-app-menu-item.h"
 #include "im-source-menu-item.h"
 
@@ -61,6 +61,7 @@ struct _IndicatorMessages {
 	GMenu *menu_wrapper;
 	GMenuModel *menu;
 	GtkWidget *image;
+	GtkWidget *gtkmenu;
 	gchar *accessible_desc;
 };
 
@@ -75,6 +76,9 @@ static void indicator_messages_class_init (IndicatorMessagesClass *klass);
 static void indicator_messages_init       (IndicatorMessages *self);
 static void indicator_messages_dispose    (GObject *object);
 static void indicator_messages_finalize   (GObject *object);
+static void service_connection_changed    (IndicatorServiceManager *sm,
+					   gboolean connected,
+					   gpointer user_data);
 static GtkImage * get_image               (IndicatorObject * io);
 static GtkMenu * get_menu                 (IndicatorObject * io);
 static const gchar * get_accessible_desc  (IndicatorObject * io);
@@ -86,6 +90,10 @@ static void menu_items_changed            (GMenuModel *menu,
                                            gint        removed,
                                            gint        added,
                                            gpointer    user_data);
+static void messages_state_changed        (GActionGroup *action_group,
+                                           gchar        *action_name,
+                                           GVariant     *value,
+                                           gpointer      user_data);
 
 G_DEFINE_TYPE (IndicatorMessages, indicator_messages, INDICATOR_OBJECT_TYPE);
 
@@ -110,43 +118,19 @@ indicator_messages_class_init (IndicatorMessagesClass *klass)
 static void
 indicator_messages_init (IndicatorMessages *self)
 {
-	GDBusConnection *bus;
-	GError *error = NULL;
-
-	/* Default values */
-	self->service = NULL;
-
-	/* Complex stuff */
 	self->service = indicator_service_manager_new_version(INDICATOR_MESSAGES_DBUS_NAME, 1);
-
-	bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &error);
-	if (!bus) {
-		g_warning ("error connecting to the session bus: %s", error->message);
-		g_error_free (error);
-		return;
-	}
-
-	self->actions = G_ACTION_GROUP (g_dbus_action_group_get (bus,
-								 INDICATOR_MESSAGES_DBUS_NAME,
-								 INDICATOR_MESSAGES_DBUS_OBJECT));
-
-	self->menu = G_MENU_MODEL (g_dbus_menu_model_get (bus,
-							  INDICATOR_MESSAGES_DBUS_NAME,
-							  INDICATOR_MESSAGES_DBUS_OBJECT));
-
-	g_signal_connect (self->menu, "items-changed", G_CALLBACK (menu_items_changed), self);
-
-	self->image = g_object_ref_sink (gtk_image_new ());
-	gtk_widget_show (self->image);
-	update_root_item (self);
+	g_signal_connect (self->service, "connection-change",
+			  G_CALLBACK (service_connection_changed), self);
 
 	self->menu_wrapper = g_menu_new ();
-	update_menu (self);
+	self->gtkmenu = gtk_menu_new_from_model (G_MENU_MODEL (self->menu_wrapper));
+	g_object_ref_sink (self->gtkmenu);
 
-	g_object_unref (bus);
+	self->image = g_object_ref_sink (gtk_image_new ());
 
 	/* make sure custom menu item types are registered (so that
          * gtk_model_new_from_menu can pick them up */
+	ido_menu_item_get_type ();
 	im_app_menu_item_get_type ();
 	im_source_menu_item_get_type ();
 }
@@ -162,6 +146,7 @@ indicator_messages_dispose (GObject *object)
 	g_clear_object (&self->menu_wrapper);
 	g_clear_object (&self->actions);
 	g_clear_object (&self->menu);
+	g_clear_object (&self->gtkmenu);
 	g_clear_object (&self->image);
 
 	G_OBJECT_CLASS (indicator_messages_parent_class)->dispose (object);
@@ -184,11 +169,61 @@ indicator_messages_finalize (GObject *object)
 
 /* Functions */
 
+static void service_connection_changed (IndicatorServiceManager *sm,
+				        gboolean connected,
+				        gpointer user_data)
+{
+	IndicatorMessages *self = user_data;
+	GDBusConnection *bus;
+	GError *error = NULL;
+
+	if (self->actions != NULL) {
+		g_signal_handlers_disconnect_by_func (self->actions, messages_state_changed, self);
+		g_clear_object (&self->actions);
+	}
+	if (self->menu != NULL) {
+		g_signal_handlers_disconnect_by_func (self->menu, menu_items_changed, self);
+		g_clear_object (&self->menu);
+	}
+	if (g_menu_model_get_n_items (G_MENU_MODEL (self->menu_wrapper)) == 1)
+		g_menu_remove (self->menu_wrapper, 0);
+
+	if (connected == FALSE)
+		return;
+
+	bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &error);
+	if (!bus) {
+		g_warning ("error connecting to the session bus: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	self->actions = G_ACTION_GROUP (g_dbus_action_group_get (bus,
+								 INDICATOR_MESSAGES_DBUS_NAME,
+								 INDICATOR_MESSAGES_DBUS_OBJECT));
+	gtk_widget_insert_action_group (self->gtkmenu, 
+					get_name_hint (INDICATOR_OBJECT (self)),
+					self->actions);
+	g_signal_connect (self->actions, "action-state-changed::messages",
+			  G_CALLBACK (messages_state_changed), self);
+
+	self->menu = G_MENU_MODEL (g_dbus_menu_model_get (bus,
+							  INDICATOR_MESSAGES_DBUS_NAME,
+							  INDICATOR_MESSAGES_DBUS_OBJECT));
+	g_signal_connect (self->menu, "items-changed", G_CALLBACK (menu_items_changed), self);
+
+	update_root_item (self);
+	update_menu (self);
+
+	g_object_unref (bus);
+}
+
 static GtkImage *
 get_image (IndicatorObject * io)
 {
 	IndicatorMessages *self = INDICATOR_MESSAGES (io);
 
+	gtk_widget_show (self->image);
 	return GTK_IMAGE (self->image);
 }
 
@@ -196,12 +231,8 @@ static GtkMenu *
 get_menu (IndicatorObject * io)
 {
 	IndicatorMessages *self = INDICATOR_MESSAGES (io);
-	GtkWidget *menu;
 
-	menu = gtk_menu_new_from_model (G_MENU_MODEL (self->menu_wrapper));
-	gtk_widget_insert_action_group (menu, get_name_hint (io), self->actions);
-
-	return GTK_MENU (menu);
+	return GTK_MENU (self->gtkmenu);
 }
 
 static const gchar *
@@ -269,7 +300,7 @@ update_menu (IndicatorMessages *self)
 	GMenuModel *popup;
 	GMenuItem *item;
 
-	if (g_menu_model_get_n_items (self->menu) == 0)
+	if (self->menu == NULL || g_menu_model_get_n_items (self->menu) == 0)
 		return;
 
 	popup = g_menu_model_get_item_link (self->menu, 0, G_MENU_LINK_SUBMENU);
@@ -301,4 +332,20 @@ menu_items_changed (GMenuModel *menu,
 		update_root_item (self);
 		update_menu (self);
 	}
+}
+
+static void
+messages_state_changed (GActionGroup *action_group,
+                        gchar        *action_name,
+                        GVariant     *value,
+                        gpointer      user_data)
+{
+	IndicatorMessages *self = user_data;
+
+	g_return_if_fail (g_variant_is_of_type (value, G_VARIANT_TYPE_BOOLEAN));
+
+	if (g_variant_get_boolean (value))
+		gtk_image_set_from_icon_name (GTK_IMAGE (self->image), "indicator-messages-new", GTK_ICON_SIZE_MENU);
+	else
+		gtk_image_set_from_icon_name (GTK_IMAGE (self->image), "indicator-messages", GTK_ICON_SIZE_MENU);
 }

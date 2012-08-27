@@ -1,5 +1,5 @@
 
-iconsdir = $(INDICATORICONSDIR)/hicolor/scalable/status
+iconsdir = $(datadir)/icons/hicolor/scalable/status
 
 icons_DATA =  \
 	application-running.svg \

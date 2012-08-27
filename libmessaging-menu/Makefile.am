@@ -18,7 +18,7 @@ libmessaging_menu_la_CFLAGS = \
 	$(GIO_CFLAGS) \
 	-Wall
 
-libmessaging_menu_la_LDFLAGS = -export-symbols-regex="^messaging_menu_.*"
+libmessaging_menu_la_LDFLAGS = -export-symbols-regex "^messaging_menu_.*"
 
 BUILT_SOURCES = \
 	indicator-messages-service.c \
@@ -41,7 +41,7 @@ pkgconfig_DATA = messaging-menu.pc
 -include $(INTROSPECTION_MAKEFILE)
 
 INTROSPECTION_GIRS =
-INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
+INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir) --warn-all
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
 
 if HAVE_INTROSPECTION
@@ -51,7 +51,7 @@ MessagingMenu_1_0_gir_NAMESPACE = MessagingMenu
 MessagingMenu_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
 MessagingMenu_1_0_gir_CFLAGS = $(INCLUDES) $(GIO_CFLAGS)
 MessagingMenu_1_0_gir_LIBS = libmessaging-menu.la
-MessagingMenu_1_0_gir_FILES = $(libmessaging_menu_la_SOURCES) $(libmessaging_menu_la_HEADERS)
+MessagingMenu_1_0_gir_FILES = messaging-menu.c messaging-menu.h
 INTROSPECTION_GIRS += MessagingMenu-1.0.gir
 
 girdir = $(datadir)/gir-1.0

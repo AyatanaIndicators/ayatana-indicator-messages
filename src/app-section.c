@@ -233,6 +233,8 @@ app_section_dispose (GObject *object)
 		g_clear_object (&priv->source_actions);
 	}
 
+	g_clear_object (&priv->muxer);
+
 	g_clear_object (&priv->source_menu);
 	g_clear_object (&priv->ids);
 	g_clear_object (&priv->appinfo);
@@ -344,15 +346,21 @@ app_section_set_app_info (AppSection *self,
 	for (i = 0; nicks[i] != NULL; i++) {
 		gchar *name;
 		GSimpleAction *action;
+		GMenuItem *item;
 
 		name = indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]);
 
 		action = g_simple_action_new (nicks[i], NULL);
 		g_signal_connect(action, "activate", G_CALLBACK (nick_activate_cb), self);
 		g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (action));
+		g_object_unref (action);
 
-		g_menu_append (priv->menu, name, nicks[i]);
+		item = g_menu_item_new (name, nicks[i]);
+		g_menu_item_set_attribute (item, "x-canonical-type", "s", "IdoMenuItem");
+		g_menu_item_set_attribute (item, "x-canonical-icon", "s", ""); /* empty to get indentation */
+		g_menu_append_item (priv->menu, item);
 
+		g_object_unref (item);
 		g_free(name);
 	}
 
@@ -384,8 +392,10 @@ activate_cb (GSimpleAction *action,
 	GError *error = NULL;
 
 	if (!g_app_info_launch (G_APP_INFO (priv->appinfo), NULL, NULL, &error)) {
-		g_warning("Unable to execute application for desktop file '%s'",
-			  g_desktop_app_info_get_filename (priv->appinfo));
+		g_warning("Unable to execute application for desktop file '%s': %s",
+			  g_desktop_app_info_get_filename (priv->appinfo),
+			  error->message);
+		g_error_free (error);
 	}
 }
 
@@ -673,16 +683,9 @@ action_removed (GActionGroup *group,
 		gpointer user_data)
 {
 	AppSection *self = user_data;
-	GVariant *state;
-
-	state = g_action_group_get_action_state (group, action_name);
-	if (!state)
-		return;
 
 	self->priv->draws_attention = any_action_draws_attention (group, action_name);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
-
-	g_variant_unref (state);
 }
 
 gboolean
@@ -690,6 +693,5 @@ app_section_get_uses_chat_status (AppSection *self)
 {
 	AppSectionPrivate * priv = self->priv;
 
-	/* chat status is only useful when the app is running */
-	return priv->uses_chat_status && priv->source_actions;
+	return priv->uses_chat_status;
 }

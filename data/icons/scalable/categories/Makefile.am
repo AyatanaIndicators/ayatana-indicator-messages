@@ -1,5 +1,5 @@
 
-iconsdir = $(INDICATORICONSDIR)/hicolor/scalable/categories
+iconsdir = $(datadir)/icons/hicolor/scalable/categories
 
 icons_DATA =  \
 	applications-email-panel.svg \

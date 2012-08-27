@@ -1,5 +1,5 @@
 
-AC_INIT(indicator-messages, 12.10.0)
+AC_INIT(indicator-messages, 12.10.1)
 
 AC_PREREQ(2.62)
 
@@ -38,11 +38,10 @@ AC_PROG_CXX
 # Dependencies 
 ###########################
 
-GTK_REQUIRED_VERSION=3.0
-GIO_UNIX_REQUIRED_VERSION=2.18
-PANEL_REQUIRED_VERSION=2.0.0
+GTK_REQUIRED_VERSION=3.5.12
+GIO_UNIX_REQUIRED_VERSION=2.33.10
 INDICATOR_REQUIRED_VERSION=0.3.19
-GLIB_REQUIRED_VERSION=2.31.20
+GLIB_REQUIRED_VERSION=2.33.10
 INTROSPECTION_REQUIRED_VERSION=1.32.0
 
 PKG_CHECK_MODULES(APPLET, gtk+-3.0 >= $GTK_REQUIRED_VERSION
@@ -107,13 +106,10 @@ AC_ARG_ENABLE(localinstall, AS_HELP_STRING([--enable-localinstall], [install all
 
 if test "x$with_localinstall" = "xyes"; then
 	INDICATORDIR="${libdir}/indicators/2/"
-	INDICATORICONSDIR="${datadir}/libindicate/icons/"
 else
 	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator3-0.4`
-	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator3-0.4`
 fi
 AC_SUBST(INDICATORDIR)
-AC_SUBST(INDICATORICONSDIR)
 
 ###########################
 # DBus Service Info

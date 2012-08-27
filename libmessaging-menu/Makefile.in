@@ -63,7 +63,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/gcov.m4 \
 	$(top_srcdir)/m4/gtest.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = messaging-menu.pc
 CONFIG_CLEAN_VPATH_FILES =
@@ -209,7 +209,6 @@ GTKDOC_MKPDF = @GTKDOC_MKPDF@
 GTKDOC_REBASE = @GTKDOC_REBASE@
 HTML_DIR = @HTML_DIR@
 INDICATORDIR = @INDICATORDIR@
-INDICATORICONSDIR = @INDICATORICONSDIR@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -352,7 +351,7 @@ libmessaging_menu_la_CFLAGS = \
 	$(GIO_CFLAGS) \
 	-Wall
 
-libmessaging_menu_la_LDFLAGS = -export-symbols-regex="^messaging_menu_.*"
+libmessaging_menu_la_LDFLAGS = -export-symbols-regex "^messaging_menu_.*"
 BUILT_SOURCES = \
 	indicator-messages-service.c \
 	indicator-messages-service.h
@@ -361,13 +360,13 @@ CLEANFILES = $(BUILT_SOURCES) $(am__append_2)
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = messaging-menu.pc
 INTROSPECTION_GIRS = $(am__append_1)
-INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
+INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir) --warn-all
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
 @HAVE_INTROSPECTION_TRUE@MessagingMenu_1_0_gir_NAMESPACE = MessagingMenu
 @HAVE_INTROSPECTION_TRUE@MessagingMenu_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
 @HAVE_INTROSPECTION_TRUE@MessagingMenu_1_0_gir_CFLAGS = $(INCLUDES) $(GIO_CFLAGS)
 @HAVE_INTROSPECTION_TRUE@MessagingMenu_1_0_gir_LIBS = libmessaging-menu.la
-@HAVE_INTROSPECTION_TRUE@MessagingMenu_1_0_gir_FILES = $(libmessaging_menu_la_SOURCES) $(libmessaging_menu_la_HEADERS)
+@HAVE_INTROSPECTION_TRUE@MessagingMenu_1_0_gir_FILES = messaging-menu.c messaging-menu.h
 @HAVE_INTROSPECTION_TRUE@girdir = $(datadir)/gir-1.0
 @HAVE_INTROSPECTION_TRUE@gir_DATA = $(INTROSPECTION_GIRS)
 @HAVE_INTROSPECTION_TRUE@typelibdir = $(libdir)/girepository-1.0

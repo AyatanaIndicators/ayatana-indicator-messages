@@ -134,6 +134,8 @@ uses_chat_status_changed (GObject *object,
 		if (show_chat)
 			g_menu_insert_section (menu, 0, NULL, chat_section);
 	}
+
+	g_object_unref (first_section);
 }
 
 static AppSection *
@@ -313,7 +315,6 @@ change_status_action (GSimpleAction *action,
 			  g_str_equal (status, "offline"));
 
 	if (!g_action_state_equal (G_ACTION (action), value)) {
-		g_message ("%s", status);
 		g_simple_action_set_state (action, value);
 		indicator_messages_service_emit_status_changed (messages_service, status);
 	}
@@ -405,14 +406,33 @@ static GMenuModel *
 create_status_section (void)
 {
 	GMenu *menu;
+	GMenuItem *item;
+	struct status_item {
+		gchar *label;
+		gchar *action;
+		gchar *icon_name;
+	} status_items[] = {
+		{ _("Available"), "status::available", "user-available" },
+		{ _("Away"),      "status::away",      "user-away" },
+		{ _("Busy"),      "status::busy",      "user-busy" },
+		{ _("Invisible"), "status::invisible", "user-invisible" },
+		{ _("Offline"),   "status::offline",   "user-offline" }
+	};
+	int i;
 
 	menu = g_menu_new ();
-	g_menu_append_with_icon_name (menu, _("Available"), "user-available", "status::available");
-	g_menu_append_with_icon_name (menu, _("Away"),      "user-away",      "status::away");
-	g_menu_append_with_icon_name (menu, _("Busy"),      "user-busy",      "status::busy");
-	g_menu_append_with_icon_name (menu, _("Invisible"), "user-invisible", "status::invisible");
-	g_menu_append_with_icon_name (menu, _("Offline"),   "user-offline",   "status::offline");
 
+	item = g_menu_item_new (NULL, NULL);
+	g_menu_item_set_attribute (item, "x-canonical-type", "s", "IdoMenuItem");
+
+	for (i = 0; i < G_N_ELEMENTS (status_items); i++) {
+		g_menu_item_set_label (item, status_items[i].label);
+		g_menu_item_set_detailed_action (item, status_items[i].action);
+		g_menu_item_set_attribute (item, "x-canonical-icon", "s", status_items[i].icon_name);
+		g_menu_append_item (menu, item);
+	}
+
+	g_object_unref (item);
 	return G_MENU_MODEL (menu);
 }
 

@@ -39,6 +39,7 @@ struct _MessagingMenuApp
   GMenu *menu;
 
   IndicatorMessagesService *messages_service;
+  guint watch_id;
 
   GCancellable *cancellable;
 };
@@ -75,6 +76,21 @@ static void global_status_changed (IndicatorMessagesService *service,
                                    gpointer user_data);
 
 static void
+messaging_menu_app_set_desktop_id (MessagingMenuApp *app,
+                                   const gchar      *desktop_id)
+{
+  g_return_if_fail (desktop_id != NULL);
+
+  /* no need to clean up, it's construct only */
+  app->appinfo = g_desktop_app_info_new (desktop_id);
+  if (app->appinfo == NULL)
+    {
+      g_warning ("could not find the desktop file for '%s'",
+                 desktop_id);
+    }
+}
+
+static void
 messaging_menu_app_set_property (GObject      *object,
                                  guint         prop_id,
                                  const GValue *value,
@@ -85,12 +101,7 @@ messaging_menu_app_set_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_DESKTOP_ID:
-      app->appinfo = g_desktop_app_info_new (g_value_get_string (value));
-      if (app->appinfo == NULL)
-        {
-          g_warning ("could not find the desktop file for '%s'",
-                     g_value_get_string (value));
-        }
+      messaging_menu_app_set_desktop_id (app, g_value_get_string (value));
       break;
 
     default:
@@ -108,6 +119,12 @@ static void
 messaging_menu_app_dispose (GObject *object)
 {
   MessagingMenuApp *app = MESSAGING_MENU_APP (object);
+
+  if (app->watch_id > 0)
+    {
+      g_bus_unwatch_name (app->watch_id);
+      app->watch_id = 0;
+    }
 
   if (app->cancellable)
     {
@@ -233,6 +250,17 @@ got_session_bus (GObject      *source,
       g_error_free (error);
     }
 
+  g_object_unref (bus);
+}
+
+static void
+indicator_messages_appeared (GDBusConnection *bus,
+                             const gchar     *name,
+                             const gchar     *name_owner,
+                             gpointer         user_data)
+{
+  MessagingMenuApp *app = user_data;
+
   indicator_messages_service_proxy_new (bus,
                                         G_DBUS_PROXY_FLAGS_NONE,
                                         "com.canonical.indicator.messages",
@@ -240,8 +268,22 @@ got_session_bus (GObject      *source,
                                         app->cancellable,
                                         created_messages_service,
                                         app);
+}
 
-  g_object_unref (bus);
+static void
+indicator_messages_vanished (GDBusConnection *bus,
+                             const gchar     *name,
+                             gpointer         user_data)
+{
+  MessagingMenuApp *app = user_data;
+
+  if (app->messages_service)
+    {
+      g_signal_handlers_disconnect_by_func (app->messages_service,
+                                            global_status_changed,
+                                            app);
+      g_clear_object (&app->messages_service);
+    }
 }
 
 static void
@@ -262,6 +304,14 @@ messaging_menu_app_init (MessagingMenuApp *app)
              app->cancellable,
              got_session_bus,
              app);
+
+  app->watch_id = g_bus_watch_name (G_BUS_TYPE_SESSION,
+                                    "com.canonical.indicator.messages",
+                                    G_BUS_NAME_WATCHER_FLAGS_NONE,
+                                    indicator_messages_appeared,
+                                    indicator_messages_vanished,
+                                    app,
+                                    NULL);
 }
 
 /**
@@ -277,7 +327,7 @@ messaging_menu_app_init (MessagingMenuApp *app)
  * The messaging menu will return to marking the application as not running as
  * soon as the returned #MessagingMenuApp is destroyed.
  *
- * Returns: (transfer-full): a new #MessagingMenuApp
+ * Returns: (transfer full): a new #MessagingMenuApp
  */
 MessagingMenuApp *
 messaging_menu_app_new (const gchar *desktop_id)
@@ -409,6 +459,8 @@ source_action_activated (GTupleAction *action,
   const gchar *name = g_action_get_name (G_ACTION (action));
   GQuark q = g_quark_from_string (name);
 
+  messaging_menu_app_remove_source (app, name);
+
   g_signal_emit (app, signals[ACTIVATE_SOURCE], q, name);
 }
 
@@ -501,7 +553,7 @@ messaging_menu_app_insert_source (MessagingMenuApp *app,
  * messaging_menu_app_append_source:
  * @app: a #MessagingMenuApp
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  *
  * Appends a new message source to the end of the section representing @app.
@@ -525,7 +577,7 @@ messaging_menu_app_append_source (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @count: the count for the source
  *
@@ -553,7 +605,7 @@ messaging_menu_app_insert_source_with_count (MessagingMenuApp *app,
  * messaging_menu_app_append_source_with_count:
  * @app: a #MessagingMenuApp
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @count: the count for the source
  *
@@ -579,7 +631,7 @@ void messaging_menu_app_append_source_with_count (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @time: the time when the source was created
  *
@@ -606,9 +658,8 @@ messaging_menu_app_insert_source_with_time (MessagingMenuApp *app,
 /**
  * messaging_menu_app_append_source_with_time:
  * @app: a #MessagingMenuApp
- * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @time: the time when the source was created
  *
@@ -635,7 +686,7 @@ messaging_menu_app_append_source_with_time (MessagingMenuApp *app,
  * @app: a #MessagingMenuApp
  * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @str: a string associated with the source
  *
@@ -662,9 +713,8 @@ messaging_menu_app_insert_source_with_string (MessagingMenuApp *app,
 /**
  * messaging_menu_app_append_source_with_string:
  * @app: a #MessagingMenuApp
- * @position: the position at which to insert the source
  * @id: a unique identifier for the source to be added
- * @icon: the icon associated with the source
+ * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
  * @str: a string associated with the source
  *
@@ -704,22 +754,23 @@ messaging_menu_app_remove_source (MessagingMenuApp *app,
   g_return_if_fail (source_id != NULL);
 
   if (g_simple_action_group_lookup (app->source_actions, source_id) == NULL)
-    {
-      g_warning ("%s: a source with id '%s' doesn't exist", G_STRFUNC, source_id);
       return;
-    }
 
   n_items = g_menu_model_get_n_items (G_MENU_MODEL (app->menu));
   for (i = 0; i < n_items; i++)
     {
-      const gchar *action = NULL;
+      gchar *action;
 
-      g_menu_model_get_item_attribute (G_MENU_MODEL (app->menu), i,
-                                       "action", "&s", &action);
-      if (!g_strcmp0 (action, source_id))
+      if (g_menu_model_get_item_attribute (G_MENU_MODEL (app->menu), i,
+                                           "action", "s", &action))
         {
-          g_menu_remove (app->menu, i);
-          break;
+          if (!g_strcmp0 (action, source_id))
+            {
+              g_menu_remove (app->menu, i);
+              break;
+            }
+
+          g_free (action);
         }
     }
 
@@ -783,7 +834,7 @@ messaging_menu_app_set_source_time (MessagingMenuApp *app,
  * messaging_menu_app_set_source_string:
  * @app: a #MessagingMenuApp
  * @source_id: a source id
- * @string: the new string for the source
+ * @str: the new string for the source
  *
  * Updates the string displayed next to @source_id to @str.
  *

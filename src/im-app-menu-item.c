@@ -48,6 +48,7 @@ im_app_menu_item_constructed (GObject *object)
   GtkWidget *grid;
 
   priv->icon = g_object_ref (gtk_image_new ());
+  gtk_widget_set_margin_right (priv->icon, 6);
 
   priv->label = g_object_ref (gtk_label_new (""));
 
