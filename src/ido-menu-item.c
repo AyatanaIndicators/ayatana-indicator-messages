@@ -132,10 +132,12 @@ ido_menu_item_set_action_name (IdoMenuItem *self,
                                    &enabled, &param_type, NULL, NULL, &state))
     {
       gtk_widget_set_sensitive (GTK_WIDGET (self), enabled);
-      ido_menu_item_set_state (self, state);
 
       if (state)
-        g_variant_unref (state);
+        {
+          ido_menu_item_set_state (self, state);
+          g_variant_unref (state);
+        }
     }
   else
     {
