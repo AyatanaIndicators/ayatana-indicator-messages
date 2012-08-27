@@ -678,16 +678,9 @@ action_removed (GActionGroup *group,
 		gpointer user_data)
 {
 	AppSection *self = user_data;
-	GVariant *state;
-
-	state = g_action_group_get_action_state (group, action_name);
-	if (!state)
-		return;
 
 	self->priv->draws_attention = any_action_draws_attention (group, action_name);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
-
-	g_variant_unref (state);
 }
 
 gboolean
