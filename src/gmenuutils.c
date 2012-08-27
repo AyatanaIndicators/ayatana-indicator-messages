@@ -40,7 +40,15 @@ g_menu_find_section (GMenu      *menu,
   n_items = g_menu_model_get_n_items (model);
   for (i = 0; i < n_items; i++)
     {
-      if (section == g_menu_model_get_item_link (model, i, G_MENU_LINK_SECTION))
+      GMenuModel *link;
+      gboolean found;
+
+      link = g_menu_model_get_item_link (model, i, G_MENU_LINK_SECTION);
+      found = section == link;
+
+      g_object_unref (link);
+
+      if (found)
         return i;
     }
 
