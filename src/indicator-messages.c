@@ -90,6 +90,10 @@ static void menu_items_changed            (GMenuModel *menu,
                                            gint        removed,
                                            gint        added,
                                            gpointer    user_data);
+static void messages_state_changed        (GActionGroup *action_group,
+                                           gchar        *action_name,
+                                           GVariant     *value,
+                                           gpointer      user_data);
 
 G_DEFINE_TYPE (IndicatorMessages, indicator_messages, INDICATOR_OBJECT_TYPE);
 
@@ -172,7 +176,10 @@ static void service_connection_changed (IndicatorServiceManager *sm,
 	GDBusConnection *bus;
 	GError *error = NULL;
 
-	g_clear_object (&self->actions);
+	if (self->actions != NULL) {
+		g_signal_handlers_disconnect_by_func (self->actions, messages_state_changed, self);
+		g_clear_object (&self->actions);
+	}
 	if (self->menu != NULL) {
 		g_signal_handlers_disconnect_by_func (self->menu, menu_items_changed, self);
 		g_clear_object (&self->menu);
@@ -196,6 +203,8 @@ static void service_connection_changed (IndicatorServiceManager *sm,
 	gtk_widget_insert_action_group (self->gtkmenu, 
 					get_name_hint (INDICATOR_OBJECT (self)),
 					self->actions);
+	g_signal_connect (self->actions, "action-state-changed::messages",
+			  G_CALLBACK (messages_state_changed), self);
 
 	self->menu = G_MENU_MODEL (g_dbus_menu_model_get (bus,
 							  INDICATOR_MESSAGES_DBUS_NAME,
@@ -322,4 +331,20 @@ menu_items_changed (GMenuModel *menu,
 		update_root_item (self);
 		update_menu (self);
 	}
+}
+
+static void
+messages_state_changed (GActionGroup *action_group,
+                        gchar        *action_name,
+                        GVariant     *value,
+                        gpointer      user_data)
+{
+	IndicatorMessages *self = user_data;
+
+	g_return_if_fail (g_variant_is_of_type (value, G_VARIANT_TYPE_BOOLEAN));
+
+	if (g_variant_get_boolean (value))
+		gtk_image_set_from_icon_name (GTK_IMAGE (self->image), "indicator-messages-new", GTK_ICON_SIZE_MENU);
+	else
+		gtk_image_set_from_icon_name (GTK_IMAGE (self->image), "indicator-messages", GTK_ICON_SIZE_MENU);
 }
