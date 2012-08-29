@@ -44,10 +44,11 @@
  * Following the application item, the Messaging Menu inserts all
  * shortcuts actions found in the desktop file which are marked as
  * appearing in the Messaging Menu (the TargetEnvironment or OnlyShowIn
- * keywords contains "Messaging Menu").  The desktop file specification
- * contains a detailed explanation of shortcut actions [1].  An
- * application cannot add, remove, or change these shortcut items while
- * it is running.
+ * keywords contains "Messaging Menu").  The <ulink
+ * url="http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-1.1.html#extra-actions">
+ * desktop file specification</ulink> contains a detailed explanation of
+ * shortcut actions [1].  An application cannot add, remove, or change
+ * these shortcut items while it is running.
  *
  * Next, an application section contains menu items for message sources.
  * What exactly constitutes a message source depends on the type of
@@ -83,9 +84,8 @@
  * the application section is removed completely.
  *
  * More information about the design and recommended usage of the
- * Messaging Menu is available at https://wiki.ubuntu.com/MessagingMenu
- *
- * [1] http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-1.1.html#extra-actions
+ * Messaging Menu is available at <ulink
+ * url="https://wiki.ubuntu.com/MessagingMenu">https://wiki.ubuntu.com/MessagingMenu</ulink>.
  */
 
 /**
