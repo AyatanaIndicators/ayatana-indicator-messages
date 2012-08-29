@@ -27,6 +27,71 @@
  * SECTION:messagingmenuapp
  * @title: MessagingMenuApp
  * @short_description: An application section in the messaging menu
+ *
+ * A #MessagingMenuApp represents an application section in the
+ * Messaging Menu.  An application section is tied to an installed
+ * application through a desktop file id, which must be passed to
+ * messaging_menu_app_new().
+ *
+ * To register the appliction with the Messaging Menu, call
+ * messaging_menu_app_register().  This signifies that the application
+ * should be present in the menu and be marked as "running".
+ *
+ * The first menu item in an application section represents the
+ * application itself, using the name and icon found in the associated
+ * desktop file.  Activating this item starts the application.
+ *
+ * Following the application item, the Messaging Menu inserts all
+ * shortcuts actions found in the desktop file which are marked as
+ * appearing in the Messaging Menu (the TargetEnvironment or OnlyShowIn
+ * keywords contains "Messaging Menu").  The desktop file specification
+ * contains a detailed explanation of shortcut actions [1].  An
+ * application cannot add, remove, or change these shortcut items while
+ * it is running.
+ *
+ * Next, an application section contains menu items for message sources.
+ * What exactly constitutes a message source depends on the type of
+ * application:  an email client's message sources are folders
+ * containing new messages, while those of a chat program are persons
+ * that have contacted the user.
+ *
+ * A message source is represented in the menu by a label and optionally
+ * also an icon.  It can be associated with either a count, a time, or
+ * an arbitrary string, which will appear on the right side of the menu
+ * item.
+ *
+ * When the user activates a source, the source is immediately removed
+ * from the menu and the "activate-source" signal is emitted.
+ *
+ * Applications should always expose all the message sources available.
+ * However, the Messaging Menu might limit the amount of sources it
+ * displays to the user.
+ *
+ * The Messaging Menu offers users a way to set their chat status
+ * (available, away, busy, invisible, or offline) for multiple
+ * applications at once.  Applications that appear in the Messaging Menu
+ * can integrate with this by setting the
+ * "X-MessagingMenu-UsesChatSection" key in their desktop file to True.
+ * Use messaging_menu_app_set_status() to signify that the application's
+ * chat status has changed.  When the user changes status through the
+ * Messaging Menu, the ::status-changed signal will be emitted.
+ *
+ * If the application stops running without calling
+ * messaging_menu_app_unregister(), it will be marked as "not running".
+ * Its application and shortcut items stay in the menu, but all message
+ * sources are removed.  If messaging_menu_app_unregister() is called,
+ * the application section is removed completely.
+ *
+ * More information about the design and recommended usage of the
+ * Messaging Menu is available at https://wiki.ubuntu.com/MessagingMenu
+ *
+ * [1] http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-1.1.html#extra-actions
+ */
+
+/**
+ * MessagingMenuApp:
+ *
+ * #MessagingMenuApp is an opaque structure.
  */
 struct _MessagingMenuApp
 {
@@ -157,6 +222,12 @@ messaging_menu_app_class_init (MessagingMenuAppClass *class)
   object_class->finalize = messaging_menu_app_finalize;
   object_class->dispose = messaging_menu_app_dispose;
 
+  /**
+   * MessagingMenuApp:desktop-id:
+   *
+   * The desktop id of the application associated with this application
+   * section.  Must be given when the #MessagingMenuApp is created.
+   */
   properties[PROP_DESKTOP_ID] = g_param_spec_string ("desktop-id",
                                                      "Desktop Id",
                                                      "The desktop id of the associated application",
@@ -167,6 +238,16 @@ messaging_menu_app_class_init (MessagingMenuAppClass *class)
 
   g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 
+  /**
+   * MessagingMenuApp::activate-source:
+   * @mmapp: the #MessagingMenuApp
+   * @source_id: the source id that was activated
+   *
+   * Emitted when the user has activated the message source with id
+   * @source_id.  The source is immediately removed from the menu,
+   * handlers of this signal do not need to call
+   * mesaging_menu_app_remove().
+   */
   signals[ACTIVATE_SOURCE] = g_signal_new ("activate-source",
                                            MESSAGING_MENU_TYPE_APP,
                                            G_SIGNAL_RUN_FIRST |
@@ -176,6 +257,18 @@ messaging_menu_app_class_init (MessagingMenuAppClass *class)
                                            g_cclosure_marshal_VOID__STRING,
                                            G_TYPE_NONE, 1, G_TYPE_STRING);
 
+  /**
+   * MessagingMenuApp::status-changed:
+   * @mmapp: the #MessagingMenuApp
+   * @status: a #MessagingMenuStatus
+   *
+   * Emitted when the chat status is changed through the messaging menu.
+   *
+   * Applications which are registered to use the chat status should
+   * change their status to @status upon receiving this signal.  Call
+   * messaging_menu_app_set_status() to acknowledge that the application
+   * changed its status.
+   */
   signals[STATUS_CHANGED] = g_signal_new ("status-changed",
                                           MESSAGING_MENU_TYPE_APP,
                                           G_SIGNAL_RUN_FIRST,
@@ -321,11 +414,8 @@ messaging_menu_app_init (MessagingMenuApp *app)
  * Creates a new #MessagingMenuApp for the application associated with
  * @desktop_id.
  *
- * If the application is already registered with the messaging menu, it will be
- * marked as "running".  Otherwise, call messaging_menu_app_register().
- *
- * The messaging menu will return to marking the application as not running as
- * soon as the returned #MessagingMenuApp is destroyed.
+ * The application will not show up (nor be marked as "running") in the
+ * Messaging Menu before messaging_menu_app_register() has been called.
  *
  * Returns: (transfer full): a new #MessagingMenuApp
  */
@@ -341,13 +431,16 @@ messaging_menu_app_new (const gchar *desktop_id)
  * messaging_menu_app_register:
  * @app: a #MessagingMenuApp
  *
- * Registers @app with the messaging menu.
+ * Registers @app with the Messaging Menu.
  *
- * The messaging menu will add a section with an app launcher and the shortcuts
- * defined in its desktop file.
+ * If the application doesn't already have a section in the Messaging
+ * Menu, one will be created for it.  The application will also be
+ * marked as "running".
  *
- * The application will be marked as "running" as long as @app is alive or
- * messaging_menu_app_unregister() is called.
+ * The application will be marked as "not running" as soon as @app is
+ * destroyed.  The application launcher as well as shortcut actions will
+ * remain in the menu.  To completely remove the application section
+ * from the Messaging Menu, call messaging_menu_app_unregister().
  */
 void
 messaging_menu_app_register (MessagingMenuApp *app)
@@ -371,8 +464,9 @@ messaging_menu_app_register (MessagingMenuApp *app)
  * messaging_menu_app_unregister:
  * @app: a #MessagingMenuApp
  *
- * Completely removes the application associated with @desktop_id from the
- * messaging menu.
+ * Completely removes the @app from the Messaging Menu.  If the
+ * application's launcher and shortcut actions should remain in the
+ * menu, destroying @app with g_object_unref() suffices.
  *
  * Note: @app will remain valid and usable after this call.
  */
@@ -397,6 +491,16 @@ messaging_menu_app_unregister (MessagingMenuApp *app)
  * messaging_menu_app_set_status:
  * @app: a #MessagingMenuApp
  * @status: a #MessagingMenuStatus
+ *
+ * Notify the Messaging Menu that the chat status of @app has changed to
+ * @status.
+ *
+ * Connect to the ::status-changed signal to receive notification about
+ * the user changing their global chat status through the Messaging
+ * Menu.
+ *
+ * This function does nothing for applications whose desktop file does
+ * not include X-MessagingMenu-UsesChatSection.
  */
 void
 messaging_menu_app_set_status (MessagingMenuApp    *app,
@@ -875,6 +979,10 @@ messaging_menu_app_draw_attention (MessagingMenuApp *app,
  * @source_id: a source id
  *
  * Stop indicating that @source_id needs attention.
+ *
+ * This function does not need to be called when the source is removed
+ * with messaging_menu_app_remove_source() or the user has activated the
+ * source.
  *
  * Use messaging_menu_app_draw_attention() to make @source_id draw attention
  * again.

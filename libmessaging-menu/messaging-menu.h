@@ -29,6 +29,11 @@ G_BEGIN_DECLS
 #define MESSAGING_MENU_APP_CLASS(c)     (G_TYPE_CHECK_CLASS_CAST ((c), MESSAGING_MENU_TYPE_APP, MessagingMenuAppClass))
 #define MESSAGING_MENU_IS_APP(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), MESSAGING_MENU_TYPE_APP))
 
+/**
+ * MessagingMenuStatus:
+ *
+ * An enumeration for the possible chat statuses the messaging menu can be in.
+ */
 typedef enum {
   MESSAGING_MENU_STATUS_AVAILABLE,
   MESSAGING_MENU_STATUS_AWAY,
