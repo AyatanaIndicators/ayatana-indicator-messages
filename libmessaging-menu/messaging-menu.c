@@ -246,7 +246,7 @@ messaging_menu_app_class_init (MessagingMenuAppClass *class)
    * Emitted when the user has activated the message source with id
    * @source_id.  The source is immediately removed from the menu,
    * handlers of this signal do not need to call
-   * mesaging_menu_app_remove().
+   * messaging_menu_app_remove_source().
    */
   signals[ACTIVATE_SOURCE] = g_signal_new ("activate-source",
                                            MESSAGING_MENU_TYPE_APP,

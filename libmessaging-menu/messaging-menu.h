@@ -31,6 +31,11 @@ G_BEGIN_DECLS
 
 /**
  * MessagingMenuStatus:
+ * @MESSAGING_MENU_STATUS_AVAILABLE: available
+ * @MESSAGING_MENU_STATUS_AWAY: away
+ * @MESSAGING_MENU_STATUS_BUSY: busy
+ * @MESSAGING_MENU_STATUS_INVISIBLE: invisible
+ * @MESSAGING_MENU_STATUS_OFFLINE: offline
  *
  * An enumeration for the possible chat statuses the messaging menu can be in.
  */
