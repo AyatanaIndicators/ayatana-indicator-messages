@@ -24,7 +24,7 @@
 #include <gio/gdesktopappinfo.h>
 
 /**
- * SECTION:messagingmenuapp
+ * SECTION:messaging-menu
  * @title: MessagingMenuApp
  * @short_description: An application section in the messaging menu
  *
