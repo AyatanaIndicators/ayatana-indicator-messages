@@ -117,6 +117,14 @@ void                messaging_menu_app_remove_source             (MessagingMenuA
 gboolean            messaging_menu_app_has_source                (MessagingMenuApp *app,
                                                                   const gchar      *source_id);
 
+void                messaging_menu_app_set_source_label          (MessagingMenuApp *app,
+                                                                  const gchar      *source_id,
+                                                                  const gchar      *label);
+
+void                messaging_menu_app_set_source_icon           (MessagingMenuApp *app,
+                                                                  const gchar      *source_id,
+                                                                  GIcon            *icon);
+
 void                messaging_menu_app_set_source_count          (MessagingMenuApp *app,
                                                                   const gchar      *source_id,
                                                                   guint             count);

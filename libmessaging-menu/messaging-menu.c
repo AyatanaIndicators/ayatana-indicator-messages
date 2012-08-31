@@ -898,6 +898,107 @@ messaging_menu_app_has_source (MessagingMenuApp *app,
   return g_simple_action_group_lookup (app->source_actions, source_id) != NULL;
 }
 
+static GMenuItem *
+g_menu_find_item_with_action (GMenu        *menu,
+                              const gchar  *action,
+                              gint         *out_pos)
+{
+  gint i;
+  gint n_elements;
+  GMenuItem *item = NULL;
+
+  n_elements = g_menu_model_get_n_items (G_MENU_MODEL (menu));
+
+  for (i = 0; i < n_elements && item == NULL; i++)
+    {
+      GVariant *attr;
+
+      item = g_menu_item_new_from_model (G_MENU_MODEL (menu), i);
+      attr = g_menu_item_get_attribute_value (item, G_MENU_ATTRIBUTE_ACTION, G_VARIANT_TYPE_STRING);
+
+      if (!g_str_equal (action, g_variant_get_string (attr, NULL)))
+        g_clear_object (&item);
+
+      g_variant_unref (attr);
+    }
+
+  if (item && out_pos)
+    *out_pos = i - 1;
+
+  return item;
+}
+
+static void
+g_menu_replace_item (GMenu     *menu,
+                     gint       pos,
+                     GMenuItem *item)
+{
+  g_menu_remove (menu, pos);
+  g_menu_insert_item (menu, pos, item);
+}
+
+/**
+ * messaging_menu_app_set_source_label:
+ * @app: a #MessagingMenuApp
+ * @source_id: a source id
+ * @label: the new label for the source
+ *
+ * Changes the label of @source_id to @label.
+ */
+void
+messaging_menu_app_set_source_label (MessagingMenuApp *app,
+                                     const gchar      *source_id,
+                                     const gchar      *label)
+{
+  gint pos;
+  GMenuItem *item;
+
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (source_id != NULL);
+  g_return_if_fail (label != NULL);
+
+  item = g_menu_find_item_with_action (app->menu, source_id, &pos);
+  if (item == NULL)
+    return;
+
+  g_menu_item_set_attribute (item, G_MENU_ATTRIBUTE_LABEL, "s", label);
+  g_menu_replace_item (app->menu, pos, item);
+
+  g_object_unref (item);
+}
+
+/**
+ * messaging_menu_app_set_source_icon:
+ * @app: a #MessagingMenuApp
+ * @source_id: a source id
+ * @icon: the new icon for the source
+ *
+ * Changes the icon of @source_id to @icon.
+ */
+void
+messaging_menu_app_set_source_icon (MessagingMenuApp *app,
+                                    const gchar      *source_id,
+                                    GIcon            *icon)
+{
+  gint pos;
+  GMenuItem *item;
+  gchar *iconstr;
+
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (source_id != NULL);
+
+  item = g_menu_find_item_with_action (app->menu, source_id, &pos);
+  if (item == NULL)
+    return;
+
+  iconstr = icon ? g_icon_to_string (icon) : NULL;
+  g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
+  g_menu_replace_item (app->menu, pos, item);
+
+  g_free (iconstr);
+  g_object_unref (item);
+}
+
 /**
  * messaging_menu_app_set_source_count:
  * @app: a #MessagingMenuApp
