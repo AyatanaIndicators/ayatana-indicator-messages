@@ -140,6 +140,67 @@ static void global_status_changed (IndicatorMessagesService *service,
                                    const gchar *status_str,
                                    gpointer user_data);
 
+static gchar *
+messaging_menu_app_get_dbus_object_path (MessagingMenuApp *app)
+{
+  gchar *path;
+
+  g_return_val_if_fail (app->appinfo != NULL, NULL);
+
+  path = g_strconcat ("/com/canonical/indicator/messages/",
+                      g_app_info_get_id (G_APP_INFO (app->appinfo)),
+                      NULL);
+
+  g_strcanon (path, "/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", '_');
+
+  return path;
+}
+
+static void
+export_menus_and_actions (GObject      *source,
+                          GAsyncResult *res,
+                          gpointer      user_data)
+{
+  MessagingMenuApp *app = user_data;
+  GDBusConnection *bus;
+  GError *error = NULL;
+  guint id;
+  gchar *object_path;
+
+  bus = g_bus_get_finish (res, &error);
+  if (bus == NULL)
+    {
+      g_warning ("unable to connect to session bus: %s", error->message);
+      g_error_free (error);
+      return;
+    }
+
+  object_path = messaging_menu_app_get_dbus_object_path (app);
+
+  id = g_dbus_connection_export_action_group (bus,
+                                              object_path,
+                                              G_ACTION_GROUP (app->source_actions),
+                                              &error);
+  if (!id)
+    {
+      g_warning ("unable to export action group: %s", error->message);
+      g_error_free (error);
+    }
+
+  id = g_dbus_connection_export_menu_model (bus,
+                                            object_path,
+                                            G_MENU_MODEL (app->menu),
+                                            &error);
+  if (!id)
+    {
+      g_warning ("unable to export menu: %s", error->message);
+      g_error_free (error);
+    }
+
+  g_object_unref (bus);
+  g_free (object_path);
+}
+
 static void
 messaging_menu_app_set_desktop_id (MessagingMenuApp *app,
                                    const gchar      *desktop_id)
@@ -153,6 +214,11 @@ messaging_menu_app_set_desktop_id (MessagingMenuApp *app,
       g_warning ("could not find the desktop file for '%s'",
                  desktop_id);
     }
+
+  g_bus_get (G_BUS_TYPE_SESSION,
+             app->cancellable,
+             export_menus_and_actions,
+             app);
 }
 
 static void
@@ -306,47 +372,6 @@ created_messages_service (GObject      *source_object,
 }
 
 static void
-got_session_bus (GObject      *source,
-                 GAsyncResult *res,
-                 gpointer      user_data)
-{
-  MessagingMenuApp *app = user_data;
-  GDBusConnection *bus;
-  GError *error = NULL;
-  guint id;
-
-  bus = g_bus_get_finish (res, &error);
-  if (bus == NULL)
-    {
-      g_warning ("unable to connect to session bus: %s", error->message);
-      g_error_free (error);
-      return;
-    }
-
-  id = g_dbus_connection_export_action_group (bus,
-                                              "/com/canonical/indicator/messages",
-                                              G_ACTION_GROUP (app->source_actions),
-                                              &error);
-  if (!id)
-    {
-      g_warning ("unable to export action group: %s", error->message);
-      g_error_free (error);
-    }
-
-  id = g_dbus_connection_export_menu_model (bus,
-                                            "/com/canonical/indicator/messages",
-                                            G_MENU_MODEL (app->menu),
-                                            &error);
-  if (!id)
-    {
-      g_warning ("unable to export menu: %s", error->message);
-      g_error_free (error);
-    }
-
-  g_object_unref (bus);
-}
-
-static void
 indicator_messages_appeared (GDBusConnection *bus,
                              const gchar     *name,
                              const gchar     *name_owner,
@@ -391,12 +416,6 @@ messaging_menu_app_init (MessagingMenuApp *app)
   app->menu = g_menu_new ();
 
   app->cancellable = g_cancellable_new ();
-
-
-  g_bus_get (G_BUS_TYPE_SESSION,
-             app->cancellable,
-             got_session_bus,
-             app);
 
   app->watch_id = g_bus_watch_name (G_BUS_TYPE_SESSION,
                                     "com.canonical.indicator.messages",
@@ -445,6 +464,8 @@ messaging_menu_app_new (const gchar *desktop_id)
 void
 messaging_menu_app_register (MessagingMenuApp *app)
 {
+  gchar *object_path;
+
   g_return_if_fail (MESSAGING_MENU_IS_APP (app));
 
   app->registered = TRUE;
@@ -453,11 +474,15 @@ messaging_menu_app_register (MessagingMenuApp *app)
   if (!app->messages_service)
     return;
 
+  object_path = messaging_menu_app_get_dbus_object_path (app);
+
   indicator_messages_service_call_register_application (app->messages_service,
                                                         g_app_info_get_id (G_APP_INFO (app->appinfo)),
-                                                        "/com/canonical/indicator/messages",
+                                                        object_path,
                                                         app->cancellable,
                                                         NULL, NULL);
+
+  g_free (object_path);
 }
 
 /**
