@@ -1,5 +1,13 @@
-Overview of changes from 12.10.0 to 12.10.1
-===========================================
+
+12.10.2
+
+* libmessaging-menu:
+  - expand source documentation and add gtk-doc to the build system
+  - added new API: messaging_menu_app_set_source_{label,icon}
+  - fix bug: only one MessagingMenuApp was exported to the messaging menu
+
+
+12.10.1
 
 * presence icons are shown again
 * the icon is changed when a source draws attention

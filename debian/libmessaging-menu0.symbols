@@ -15,6 +15,8 @@ libmessaging-menu.so.0 libmessaging-menu0 #MINVER#
  messaging_menu_app_remove_attention@Base 12.10.0
  messaging_menu_app_remove_source@Base 12.10.0
  messaging_menu_app_set_source_count@Base 12.10.0
+ messaging_menu_app_set_source_icon@Base 12.10.2
+ messaging_menu_app_set_source_label@Base 12.10.2
  messaging_menu_app_set_source_string@Base 12.10.0
  messaging_menu_app_set_source_time@Base 12.10.0
  messaging_menu_app_set_status@Base 12.10.0

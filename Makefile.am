@@ -5,6 +5,10 @@ SUBDIRS = \
 	data \
 	po
 
+if ENABLE_GTK_DOC
+SUBDIRS += doc
+endif
+
 if BUILD_TESTS
 SUBDIRS += \
 	test
@@ -17,7 +21,7 @@ endif
 
 
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations --enable-introspection
+DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations --enable-introspection --enable-gtk-doc
 
 dist-hook:
 	@if test -d "$(top_srcdir)/.bzr"; \

@@ -1,0 +1,1034 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>MessagingMenuApp</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="Messaging Menu Reference Manual">
+<link rel="up" href="ch01.html" title="API Reference">
+<link rel="prev" href="ch01.html" title="API Reference">
+<link rel="next" href="object-tree.html" title="Object Hierarchy">
+<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="ch01.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">Messaging Menu Reference Manual</th>
+<td><a accesskey="n" href="object-tree.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#MessagingMenuApp.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#MessagingMenuApp.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#MessagingMenuApp.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#MessagingMenuApp.properties" class="shortcut">Properties</a>
+                   | 
+                  <a href="#MessagingMenuApp.signals" class="shortcut">Signals</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="MessagingMenuApp"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="MessagingMenuApp.top_of_page"></a>MessagingMenuApp</span></h2>
+<p>MessagingMenuApp — An application section in the messaging menu</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="MessagingMenuApp.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="MessagingMenuApp.html#MessagingMenuApp-struct" title="MessagingMenuApp">MessagingMenuApp</a>;
+typedef             <a class="link" href="MessagingMenuApp.html#MessagingMenuAppClass" title="MessagingMenuAppClass">MessagingMenuAppClass</a>;
+enum                <a class="link" href="MessagingMenuApp.html#MessagingMenuStatus" title="enum MessagingMenuStatus">MessagingMenuStatus</a>;
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-append-source" title="messaging_menu_app_append_source ()">messaging_menu_app_append_source</a>    (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-append-source-with-count" title="messaging_menu_app_append_source_with_count ()">messaging_menu_app_append_source_with_count</a>
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> count</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-append-source-with-string" title="messaging_menu_app_append_source_with_string ()">messaging_menu_app_append_source_with_string</a>
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *str</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-append-source-with-time" title="messaging_menu_app_append_source_with_time ()">messaging_menu_app_append_source_with_time</a>
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code><span class="type">gint64</span> time</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-draw-attention" title="messaging_menu_app_draw_attention ()">messaging_menu_app_draw_attention</a>   (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="MessagingMenuApp.html#messaging-menu-app-has-source" title="messaging_menu_app_has_source ()">messaging_menu_app_has_source</a>       (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-insert-source" title="messaging_menu_app_insert_source ()">messaging_menu_app_insert_source</a>    (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-insert-source-with-count" title="messaging_menu_app_insert_source_with_count ()">messaging_menu_app_insert_source_with_count</a>
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> count</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-insert-source-with-string" title="messaging_menu_app_insert_source_with_string ()">messaging_menu_app_insert_source_with_string</a>
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *str</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-insert-source-with-time" title="messaging_menu_app_insert_source_with_time ()">messaging_menu_app_insert_source_with_time</a>
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code><span class="type">gint64</span> time</code></em>);
+<a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="returnvalue">MessagingMenuApp</span></a> *  <a class="link" href="MessagingMenuApp.html#messaging-menu-app-new" title="messaging_menu_app_new ()">messaging_menu_app_new</a>              (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_id</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-register" title="messaging_menu_app_register ()">messaging_menu_app_register</a>         (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-remove-attention" title="messaging_menu_app_remove_attention ()">messaging_menu_app_remove_attention</a> (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-remove-source" title="messaging_menu_app_remove_source ()">messaging_menu_app_remove_source</a>    (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-source-count" title="messaging_menu_app_set_source_count ()">messaging_menu_app_set_source_count</a> (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> count</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-source-string" title="messaging_menu_app_set_source_string ()">messaging_menu_app_set_source_string</a>
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *str</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-source-time" title="messaging_menu_app_set_source_time ()">messaging_menu_app_set_source_time</a>  (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>,
+                                                         <em class="parameter"><code><span class="type">gint64</span> time</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-status" title="messaging_menu_app_set_status ()">messaging_menu_app_set_status</a>       (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="MessagingMenuApp.html#MessagingMenuStatus" title="enum MessagingMenuStatus"><span class="type">MessagingMenuStatus</span></a> status</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-unregister" title="messaging_menu_app_unregister ()">messaging_menu_app_unregister</a>       (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="MessagingMenuApp.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----MessagingMenuApp
+</pre>
+</div>
+<div class="refsect1">
+<a name="MessagingMenuApp.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="MessagingMenuApp.html#MessagingMenuApp--desktop-id" title='The "desktop-id" property'>desktop-id</a>"               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Write / Construct Only
+</pre>
+</div>
+<div class="refsect1">
+<a name="MessagingMenuApp.signals"></a><h2>Signals</h2>
+<pre class="synopsis">
+  "<a class="link" href="MessagingMenuApp.html#MessagingMenuApp-activate-source" title='The "activate-source" signal'>activate-source</a>"                                : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-DETAILED:CAPS"><code class="literal">Has Details</code></a>
+  "<a class="link" href="MessagingMenuApp.html#MessagingMenuApp-status-changed" title='The "status-changed" signal'>status-changed</a>"                                 : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS"><code class="literal">Run First</code></a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="MessagingMenuApp.description"></a><h2>Description</h2>
+<p>
+A <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> represents an application section in the
+Messaging Menu.  An application section is tied to an installed
+application through a desktop file id, which must be passed to
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-new" title="messaging_menu_app_new ()"><code class="function">messaging_menu_app_new()</code></a>.
+</p>
+<p>
+To register the appliction with the Messaging Menu, call
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-register" title="messaging_menu_app_register ()"><code class="function">messaging_menu_app_register()</code></a>.  This signifies that the application
+should be present in the menu and be marked as "running".
+</p>
+<p>
+The first menu item in an application section represents the
+application itself, using the name and icon found in the associated
+desktop file.  Activating this item starts the application.
+</p>
+<p>
+Following the application item, the Messaging Menu inserts all
+shortcuts actions found in the desktop file which are marked as
+appearing in the Messaging Menu (the TargetEnvironment or OnlyShowIn
+keywords contains "Messaging Menu").  The <a class="ulink" href="http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-1.1.html#extra-actions" target="_top">
+desktop file specification</a> contains a detailed explanation of
+shortcut actions [1].  An application cannot add, remove, or change
+these shortcut items while it is running.
+</p>
+<p>
+Next, an application section contains menu items for message sources.
+What exactly constitutes a message source depends on the type of
+application:  an email client's message sources are folders
+containing new messages, while those of a chat program are persons
+that have contacted the user.
+</p>
+<p>
+A message source is represented in the menu by a label and optionally
+also an icon.  It can be associated with either a count, a time, or
+an arbitrary string, which will appear on the right side of the menu
+item.
+</p>
+<p>
+When the user activates a source, the source is immediately removed
+from the menu and the "activate-source" signal is emitted.
+</p>
+<p>
+Applications should always expose all the message sources available.
+However, the Messaging Menu might limit the amount of sources it
+displays to the user.
+</p>
+<p>
+The Messaging Menu offers users a way to set their chat status
+(available, away, busy, invisible, or offline) for multiple
+applications at once.  Applications that appear in the Messaging Menu
+can integrate with this by setting the
+"X-MessagingMenu-UsesChatSection" key in their desktop file to True.
+Use <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-status" title="messaging_menu_app_set_status ()"><code class="function">messaging_menu_app_set_status()</code></a> to signify that the application's
+chat status has changed.  When the user changes status through the
+Messaging Menu, the ::status-changed signal will be emitted.
+</p>
+<p>
+If the application stops running without calling
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-unregister" title="messaging_menu_app_unregister ()"><code class="function">messaging_menu_app_unregister()</code></a>, it will be marked as "not running".
+Its application and shortcut items stay in the menu, but all message
+sources are removed.  If <a class="link" href="MessagingMenuApp.html#messaging-menu-app-unregister" title="messaging_menu_app_unregister ()"><code class="function">messaging_menu_app_unregister()</code></a> is called,
+the application section is removed completely.
+</p>
+<p>
+More information about the design and recommended usage of the
+Messaging Menu is available at <a class="ulink" href="https://wiki.ubuntu.com/MessagingMenu" target="_top">https://wiki.ubuntu.com/MessagingMenu</a>.
+</p>
+</div>
+<div class="refsect1">
+<a name="MessagingMenuApp.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="MessagingMenuApp-struct"></a><h3>MessagingMenuApp</h3>
+<pre class="programlisting">typedef struct _MessagingMenuApp MessagingMenuApp;</pre>
+<p>
+<a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> is an opaque structure.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="MessagingMenuAppClass"></a><h3>MessagingMenuAppClass</h3>
+<pre class="programlisting">typedef GObjectClass             MessagingMenuAppClass;
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="MessagingMenuStatus"></a><h3>enum MessagingMenuStatus</h3>
+<pre class="programlisting">typedef enum {
+  MESSAGING_MENU_STATUS_AVAILABLE,
+  MESSAGING_MENU_STATUS_AWAY,
+  MESSAGING_MENU_STATUS_BUSY,
+  MESSAGING_MENU_STATUS_INVISIBLE,
+  MESSAGING_MENU_STATUS_OFFLINE
+} MessagingMenuStatus;
+</pre>
+<p>
+An enumeration for the possible chat statuses the messaging menu can be in.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><a name="MESSAGING-MENU-STATUS-AVAILABLE:CAPS"></a><span class="term"><code class="literal">MESSAGING_MENU_STATUS_AVAILABLE</code></span></p></td>
+<td>available
+</td>
+</tr>
+<tr>
+<td><p><a name="MESSAGING-MENU-STATUS-AWAY:CAPS"></a><span class="term"><code class="literal">MESSAGING_MENU_STATUS_AWAY</code></span></p></td>
+<td>away
+</td>
+</tr>
+<tr>
+<td><p><a name="MESSAGING-MENU-STATUS-BUSY:CAPS"></a><span class="term"><code class="literal">MESSAGING_MENU_STATUS_BUSY</code></span></p></td>
+<td>busy
+</td>
+</tr>
+<tr>
+<td><p><a name="MESSAGING-MENU-STATUS-INVISIBLE:CAPS"></a><span class="term"><code class="literal">MESSAGING_MENU_STATUS_INVISIBLE</code></span></p></td>
+<td>invisible
+</td>
+</tr>
+<tr>
+<td><p><a name="MESSAGING-MENU-STATUS-OFFLINE:CAPS"></a><span class="term"><code class="literal">MESSAGING_MENU_STATUS_OFFLINE</code></span></p></td>
+<td>offline
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-append-source"></a><h3>messaging_menu_app_append_source ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_append_source    (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>);</pre>
+<p>
+Appends a new message source to the end of the section representing <em class="parameter"><code>app</code></em>.
+Equivalent to calling <a class="link" href="MessagingMenuApp.html#messaging-menu-app-append-source-with-time" title="messaging_menu_app_append_source_with_time ()"><code class="function">messaging_menu_app_append_source_with_time()</code></a> with the
+current time.
+</p>
+<p>
+It is an error to add a source with an <em class="parameter"><code>id</code></em> which already exists.  Use
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-has-source" title="messaging_menu_app_has_source ()"><code class="function">messaging_menu_app_has_source()</code></a> to find out whether there is such a source.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>id</code></em> :</span></p></td>
+<td>a unique identifier for the source to be added</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>the icon associated with the source. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>label</code></em> :</span></p></td>
+<td>a user-visible string best describing the source</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-append-source-with-count"></a><h3>messaging_menu_app_append_source_with_count ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_append_source_with_count
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> count</code></em>);</pre>
+<p>
+Appends a new message source to the end of the section representing <em class="parameter"><code>app</code></em> and
+initializes it with <em class="parameter"><code>count</code></em>.
+</p>
+<p>
+To update the count, use <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-source-count" title="messaging_menu_app_set_source_count ()"><code class="function">messaging_menu_app_set_source_count()</code></a>.
+</p>
+<p>
+It is an error to add a source with an <em class="parameter"><code>id</code></em> which already exists.  Use
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-has-source" title="messaging_menu_app_has_source ()"><code class="function">messaging_menu_app_has_source()</code></a> to find out whether there is such a source.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>id</code></em> :</span></p></td>
+<td>a unique identifier for the source to be added</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>the icon associated with the source. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>label</code></em> :</span></p></td>
+<td>a user-visible string best describing the source</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>count</code></em> :</span></p></td>
+<td>the count for the source</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-append-source-with-string"></a><h3>messaging_menu_app_append_source_with_string ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_append_source_with_string
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *str</code></em>);</pre>
+<p>
+Appends a new message source to the end of the section representing <em class="parameter"><code>app</code></em> and
+initializes it with <em class="parameter"><code>str</code></em>.
+</p>
+<p>
+To update the string, use <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-source-string" title="messaging_menu_app_set_source_string ()"><code class="function">messaging_menu_app_set_source_string()</code></a>.
+</p>
+<p>
+It is an error to insert a source with an <em class="parameter"><code>id</code></em> which already exists.  Use
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-has-source" title="messaging_menu_app_has_source ()"><code class="function">messaging_menu_app_has_source()</code></a> to find out whether there is such a source.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>id</code></em> :</span></p></td>
+<td>a unique identifier for the source to be added</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>the icon associated with the source. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>label</code></em> :</span></p></td>
+<td>a user-visible string best describing the source</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>str</code></em> :</span></p></td>
+<td>a string associated with the source</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-append-source-with-time"></a><h3>messaging_menu_app_append_source_with_time ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_append_source_with_time
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code><span class="type">gint64</span> time</code></em>);</pre>
+<p>
+Appends a new message source to the end of the section representing <em class="parameter"><code>app</code></em> and
+initializes it with <em class="parameter"><code>time</code></em>.
+</p>
+<p>
+To change the time, use <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-source-time" title="messaging_menu_app_set_source_time ()"><code class="function">messaging_menu_app_set_source_time()</code></a>.
+</p>
+<p>
+It is an error to insert a source with an <em class="parameter"><code>id</code></em> which already exists.  Use
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-has-source" title="messaging_menu_app_has_source ()"><code class="function">messaging_menu_app_has_source()</code></a> to find out whether there is such a source.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>id</code></em> :</span></p></td>
+<td>a unique identifier for the source to be added</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>the icon associated with the source. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>label</code></em> :</span></p></td>
+<td>a user-visible string best describing the source</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>time</code></em> :</span></p></td>
+<td>the time when the source was created</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-draw-attention"></a><h3>messaging_menu_app_draw_attention ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_draw_attention   (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>);</pre>
+<p>
+Indicates that <em class="parameter"><code>source_id</code></em> has important unread messages.  Currently, this
+means that the messaging menu's envelope icon will turn blue.
+</p>
+<p>
+Use <a class="link" href="MessagingMenuApp.html#messaging-menu-app-remove-attention" title="messaging_menu_app_remove_attention ()"><code class="function">messaging_menu_app_remove_attention()</code></a> to stop indicating that the source
+needs attention.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source_id</code></em> :</span></p></td>
+<td>a source id</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-has-source"></a><h3>messaging_menu_app_has_source ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            messaging_menu_app_has_source       (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>);</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source_id</code></em> :</span></p></td>
+<td>a source id</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>TRUE if there is a source associated with <em class="parameter"><code>source_id</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-insert-source"></a><h3>messaging_menu_app_insert_source ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_insert_source    (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>);</pre>
+<p>
+Inserts a new message source into the section representing <em class="parameter"><code>app</code></em>.  Equivalent
+to calling <a class="link" href="MessagingMenuApp.html#messaging-menu-app-insert-source-with-time" title="messaging_menu_app_insert_source_with_time ()"><code class="function">messaging_menu_app_insert_source_with_time()</code></a> with the current
+time.
+</p>
+<p>
+It is an error to insert a source with an <em class="parameter"><code>id</code></em> which already exists.  Use
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-has-source" title="messaging_menu_app_has_source ()"><code class="function">messaging_menu_app_has_source()</code></a> to find out whether there is such a source.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>position</code></em> :</span></p></td>
+<td>the position at which to insert the source</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>id</code></em> :</span></p></td>
+<td>a unique identifier for the source to be added</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>the icon associated with the source</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>label</code></em> :</span></p></td>
+<td>a user-visible string best describing the source</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-insert-source-with-count"></a><h3>messaging_menu_app_insert_source_with_count ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_insert_source_with_count
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> count</code></em>);</pre>
+<p>
+Inserts a new message source into the section representing <em class="parameter"><code>app</code></em> and
+initializes it with <em class="parameter"><code>count</code></em>.
+</p>
+<p>
+To update the count, use <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-source-count" title="messaging_menu_app_set_source_count ()"><code class="function">messaging_menu_app_set_source_count()</code></a>.
+</p>
+<p>
+It is an error to insert a source with an <em class="parameter"><code>id</code></em> which already exists.  Use
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-has-source" title="messaging_menu_app_has_source ()"><code class="function">messaging_menu_app_has_source()</code></a> to find out whether there is such a source.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>position</code></em> :</span></p></td>
+<td>the position at which to insert the source</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>id</code></em> :</span></p></td>
+<td>a unique identifier for the source to be added</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>the icon associated with the source. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>label</code></em> :</span></p></td>
+<td>a user-visible string best describing the source</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>count</code></em> :</span></p></td>
+<td>the count for the source</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-insert-source-with-string"></a><h3>messaging_menu_app_insert_source_with_string ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_insert_source_with_string
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *str</code></em>);</pre>
+<p>
+Inserts a new message source into the section representing <em class="parameter"><code>app</code></em> and
+initializes it with <em class="parameter"><code>str</code></em>.
+</p>
+<p>
+To update the string, use <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-source-string" title="messaging_menu_app_set_source_string ()"><code class="function">messaging_menu_app_set_source_string()</code></a>.
+</p>
+<p>
+It is an error to insert a source with an <em class="parameter"><code>id</code></em> which already exists.  Use
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-has-source" title="messaging_menu_app_has_source ()"><code class="function">messaging_menu_app_has_source()</code></a> to find out whether there is such a source.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>position</code></em> :</span></p></td>
+<td>the position at which to insert the source</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>id</code></em> :</span></p></td>
+<td>a unique identifier for the source to be added</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>the icon associated with the source. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>label</code></em> :</span></p></td>
+<td>a user-visible string best describing the source</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>str</code></em> :</span></p></td>
+<td>a string associated with the source</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-insert-source-with-time"></a><h3>messaging_menu_app_insert_source_with_time ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_insert_source_with_time
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a> position</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/gio/unstable/GIcon.html"><span class="type">GIcon</span></a> *icon</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code><span class="type">gint64</span> time</code></em>);</pre>
+<p>
+Inserts a new message source into the section representing <em class="parameter"><code>app</code></em> and
+initializes it with <em class="parameter"><code>time</code></em>.
+</p>
+<p>
+To change the time, use <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-source-time" title="messaging_menu_app_set_source_time ()"><code class="function">messaging_menu_app_set_source_time()</code></a>.
+</p>
+<p>
+It is an error to insert a source with an <em class="parameter"><code>id</code></em> which already exists.  Use
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-has-source" title="messaging_menu_app_has_source ()"><code class="function">messaging_menu_app_has_source()</code></a> to find out whether there is such a source.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>position</code></em> :</span></p></td>
+<td>the position at which to insert the source</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>id</code></em> :</span></p></td>
+<td>a unique identifier for the source to be added</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>the icon associated with the source. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>label</code></em> :</span></p></td>
+<td>a user-visible string best describing the source</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>time</code></em> :</span></p></td>
+<td>the time when the source was created</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-new"></a><h3>messaging_menu_app_new ()</h3>
+<pre class="programlisting"><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="returnvalue">MessagingMenuApp</span></a> *  messaging_menu_app_new              (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_id</code></em>);</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-register"></a><h3>messaging_menu_app_register ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_register         (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>);</pre>
+<p>
+Registers <em class="parameter"><code>app</code></em> with the Messaging Menu.
+</p>
+<p>
+If the application doesn't already have a section in the Messaging
+Menu, one will be created for it.  The application will also be
+marked as "running".
+</p>
+<p>
+The application will be marked as "not running" as soon as <em class="parameter"><code>app</code></em> is
+destroyed.  The application launcher as well as shortcut actions will
+remain in the menu.  To completely remove the application section
+from the Messaging Menu, call <a class="link" href="MessagingMenuApp.html#messaging-menu-app-unregister" title="messaging_menu_app_unregister ()"><code class="function">messaging_menu_app_unregister()</code></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-remove-attention"></a><h3>messaging_menu_app_remove_attention ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_remove_attention (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>);</pre>
+<p>
+Stop indicating that <em class="parameter"><code>source_id</code></em> needs attention.
+</p>
+<p>
+This function does not need to be called when the source is removed
+with <a class="link" href="MessagingMenuApp.html#messaging-menu-app-remove-source" title="messaging_menu_app_remove_source ()"><code class="function">messaging_menu_app_remove_source()</code></a> or the user has activated the
+source.
+</p>
+<p>
+Use <a class="link" href="MessagingMenuApp.html#messaging-menu-app-draw-attention" title="messaging_menu_app_draw_attention ()"><code class="function">messaging_menu_app_draw_attention()</code></a> to make <em class="parameter"><code>source_id</code></em> draw attention
+again.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source_id</code></em> :</span></p></td>
+<td>a source id</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-remove-source"></a><h3>messaging_menu_app_remove_source ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_remove_source    (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>);</pre>
+<p>
+Removes the source corresponding to <em class="parameter"><code>source_id</code></em> from the menu.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source_id</code></em> :</span></p></td>
+<td>the id of the source to remove</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-set-source-count"></a><h3>messaging_menu_app_set_source_count ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_set_source_count (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> count</code></em>);</pre>
+<p>
+Updates the count of <em class="parameter"><code>source_id</code></em> to <em class="parameter"><code>count</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source_id</code></em> :</span></p></td>
+<td>a source id</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>count</code></em> :</span></p></td>
+<td>the new count for the source</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-set-source-string"></a><h3>messaging_menu_app_set_source_string ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_set_source_string
+                                                        (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *str</code></em>);</pre>
+<p>
+Updates the string displayed next to <em class="parameter"><code>source_id</code></em> to <em class="parameter"><code>str</code></em>.
+</p>
+<p>
+Note that the string is only displayed if the source does not also have a
+count or time associated with it.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source_id</code></em> :</span></p></td>
+<td>a source id</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>str</code></em> :</span></p></td>
+<td>the new string for the source</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-set-source-time"></a><h3>messaging_menu_app_set_source_time ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_set_source_time  (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *source_id</code></em>,
+                                                         <em class="parameter"><code><span class="type">gint64</span> time</code></em>);</pre>
+<p>
+Updates the time of <em class="parameter"><code>source_id</code></em> to <em class="parameter"><code>time</code></em>.
+</p>
+<p>
+Note that the time is only displayed if the source does not also have a
+count associated with it.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source_id</code></em> :</span></p></td>
+<td>a source id</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>time</code></em> :</span></p></td>
+<td>the new time for the source</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-set-status"></a><h3>messaging_menu_app_set_status ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_set_status       (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="MessagingMenuApp.html#MessagingMenuStatus" title="enum MessagingMenuStatus"><span class="type">MessagingMenuStatus</span></a> status</code></em>);</pre>
+<p>
+Notify the Messaging Menu that the chat status of <em class="parameter"><code>app</code></em> has changed to
+<em class="parameter"><code>status</code></em>.
+</p>
+<p>
+Connect to the ::status-changed signal to receive notification about
+the user changing their global chat status through the Messaging
+Menu.
+</p>
+<p>
+This function does nothing for applications whose desktop file does
+not include X-MessagingMenu-UsesChatSection.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>status</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html#MessagingMenuStatus" title="enum MessagingMenuStatus"><span class="type">MessagingMenuStatus</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="messaging-menu-app-unregister"></a><h3>messaging_menu_app_unregister ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                messaging_menu_app_unregister       (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>);</pre>
+<p>
+Completely removes the <em class="parameter"><code>app</code></em> from the Messaging Menu.  If the
+application's launcher and shortcut actions should remain in the
+menu, destroying <em class="parameter"><code>app</code></em> with <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-unref"><code class="function">g_object_unref()</code></a> suffices.
+</p>
+<p>
+Note: <em class="parameter"><code>app</code></em> will remain valid and usable after this call.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>app</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+<div class="refsect1">
+<a name="MessagingMenuApp.property-details"></a><h2>Property Details</h2>
+<div class="refsect2">
+<a name="MessagingMenuApp--desktop-id"></a><h3>The <code class="literal">"desktop-id"</code> property</h3>
+<pre class="programlisting">  "desktop-id"               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Write / Construct Only</pre>
+<p>
+The desktop id of the application associated with this application
+section.  Must be given when the <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> is created.
+</p>
+<p>Default value: NULL</p>
+</div>
+</div>
+<div class="refsect1">
+<a name="MessagingMenuApp.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="MessagingMenuApp-activate-source"></a><h3>The <code class="literal">"activate-source"</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *mmapp,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>            *source_id,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>          user_data)      : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-DETAILED:CAPS"><code class="literal">Has Details</code></a></pre>
+<p>
+Emitted when the user has activated the message source with id
+<em class="parameter"><code>source_id</code></em>.  The source is immediately removed from the menu,
+handlers of this signal do not need to call
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-remove-source" title="messaging_menu_app_remove_source ()"><code class="function">messaging_menu_app_remove_source()</code></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>mmapp</code></em> :</span></p></td>
+<td>the <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source_id</code></em> :</span></p></td>
+<td>the source id that was activated</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="MessagingMenuApp-status-changed"></a><h3>The <code class="literal">"status-changed"</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *mmapp,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a>              status,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>          user_data)      : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS"><code class="literal">Run First</code></a></pre>
+<p>
+Emitted when the chat status is changed through the messaging menu.
+</p>
+<p>
+Applications which are registered to use the chat status should
+change their status to <em class="parameter"><code>status</code></em> upon receiving this signal.  Call
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-status" title="messaging_menu_app_set_status ()"><code class="function">messaging_menu_app_set_status()</code></a> to acknowledge that the application
+changed its status.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>mmapp</code></em> :</span></p></td>
+<td>the <a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>status</code></em> :</span></p></td>
+<td>a <a class="link" href="MessagingMenuApp.html#MessagingMenuStatus" title="enum MessagingMenuStatus"><span class="type">MessagingMenuStatus</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.18</div>
+</body>
+</html>

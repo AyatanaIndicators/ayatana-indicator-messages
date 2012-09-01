@@ -24,9 +24,74 @@
 #include <gio/gdesktopappinfo.h>
 
 /**
- * SECTION:messagingmenuapp
+ * SECTION:messaging-menu
  * @title: MessagingMenuApp
  * @short_description: An application section in the messaging menu
+ *
+ * A #MessagingMenuApp represents an application section in the
+ * Messaging Menu.  An application section is tied to an installed
+ * application through a desktop file id, which must be passed to
+ * messaging_menu_app_new().
+ *
+ * To register the appliction with the Messaging Menu, call
+ * messaging_menu_app_register().  This signifies that the application
+ * should be present in the menu and be marked as "running".
+ *
+ * The first menu item in an application section represents the
+ * application itself, using the name and icon found in the associated
+ * desktop file.  Activating this item starts the application.
+ *
+ * Following the application item, the Messaging Menu inserts all
+ * shortcuts actions found in the desktop file which are marked as
+ * appearing in the Messaging Menu (the TargetEnvironment or OnlyShowIn
+ * keywords contains "Messaging Menu").  The <ulink
+ * url="http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-1.1.html#extra-actions">
+ * desktop file specification</ulink> contains a detailed explanation of
+ * shortcut actions [1].  An application cannot add, remove, or change
+ * these shortcut items while it is running.
+ *
+ * Next, an application section contains menu items for message sources.
+ * What exactly constitutes a message source depends on the type of
+ * application:  an email client's message sources are folders
+ * containing new messages, while those of a chat program are persons
+ * that have contacted the user.
+ *
+ * A message source is represented in the menu by a label and optionally
+ * also an icon.  It can be associated with either a count, a time, or
+ * an arbitrary string, which will appear on the right side of the menu
+ * item.
+ *
+ * When the user activates a source, the source is immediately removed
+ * from the menu and the "activate-source" signal is emitted.
+ *
+ * Applications should always expose all the message sources available.
+ * However, the Messaging Menu might limit the amount of sources it
+ * displays to the user.
+ *
+ * The Messaging Menu offers users a way to set their chat status
+ * (available, away, busy, invisible, or offline) for multiple
+ * applications at once.  Applications that appear in the Messaging Menu
+ * can integrate with this by setting the
+ * "X-MessagingMenu-UsesChatSection" key in their desktop file to True.
+ * Use messaging_menu_app_set_status() to signify that the application's
+ * chat status has changed.  When the user changes status through the
+ * Messaging Menu, the ::status-changed signal will be emitted.
+ *
+ * If the application stops running without calling
+ * messaging_menu_app_unregister(), it will be marked as "not running".
+ * Its application and shortcut items stay in the menu, but all message
+ * sources are removed.  If messaging_menu_app_unregister() is called,
+ * the application section is removed completely.
+ *
+ * More information about the design and recommended usage of the
+ * Messaging Menu is available at <ulink
+ * url="https://wiki.ubuntu.com/MessagingMenu">https://wiki.ubuntu.com/MessagingMenu</ulink>.
+ */
+
+/**
+ * MessagingMenuApp:
+ *
+ * #MessagingMenuApp is an opaque structure.
  */
 struct _MessagingMenuApp
 {
@@ -75,6 +140,67 @@ static void global_status_changed (IndicatorMessagesService *service,
                                    const gchar *status_str,
                                    gpointer user_data);
 
+static gchar *
+messaging_menu_app_get_dbus_object_path (MessagingMenuApp *app)
+{
+  gchar *path;
+
+  g_return_val_if_fail (app->appinfo != NULL, NULL);
+
+  path = g_strconcat ("/com/canonical/indicator/messages/",
+                      g_app_info_get_id (G_APP_INFO (app->appinfo)),
+                      NULL);
+
+  g_strcanon (path, "/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", '_');
+
+  return path;
+}
+
+static void
+export_menus_and_actions (GObject      *source,
+                          GAsyncResult *res,
+                          gpointer      user_data)
+{
+  MessagingMenuApp *app = user_data;
+  GDBusConnection *bus;
+  GError *error = NULL;
+  guint id;
+  gchar *object_path;
+
+  bus = g_bus_get_finish (res, &error);
+  if (bus == NULL)
+    {
+      g_warning ("unable to connect to session bus: %s", error->message);
+      g_error_free (error);
+      return;
+    }
+
+  object_path = messaging_menu_app_get_dbus_object_path (app);
+
+  id = g_dbus_connection_export_action_group (bus,
+                                              object_path,
+                                              G_ACTION_GROUP (app->source_actions),
+                                              &error);
+  if (!id)
+    {
+      g_warning ("unable to export action group: %s", error->message);
+      g_error_free (error);
+    }
+
+  id = g_dbus_connection_export_menu_model (bus,
+                                            object_path,
+                                            G_MENU_MODEL (app->menu),
+                                            &error);
+  if (!id)
+    {
+      g_warning ("unable to export menu: %s", error->message);
+      g_error_free (error);
+    }
+
+  g_object_unref (bus);
+  g_free (object_path);
+}
+
 static void
 messaging_menu_app_set_desktop_id (MessagingMenuApp *app,
                                    const gchar      *desktop_id)
@@ -88,6 +214,11 @@ messaging_menu_app_set_desktop_id (MessagingMenuApp *app,
       g_warning ("could not find the desktop file for '%s'",
                  desktop_id);
     }
+
+  g_bus_get (G_BUS_TYPE_SESSION,
+             app->cancellable,
+             export_menus_and_actions,
+             app);
 }
 
 static void
@@ -157,6 +288,12 @@ messaging_menu_app_class_init (MessagingMenuAppClass *class)
   object_class->finalize = messaging_menu_app_finalize;
   object_class->dispose = messaging_menu_app_dispose;
 
+  /**
+   * MessagingMenuApp:desktop-id:
+   *
+   * The desktop id of the application associated with this application
+   * section.  Must be given when the #MessagingMenuApp is created.
+   */
   properties[PROP_DESKTOP_ID] = g_param_spec_string ("desktop-id",
                                                      "Desktop Id",
                                                      "The desktop id of the associated application",
@@ -167,6 +304,16 @@ messaging_menu_app_class_init (MessagingMenuAppClass *class)
 
   g_object_class_install_properties (object_class, N_PROPERTIES, properties);
 
+  /**
+   * MessagingMenuApp::activate-source:
+   * @mmapp: the #MessagingMenuApp
+   * @source_id: the source id that was activated
+   *
+   * Emitted when the user has activated the message source with id
+   * @source_id.  The source is immediately removed from the menu,
+   * handlers of this signal do not need to call
+   * messaging_menu_app_remove_source().
+   */
   signals[ACTIVATE_SOURCE] = g_signal_new ("activate-source",
                                            MESSAGING_MENU_TYPE_APP,
                                            G_SIGNAL_RUN_FIRST |
@@ -176,6 +323,18 @@ messaging_menu_app_class_init (MessagingMenuAppClass *class)
                                            g_cclosure_marshal_VOID__STRING,
                                            G_TYPE_NONE, 1, G_TYPE_STRING);
 
+  /**
+   * MessagingMenuApp::status-changed:
+   * @mmapp: the #MessagingMenuApp
+   * @status: a #MessagingMenuStatus
+   *
+   * Emitted when the chat status is changed through the messaging menu.
+   *
+   * Applications which are registered to use the chat status should
+   * change their status to @status upon receiving this signal.  Call
+   * messaging_menu_app_set_status() to acknowledge that the application
+   * changed its status.
+   */
   signals[STATUS_CHANGED] = g_signal_new ("status-changed",
                                           MESSAGING_MENU_TYPE_APP,
                                           G_SIGNAL_RUN_FIRST,
@@ -210,47 +369,6 @@ created_messages_service (GObject      *source_object,
   else if (app->registered == FALSE)
     messaging_menu_app_unregister (app);
   messaging_menu_app_set_status (app, app->status);
-}
-
-static void
-got_session_bus (GObject      *source,
-                 GAsyncResult *res,
-                 gpointer      user_data)
-{
-  MessagingMenuApp *app = user_data;
-  GDBusConnection *bus;
-  GError *error = NULL;
-  guint id;
-
-  bus = g_bus_get_finish (res, &error);
-  if (bus == NULL)
-    {
-      g_warning ("unable to connect to session bus: %s", error->message);
-      g_error_free (error);
-      return;
-    }
-
-  id = g_dbus_connection_export_action_group (bus,
-                                              "/com/canonical/indicator/messages",
-                                              G_ACTION_GROUP (app->source_actions),
-                                              &error);
-  if (!id)
-    {
-      g_warning ("unable to export action group: %s", error->message);
-      g_error_free (error);
-    }
-
-  id = g_dbus_connection_export_menu_model (bus,
-                                            "/com/canonical/indicator/messages",
-                                            G_MENU_MODEL (app->menu),
-                                            &error);
-  if (!id)
-    {
-      g_warning ("unable to export menu: %s", error->message);
-      g_error_free (error);
-    }
-
-  g_object_unref (bus);
 }
 
 static void
@@ -299,12 +417,6 @@ messaging_menu_app_init (MessagingMenuApp *app)
 
   app->cancellable = g_cancellable_new ();
 
-
-  g_bus_get (G_BUS_TYPE_SESSION,
-             app->cancellable,
-             got_session_bus,
-             app);
-
   app->watch_id = g_bus_watch_name (G_BUS_TYPE_SESSION,
                                     "com.canonical.indicator.messages",
                                     G_BUS_NAME_WATCHER_FLAGS_NONE,
@@ -321,11 +433,8 @@ messaging_menu_app_init (MessagingMenuApp *app)
  * Creates a new #MessagingMenuApp for the application associated with
  * @desktop_id.
  *
- * If the application is already registered with the messaging menu, it will be
- * marked as "running".  Otherwise, call messaging_menu_app_register().
- *
- * The messaging menu will return to marking the application as not running as
- * soon as the returned #MessagingMenuApp is destroyed.
+ * The application will not show up (nor be marked as "running") in the
+ * Messaging Menu before messaging_menu_app_register() has been called.
  *
  * Returns: (transfer full): a new #MessagingMenuApp
  */
@@ -341,17 +450,22 @@ messaging_menu_app_new (const gchar *desktop_id)
  * messaging_menu_app_register:
  * @app: a #MessagingMenuApp
  *
- * Registers @app with the messaging menu.
+ * Registers @app with the Messaging Menu.
  *
- * The messaging menu will add a section with an app launcher and the shortcuts
- * defined in its desktop file.
+ * If the application doesn't already have a section in the Messaging
+ * Menu, one will be created for it.  The application will also be
+ * marked as "running".
  *
- * The application will be marked as "running" as long as @app is alive or
- * messaging_menu_app_unregister() is called.
+ * The application will be marked as "not running" as soon as @app is
+ * destroyed.  The application launcher as well as shortcut actions will
+ * remain in the menu.  To completely remove the application section
+ * from the Messaging Menu, call messaging_menu_app_unregister().
  */
 void
 messaging_menu_app_register (MessagingMenuApp *app)
 {
+  gchar *object_path;
+
   g_return_if_fail (MESSAGING_MENU_IS_APP (app));
 
   app->registered = TRUE;
@@ -360,19 +474,24 @@ messaging_menu_app_register (MessagingMenuApp *app)
   if (!app->messages_service)
     return;
 
+  object_path = messaging_menu_app_get_dbus_object_path (app);
+
   indicator_messages_service_call_register_application (app->messages_service,
                                                         g_app_info_get_id (G_APP_INFO (app->appinfo)),
-                                                        "/com/canonical/indicator/messages",
+                                                        object_path,
                                                         app->cancellable,
                                                         NULL, NULL);
+
+  g_free (object_path);
 }
 
 /**
  * messaging_menu_app_unregister:
  * @app: a #MessagingMenuApp
  *
- * Completely removes the application associated with @desktop_id from the
- * messaging menu.
+ * Completely removes the @app from the Messaging Menu.  If the
+ * application's launcher and shortcut actions should remain in the
+ * menu, destroying @app with g_object_unref() suffices.
  *
  * Note: @app will remain valid and usable after this call.
  */
@@ -397,6 +516,16 @@ messaging_menu_app_unregister (MessagingMenuApp *app)
  * messaging_menu_app_set_status:
  * @app: a #MessagingMenuApp
  * @status: a #MessagingMenuStatus
+ *
+ * Notify the Messaging Menu that the chat status of @app has changed to
+ * @status.
+ *
+ * Connect to the ::status-changed signal to receive notification about
+ * the user changing their global chat status through the Messaging
+ * Menu.
+ *
+ * This function does nothing for applications whose desktop file does
+ * not include X-MessagingMenu-UsesChatSection.
  */
 void
 messaging_menu_app_set_status (MessagingMenuApp    *app,
@@ -794,6 +923,107 @@ messaging_menu_app_has_source (MessagingMenuApp *app,
   return g_simple_action_group_lookup (app->source_actions, source_id) != NULL;
 }
 
+static GMenuItem *
+g_menu_find_item_with_action (GMenu        *menu,
+                              const gchar  *action,
+                              gint         *out_pos)
+{
+  gint i;
+  gint n_elements;
+  GMenuItem *item = NULL;
+
+  n_elements = g_menu_model_get_n_items (G_MENU_MODEL (menu));
+
+  for (i = 0; i < n_elements && item == NULL; i++)
+    {
+      GVariant *attr;
+
+      item = g_menu_item_new_from_model (G_MENU_MODEL (menu), i);
+      attr = g_menu_item_get_attribute_value (item, G_MENU_ATTRIBUTE_ACTION, G_VARIANT_TYPE_STRING);
+
+      if (!g_str_equal (action, g_variant_get_string (attr, NULL)))
+        g_clear_object (&item);
+
+      g_variant_unref (attr);
+    }
+
+  if (item && out_pos)
+    *out_pos = i - 1;
+
+  return item;
+}
+
+static void
+g_menu_replace_item (GMenu     *menu,
+                     gint       pos,
+                     GMenuItem *item)
+{
+  g_menu_remove (menu, pos);
+  g_menu_insert_item (menu, pos, item);
+}
+
+/**
+ * messaging_menu_app_set_source_label:
+ * @app: a #MessagingMenuApp
+ * @source_id: a source id
+ * @label: the new label for the source
+ *
+ * Changes the label of @source_id to @label.
+ */
+void
+messaging_menu_app_set_source_label (MessagingMenuApp *app,
+                                     const gchar      *source_id,
+                                     const gchar      *label)
+{
+  gint pos;
+  GMenuItem *item;
+
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (source_id != NULL);
+  g_return_if_fail (label != NULL);
+
+  item = g_menu_find_item_with_action (app->menu, source_id, &pos);
+  if (item == NULL)
+    return;
+
+  g_menu_item_set_attribute (item, G_MENU_ATTRIBUTE_LABEL, "s", label);
+  g_menu_replace_item (app->menu, pos, item);
+
+  g_object_unref (item);
+}
+
+/**
+ * messaging_menu_app_set_source_icon:
+ * @app: a #MessagingMenuApp
+ * @source_id: a source id
+ * @icon: the new icon for the source
+ *
+ * Changes the icon of @source_id to @icon.
+ */
+void
+messaging_menu_app_set_source_icon (MessagingMenuApp *app,
+                                    const gchar      *source_id,
+                                    GIcon            *icon)
+{
+  gint pos;
+  GMenuItem *item;
+  gchar *iconstr;
+
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (source_id != NULL);
+
+  item = g_menu_find_item_with_action (app->menu, source_id, &pos);
+  if (item == NULL)
+    return;
+
+  iconstr = icon ? g_icon_to_string (icon) : NULL;
+  g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
+  g_menu_replace_item (app->menu, pos, item);
+
+  g_free (iconstr);
+  g_object_unref (item);
+}
+
 /**
  * messaging_menu_app_set_source_count:
  * @app: a #MessagingMenuApp
@@ -875,6 +1105,10 @@ messaging_menu_app_draw_attention (MessagingMenuApp *app,
  * @source_id: a source id
  *
  * Stop indicating that @source_id needs attention.
+ *
+ * This function does not need to be called when the source is removed
+ * with messaging_menu_app_remove_source() or the user has activated the
+ * source.
  *
  * Use messaging_menu_app_draw_attention() to make @source_id draw attention
  * again.

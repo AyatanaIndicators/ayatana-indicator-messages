@@ -1,15 +1,16 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --with autoreconf,translations
+	dh $@ --with autoreconf,translations,gir
 
 override_dh_auto_configure:
-	dh_auto_configure -- --libdir="\$${prefix}/lib" --libexecdir="\$${prefix}/lib/indicator-messages"
+	dh_auto_configure -- --libdir="\$${prefix}/lib" --libexecdir="\$${prefix}/lib/indicator-messages" --enable-gtk-doc
 
 override_dh_makeshlibs:
-	dh_makeshlibs -plibmessaging-menu0 -V'libmessaging-menu0 (>= 12.10.0)' -- -c4
+	dh_makeshlibs -plibmessaging-menu0 -V'libmessaging-menu0 (>= 12.10.2)' -- -c4
 	dh_makeshlibs -Nlibmessaging-menu0
 
 override_dh_install:
 	find debian/tmp/usr/lib -name *.la -delete
 	dh_install --fail-missing
+
