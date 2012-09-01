@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
+<book xmlns="http://www.devhelp.net/book" title="Messaging Menu Reference Manual" link="index.html" author="" name="messaging-menu" version="2" language="c">
+  <chapters>
+    <sub name="API Reference" link="ch01.html">
+      <sub name="MessagingMenuApp" link="MessagingMenuApp.html"/>
+    </sub>
+    <sub name="Object Hierarchy" link="object-tree.html"/>
+    <sub name="API Index" link="api-index-full.html"/>
+    <sub name="Index of deprecated API" link="deprecated-api-index.html"/>
+    <sub name="Annotation Glossary" link="annotation-glossary.html"/>
+  </chapters>
+  <functions>
+    <keyword type="struct" name="MessagingMenuApp" link="MessagingMenuApp.html#MessagingMenuApp-struct"/>
+    <keyword type="typedef" name="MessagingMenuAppClass" link="MessagingMenuApp.html#MessagingMenuAppClass"/>
+    <keyword type="enum" name="enum MessagingMenuStatus" link="MessagingMenuApp.html#MessagingMenuStatus"/>
+    <keyword type="function" name="messaging_menu_app_append_source ()" link="MessagingMenuApp.html#messaging-menu-app-append-source"/>
+    <keyword type="function" name="messaging_menu_app_append_source_with_count ()" link="MessagingMenuApp.html#messaging-menu-app-append-source-with-count"/>
+    <keyword type="function" name="messaging_menu_app_append_source_with_string ()" link="MessagingMenuApp.html#messaging-menu-app-append-source-with-string"/>
+    <keyword type="function" name="messaging_menu_app_append_source_with_time ()" link="MessagingMenuApp.html#messaging-menu-app-append-source-with-time"/>
+    <keyword type="function" name="messaging_menu_app_draw_attention ()" link="MessagingMenuApp.html#messaging-menu-app-draw-attention"/>
+    <keyword type="function" name="messaging_menu_app_has_source ()" link="MessagingMenuApp.html#messaging-menu-app-has-source"/>
+    <keyword type="function" name="messaging_menu_app_insert_source ()" link="MessagingMenuApp.html#messaging-menu-app-insert-source"/>
+    <keyword type="function" name="messaging_menu_app_insert_source_with_count ()" link="MessagingMenuApp.html#messaging-menu-app-insert-source-with-count"/>
+    <keyword type="function" name="messaging_menu_app_insert_source_with_string ()" link="MessagingMenuApp.html#messaging-menu-app-insert-source-with-string"/>
+    <keyword type="function" name="messaging_menu_app_insert_source_with_time ()" link="MessagingMenuApp.html#messaging-menu-app-insert-source-with-time"/>
+    <keyword type="function" name="messaging_menu_app_new ()" link="MessagingMenuApp.html#messaging-menu-app-new"/>
+    <keyword type="function" name="messaging_menu_app_register ()" link="MessagingMenuApp.html#messaging-menu-app-register"/>
+    <keyword type="function" name="messaging_menu_app_remove_attention ()" link="MessagingMenuApp.html#messaging-menu-app-remove-attention"/>
+    <keyword type="function" name="messaging_menu_app_remove_source ()" link="MessagingMenuApp.html#messaging-menu-app-remove-source"/>
+    <keyword type="function" name="messaging_menu_app_set_source_count ()" link="MessagingMenuApp.html#messaging-menu-app-set-source-count"/>
+    <keyword type="function" name="messaging_menu_app_set_source_string ()" link="MessagingMenuApp.html#messaging-menu-app-set-source-string"/>
+    <keyword type="function" name="messaging_menu_app_set_source_time ()" link="MessagingMenuApp.html#messaging-menu-app-set-source-time"/>
+    <keyword type="function" name="messaging_menu_app_set_status ()" link="MessagingMenuApp.html#messaging-menu-app-set-status"/>
+    <keyword type="function" name="messaging_menu_app_unregister ()" link="MessagingMenuApp.html#messaging-menu-app-unregister"/>
+    <keyword type="property" name="The &quot;desktop-id&quot; property" link="MessagingMenuApp.html#MessagingMenuApp--desktop-id"/>
+    <keyword type="signal" name="The &quot;activate-source&quot; signal" link="MessagingMenuApp.html#MessagingMenuApp-activate-source"/>
+    <keyword type="signal" name="The &quot;status-changed&quot; signal" link="MessagingMenuApp.html#MessagingMenuApp-status-changed"/>
+    <keyword type="constant" name="MESSAGING_MENU_STATUS_AVAILABLE" link="MessagingMenuApp.html#MESSAGING-MENU-STATUS-AVAILABLE:CAPS"/>
+    <keyword type="constant" name="MESSAGING_MENU_STATUS_AWAY" link="MessagingMenuApp.html#MESSAGING-MENU-STATUS-AWAY:CAPS"/>
+    <keyword type="constant" name="MESSAGING_MENU_STATUS_BUSY" link="MessagingMenuApp.html#MESSAGING-MENU-STATUS-BUSY:CAPS"/>
+    <keyword type="constant" name="MESSAGING_MENU_STATUS_INVISIBLE" link="MessagingMenuApp.html#MESSAGING-MENU-STATUS-INVISIBLE:CAPS"/>
+    <keyword type="constant" name="MESSAGING_MENU_STATUS_OFFLINE" link="MessagingMenuApp.html#MESSAGING-MENU-STATUS-OFFLINE:CAPS"/>
+  </functions>
+</book>

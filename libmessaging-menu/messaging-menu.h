@@ -29,6 +29,16 @@ G_BEGIN_DECLS
 #define MESSAGING_MENU_APP_CLASS(c)     (G_TYPE_CHECK_CLASS_CAST ((c), MESSAGING_MENU_TYPE_APP, MessagingMenuAppClass))
 #define MESSAGING_MENU_IS_APP(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), MESSAGING_MENU_TYPE_APP))
 
+/**
+ * MessagingMenuStatus:
+ * @MESSAGING_MENU_STATUS_AVAILABLE: available
+ * @MESSAGING_MENU_STATUS_AWAY: away
+ * @MESSAGING_MENU_STATUS_BUSY: busy
+ * @MESSAGING_MENU_STATUS_INVISIBLE: invisible
+ * @MESSAGING_MENU_STATUS_OFFLINE: offline
+ *
+ * An enumeration for the possible chat statuses the messaging menu can be in.
+ */
 typedef enum {
   MESSAGING_MENU_STATUS_AVAILABLE,
   MESSAGING_MENU_STATUS_AWAY,
@@ -106,6 +116,14 @@ void                messaging_menu_app_remove_source             (MessagingMenuA
 
 gboolean            messaging_menu_app_has_source                (MessagingMenuApp *app,
                                                                   const gchar      *source_id);
+
+void                messaging_menu_app_set_source_label          (MessagingMenuApp *app,
+                                                                  const gchar      *source_id,
+                                                                  const gchar      *label);
+
+void                messaging_menu_app_set_source_icon           (MessagingMenuApp *app,
+                                                                  const gchar      *source_id,
+                                                                  GIcon            *icon);
 
 void                messaging_menu_app_set_source_count          (MessagingMenuApp *app,
                                                                   const gchar      *source_id,

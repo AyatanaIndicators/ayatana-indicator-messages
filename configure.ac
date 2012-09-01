@@ -1,5 +1,5 @@
 
-AC_INIT(indicator-messages, 12.10.1)
+AC_INIT(indicator-messages, 12.10.2)
 
 AC_PREREQ(2.62)
 
@@ -57,7 +57,7 @@ AC_SUBST(APPLET_LIBS)
 
 GLIB_GSETTINGS
 
-GTK_DOC_CHECK([1.18], [])
+GTK_DOC_CHECK([1.18], [--flavour no-tmpl])
 
 GOBJECT_INTROSPECTION_CHECK([$INTROSPECTION_REQUIRED_VERSION])
 
@@ -178,6 +178,9 @@ po/Makefile.in
 test/Makefile
 libmessaging-menu/Makefile
 libmessaging-menu/messaging-menu.pc
+doc/Makefile
+doc/reference/Makefile
+doc/reference/messaging-menu-docs.xml
 ])
 
 ###########################
@@ -192,5 +195,6 @@ Messaging Indicator Configuration:
 	Indicator Dir: $INDICATORDIR
 	gtest:         $enable_tests
 	gcov:          $use_gcov
-        introspecion:  $enable_introspection
+	introspecion:  $enable_introspection
+	documentation: $enable_gtk_doc
 ])
