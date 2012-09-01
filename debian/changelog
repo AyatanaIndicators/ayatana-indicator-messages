@@ -1,4 +1,4 @@
-indicator-messages (12.10.2-0ubuntu1) UNRELEASED; urgency=low
+indicator-messages (12.10.2-0ubuntu1) quantal; urgency=low
 
   * New upstream release, includes apis to allow changing the label and
     the icon of sources and add documentation
@@ -9,9 +9,10 @@ indicator-messages (12.10.2-0ubuntu1) UNRELEASED; urgency=low
   * debian/rules:
     - build the documentation
     - updated shlibs version
-    - use --with gir so gir:Depends work as it should (lp: #1044125)
+    - use --with gir so gir:Depends work as it should 
+      (lp: #1044125)
 
- -- Sebastien Bacher <seb128@ubuntu.com>  Sat, 01 Sep 2012 12:25:10 +0200
+ -- Sebastien Bacher <seb128@ubuntu.com>  Sat, 01 Sep 2012 12:36:35 +0200
 
 indicator-messages (12.10.1-0ubuntu1) quantal-proposed; urgency=low
 
