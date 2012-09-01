@@ -50,8 +50,10 @@ MessagingMenu-1.0.gir: libmessaging-menu.la
 MessagingMenu_1_0_gir_NAMESPACE = MessagingMenu
 MessagingMenu_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
 MessagingMenu_1_0_gir_CFLAGS = $(INCLUDES) $(GIO_CFLAGS)
+MessagingMenu_1_0_gir_SCANNERFLAGS = --c-include="messaging-menu.h"
 MessagingMenu_1_0_gir_LIBS = libmessaging-menu.la
 MessagingMenu_1_0_gir_FILES = messaging-menu.c messaging-menu.h
+MessagingMenu_1_0_gir_EXPORT_PACKAGES = messaging-menu
 INTROSPECTION_GIRS += MessagingMenu-1.0.gir
 
 girdir = $(datadir)/gir-1.0
