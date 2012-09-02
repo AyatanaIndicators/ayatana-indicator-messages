@@ -763,7 +763,7 @@ void messaging_menu_app_append_source_with_count (MessagingMenuApp *app,
  * @id: a unique identifier for the source to be added
  * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
- * @time: the time when the source was created
+ * @time: the time when the source was created, in microseconds
  *
  * Inserts a new message source into the section representing @app and
  * initializes it with @time.
@@ -791,7 +791,7 @@ messaging_menu_app_insert_source_with_time (MessagingMenuApp *app,
  * @id: a unique identifier for the source to be added
  * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
- * @time: the time when the source was created
+ * @time: the time when the source was created, in microseconds
  *
  * Appends a new message source to the end of the section representing @app and
  * initializes it with @time.
@@ -1045,7 +1045,7 @@ void messaging_menu_app_set_source_count (MessagingMenuApp *app,
  * messaging_menu_app_set_source_time:
  * @app: a #MessagingMenuApp
  * @source_id: a source id
- * @time: the new time for the source
+ * @time: the new time for the source, in microseconds
  *
  * Updates the time of @source_id to @time.
  *
