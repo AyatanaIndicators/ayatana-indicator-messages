@@ -766,7 +766,8 @@ void messaging_menu_app_append_source_with_count (MessagingMenuApp *app,
  * @time: the time when the source was created, in microseconds
  *
  * Inserts a new message source into the section representing @app and
- * initializes it with @time.
+ * initializes it with @time.  Use messaging_menu_app_insert_source() to
+ * insert a source with the current time.
  *
  * To change the time, use messaging_menu_app_set_source_time().
  *
@@ -793,8 +794,10 @@ messaging_menu_app_insert_source_with_time (MessagingMenuApp *app,
  * @label: a user-visible string best describing the source
  * @time: the time when the source was created, in microseconds
  *
- * Appends a new message source to the end of the section representing @app and
- * initializes it with @time.
+ * Appends a new message source to the end of the section representing
+ * @app and initializes it with @time.  Use
+ * messaging_menu_app_append_source() to append a source with the
+ * current time.
  *
  * To change the time, use messaging_menu_app_set_source_time().
  *
