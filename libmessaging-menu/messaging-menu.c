@@ -27,6 +27,7 @@
  * SECTION:messaging-menu
  * @title: MessagingMenuApp
  * @short_description: An application section in the messaging menu
+ * @include: messaging-menu.h
  *
  * A #MessagingMenuApp represents an application section in the
  * Messaging Menu.  An application section is tied to an installed
