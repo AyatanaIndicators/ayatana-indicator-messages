@@ -60,6 +60,9 @@ im_source_menu_item_constructed (GObject *object)
   gtk_widget_set_margin_left (priv->icon, icon_width + 6);
 
   priv->label = g_object_ref (gtk_label_new (""));
+  gtk_label_set_max_width_chars (GTK_LABEL (priv->label), 40);
+  gtk_label_set_ellipsize (GTK_LABEL (priv->label), PANGO_ELLIPSIZE_END);
+  gtk_misc_set_alignment (GTK_MISC (priv->label), 0.0, 0.5);
 
   priv->detail = g_object_ref (ido_detail_label_new (""));
   gtk_widget_set_halign (priv->detail, GTK_ALIGN_END);
