@@ -63,7 +63,7 @@ im_source_menu_item_constructed (GObject *object)
   priv->detail = g_object_ref (gtk_label_new (""));
   gtk_widget_set_halign (priv->detail, GTK_ALIGN_END);
   gtk_widget_set_hexpand (priv->detail, TRUE);
-  gtk_misc_set_alignment (GTK_MISC (priv->label), 1.0, 0.5);
+  gtk_widget_set_halign (priv->detail, GTK_ALIGN_END);
   gtk_style_context_add_class (gtk_widget_get_style_context (priv->detail), "accelerator");
 
   grid = gtk_grid_new ();
@@ -146,16 +146,54 @@ im_source_menu_item_time_span_string (gint64 timestamp)
   return str;
 }
 
+static void
+im_source_menu_item_set_detail_count (ImSourceMenuItem *self,
+                                      guint32           count)
+{
+  ImSourceMenuItemPrivate *priv = self->priv;
+  gchar *str;
+
+  str = g_strdup_printf ("%d", count);
+  gtk_label_set_text (GTK_LABEL (priv->detail), str);
+
+  g_free (str);
+}
+
+static void
+im_source_menu_item_set_detail_time (ImSourceMenuItem *self,
+                                     gint64            time)
+{
+  ImSourceMenuItemPrivate *priv = self->priv;
+  gchar *str;
+
+  priv->time = time;
+
+  str = im_source_menu_item_time_span_string (priv->time);
+  gtk_label_set_text (GTK_LABEL (priv->detail), str);
+
+  g_free (str);
+}
+
+static void
+im_source_menu_item_set_detail (ImSourceMenuItem *self,
+                                const gchar      *detail)
+{
+  ImSourceMenuItemPrivate *priv = self->priv;
+  gchar *str;
+
+  str = collapse_whitespace (detail);
+  gtk_label_set_text (GTK_LABEL (priv->detail), str);
+
+  g_free (str);
+}
+
 static gboolean
 im_source_menu_item_update_time (gpointer data)
 {
   ImSourceMenuItem *self = data;
-  gchar *str;
 
-  str = im_source_menu_item_time_span_string (self->priv->time);
-  gtk_label_set_text (GTK_LABEL (self->priv->detail), str);
+  im_source_menu_item_set_detail_time (self, self->priv->time);
 
-  g_free (str);
   return TRUE;
 }
 
@@ -167,7 +205,6 @@ im_source_menu_item_set_state (ImSourceMenuItem *self,
   guint32 count;
   gint64 time;
   const gchar *str;
-  gchar *detail;
 
   if (priv->timer_id != 0)
     {
@@ -180,21 +217,15 @@ im_source_menu_item_set_state (ImSourceMenuItem *self,
   g_variant_get (state, "(ux&sb)", &count, &time, &str, NULL);
 
   if (count != 0)
-    detail = g_strdup_printf ("%d", count);
+    im_source_menu_item_set_detail_count (self, count);
   else if (time != 0)
     {
-      priv->time = time;
-      detail = im_source_menu_item_time_span_string (time);
+      im_source_menu_item_set_detail_time (self, time);
       priv->timer_id = g_timeout_add_seconds (59, im_source_menu_item_update_time, self);
     }
   else if (str != NULL && *str)
-    detail = collapse_whitespace (str);
-  else
-    detail = NULL;
+    im_source_menu_item_set_detail (self, str);
 
-  gtk_label_set_text (GTK_LABEL (priv->detail), detail ? detail : "");
-
-  g_free (detail);
   return TRUE;
 }
 
