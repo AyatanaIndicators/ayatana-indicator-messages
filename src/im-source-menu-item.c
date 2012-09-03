@@ -20,6 +20,7 @@
 #include "im-source-menu-item.h"
 
 #include <libintl.h>
+#include "ido-detail-label.h"
 
 struct _ImSourceMenuItemPrivate
 {
@@ -60,10 +61,9 @@ im_source_menu_item_constructed (GObject *object)
 
   priv->label = g_object_ref (gtk_label_new (""));
 
-  priv->detail = g_object_ref (gtk_label_new (""));
+  priv->detail = g_object_ref (ido_detail_label_new (""));
   gtk_widget_set_halign (priv->detail, GTK_ALIGN_END);
   gtk_widget_set_hexpand (priv->detail, TRUE);
-  gtk_widget_set_halign (priv->detail, GTK_ALIGN_END);
   gtk_style_context_add_class (gtk_widget_get_style_context (priv->detail), "accelerator");
 
   grid = gtk_grid_new ();
@@ -75,49 +75,6 @@ im_source_menu_item_constructed (GObject *object)
   gtk_widget_show_all (grid);
 
   G_OBJECT_CLASS (im_source_menu_item_parent_class)->constructed (object);
-}
-
-/* collapse_whitespace:
- * @str: the source string
- *
- * Collapses all occurences of consecutive whitespace charactes in @str
- * into a single space.
- *
- * Returns: (transfer full): a newly-allocated string
- */
-static gchar *
-collapse_whitespace (const gchar *str)
-{
-  GString *result;
-  gboolean in_space = FALSE;
-
-  if (str == NULL)
-    return NULL;
-
-  result = g_string_new ("");
-
-  while (*str)
-    {
-      gunichar c = g_utf8_get_char_validated (str, -1);
-
-      if (c < 0)
-        break;
-
-      if (!g_unichar_isspace (c))
-        {
-          g_string_append_unichar (result, c);
-          in_space = FALSE;
-        }
-      else if (!in_space)
-        {
-          g_string_append_c (result, ' ');
-          in_space = TRUE;
-        }
-
-      str = g_utf8_next_char (str);
-    }
-
-  return g_string_free (result, FALSE);
 }
 
 static gchar *
@@ -147,19 +104,6 @@ im_source_menu_item_time_span_string (gint64 timestamp)
 }
 
 static void
-im_source_menu_item_set_detail_count (ImSourceMenuItem *self,
-                                      guint32           count)
-{
-  ImSourceMenuItemPrivate *priv = self->priv;
-  gchar *str;
-
-  str = g_strdup_printf ("%d", count);
-  gtk_label_set_text (GTK_LABEL (priv->detail), str);
-
-  g_free (str);
-}
-
-static void
 im_source_menu_item_set_detail_time (ImSourceMenuItem *self,
                                      gint64            time)
 {
@@ -169,20 +113,7 @@ im_source_menu_item_set_detail_time (ImSourceMenuItem *self,
   priv->time = time;
 
   str = im_source_menu_item_time_span_string (priv->time);
-  gtk_label_set_text (GTK_LABEL (priv->detail), str);
-
-  g_free (str);
-}
-
-static void
-im_source_menu_item_set_detail (ImSourceMenuItem *self,
-                                const gchar      *detail)
-{
-  ImSourceMenuItemPrivate *priv = self->priv;
-  gchar *str;
-
-  str = collapse_whitespace (detail);
-  gtk_label_set_text (GTK_LABEL (priv->detail), str);
+  ido_detail_label_set_text (IDO_DETAIL_LABEL (priv->detail), str);
 
   g_free (str);
 }
@@ -217,14 +148,14 @@ im_source_menu_item_set_state (ImSourceMenuItem *self,
   g_variant_get (state, "(ux&sb)", &count, &time, &str, NULL);
 
   if (count != 0)
-    im_source_menu_item_set_detail_count (self, count);
+    ido_detail_label_set_count (IDO_DETAIL_LABEL (priv->detail), count);
   else if (time != 0)
     {
       im_source_menu_item_set_detail_time (self, time);
       priv->timer_id = g_timeout_add_seconds (59, im_source_menu_item_update_time, self);
     }
   else if (str != NULL && *str)
-    im_source_menu_item_set_detail (self, str);
+    ido_detail_label_set_text (IDO_DETAIL_LABEL (priv->detail), str);
 
   return TRUE;
 }
