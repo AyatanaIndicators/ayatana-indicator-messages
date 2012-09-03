@@ -11,6 +11,9 @@ Makefile.in.in
 stamp-*
 *.gcno
 *.gcda
+*.stamp
+*.gir
+*.typelib
 
 /COPYING
 /INSTALL
@@ -27,6 +30,8 @@ stamp-*
 /mkinstalldirs
 /coverage.info
 /coveragereport
+/gtk-doc.make
+/indicator-messages-*.tar.gz
 
 /m4/*
 /po/POTFILES
@@ -34,17 +39,27 @@ stamp-*
 /src/indicator-messages-service
 /src/indicator-messages-service.c
 /src/indicator-messages-service.h
-/src/status-provider-mc5-marshal.c
-/src/status-provider-mc5-marshal.h
-/src/status-provider-pidgin-marshal.c
-/src/status-provider-pidgin-marshal.h
-/src/status-provider-telepathy-marshal.c
-/src/status-provider-telepathy-marshal.h
-/src/indicator-messages-status-provider-0.5.pc
-/src/indicator-messages-status-provider-0.5.pc.in
 
 /libmessaging-menu/messaging-menu.pc
 /libmessaging-menu/indicator-messages-service.c
 /libmessaging-menu/indicator-messages-service.h
 
-test/test-gactionmuxer
+/doc/reference/html
+/doc/reference/xml
+/doc/reference/messaging-menu-decl-list.txt
+/doc/reference/messaging-menu-decl.txt
+/doc/reference/messaging-menu-docs.sgml
+/doc/reference/messaging-menu-docs.xml
+/doc/reference/messaging-menu-overrides.txt
+/doc/reference/messaging-menu-sections.txt
+/doc/reference/messaging-menu-undeclared.txt
+/doc/reference/messaging-menu-undocumented.txt
+/doc/reference/messaging-menu-unused.txt
+/doc/reference/messaging-menu.args
+/doc/reference/messaging-menu.hierarchy
+/doc/reference/messaging-menu.interfaces
+/doc/reference/messaging-menu.prerequisites
+/doc/reference/messaging-menu.signals
+/doc/reference/messaging-menu.types
+
+/test/test-gactionmuxer
