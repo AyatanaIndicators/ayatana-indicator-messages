@@ -21,6 +21,8 @@ libmessaging_la_SOURCES = \
 	im-app-menu-item.h \
 	im-source-menu-item.c \
 	im-source-menu-item.h \
+	ido-detail-label.c \
+	ido-detail-label.h \
 	indicator-messages-service.c \
 	indicator-messages-service.h
 	dbus-data.h
