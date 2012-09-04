@@ -309,13 +309,6 @@ ido_detail_label_get_text (IdoDetailLabel *label)
   return label->priv->text;
 }
 
-static void
-ido_detail_label_clear (IdoDetailLabel *label)
-{
-  g_free (label->priv->text);
-  g_clear_object (&label->priv->layout);
-}
-
 /* collapse_whitespace:
  * @str: the source string
  *
@@ -359,38 +352,45 @@ collapse_whitespace (const gchar *str)
   return g_string_free (result, FALSE);
 }
 
-void
-ido_detail_label_set_text (IdoDetailLabel *label,
-                           const gchar    *text)
+static void
+ido_detail_label_set_text_impl (IdoDetailLabel *label,
+                                const gchar    *text,
+                                gboolean        draw_lozenge)
 {
-  IdoDetailLabelPrivate *priv;
+  IdoDetailLabelPrivate * priv = label->priv;
 
-  g_return_if_fail (IDO_IS_DETAIL_LABEL (label));
-  priv = label->priv;
+  g_clear_object (&priv->layout);
+  g_free (priv->text);
 
-  ido_detail_label_clear (label);
-
-  priv->text = collapse_whitespace (text);
-  label->priv->draw_lozenge = FALSE;
+  priv->text = g_strdup (text);
+  priv->draw_lozenge = draw_lozenge;
 
   g_object_notify_by_pspec (G_OBJECT (label), properties[PROP_TEXT]);
   gtk_widget_queue_resize (GTK_WIDGET (label));
 }
 
 void
+ido_detail_label_set_text (IdoDetailLabel *label,
+                           const gchar    *text)
+{
+  gchar *str;
+
+  g_return_if_fail (IDO_IS_DETAIL_LABEL (label));
+
+  str = collapse_whitespace (text);
+  ido_detail_label_set_text_impl (label, str, FALSE);
+  g_free (str);
+}
+
+void
 ido_detail_label_set_count (IdoDetailLabel *label,
                             gint            count)
 {
-  IdoDetailLabelPrivate *priv;
+  gchar *text;
 
   g_return_if_fail (IDO_IS_DETAIL_LABEL (label));
-  priv = label->priv;
 
-  ido_detail_label_clear (label);
-
-  priv->text = g_strdup_printf ("%d", count);
-  label->priv->draw_lozenge = TRUE;
-
-  g_object_notify_by_pspec (G_OBJECT (label), properties[PROP_TEXT]);
-  gtk_widget_queue_resize (GTK_WIDGET (label));
+  text = g_strdup_printf ("%d", count);
+  ido_detail_label_set_text_impl (label, text, TRUE);
+  g_free (text);
 }
