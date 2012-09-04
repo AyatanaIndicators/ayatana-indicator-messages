@@ -43,12 +43,13 @@
  * desktop file.  Activating this item starts the application.
  *
  * Following the application item, the Messaging Menu inserts all
- * shortcuts actions found in the desktop file which are marked as
- * appearing in the Messaging Menu (the TargetEnvironment or OnlyShowIn
- * keywords contains "Messaging Menu").  The <ulink
+ * shortcut actions found in the desktop file.  Actions whose
+ * <code>NotShowIn</code> keyword contains "Messaging Menu" or whose
+ * <code>OnlyShowIn</code> keyword does not contain "Messaging Menu"
+ * will not appear (the <ulink
  * url="http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-1.1.html#extra-actions">
  * desktop file specification</ulink> contains a detailed explanation of
- * shortcut actions [1].  An application cannot add, remove, or change
+ * shortcut actions.)  An application cannot add, remove, or change
  * these shortcut items while it is running.
  *
  * Next, an application section contains menu items for message sources.
