@@ -84,6 +84,8 @@ ido_detail_label_finalize (GObject *object)
   IdoDetailLabelPrivate *priv = IDO_DETAIL_LABEL (object)->priv;
 
   g_free (priv->text);
+
+  G_OBJECT_CLASS (ido_detail_label_parent_class)->finalize (object);
 }
 
 static void
@@ -92,6 +94,8 @@ ido_detail_label_dispose (GObject *object)
   IdoDetailLabelPrivate *priv = IDO_DETAIL_LABEL (object)->priv;
 
   g_clear_object (&priv->layout);
+
+  G_OBJECT_CLASS (ido_detail_label_parent_class)->dispose (object);
 }
 
 static void
