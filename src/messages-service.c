@@ -175,6 +175,25 @@ add_application (const gchar *desktop_id)
 		g_object_unref (menuitem);
 	}
 
+	if (g_menu_model_get_n_items (G_MENU_MODEL (toplevel_menu)) == 0) {
+		GMenuItem *header;
+		GIcon *icon;
+		gchar *iconstr;
+
+		icon = g_themed_icon_new ("indicator-messages");
+		iconstr = g_icon_to_string (icon);
+
+		header = g_menu_item_new (NULL, "messages");
+		g_menu_item_set_submenu (header, G_MENU_MODEL (menu));
+		g_menu_item_set_attribute (header, "x-canonical-icon", "s", iconstr);
+		g_menu_item_set_attribute (header, "x-canonical-accessible-description", "s", _("Messages"));
+		g_menu_append_item (toplevel_menu, header);
+
+		g_object_unref (header);
+		g_free (iconstr);
+		g_object_unref (icon);
+	}
+
 	g_free (id);
 	g_object_unref (appinfo);
 	return section;
@@ -211,6 +230,12 @@ remove_application (const char *desktop_id)
 	}
 	
 	g_hash_table_remove (applications, id);
+
+	if (g_hash_table_size (applications) == 0 &&
+	    g_menu_model_get_n_items (G_MENU_MODEL (toplevel_menu)) == 1) {
+		g_menu_remove (toplevel_menu, 0);
+	}
+
 	g_free (id);
 	g_object_unref (appinfo);
 }
@@ -484,9 +509,6 @@ main (int argc, char ** argv)
 {
 	GMainLoop * mainloop = NULL;
 	IndicatorService * service = NULL;
-	GMenuItem *header;
-	GIcon *icon;
-	gchar *iconstr;
 
 	/* Glib init */
 	g_type_init();
@@ -524,16 +546,7 @@ main (int argc, char ** argv)
 	chat_section = create_status_section ();
 	g_menu_append (menu, _("Clear"), "clear");
 
-	icon = g_themed_icon_new ("indicator-messages");
-	iconstr = g_icon_to_string (icon);
-
 	toplevel_menu = g_menu_new ();
-	header = g_menu_item_new (NULL, "messages");
-	g_menu_item_set_submenu (header, G_MENU_MODEL (menu));
-	g_menu_item_set_attribute (header, "x-canonical-icon", "s", iconstr);
-	g_menu_item_set_attribute (header, "x-canonical-accessible-description", "s", _("Messages"));
-	g_menu_append_item (toplevel_menu, header);
-	g_object_unref (header);
 
 	settings = g_settings_new ("com.canonical.indicator.messages");
 
@@ -544,8 +557,6 @@ main (int argc, char ** argv)
 	g_main_loop_run(mainloop);
 
 	/* Clean up */
-	g_free (iconstr);
-	g_object_unref (icon);
 	g_object_unref (messages_service);
 	g_object_unref (chat_section);
 	g_object_unref (settings);

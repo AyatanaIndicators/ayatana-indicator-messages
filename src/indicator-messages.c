@@ -83,8 +83,6 @@ static GtkImage * get_image               (IndicatorObject * io);
 static GtkMenu * get_menu                 (IndicatorObject * io);
 static const gchar * get_accessible_desc  (IndicatorObject * io);
 static const gchar * get_name_hint        (IndicatorObject * io);
-static void update_root_item              (IndicatorMessages * self);
-static void update_menu                   (IndicatorMessages *self);
 static void menu_items_changed            (GMenuModel *menu,
                                            gint        position,
                                            gint        removed,
@@ -212,8 +210,10 @@ static void service_connection_changed (IndicatorServiceManager *sm,
 							  INDICATOR_MESSAGES_DBUS_OBJECT));
 	g_signal_connect (self->menu, "items-changed", G_CALLBACK (menu_items_changed), self);
 
-	update_root_item (self);
-	update_menu (self);
+	if (g_menu_model_get_n_items (self->menu) == 1)
+		menu_items_changed (self->menu, 0, 0, 1, self);
+	else
+		indicator_object_set_visible (INDICATOR_OBJECT (self), FALSE);
 
 	g_object_unref (bus);
 }
@@ -261,24 +261,19 @@ indicator_messages_accessible_desc_updated (IndicatorMessages *self)
 	g_list_free (entries);
 }
 
-static void
-update_root_item (IndicatorMessages * self)
+static GIcon *
+g_menu_model_get_item_attribute_icon (GMenuModel  *menu,
+				      gint         index,
+				      const gchar *attribute)
 {
 	gchar *iconstr;
+	GIcon *icon = NULL;
 
-	if (g_menu_model_get_n_items (self->menu) == 0)
-		return;
-
-	if (g_menu_model_get_item_attribute (self->menu, 0, "x-canonical-icon", "s", &iconstr)) {
-		GIcon *icon;
+	if (g_menu_model_get_item_attribute (menu, index, attribute, "s", &iconstr)) {
 		GError *error;
 
 		icon = g_icon_new_for_string (iconstr, &error);
-		if (icon) {
-			gtk_image_set_from_gicon (GTK_IMAGE (self->image), icon, GTK_ICON_SIZE_MENU);
-			g_object_unref (icon);
-		}
-		else {
+		if (icon == NULL) {
 			g_warning ("unable to load icon: %s", error->message);
 			g_error_free (error);
 		}
@@ -286,37 +281,7 @@ update_root_item (IndicatorMessages * self)
 		g_free (iconstr);
 	}
 
-	g_free (self->accessible_desc);
-	self->accessible_desc = NULL;
-
-	g_menu_model_get_item_attribute (self->menu, 0, "x-canonical-accessible-description",
-					 "s", &self->accessible_desc);
-	indicator_messages_accessible_desc_updated (self);
-}
-
-static void
-update_menu (IndicatorMessages *self)
-{
-	GMenuModel *popup;
-	GMenuItem *item;
-
-	if (self->menu == NULL || g_menu_model_get_n_items (self->menu) == 0)
-		return;
-
-	popup = g_menu_model_get_item_link (self->menu, 0, G_MENU_LINK_SUBMENU);
-	if (popup == NULL)
-		return;
-
-	if (g_menu_model_get_n_items (G_MENU_MODEL (self->menu_wrapper)) == 1)
-		g_menu_remove (self->menu_wrapper, 0);
-
-	item = g_menu_item_new_section (NULL, popup);
-	g_menu_item_set_attribute (item, "action-namespace",
-				   "s", get_name_hint (INDICATOR_OBJECT (self)));
-	g_menu_append_item (self->menu_wrapper, item);
-
-	g_object_unref (item);
-	g_object_unref (popup);
+	return icon;
 }
 
 static void
@@ -328,9 +293,43 @@ menu_items_changed (GMenuModel *menu,
 {
 	IndicatorMessages *self = user_data;
 
-	if (position == 0) {
-		update_root_item (self);
-		update_menu (self);
+	g_return_if_fail (position == 0);
+
+	if (added == 1) {
+		GIcon *icon;
+		GMenuModel *popup;
+
+		indicator_object_set_visible (INDICATOR_OBJECT (self), TRUE);
+
+		icon = g_menu_model_get_item_attribute_icon (menu, 0, "x-canonical-icon");
+		if (icon) {
+			gtk_image_set_from_gicon (GTK_IMAGE (self->image), icon, GTK_ICON_SIZE_MENU);
+			g_object_unref (icon);
+		}
+
+		g_free (self->accessible_desc);
+		self->accessible_desc = NULL;
+		if (g_menu_model_get_item_attribute (self->menu, 0, "x-canonical-accessible-description",
+						     "s", &self->accessible_desc)) {
+			indicator_messages_accessible_desc_updated (self);
+		}
+
+		popup = g_menu_model_get_item_link (menu, 0, G_MENU_LINK_SUBMENU);
+		if (popup) {
+			GMenuItem *item;
+
+			item = g_menu_item_new_section (NULL, popup);
+			g_menu_item_set_attribute (item, "action-namespace",
+						   "s", get_name_hint (INDICATOR_OBJECT (self)));
+			g_menu_append_item (self->menu_wrapper, item);
+
+			g_object_unref (item);
+			g_object_unref (popup);
+		}
+	}
+	else if (removed == 1) {
+		g_menu_remove (self->menu_wrapper, 0);
+		indicator_object_set_visible (INDICATOR_OBJECT (self), FALSE);
 	}
 }
 
