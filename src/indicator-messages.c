@@ -92,6 +92,7 @@ static void messages_state_changed        (GActionGroup *action_group,
                                            gchar        *action_name,
                                            GVariant     *value,
                                            gpointer      user_data);
+static void indicator_messages_add_toplevel_menu (IndicatorMessages *self);
 
 G_DEFINE_TYPE (IndicatorMessages, indicator_messages, INDICATOR_OBJECT_TYPE);
 
@@ -211,7 +212,7 @@ static void service_connection_changed (IndicatorServiceManager *sm,
 	g_signal_connect (self->menu, "items-changed", G_CALLBACK (menu_items_changed), self);
 
 	if (g_menu_model_get_n_items (self->menu) == 1)
-		menu_items_changed (self->menu, 0, 0, 1, self);
+		indicator_messages_add_toplevel_menu (self);
 	else
 		indicator_object_set_visible (INDICATOR_OBJECT (self), FALSE);
 
@@ -285,6 +286,41 @@ g_menu_model_get_item_attribute_icon (GMenuModel  *menu,
 }
 
 static void
+indicator_messages_add_toplevel_menu (IndicatorMessages *self)
+{
+	GIcon *icon;
+	GMenuModel *popup;
+
+	indicator_object_set_visible (INDICATOR_OBJECT (self), TRUE);
+
+	icon = g_menu_model_get_item_attribute_icon (self->menu, 0, "x-canonical-icon");
+	if (icon) {
+		gtk_image_set_from_gicon (GTK_IMAGE (self->image), icon, GTK_ICON_SIZE_MENU);
+		g_object_unref (icon);
+	}
+
+	g_free (self->accessible_desc);
+	self->accessible_desc = NULL;
+	if (g_menu_model_get_item_attribute (self->menu, 0, "x-canonical-accessible-description",
+					     "s", &self->accessible_desc)) {
+		indicator_messages_accessible_desc_updated (self);
+	}
+
+	popup = g_menu_model_get_item_link (self->menu, 0, G_MENU_LINK_SUBMENU);
+	if (popup) {
+		GMenuItem *item;
+
+		item = g_menu_item_new_section (NULL, popup);
+		g_menu_item_set_attribute (item, "action-namespace",
+					   "s", get_name_hint (INDICATOR_OBJECT (self)));
+		g_menu_append_item (self->menu_wrapper, item);
+
+		g_object_unref (item);
+		g_object_unref (popup);
+	}
+}
+
+static void
 menu_items_changed (GMenuModel *menu,
                     gint        position,
                     gint        removed,
@@ -296,36 +332,7 @@ menu_items_changed (GMenuModel *menu,
 	g_return_if_fail (position == 0);
 
 	if (added == 1) {
-		GIcon *icon;
-		GMenuModel *popup;
-
-		indicator_object_set_visible (INDICATOR_OBJECT (self), TRUE);
-
-		icon = g_menu_model_get_item_attribute_icon (menu, 0, "x-canonical-icon");
-		if (icon) {
-			gtk_image_set_from_gicon (GTK_IMAGE (self->image), icon, GTK_ICON_SIZE_MENU);
-			g_object_unref (icon);
-		}
-
-		g_free (self->accessible_desc);
-		self->accessible_desc = NULL;
-		if (g_menu_model_get_item_attribute (self->menu, 0, "x-canonical-accessible-description",
-						     "s", &self->accessible_desc)) {
-			indicator_messages_accessible_desc_updated (self);
-		}
-
-		popup = g_menu_model_get_item_link (menu, 0, G_MENU_LINK_SUBMENU);
-		if (popup) {
-			GMenuItem *item;
-
-			item = g_menu_item_new_section (NULL, popup);
-			g_menu_item_set_attribute (item, "action-namespace",
-						   "s", get_name_hint (INDICATOR_OBJECT (self)));
-			g_menu_append_item (self->menu_wrapper, item);
-
-			g_object_unref (item);
-			g_object_unref (popup);
-		}
+		indicator_messages_add_toplevel_menu (self);
 	}
 	else if (removed == 1) {
 		g_menu_remove (self->menu_wrapper, 0);
