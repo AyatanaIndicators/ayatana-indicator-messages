@@ -45,7 +45,6 @@ static GMenu *menu;
 static GMenuModel *chat_section;
 static GSettings *settings;
 
-
 static gchar *
 g_app_info_get_simple_id (GAppInfo *appinfo)
 {
@@ -138,6 +137,23 @@ uses_chat_status_changed (GObject *object,
 	g_object_unref (first_section);
 }
 
+static void
+remove_section (AppSection  *section,
+		const gchar *id)
+{
+	int pos = g_menu_find_section (menu, app_section_get_menu (section));
+	if (pos >= 0)
+		g_menu_remove (menu, pos);
+	g_action_muxer_remove (action_muxer, id);
+
+	g_signal_handlers_disconnect_by_func (section, actions_changed, NULL);
+	g_signal_handlers_disconnect_by_func (section, draws_attention_changed, NULL);
+	g_signal_handlers_disconnect_by_func (section, uses_chat_status_changed, NULL);
+	g_signal_handlers_disconnect_by_func (section, remove_section, NULL);
+
+	g_hash_table_remove (applications, id);
+}
+
 static AppSection *
 add_application (const gchar *desktop_id)
 {
@@ -167,6 +183,11 @@ add_application (const gchar *desktop_id)
 				  G_CALLBACK (draws_attention_changed), NULL);
 		g_signal_connect (section, "notify::uses-chat-status",
 				  G_CALLBACK (uses_chat_status_changed), NULL);
+		g_signal_connect_data (section, "destroy",
+				       G_CALLBACK (remove_section),
+				       g_strdup (id),
+				       (GClosureNotify) g_free,
+				       0);
 
 		/* TODO insert it at the right position (alphabetically by application name) */
 		menuitem = g_menu_item_new_section (NULL, app_section_get_menu (section));
@@ -197,20 +218,13 @@ remove_application (const char *desktop_id)
 
 	section = g_hash_table_lookup (applications, id);
 	if (section) {
-		int pos = g_menu_find_section (menu, app_section_get_menu (section));
-		if (pos >= 0)
-			g_menu_remove (menu, pos);
-		g_action_muxer_remove (action_muxer, id);
-
-		g_signal_handlers_disconnect_by_func (section, actions_changed, NULL);
-		g_signal_handlers_disconnect_by_func (section, draws_attention_changed, NULL);
-		g_signal_handlers_disconnect_by_func (section, uses_chat_status_changed, NULL);
+		remove_section (section, id);
 	}
 	else {
+		g_hash_table_remove (applications, id);
 		g_warning ("could not remove '%s', it's not registered", desktop_id);
 	}
 	
-	g_hash_table_remove (applications, id);
 	g_free (id);
 	g_object_unref (appinfo);
 }
