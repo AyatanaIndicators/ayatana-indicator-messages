@@ -221,7 +221,6 @@ remove_application (const char *desktop_id)
 		remove_section (section, id);
 	}
 	else {
-		g_hash_table_remove (applications, id);
 		g_warning ("could not remove '%s', it's not registered", desktop_id);
 	}
 	
