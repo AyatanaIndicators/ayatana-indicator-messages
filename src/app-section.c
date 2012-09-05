@@ -38,7 +38,6 @@ struct _AppSectionPrivate
 {
 	GDesktopAppInfo * appinfo;
 	GFileMonitor *desktop_file_monitor;
-	guint unreadcount;
 
 	IndicatorDesktopShortcuts * ids;
 
@@ -166,7 +165,6 @@ app_section_init (AppSection *self)
 	priv = self->priv;
 
 	priv->appinfo = NULL;
-	priv->unreadcount = 0;
 
 	priv->menu = g_menu_new ();
 	priv->static_shortcuts = g_simple_action_group_new ();
@@ -494,14 +492,6 @@ launch_action_change_state (GSimpleAction *action,
 			    gpointer       user_data)
 {
 	g_simple_action_set_state (action, value);
-}
-
-guint
-app_section_get_count (AppSection * self)
-{
-	AppSectionPrivate * priv = self->priv;
-
-	return priv->unreadcount;
 }
 
 const gchar *
