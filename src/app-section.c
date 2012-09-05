@@ -64,7 +64,7 @@ enum {
 };
 
 static GParamSpec *properties[NUM_PROPERTIES];
-guint destroy_signal;
+static guint destroy_signal;
 
 /* Prototypes */
 static void app_section_class_init   (AppSectionClass *klass);
