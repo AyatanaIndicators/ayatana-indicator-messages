@@ -495,17 +495,6 @@ launch_action_change_state (GSimpleAction *action,
 }
 
 const gchar *
-app_section_get_name (AppSection * self)
-{
-	AppSectionPrivate * priv = self->priv;
-
-	if (priv->appinfo) {
-		return g_app_info_get_name(G_APP_INFO(priv->appinfo));
-	}
-	return NULL;
-}
-
-const gchar *
 app_section_get_desktop (AppSection * self)
 {
 	AppSectionPrivate * priv = self->priv;
