@@ -152,6 +152,11 @@ remove_section (AppSection  *section,
 	g_signal_handlers_disconnect_by_func (section, remove_section, NULL);
 
 	g_hash_table_remove (applications, id);
+
+	if (g_hash_table_size (applications) == 0 &&
+	    g_menu_model_get_n_items (G_MENU_MODEL (toplevel_menu)) == 1) {
+		g_menu_remove (toplevel_menu, 0);
+	}
 }
 
 static AppSection *
@@ -243,13 +248,6 @@ remove_application (const char *desktop_id)
 		g_warning ("could not remove '%s', it's not registered", desktop_id);
 	}
 	
-	g_hash_table_remove (applications, id);
-
-	if (g_hash_table_size (applications) == 0 &&
-	    g_menu_model_get_n_items (G_MENU_MODEL (toplevel_menu)) == 1) {
-		g_menu_remove (toplevel_menu, 0);
-	}
-
 	g_free (id);
 	g_object_unref (appinfo);
 }
