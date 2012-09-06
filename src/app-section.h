@@ -51,8 +51,6 @@ struct _AppSection {
 
 GType app_section_get_type (void);
 AppSection * app_section_new (GDesktopAppInfo *appinfo);
-guint app_section_get_count (AppSection * appitem);
-const gchar * app_section_get_name (AppSection * appitem);
 const gchar * app_section_get_desktop (AppSection * appitem);
 GActionGroup * app_section_get_actions (AppSection *self);
 GMenuModel * app_section_get_menu (AppSection *appitem);
