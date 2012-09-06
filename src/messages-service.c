@@ -115,9 +115,7 @@ app_section_uses_chat (gpointer key,
 }
 
 static void
-uses_chat_status_changed (GObject *object,
-			  GParamSpec *pspec,
-			  gpointer user_data)
+update_chat_section ()
 {
 	gboolean show_chat;
 	GMenuModel *first_section;
@@ -135,6 +133,14 @@ uses_chat_status_changed (GObject *object,
 	}
 
 	g_object_unref (first_section);
+}
+
+static void
+uses_chat_status_changed (GObject *object,
+			  GParamSpec *pspec,
+			  gpointer user_data)
+{
+	update_chat_section ();
 }
 
 static void
@@ -157,6 +163,8 @@ remove_section (AppSection  *section,
 	    g_menu_model_get_n_items (G_MENU_MODEL (toplevel_menu)) == 1) {
 		g_menu_remove (toplevel_menu, 0);
 	}
+
+	update_chat_section ();
 }
 
 static AppSection *
