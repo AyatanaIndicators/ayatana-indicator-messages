@@ -58,7 +58,6 @@ struct _IndicatorMessages {
 	IndicatorObject parent;
 	IndicatorServiceManager * service;
 	GActionGroup *actions;
-	GMenu *menu_wrapper;
 	GMenuModel *menu;
 	GtkWidget *image;
 	GtkWidget *gtkmenu;
@@ -121,8 +120,7 @@ indicator_messages_init (IndicatorMessages *self)
 	g_signal_connect (self->service, "connection-change",
 			  G_CALLBACK (service_connection_changed), self);
 
-	self->menu_wrapper = g_menu_new ();
-	self->gtkmenu = gtk_menu_new_from_model (G_MENU_MODEL (self->menu_wrapper));
+	self->gtkmenu = gtk_menu_new ();
 	g_object_ref_sink (self->gtkmenu);
 
 	self->image = g_object_ref_sink (gtk_image_new ());
@@ -142,7 +140,6 @@ indicator_messages_dispose (GObject *object)
 	g_return_if_fail(self != NULL);
 
 	g_clear_object (&self->service);
-	g_clear_object (&self->menu_wrapper);
 	g_clear_object (&self->actions);
 	g_clear_object (&self->menu);
 	g_clear_object (&self->gtkmenu);
@@ -184,8 +181,7 @@ static void service_connection_changed (IndicatorServiceManager *sm,
 		g_signal_handlers_disconnect_by_func (self->menu, menu_items_changed, self);
 		g_clear_object (&self->menu);
 	}
-	if (g_menu_model_get_n_items (G_MENU_MODEL (self->menu_wrapper)) == 1)
-		g_menu_remove (self->menu_wrapper, 0);
+	gtk_menu_shell_bind_model (GTK_MENU_SHELL (self->gtkmenu), NULL, NULL, FALSE);
 
 	if (connected == FALSE)
 		return;
@@ -308,14 +304,11 @@ indicator_messages_add_toplevel_menu (IndicatorMessages *self)
 
 	popup = g_menu_model_get_item_link (self->menu, 0, G_MENU_LINK_SUBMENU);
 	if (popup) {
-		GMenuItem *item;
+		gtk_menu_shell_bind_model (GTK_MENU_SHELL (self->gtkmenu),
+					   popup,
+					   get_name_hint (INDICATOR_OBJECT (self)),
+					   TRUE);
 
-		item = g_menu_item_new_section (NULL, popup);
-		g_menu_item_set_attribute (item, "action-namespace",
-					   "s", get_name_hint (INDICATOR_OBJECT (self)));
-		g_menu_append_item (self->menu_wrapper, item);
-
-		g_object_unref (item);
 		g_object_unref (popup);
 	}
 }
@@ -331,13 +324,10 @@ menu_items_changed (GMenuModel *menu,
 
 	g_return_if_fail (position == 0);
 
-	if (added == 1) {
+	if (added == 1)
 		indicator_messages_add_toplevel_menu (self);
-	}
-	else if (removed == 1) {
-		g_menu_remove (self->menu_wrapper, 0);
+	else if (removed == 1)
 		indicator_object_set_visible (INDICATOR_OBJECT (self), FALSE);
-	}
 }
 
 static void
