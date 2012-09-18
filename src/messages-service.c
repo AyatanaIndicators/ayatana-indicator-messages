@@ -132,7 +132,8 @@ update_chat_section ()
 			g_menu_insert_section (menu, 0, NULL, chat_section);
 	}
 
-	g_object_unref (first_section);
+	if (first_section != NULL)
+		g_object_unref (first_section);
 }
 
 static void
