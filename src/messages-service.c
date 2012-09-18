@@ -35,6 +35,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "gmenuutils.h"
 #include "indicator-messages-service.h"
 
+#define NUM_STATUSES 5
+
 static GHashTable *applications;
 
 IndicatorMessagesService *messages_service;
@@ -44,6 +46,52 @@ static GMenu *toplevel_menu;
 static GMenu *menu;
 static GMenuModel *chat_section;
 static GSettings *settings;
+gboolean draws_attention;
+const gchar *global_status[6]; /* max 5: available, away, busy, invisible, offline */
+
+static gchar *
+indicator_messages_get_icon_name ()
+{
+	GString *name;
+	GIcon *icon;
+	gchar *iconstr;
+
+	name = g_string_new ("indicator-messages");
+
+	if (global_status[0] != NULL)
+	{
+		if (global_status[1] != NULL)
+			g_string_append (name, "-mixed");
+		else
+			g_string_append_printf (name, "-%s", global_status[0]);
+	}
+
+	if (draws_attention)
+		g_string_append (name, "-new");
+
+	icon = g_themed_icon_new (name->str);
+	iconstr = g_icon_to_string (icon);
+
+	g_object_unref (icon);
+	g_string_free (name, TRUE);
+
+	return iconstr;
+}
+
+static void
+indicator_messages_update_icon ()
+{
+	GSimpleAction *messages;
+	gchar *icon;
+
+	messages = G_SIMPLE_ACTION (g_simple_action_group_lookup (actions, "messages"));
+	g_return_if_fail (messages != NULL);
+
+	icon = indicator_messages_get_icon_name ();
+	g_simple_action_set_state (messages, g_variant_new_string (icon));
+
+	g_free (icon);
+}
 
 static gchar *
 g_app_info_get_simple_id (GAppInfo *appinfo)
@@ -91,18 +139,16 @@ draws_attention_changed (GObject *object,
 			 GParamSpec *pspec,
 			 gpointer user_data)
 {
-	GSimpleAction *messages;
 	GSimpleAction *clear;
-	gboolean attention;
 
-	messages = G_SIMPLE_ACTION (g_simple_action_group_lookup (actions, "messages"));
 	clear = G_SIMPLE_ACTION (g_simple_action_group_lookup (actions, "clear"));
-	g_return_if_fail (messages != NULL && clear != NULL);
+	g_return_if_fail (clear != NULL);
 
-	attention = g_hash_table_find (applications, app_section_draws_attention, NULL) != NULL;
+	draws_attention = g_hash_table_find (applications, app_section_draws_attention, NULL) != NULL;
 
-	g_simple_action_set_state (messages, g_variant_new_boolean (attention));
-	g_simple_action_set_enabled (clear, attention);
+	g_simple_action_set_enabled (clear, draws_attention);
+
+	indicator_messages_update_icon ();
 }
 
 static gboolean
@@ -134,6 +180,8 @@ update_chat_section ()
 
 	if (first_section != NULL)
 		g_object_unref (first_section);
+
+	indicator_messages_update_icon ();
 }
 
 static void
@@ -162,24 +210,33 @@ update_chat_status ()
 {
 	GHashTableIter iter;
 	AppSection *section;
-	const gchar *statuses[] = { NULL, NULL, NULL, NULL, NULL, NULL };
-	int pos = 0;
+	int pos;
 	GAction *status;
 
+	for (pos = 0; pos < G_N_ELEMENTS (global_status); pos++)
+		global_status[pos] = NULL;
+
+	pos = 0;
 	g_hash_table_iter_init (&iter, applications);
-	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &section)) {
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &section) &&
+	       pos < G_N_ELEMENTS (global_status))
+	{
 		const gchar *status_str = NULL;
 
 		status_str = app_section_get_status (section);
-		if (status_str != NULL && !strv_contains (statuses, status_str))
-			statuses[pos++] = status_str;
+		if (status_str != NULL && !strv_contains (global_status, status_str))
+			global_status[pos++] = status_str;
 	}
 
+	if (pos == 0)
+		global_status[0] = "offline";
 
 	status = g_simple_action_group_lookup (actions, "status");
 	g_return_if_fail (status != NULL);
 
-	g_simple_action_set_state (G_SIMPLE_ACTION (status), g_variant_new_strv (statuses, -1));
+	g_simple_action_set_state (G_SIMPLE_ACTION (status), g_variant_new_strv (global_status, -1));
+
+	indicator_messages_update_icon ();
 }
 
 static void
@@ -262,21 +319,13 @@ add_application (const gchar *desktop_id)
 
 	if (g_menu_model_get_n_items (G_MENU_MODEL (toplevel_menu)) == 0) {
 		GMenuItem *header;
-		GIcon *icon;
-		gchar *iconstr;
-
-		icon = g_themed_icon_new ("indicator-messages");
-		iconstr = g_icon_to_string (icon);
 
 		header = g_menu_item_new (NULL, "messages");
 		g_menu_item_set_submenu (header, G_MENU_MODEL (menu));
-		g_menu_item_set_attribute (header, "x-canonical-icon", "s", iconstr);
 		g_menu_item_set_attribute (header, "x-canonical-accessible-description", "s", _("Messages"));
 		g_menu_append_item (toplevel_menu, header);
 
 		g_object_unref (header);
-		g_free (iconstr);
-		g_object_unref (icon);
 	}
 
 	g_free (id);
@@ -461,12 +510,14 @@ create_action_group (void)
 	GSimpleAction *clear;
 	GSimpleAction *status;
 	const gchar *default_status[] = { "offline", NULL };
+	gchar *icon;
 
 	actions = g_simple_action_group_new ();
 
-	/* state of the messages action mirrors "draws-attention" */
-	messages = g_simple_action_new_stateful ("messages", G_VARIANT_TYPE ("b"),
-						 g_variant_new_boolean (FALSE));
+	/* state of the messages action is its icon name */
+	icon = indicator_messages_get_icon_name ();
+	messages = g_simple_action_new_stateful ("messages", G_VARIANT_TYPE ("s"),
+						 g_variant_new_string (icon));
 
 	status = g_simple_action_new_stateful ("status", G_VARIANT_TYPE ("s"),
 					       g_variant_new_strv (default_status, -1));
@@ -480,6 +531,7 @@ create_action_group (void)
 	g_simple_action_group_insert (actions, G_ACTION (status));
 	g_simple_action_group_insert (actions, G_ACTION (clear));
 
+	g_free (icon);
 	return actions;
 }
 
