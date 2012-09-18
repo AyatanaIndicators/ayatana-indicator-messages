@@ -580,8 +580,7 @@ global_status_changed (IndicatorMessagesService *service,
   status = status_from_string (status_str);
   g_return_if_fail (status >= 0);
 
-  app->status = (MessagingMenuStatus)status;
-  g_signal_emit (app, signals[STATUS_CHANGED], 0, app->status);
+  g_signal_emit (app, signals[STATUS_CHANGED], 0, status);
 }
 
 static void
