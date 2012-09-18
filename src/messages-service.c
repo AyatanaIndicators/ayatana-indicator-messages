@@ -144,6 +144,52 @@ uses_chat_status_changed (GObject *object,
 	update_chat_section ();
 }
 
+static gboolean
+strv_contains (const gchar **strv,
+	       const gchar  *needle)
+{
+	const gchar **it;
+
+	it = strv;
+	while (*it != NULL && !g_str_equal (*it, needle))
+		it++;
+
+	return *it != NULL;
+}
+
+static void
+update_chat_status ()
+{
+	GHashTableIter iter;
+	AppSection *section;
+	const gchar *statuses[] = { NULL, NULL, NULL, NULL, NULL, NULL };
+	int pos = 0;
+	GAction *status;
+
+	g_hash_table_iter_init (&iter, applications);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &section)) {
+		const gchar *status_str = NULL;
+
+		status_str = app_section_get_status (section);
+		if (status_str != NULL && !strv_contains (statuses, status_str))
+			statuses[pos++] = status_str;
+	}
+
+
+	status = g_simple_action_group_lookup (actions, "status");
+	g_return_if_fail (status != NULL);
+
+	g_simple_action_set_state (G_SIMPLE_ACTION (status), g_variant_new_strv (statuses, -1));
+}
+
+static void
+chat_status_changed (GObject    *object,
+		     GParamSpec *pspec,
+		     gpointer    user_data)
+{
+	update_chat_status ();
+}
+
 static void
 remove_section (AppSection  *section,
 		const gchar *id)
@@ -156,6 +202,7 @@ remove_section (AppSection  *section,
 	g_signal_handlers_disconnect_by_func (section, actions_changed, NULL);
 	g_signal_handlers_disconnect_by_func (section, draws_attention_changed, NULL);
 	g_signal_handlers_disconnect_by_func (section, uses_chat_status_changed, NULL);
+	g_signal_handlers_disconnect_by_func (section, chat_status_changed, NULL);
 	g_signal_handlers_disconnect_by_func (section, remove_section, NULL);
 
 	g_hash_table_remove (applications, id);
@@ -165,6 +212,7 @@ remove_section (AppSection  *section,
 		g_menu_remove (toplevel_menu, 0);
 	}
 
+	update_chat_status ();
 	update_chat_section ();
 }
 
@@ -197,6 +245,8 @@ add_application (const gchar *desktop_id)
 				  G_CALLBACK (draws_attention_changed), NULL);
 		g_signal_connect (section, "notify::uses-chat-status",
 				  G_CALLBACK (uses_chat_status_changed), NULL);
+		g_signal_connect (section, "notify::chat-status",
+				  G_CALLBACK (chat_status_changed), NULL);
 		g_signal_connect_data (section, "destroy",
 				       G_CALLBACK (remove_section),
 				       g_strdup (id),
@@ -322,48 +372,15 @@ clear_action_activate (GSimpleAction *simple,
 }
 
 static void
-radio_item_activate (GSimpleAction *action,
-		     GVariant *parameter,
-		     gpointer user_data)
-{
-	g_action_change_state (G_ACTION (action), parameter);
-}
-
-static gboolean
-g_action_state_equal (GAction *action,
-		      GVariant *value)
-{
-	GVariant *state;
-	gboolean eq;
-
-	state = g_action_get_state (action);
-	g_return_val_if_fail (state != NULL, FALSE);
-
-	eq = g_variant_equal (state, value);
-
-	g_variant_unref (state);
-	return eq;
-}
-
-static void
-change_status_action (GSimpleAction *action,
-		      GVariant *value,
-		      gpointer user_data)
+status_action_activate (GSimpleAction *action,
+			GVariant *parameter,
+			gpointer user_data)
 {
 	const gchar *status;
 
-	g_variant_get (value, "&s", &status);
+	status = g_variant_get_string (parameter, NULL);
 
-	g_return_if_fail (g_str_equal (status, "available") ||
-			  g_str_equal (status, "away")||
-			  g_str_equal (status, "busy") ||
-			  g_str_equal (status, "invisible") ||
-			  g_str_equal (status, "offline"));
-
-	if (!g_action_state_equal (G_ACTION (action), value)) {
-		g_simple_action_set_state (action, value);
-		indicator_messages_service_emit_status_changed (messages_service, status);
-	}
+	indicator_messages_service_emit_status_changed (messages_service, status);
 }
 
 static void
@@ -405,17 +422,35 @@ unregister_application (IndicatorMessagesService *service,
 static void
 set_status (IndicatorMessagesService *service,
 	    GDBusMethodInvocation *invocation,
+	    const gchar *desktop_id,
 	    const gchar *status_str,
 	    gpointer user_data)
 {
-	GAction *status;
+	GDesktopAppInfo *appinfo;
+	gchar *id;
+	AppSection *section;
 
-	status = g_simple_action_group_lookup (actions, "status");
-	g_return_if_fail (status != NULL);
+	g_return_if_fail (g_str_equal (status_str, "available") ||
+			  g_str_equal (status_str, "away")||
+			  g_str_equal (status_str, "busy") ||
+			  g_str_equal (status_str, "invisible") ||
+			  g_str_equal (status_str, "offline"));
 
-	g_action_change_state (status, g_variant_new_string (status_str));
+	appinfo = g_desktop_app_info_new (desktop_id);
+	if (!appinfo) {
+		g_warning ("could not set status for '%s', there's no desktop file with that id", desktop_id);
+		return;
+	}
+
+	id = g_app_info_get_simple_id (G_APP_INFO (appinfo));
+	section = g_hash_table_lookup (applications, id);
+	if (section != NULL)
+		app_section_set_status (section, status_str);
 
 	indicator_messages_service_complete_set_status (service, invocation);
+
+	g_free (id);
+	g_object_unref (appinfo);
 }
 
 static GSimpleActionGroup *
@@ -425,6 +460,7 @@ create_action_group (void)
 	GSimpleAction *messages;
 	GSimpleAction *clear;
 	GSimpleAction *status;
+	const gchar *default_status[] = { "offline", NULL };
 
 	actions = g_simple_action_group_new ();
 
@@ -433,9 +469,8 @@ create_action_group (void)
 						 g_variant_new_boolean (FALSE));
 
 	status = g_simple_action_new_stateful ("status", G_VARIANT_TYPE ("s"),
-					       g_variant_new ("s", "offline"));
-	g_signal_connect (status, "activate", G_CALLBACK (radio_item_activate), NULL);
-	g_signal_connect (status, "change-state", G_CALLBACK (change_status_action), NULL);
+					       g_variant_new_strv (default_status, -1));
+	g_signal_connect (status, "activate", G_CALLBACK (status_action_activate), NULL);
 
 	clear = g_simple_action_new ("clear", NULL);
 	g_simple_action_set_enabled (clear, FALSE);

@@ -547,6 +547,7 @@ messaging_menu_app_set_status (MessagingMenuApp    *app,
     return;
 
   indicator_messages_service_call_set_status (app->messages_service,
+                                              g_app_info_get_id (G_APP_INFO (app->appinfo)),
                                               status_ids [status],
                                               app->cancellable,
                                               NULL, NULL);
