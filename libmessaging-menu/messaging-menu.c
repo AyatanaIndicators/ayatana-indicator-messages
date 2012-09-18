@@ -102,6 +102,7 @@ struct _MessagingMenuApp
   GDesktopAppInfo *appinfo;
   int registered;  /* -1 for unknown */
   MessagingMenuStatus status;
+  gboolean status_set;
   GSimpleActionGroup *source_actions;
   GMenu *menu;
 
@@ -370,7 +371,8 @@ created_messages_service (GObject      *source_object,
     messaging_menu_app_register (app);
   else if (app->registered == FALSE)
     messaging_menu_app_unregister (app);
-  messaging_menu_app_set_status (app, app->status);
+  if (app->status_set)
+    messaging_menu_app_set_status (app, app->status);
 }
 
 static void
@@ -410,7 +412,7 @@ static void
 messaging_menu_app_init (MessagingMenuApp *app)
 {
   app->registered = -1;
-  app->status = MESSAGING_MENU_STATUS_OFFLINE;
+  app->status_set = FALSE;
 
   app->cancellable = g_cancellable_new ();
 
@@ -538,6 +540,7 @@ messaging_menu_app_set_status (MessagingMenuApp    *app,
                     status <= MESSAGING_MENU_STATUS_OFFLINE);
 
   app->status = status;
+  app->status_set = TRUE;
 
   /* state will be synced right after connecting to the service */
   if (!app->messages_service)
