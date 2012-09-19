@@ -39,15 +39,15 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static GHashTable *applications;
 
-IndicatorMessagesService *messages_service;
+static IndicatorMessagesService *messages_service;
 static GSimpleActionGroup *actions;
 static GActionMuxer *action_muxer;
 static GMenu *toplevel_menu;
 static GMenu *menu;
 static GMenuModel *chat_section;
 static GSettings *settings;
-gboolean draws_attention;
-const gchar *global_status[6]; /* max 5: available, away, busy, invisible, offline */
+static gboolean draws_attention;
+static const gchar *global_status[6]; /* max 5: available, away, busy, invisible, offline */
 
 static gchar *
 indicator_messages_get_icon_name ()
