@@ -87,6 +87,9 @@ static void menu_items_changed            (GMenuModel *menu,
                                            gint        removed,
                                            gint        added,
                                            gpointer    user_data);
+static void messages_action_added         (GActionGroup *action_group,
+                                           gchar        *action_name,
+                                           gpointer      user_data);
 static void messages_state_changed        (GActionGroup *action_group,
                                            gchar        *action_name,
                                            GVariant     *value,
@@ -174,6 +177,7 @@ static void service_connection_changed (IndicatorServiceManager *sm,
 	GError *error = NULL;
 
 	if (self->actions != NULL) {
+		g_signal_handlers_disconnect_by_func (self->actions, messages_action_added, self);
 		g_signal_handlers_disconnect_by_func (self->actions, messages_state_changed, self);
 		g_clear_object (&self->actions);
 	}
@@ -199,6 +203,8 @@ static void service_connection_changed (IndicatorServiceManager *sm,
 	gtk_widget_insert_action_group (self->gtkmenu, 
 					get_name_hint (INDICATOR_OBJECT (self)),
 					self->actions);
+	g_signal_connect (self->actions, "action-added::messages",
+			  G_CALLBACK (messages_action_added), self);
 	g_signal_connect (self->actions, "action-state-changed::messages",
 			  G_CALLBACK (messages_state_changed), self);
 
@@ -331,6 +337,32 @@ menu_items_changed (GMenuModel *menu,
 }
 
 static void
+indicator_messages_update_icon (IndicatorMessages *self,
+                                GVariant          *state)
+{
+	g_return_if_fail (g_variant_is_of_type (state, G_VARIANT_TYPE_STRING));
+
+	gtk_image_set_from_icon_name (GTK_IMAGE (self->image),
+				      g_variant_get_string (state, NULL),
+				      GTK_ICON_SIZE_MENU);
+
+}
+
+static void
+messages_action_added (GActionGroup *action_group,
+                       gchar        *action_name,
+                       gpointer      user_data)
+{
+	IndicatorMessages *self = user_data;
+	GVariant *state;
+	
+	state = g_action_group_get_action_state (action_group, "messages");
+	indicator_messages_update_icon (self, state);
+
+	g_variant_unref (state);
+}
+
+static void
 messages_state_changed (GActionGroup *action_group,
                         gchar        *action_name,
                         GVariant     *value,
@@ -338,10 +370,5 @@ messages_state_changed (GActionGroup *action_group,
 {
 	IndicatorMessages *self = user_data;
 
-	g_return_if_fail (g_variant_is_of_type (value, G_VARIANT_TYPE_BOOLEAN));
-
-	if (g_variant_get_boolean (value))
-		gtk_image_set_from_icon_name (GTK_IMAGE (self->image), "indicator-messages-new", GTK_ICON_SIZE_MENU);
-	else
-		gtk_image_set_from_icon_name (GTK_IMAGE (self->image), "indicator-messages", GTK_ICON_SIZE_MENU);
+	indicator_messages_update_icon (self, value);
 }

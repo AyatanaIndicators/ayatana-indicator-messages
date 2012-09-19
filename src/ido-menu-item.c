@@ -99,8 +99,37 @@ ido_menu_item_set_state (IdoMenuItem *self,
   if (priv->target)
     {
       ido_menu_item_set_has_indicator (self, TRUE);
+      ido_menu_item_set_active (self, FALSE);
       gtk_check_menu_item_set_draw_as_radio (GTK_CHECK_MENU_ITEM (self), TRUE);
-      ido_menu_item_set_active (self, g_variant_equal (priv->target, state));
+      gtk_check_menu_item_set_inconsistent (GTK_CHECK_MENU_ITEM (self), FALSE);
+
+      if (g_variant_is_of_type (state, G_VARIANT_TYPE_STRING))
+        {
+          ido_menu_item_set_active (self, g_variant_equal (priv->target, state));
+        }
+      else if (g_variant_is_of_type (state, G_VARIANT_TYPE ("as")) &&
+               g_variant_is_of_type (priv->target, G_VARIANT_TYPE_STRING))
+        {
+          const gchar *target_str;
+          const gchar **state_strs;
+          const gchar **it;
+
+          target_str = g_variant_get_string (priv->target, NULL);
+          state_strs = g_variant_get_strv (state, NULL);
+
+          it = state_strs;
+          while (*it != NULL && !g_str_equal (*it, target_str))
+            it++;
+
+          if (*it != NULL)
+            {
+              ido_menu_item_set_active (self, TRUE);
+              gtk_check_menu_item_set_inconsistent (GTK_CHECK_MENU_ITEM (self),
+                                                    g_strv_length ((gchar **)state_strs) > 1);
+            }
+
+          g_free (state_strs);
+        }
     }
   else if (g_variant_is_of_type (state, G_VARIANT_TYPE_BOOLEAN))
     {
@@ -258,7 +287,8 @@ ido_menu_item_activate (GtkMenuItem *item)
   if (!priv->in_set_active && priv->action && priv->action_group)
     g_action_group_activate_action (priv->action_group, priv->action, priv->target);
 
-  GTK_MENU_ITEM_CLASS (ido_menu_item_parent_class)->activate (item);
+  if (priv->in_set_active)
+    GTK_MENU_ITEM_CLASS (ido_menu_item_parent_class)->activate (item);
 }
 
 static void

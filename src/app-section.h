@@ -63,6 +63,9 @@ void app_section_set_object_path (AppSection *self,
 				  const gchar *object_path);
 void app_section_unset_object_path (AppSection *self);
 gboolean app_section_get_uses_chat_status (AppSection *self);
+const gchar * app_section_get_status (AppSection *self);
+void app_section_set_status (AppSection *self,
+			     const gchar *status);
 
 G_END_DECLS
 

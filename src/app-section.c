@@ -50,6 +50,7 @@ struct _AppSectionPrivate
 
 	gboolean draws_attention;
 	gboolean uses_chat_status;
+	gchar *chat_status;
 
 	guint name_watch_id;
 };
@@ -60,6 +61,7 @@ enum {
 	PROP_ACTIONS,
 	PROP_DRAWS_ATTENTION,
 	PROP_USES_CHAT_STATUS,
+	PROP_CHAT_STATUS,
 	NUM_PROPERTIES
 };
 
@@ -78,6 +80,7 @@ static void app_section_set_property (GObject      *object,
 				      const GValue *value,
 				      GParamSpec   *pspec);
 static void app_section_dispose      (GObject *object);
+static void app_section_finalize     (GObject *object);
 static void activate_cb              (GSimpleAction *action,
 				      GVariant *param,
 				      gpointer userdata);
@@ -118,6 +121,7 @@ app_section_class_init (AppSectionClass *klass)
 	object_class->get_property = app_section_get_property;
 	object_class->set_property = app_section_set_property;
 	object_class->dispose = app_section_dispose;
+	object_class->finalize = app_section_finalize;
 
 	properties[PROP_APPINFO] = g_param_spec_object ("app-info",
 							"AppInfo",
@@ -142,6 +146,13 @@ app_section_class_init (AppSectionClass *klass)
 								  "Whether the section uses the global chat status",
 								  FALSE,
 								  G_PARAM_READABLE);
+
+	properties[PROP_CHAT_STATUS] = g_param_spec_string ("chat-status",
+							    "Chat status",
+							    "Current chat status of the application",
+							    NULL,
+							    G_PARAM_READWRITE |
+							    G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties (object_class, NUM_PROPERTIES, properties);
 
@@ -199,6 +210,10 @@ app_section_get_property (GObject    *object,
 		g_value_set_boolean (value, app_section_get_uses_chat_status (self));
 		break;
 
+	case PROP_CHAT_STATUS:
+		g_value_set_string (value, app_section_get_status (self));
+		break;
+
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 	}
@@ -216,6 +231,10 @@ app_section_set_property (GObject      *object,
 	{
 	case PROP_APPINFO:
 		app_section_set_app_info (self, g_value_get_object (value));
+		break;
+
+	case PROP_CHAT_STATUS:
+		app_section_set_status (self, g_value_get_string (value));
 		break;
 
 	default:
@@ -257,6 +276,16 @@ app_section_dispose (GObject *object)
 	g_clear_object (&priv->source_menu);
 	g_clear_object (&priv->ids);
 	g_clear_object (&priv->appinfo);
+
+	G_OBJECT_CLASS (app_section_parent_class)->dispose (object);
+}
+
+static void
+app_section_finalize (GObject *object)
+{
+	AppSection * self = APP_SECTION(object);
+
+	g_free (self->priv->chat_status);
 
 	G_OBJECT_CLASS (app_section_parent_class)->dispose (object);
 }
@@ -668,10 +697,12 @@ app_section_unset_object_path (AppSection *self)
 	}
 
 	priv->draws_attention = FALSE;
+	g_clear_pointer (&priv->chat_status, g_free);
 
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USES_CHAT_STATUS]);
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CHAT_STATUS]);
 
 	g_action_group_change_action_state (G_ACTION_GROUP (priv->static_shortcuts),
 					    "launch", g_variant_new_boolean (FALSE));
@@ -762,4 +793,24 @@ app_section_get_uses_chat_status (AppSection *self)
 	AppSectionPrivate * priv = self->priv;
 
 	return priv->uses_chat_status;
+}
+
+const gchar *
+app_section_get_status (AppSection *self)
+{
+	AppSectionPrivate * priv = self->priv;
+
+	return priv->chat_status;
+}
+
+void
+app_section_set_status (AppSection  *self,
+			const gchar *status)
+{
+	AppSectionPrivate * priv = self->priv;
+
+	g_free (priv->chat_status);
+	priv->chat_status = g_strdup (status);
+
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CHAT_STATUS]);
 }

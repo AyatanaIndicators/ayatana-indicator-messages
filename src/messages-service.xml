@@ -12,6 +12,7 @@
 		</method>
 
 		<method name="SetStatus">
+			<arg type="s" name="desktop_id" direction="in" />
 			<arg type="s" name="status" direction="in" />
 		</method>
 
