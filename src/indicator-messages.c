@@ -297,7 +297,7 @@ indicator_messages_add_toplevel_menu (IndicatorMessages *self)
 
 	icon = g_menu_model_get_item_attribute_icon (self->menu, 0, "x-canonical-icon");
 	if (icon) {
-		gtk_image_set_from_gicon (GTK_IMAGE (self->image), icon, GTK_ICON_SIZE_MENU);
+		gtk_image_set_from_gicon (GTK_IMAGE (self->image), icon, GTK_ICON_SIZE_LARGE_TOOLBAR);
 		g_object_unref (icon);
 	}
 
@@ -344,8 +344,7 @@ indicator_messages_update_icon (IndicatorMessages *self,
 
 	gtk_image_set_from_icon_name (GTK_IMAGE (self->image),
 				      g_variant_get_string (state, NULL),
-				      GTK_ICON_SIZE_MENU);
-
+				      GTK_ICON_SIZE_LARGE_TOOLBAR);
 }
 
 static void
