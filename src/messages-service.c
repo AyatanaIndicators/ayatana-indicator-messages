@@ -70,6 +70,10 @@ indicator_messages_get_icon_name ()
 		g_string_append (name, "-new");
 
 	icon = g_themed_icon_new (name->str);
+	g_themed_icon_append_name (G_THEMED_ICON (icon),
+				   draws_attention ? "indicator-messages-new"
+						   : "indicator-messages");
+
 	iconstr = g_icon_to_string (icon);
 
 	g_object_unref (icon);
