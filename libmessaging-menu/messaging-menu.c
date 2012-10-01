@@ -148,7 +148,8 @@ messaging_menu_app_get_dbus_object_path (MessagingMenuApp *app)
 {
   gchar *path;
 
-  g_return_val_if_fail (app->appinfo != NULL, NULL);
+  if (!app->appinfo)
+    return NULL;
 
   path = g_strconcat ("/com/canonical/indicator/messages/",
                       g_app_info_get_id (G_APP_INFO (app->appinfo)),
@@ -170,6 +171,10 @@ export_menus_and_actions (GObject      *source,
   guint id;
   gchar *object_path;
 
+  object_path = messaging_menu_app_get_dbus_object_path (app);
+  if (!object_path)
+    return;
+
   bus = g_bus_get_finish (res, &error);
   if (bus == NULL)
     {
@@ -177,8 +182,6 @@ export_menus_and_actions (GObject      *source,
       g_error_free (error);
       return;
     }
-
-  object_path = messaging_menu_app_get_dbus_object_path (app);
 
   id = g_dbus_connection_export_action_group (bus,
                                               object_path,
@@ -479,6 +482,8 @@ messaging_menu_app_register (MessagingMenuApp *app)
     return;
 
   object_path = messaging_menu_app_get_dbus_object_path (app);
+  if (!object_path)
+    return;
 
   indicator_messages_service_call_register_application (app->messages_service,
                                                         g_app_info_get_id (G_APP_INFO (app->appinfo)),
@@ -508,6 +513,9 @@ messaging_menu_app_unregister (MessagingMenuApp *app)
 
   /* state will be synced right after connecting to the service */
   if (!app->messages_service)
+    return;
+
+  if (!app->appinfo)
     return;
 
   indicator_messages_service_call_unregister_application (app->messages_service,
@@ -544,6 +552,9 @@ messaging_menu_app_set_status (MessagingMenuApp    *app,
 
   /* state will be synced right after connecting to the service */
   if (!app->messages_service)
+    return;
+
+  if (!app->appinfo)
     return;
 
   indicator_messages_service_call_set_status (app->messages_service,
