@@ -340,11 +340,20 @@ static void
 indicator_messages_update_icon (IndicatorMessages *self,
                                 GVariant          *state)
 {
+	GIcon *icon;
+	GError *error = NULL;
+
 	g_return_if_fail (g_variant_is_of_type (state, G_VARIANT_TYPE_STRING));
 
-	gtk_image_set_from_icon_name (GTK_IMAGE (self->image),
-				      g_variant_get_string (state, NULL),
-				      GTK_ICON_SIZE_LARGE_TOOLBAR);
+	icon = g_icon_new_for_string (g_variant_get_string (state, NULL), &error);
+	if (icon == NULL) {
+		g_warning ("unable to load icon: %s", error->message);
+		g_error_free (error);
+	}
+	else {
+		gtk_image_set_from_gicon (GTK_IMAGE (self->image), icon, GTK_ICON_SIZE_LARGE_TOOLBAR);
+		g_object_unref (icon);
+	}
 }
 
 static void
