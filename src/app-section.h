@@ -51,8 +51,6 @@ struct _AppSection {
 
 GType app_section_get_type (void);
 AppSection * app_section_new (GDesktopAppInfo *appinfo);
-guint app_section_get_count (AppSection * appitem);
-const gchar * app_section_get_name (AppSection * appitem);
 const gchar * app_section_get_desktop (AppSection * appitem);
 GActionGroup * app_section_get_actions (AppSection *self);
 GMenuModel * app_section_get_menu (AppSection *appitem);
@@ -65,6 +63,9 @@ void app_section_set_object_path (AppSection *self,
 				  const gchar *object_path);
 void app_section_unset_object_path (AppSection *self);
 gboolean app_section_get_uses_chat_status (AppSection *self);
+const gchar * app_section_get_status (AppSection *self);
+void app_section_set_status (AppSection *self,
+			     const gchar *status);
 
 G_END_DECLS
 

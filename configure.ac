@@ -1,5 +1,5 @@
 
-AC_INIT(indicator-messages, 12.10.2)
+AC_INIT(indicator-messages, 12.10.4)
 
 AC_PREREQ(2.62)
 
@@ -38,7 +38,7 @@ AC_PROG_CXX
 # Dependencies 
 ###########################
 
-GTK_REQUIRED_VERSION=3.5.12
+GTK_REQUIRED_VERSION=3.5.18
 GIO_UNIX_REQUIRED_VERSION=2.33.10
 INDICATOR_REQUIRED_VERSION=0.3.19
 GLIB_REQUIRED_VERSION=2.33.10

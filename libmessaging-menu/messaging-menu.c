@@ -27,6 +27,7 @@
  * SECTION:messaging-menu
  * @title: MessagingMenuApp
  * @short_description: An application section in the messaging menu
+ * @include: messaging-menu.h
  *
  * A #MessagingMenuApp represents an application section in the
  * Messaging Menu.  An application section is tied to an installed
@@ -42,12 +43,13 @@
  * desktop file.  Activating this item starts the application.
  *
  * Following the application item, the Messaging Menu inserts all
- * shortcuts actions found in the desktop file which are marked as
- * appearing in the Messaging Menu (the TargetEnvironment or OnlyShowIn
- * keywords contains "Messaging Menu").  The <ulink
+ * shortcut actions found in the desktop file.  Actions whose
+ * <code>NotShowIn</code> keyword contains "Messaging Menu" or whose
+ * <code>OnlyShowIn</code> keyword does not contain "Messaging Menu"
+ * will not appear (the <ulink
  * url="http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-1.1.html#extra-actions">
  * desktop file specification</ulink> contains a detailed explanation of
- * shortcut actions [1].  An application cannot add, remove, or change
+ * shortcut actions.)  An application cannot add, remove, or change
  * these shortcut items while it is running.
  *
  * Next, an application section contains menu items for message sources.
@@ -100,6 +102,7 @@ struct _MessagingMenuApp
   GDesktopAppInfo *appinfo;
   int registered;  /* -1 for unknown */
   MessagingMenuStatus status;
+  gboolean status_set;
   GSimpleActionGroup *source_actions;
   GMenu *menu;
 
@@ -145,7 +148,8 @@ messaging_menu_app_get_dbus_object_path (MessagingMenuApp *app)
 {
   gchar *path;
 
-  g_return_val_if_fail (app->appinfo != NULL, NULL);
+  if (!app->appinfo)
+    return NULL;
 
   path = g_strconcat ("/com/canonical/indicator/messages/",
                       g_app_info_get_id (G_APP_INFO (app->appinfo)),
@@ -167,6 +171,10 @@ export_menus_and_actions (GObject      *source,
   guint id;
   gchar *object_path;
 
+  object_path = messaging_menu_app_get_dbus_object_path (app);
+  if (!object_path)
+    return;
+
   bus = g_bus_get_finish (res, &error);
   if (bus == NULL)
     {
@@ -174,8 +182,6 @@ export_menus_and_actions (GObject      *source,
       g_error_free (error);
       return;
     }
-
-  object_path = messaging_menu_app_get_dbus_object_path (app);
 
   id = g_dbus_connection_export_action_group (bus,
                                               object_path,
@@ -368,7 +374,8 @@ created_messages_service (GObject      *source_object,
     messaging_menu_app_register (app);
   else if (app->registered == FALSE)
     messaging_menu_app_unregister (app);
-  messaging_menu_app_set_status (app, app->status);
+  if (app->status_set)
+    messaging_menu_app_set_status (app, app->status);
 }
 
 static void
@@ -408,7 +415,7 @@ static void
 messaging_menu_app_init (MessagingMenuApp *app)
 {
   app->registered = -1;
-  app->status = MESSAGING_MENU_STATUS_OFFLINE;
+  app->status_set = FALSE;
 
   app->cancellable = g_cancellable_new ();
 
@@ -475,6 +482,8 @@ messaging_menu_app_register (MessagingMenuApp *app)
     return;
 
   object_path = messaging_menu_app_get_dbus_object_path (app);
+  if (!object_path)
+    return;
 
   indicator_messages_service_call_register_application (app->messages_service,
                                                         g_app_info_get_id (G_APP_INFO (app->appinfo)),
@@ -504,6 +513,9 @@ messaging_menu_app_unregister (MessagingMenuApp *app)
 
   /* state will be synced right after connecting to the service */
   if (!app->messages_service)
+    return;
+
+  if (!app->appinfo)
     return;
 
   indicator_messages_service_call_unregister_application (app->messages_service,
@@ -536,12 +548,17 @@ messaging_menu_app_set_status (MessagingMenuApp    *app,
                     status <= MESSAGING_MENU_STATUS_OFFLINE);
 
   app->status = status;
+  app->status_set = TRUE;
 
   /* state will be synced right after connecting to the service */
   if (!app->messages_service)
     return;
 
+  if (!app->appinfo)
+    return;
+
   indicator_messages_service_call_set_status (app->messages_service,
+                                              g_app_info_get_id (G_APP_INFO (app->appinfo)),
                                               status_ids [status],
                                               app->cancellable,
                                               NULL, NULL);
@@ -575,8 +592,7 @@ global_status_changed (IndicatorMessagesService *service,
   status = status_from_string (status_str);
   g_return_if_fail (status >= 0);
 
-  app->status = (MessagingMenuStatus)status;
-  g_signal_emit (app, signals[STATUS_CHANGED], 0, app->status);
+  g_signal_emit (app, signals[STATUS_CHANGED], 0, status);
 }
 
 static void
@@ -762,10 +778,11 @@ void messaging_menu_app_append_source_with_count (MessagingMenuApp *app,
  * @id: a unique identifier for the source to be added
  * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
- * @time: the time when the source was created
+ * @time: the time when the source was created, in microseconds
  *
  * Inserts a new message source into the section representing @app and
- * initializes it with @time.
+ * initializes it with @time.  Use messaging_menu_app_insert_source() to
+ * insert a source with the current time.
  *
  * To change the time, use messaging_menu_app_set_source_time().
  *
@@ -790,10 +807,12 @@ messaging_menu_app_insert_source_with_time (MessagingMenuApp *app,
  * @id: a unique identifier for the source to be added
  * @icon: (allow-none): the icon associated with the source
  * @label: a user-visible string best describing the source
- * @time: the time when the source was created
+ * @time: the time when the source was created, in microseconds
  *
- * Appends a new message source to the end of the section representing @app and
- * initializes it with @time.
+ * Appends a new message source to the end of the section representing
+ * @app and initializes it with @time.  Use
+ * messaging_menu_app_append_source() to append a source with the
+ * current time.
  *
  * To change the time, use messaging_menu_app_set_source_time().
  *
@@ -1044,7 +1063,7 @@ void messaging_menu_app_set_source_count (MessagingMenuApp *app,
  * messaging_menu_app_set_source_time:
  * @app: a #MessagingMenuApp
  * @source_id: a source id
- * @time: the new time for the source
+ * @time: the new time for the source, in microseconds
  *
  * Updates the time of @source_id to @time.
  *
