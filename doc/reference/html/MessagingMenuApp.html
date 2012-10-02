@@ -43,7 +43,10 @@
 </tr></table></div>
 <div class="refsynopsisdiv">
 <a name="MessagingMenuApp.synopsis"></a><h2>Synopsis</h2>
-<pre class="synopsis">                    <a class="link" href="MessagingMenuApp.html#MessagingMenuApp-struct" title="MessagingMenuApp">MessagingMenuApp</a>;
+<pre class="synopsis">
+#include &lt;messaging-menu.h&gt;
+
+                    <a class="link" href="MessagingMenuApp.html#MessagingMenuApp-struct" title="MessagingMenuApp">MessagingMenuApp</a>;
 typedef             <a class="link" href="MessagingMenuApp.html#MessagingMenuAppClass" title="MessagingMenuAppClass">MessagingMenuAppClass</a>;
 enum                <a class="link" href="MessagingMenuApp.html#MessagingMenuStatus" title="enum MessagingMenuStatus">MessagingMenuStatus</a>;
 <span class="returnvalue">void</span>                <a class="link" href="MessagingMenuApp.html#messaging-menu-app-append-source" title="messaging_menu_app_append_source ()">messaging_menu_app_append_source</a>    (<em class="parameter"><code><a class="link" href="MessagingMenuApp.html" title="MessagingMenuApp"><span class="type">MessagingMenuApp</span></a> *app</code></em>,
@@ -159,11 +162,12 @@ desktop file.  Activating this item starts the application.
 </p>
 <p>
 Following the application item, the Messaging Menu inserts all
-shortcuts actions found in the desktop file which are marked as
-appearing in the Messaging Menu (the TargetEnvironment or OnlyShowIn
-keywords contains "Messaging Menu").  The <a class="ulink" href="http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-1.1.html#extra-actions" target="_top">
+shortcut actions found in the desktop file.  Actions whose
+<code class="code">NotShowIn</code> keyword contains "Messaging Menu" or whose
+<code class="code">OnlyShowIn</code> keyword does not contain "Messaging Menu"
+will not appear (the <a class="ulink" href="http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-1.1.html#extra-actions" target="_top">
 desktop file specification</a> contains a detailed explanation of
-shortcut actions [1].  An application cannot add, remove, or change
+shortcut actions.)  An application cannot add, remove, or change
 these shortcut items while it is running.
 </p>
 <p>
@@ -416,8 +420,10 @@ It is an error to insert a source with an <em class="parameter"><code>id</code><
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
                                                          <em class="parameter"><code><span class="type">gint64</span> time</code></em>);</pre>
 <p>
-Appends a new message source to the end of the section representing <em class="parameter"><code>app</code></em> and
-initializes it with <em class="parameter"><code>time</code></em>.
+Appends a new message source to the end of the section representing
+<em class="parameter"><code>app</code></em> and initializes it with <em class="parameter"><code>time</code></em>.  Use
+<a class="link" href="MessagingMenuApp.html#messaging-menu-app-append-source" title="messaging_menu_app_append_source ()"><code class="function">messaging_menu_app_append_source()</code></a> to append a source with the
+current time.
 </p>
 <p>
 To change the time, use <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-source-time" title="messaging_menu_app_set_source_time ()"><code class="function">messaging_menu_app_set_source_time()</code></a>.
@@ -449,7 +455,7 @@ It is an error to insert a source with an <em class="parameter"><code>id</code><
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>time</code></em> :</span></p></td>
-<td>the time when the source was created</td>
+<td>the time when the source was created, in microseconds</td>
 </tr>
 </tbody>
 </table></div>
@@ -669,7 +675,8 @@ It is an error to insert a source with an <em class="parameter"><code>id</code><
                                                          <em class="parameter"><code><span class="type">gint64</span> time</code></em>);</pre>
 <p>
 Inserts a new message source into the section representing <em class="parameter"><code>app</code></em> and
-initializes it with <em class="parameter"><code>time</code></em>.
+initializes it with <em class="parameter"><code>time</code></em>.  Use <a class="link" href="MessagingMenuApp.html#messaging-menu-app-insert-source" title="messaging_menu_app_insert_source ()"><code class="function">messaging_menu_app_insert_source()</code></a> to
+insert a source with the current time.
 </p>
 <p>
 To change the time, use <a class="link" href="MessagingMenuApp.html#messaging-menu-app-set-source-time" title="messaging_menu_app_set_source_time ()"><code class="function">messaging_menu_app_set_source_time()</code></a>.
@@ -705,7 +712,7 @@ It is an error to insert a source with an <em class="parameter"><code>id</code><
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>time</code></em> :</span></p></td>
-<td>the time when the source was created</td>
+<td>the time when the source was created, in microseconds</td>
 </tr>
 </tbody>
 </table></div>
@@ -885,7 +892,7 @@ count associated with it.
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>time</code></em> :</span></p></td>
-<td>the new time for the source</td>
+<td>the new time for the source, in microseconds</td>
 </tr>
 </tbody>
 </table></div>

@@ -35,16 +35,67 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "gmenuutils.h"
 #include "indicator-messages-service.h"
 
+#define NUM_STATUSES 5
+
 static GHashTable *applications;
 
-IndicatorMessagesService *messages_service;
+static IndicatorMessagesService *messages_service;
 static GSimpleActionGroup *actions;
 static GActionMuxer *action_muxer;
 static GMenu *toplevel_menu;
 static GMenu *menu;
 static GMenuModel *chat_section;
 static GSettings *settings;
+static gboolean draws_attention;
+static const gchar *global_status[6]; /* max 5: available, away, busy, invisible, offline */
 
+static gchar *
+indicator_messages_get_icon_name ()
+{
+	GString *name;
+	GIcon *icon;
+	gchar *iconstr;
+
+	name = g_string_new ("indicator-messages");
+
+	if (global_status[0] != NULL)
+	{
+		if (global_status[1] != NULL)
+			g_string_append (name, "-mixed");
+		else
+			g_string_append_printf (name, "-%s", global_status[0]);
+	}
+
+	if (draws_attention)
+		g_string_append (name, "-new");
+
+	icon = g_themed_icon_new (name->str);
+	g_themed_icon_append_name (G_THEMED_ICON (icon),
+				   draws_attention ? "indicator-messages-new"
+						   : "indicator-messages");
+
+	iconstr = g_icon_to_string (icon);
+
+	g_object_unref (icon);
+	g_string_free (name, TRUE);
+
+	return iconstr;
+}
+
+static void
+indicator_messages_update_icon ()
+{
+	GSimpleAction *messages;
+	gchar *icon;
+
+	messages = G_SIMPLE_ACTION (g_simple_action_group_lookup (actions, "messages"));
+	g_return_if_fail (messages != NULL);
+
+	icon = indicator_messages_get_icon_name ();
+	g_simple_action_set_state (messages, g_variant_new_string (icon));
+
+	g_free (icon);
+}
 
 static gchar *
 g_app_info_get_simple_id (GAppInfo *appinfo)
@@ -92,18 +143,16 @@ draws_attention_changed (GObject *object,
 			 GParamSpec *pspec,
 			 gpointer user_data)
 {
-	GSimpleAction *messages;
 	GSimpleAction *clear;
-	gboolean attention;
 
-	messages = G_SIMPLE_ACTION (g_simple_action_group_lookup (actions, "messages"));
 	clear = G_SIMPLE_ACTION (g_simple_action_group_lookup (actions, "clear"));
-	g_return_if_fail (messages != NULL && clear != NULL);
+	g_return_if_fail (clear != NULL);
 
-	attention = g_hash_table_find (applications, app_section_draws_attention, NULL) != NULL;
+	draws_attention = g_hash_table_find (applications, app_section_draws_attention, NULL) != NULL;
 
-	g_simple_action_set_state (messages, g_variant_new_boolean (attention));
-	g_simple_action_set_enabled (clear, attention);
+	g_simple_action_set_enabled (clear, draws_attention);
+
+	indicator_messages_update_icon ();
 }
 
 static gboolean
@@ -116,9 +165,7 @@ app_section_uses_chat (gpointer key,
 }
 
 static void
-uses_chat_status_changed (GObject *object,
-			  GParamSpec *pspec,
-			  gpointer user_data)
+update_chat_section ()
 {
 	gboolean show_chat;
 	GMenuModel *first_section;
@@ -135,7 +182,99 @@ uses_chat_status_changed (GObject *object,
 			g_menu_insert_section (menu, 0, NULL, chat_section);
 	}
 
-	g_object_unref (first_section);
+	if (first_section != NULL)
+		g_object_unref (first_section);
+
+	indicator_messages_update_icon ();
+}
+
+static void
+uses_chat_status_changed (GObject *object,
+			  GParamSpec *pspec,
+			  gpointer user_data)
+{
+	update_chat_section ();
+}
+
+static gboolean
+strv_contains (const gchar **strv,
+	       const gchar  *needle)
+{
+	const gchar **it;
+
+	it = strv;
+	while (*it != NULL && !g_str_equal (*it, needle))
+		it++;
+
+	return *it != NULL;
+}
+
+static void
+update_chat_status ()
+{
+	GHashTableIter iter;
+	AppSection *section;
+	int pos;
+	GAction *status;
+
+	for (pos = 0; pos < G_N_ELEMENTS (global_status); pos++)
+		global_status[pos] = NULL;
+
+	pos = 0;
+	g_hash_table_iter_init (&iter, applications);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &section) &&
+	       pos < G_N_ELEMENTS (global_status))
+	{
+		const gchar *status_str = NULL;
+
+		status_str = app_section_get_status (section);
+		if (status_str != NULL && !strv_contains (global_status, status_str))
+			global_status[pos++] = status_str;
+	}
+
+	if (pos == 0)
+		global_status[0] = "offline";
+
+	status = g_simple_action_group_lookup (actions, "status");
+	g_return_if_fail (status != NULL);
+
+	g_simple_action_set_state (G_SIMPLE_ACTION (status), g_variant_new_strv (global_status, -1));
+
+	indicator_messages_update_icon ();
+}
+
+static void
+chat_status_changed (GObject    *object,
+		     GParamSpec *pspec,
+		     gpointer    user_data)
+{
+	update_chat_status ();
+}
+
+static void
+remove_section (AppSection  *section,
+		const gchar *id)
+{
+	int pos = g_menu_find_section (menu, app_section_get_menu (section));
+	if (pos >= 0)
+		g_menu_remove (menu, pos);
+	g_action_muxer_remove (action_muxer, id);
+
+	g_signal_handlers_disconnect_by_func (section, actions_changed, NULL);
+	g_signal_handlers_disconnect_by_func (section, draws_attention_changed, NULL);
+	g_signal_handlers_disconnect_by_func (section, uses_chat_status_changed, NULL);
+	g_signal_handlers_disconnect_by_func (section, chat_status_changed, NULL);
+	g_signal_handlers_disconnect_by_func (section, remove_section, NULL);
+
+	g_hash_table_remove (applications, id);
+
+	if (g_hash_table_size (applications) == 0 &&
+	    g_menu_model_get_n_items (G_MENU_MODEL (toplevel_menu)) == 1) {
+		g_menu_remove (toplevel_menu, 0);
+	}
+
+	update_chat_status ();
+	update_chat_section ();
 }
 
 static AppSection *
@@ -167,12 +306,30 @@ add_application (const gchar *desktop_id)
 				  G_CALLBACK (draws_attention_changed), NULL);
 		g_signal_connect (section, "notify::uses-chat-status",
 				  G_CALLBACK (uses_chat_status_changed), NULL);
+		g_signal_connect (section, "notify::chat-status",
+				  G_CALLBACK (chat_status_changed), NULL);
+		g_signal_connect_data (section, "destroy",
+				       G_CALLBACK (remove_section),
+				       g_strdup (id),
+				       (GClosureNotify) g_free,
+				       0);
 
 		/* TODO insert it at the right position (alphabetically by application name) */
 		menuitem = g_menu_item_new_section (NULL, app_section_get_menu (section));
 		g_menu_item_set_attribute (menuitem, "action-namespace", "s", id);
 		g_menu_insert_item (menu, g_menu_model_get_n_items (G_MENU_MODEL (menu)) -1, menuitem);
 		g_object_unref (menuitem);
+	}
+
+	if (g_menu_model_get_n_items (G_MENU_MODEL (toplevel_menu)) == 0) {
+		GMenuItem *header;
+
+		header = g_menu_item_new (NULL, "messages");
+		g_menu_item_set_submenu (header, G_MENU_MODEL (menu));
+		g_menu_item_set_attribute (header, "x-canonical-accessible-description", "s", _("Messages"));
+		g_menu_append_item (toplevel_menu, header);
+
+		g_object_unref (header);
 	}
 
 	g_free (id);
@@ -197,20 +354,12 @@ remove_application (const char *desktop_id)
 
 	section = g_hash_table_lookup (applications, id);
 	if (section) {
-		int pos = g_menu_find_section (menu, app_section_get_menu (section));
-		if (pos >= 0)
-			g_menu_remove (menu, pos);
-		g_action_muxer_remove (action_muxer, id);
-
-		g_signal_handlers_disconnect_by_func (section, actions_changed, NULL);
-		g_signal_handlers_disconnect_by_func (section, draws_attention_changed, NULL);
-		g_signal_handlers_disconnect_by_func (section, uses_chat_status_changed, NULL);
+		remove_section (section, id);
 	}
 	else {
 		g_warning ("could not remove '%s', it's not registered", desktop_id);
 	}
 	
-	g_hash_table_remove (applications, id);
 	g_free (id);
 	g_object_unref (appinfo);
 }
@@ -276,48 +425,15 @@ clear_action_activate (GSimpleAction *simple,
 }
 
 static void
-radio_item_activate (GSimpleAction *action,
-		     GVariant *parameter,
-		     gpointer user_data)
-{
-	g_action_change_state (G_ACTION (action), parameter);
-}
-
-static gboolean
-g_action_state_equal (GAction *action,
-		      GVariant *value)
-{
-	GVariant *state;
-	gboolean eq;
-
-	state = g_action_get_state (action);
-	g_return_val_if_fail (state != NULL, FALSE);
-
-	eq = g_variant_equal (state, value);
-
-	g_variant_unref (state);
-	return eq;
-}
-
-static void
-change_status_action (GSimpleAction *action,
-		      GVariant *value,
-		      gpointer user_data)
+status_action_activate (GSimpleAction *action,
+			GVariant *parameter,
+			gpointer user_data)
 {
 	const gchar *status;
 
-	g_variant_get (value, "&s", &status);
+	status = g_variant_get_string (parameter, NULL);
 
-	g_return_if_fail (g_str_equal (status, "available") ||
-			  g_str_equal (status, "away")||
-			  g_str_equal (status, "busy") ||
-			  g_str_equal (status, "invisible") ||
-			  g_str_equal (status, "offline"));
-
-	if (!g_action_state_equal (G_ACTION (action), value)) {
-		g_simple_action_set_state (action, value);
-		indicator_messages_service_emit_status_changed (messages_service, status);
-	}
+	indicator_messages_service_emit_status_changed (messages_service, status);
 }
 
 static void
@@ -359,17 +475,35 @@ unregister_application (IndicatorMessagesService *service,
 static void
 set_status (IndicatorMessagesService *service,
 	    GDBusMethodInvocation *invocation,
+	    const gchar *desktop_id,
 	    const gchar *status_str,
 	    gpointer user_data)
 {
-	GAction *status;
+	GDesktopAppInfo *appinfo;
+	gchar *id;
+	AppSection *section;
 
-	status = g_simple_action_group_lookup (actions, "status");
-	g_return_if_fail (status != NULL);
+	g_return_if_fail (g_str_equal (status_str, "available") ||
+			  g_str_equal (status_str, "away")||
+			  g_str_equal (status_str, "busy") ||
+			  g_str_equal (status_str, "invisible") ||
+			  g_str_equal (status_str, "offline"));
 
-	g_action_change_state (status, g_variant_new_string (status_str));
+	appinfo = g_desktop_app_info_new (desktop_id);
+	if (!appinfo) {
+		g_warning ("could not set status for '%s', there's no desktop file with that id", desktop_id);
+		return;
+	}
+
+	id = g_app_info_get_simple_id (G_APP_INFO (appinfo));
+	section = g_hash_table_lookup (applications, id);
+	if (section != NULL)
+		app_section_set_status (section, status_str);
 
 	indicator_messages_service_complete_set_status (service, invocation);
+
+	g_free (id);
+	g_object_unref (appinfo);
 }
 
 static GSimpleActionGroup *
@@ -379,17 +513,19 @@ create_action_group (void)
 	GSimpleAction *messages;
 	GSimpleAction *clear;
 	GSimpleAction *status;
+	const gchar *default_status[] = { "offline", NULL };
+	gchar *icon;
 
 	actions = g_simple_action_group_new ();
 
-	/* state of the messages action mirrors "draws-attention" */
-	messages = g_simple_action_new_stateful ("messages", G_VARIANT_TYPE ("b"),
-						 g_variant_new_boolean (FALSE));
+	/* state of the messages action is its icon name */
+	icon = indicator_messages_get_icon_name ();
+	messages = g_simple_action_new_stateful ("messages", G_VARIANT_TYPE ("s"),
+						 g_variant_new_string (icon));
 
 	status = g_simple_action_new_stateful ("status", G_VARIANT_TYPE ("s"),
-					       g_variant_new ("s", "offline"));
-	g_signal_connect (status, "activate", G_CALLBACK (radio_item_activate), NULL);
-	g_signal_connect (status, "change-state", G_CALLBACK (change_status_action), NULL);
+					       g_variant_new_strv (default_status, -1));
+	g_signal_connect (status, "activate", G_CALLBACK (status_action_activate), NULL);
 
 	clear = g_simple_action_new ("clear", NULL);
 	g_simple_action_set_enabled (clear, FALSE);
@@ -399,6 +535,7 @@ create_action_group (void)
 	g_simple_action_group_insert (actions, G_ACTION (status));
 	g_simple_action_group_insert (actions, G_ACTION (clear));
 
+	g_free (icon);
 	return actions;
 }
 
@@ -484,9 +621,6 @@ main (int argc, char ** argv)
 {
 	GMainLoop * mainloop = NULL;
 	IndicatorService * service = NULL;
-	GMenuItem *header;
-	GIcon *icon;
-	gchar *iconstr;
 
 	/* Glib init */
 	g_type_init();
@@ -524,16 +658,7 @@ main (int argc, char ** argv)
 	chat_section = create_status_section ();
 	g_menu_append (menu, _("Clear"), "clear");
 
-	icon = g_themed_icon_new ("indicator-messages");
-	iconstr = g_icon_to_string (icon);
-
 	toplevel_menu = g_menu_new ();
-	header = g_menu_item_new (NULL, "messages");
-	g_menu_item_set_submenu (header, G_MENU_MODEL (menu));
-	g_menu_item_set_attribute (header, "x-canonical-icon", "s", iconstr);
-	g_menu_item_set_attribute (header, "x-canonical-accessible-description", "s", _("Messages"));
-	g_menu_append_item (toplevel_menu, header);
-	g_object_unref (header);
 
 	settings = g_settings_new ("com.canonical.indicator.messages");
 
@@ -544,8 +669,6 @@ main (int argc, char ** argv)
 	g_main_loop_run(mainloop);
 
 	/* Clean up */
-	g_free (iconstr);
-	g_object_unref (icon);
 	g_object_unref (messages_service);
 	g_object_unref (chat_section);
 	g_object_unref (settings);

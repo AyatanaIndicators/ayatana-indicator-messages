@@ -37,7 +37,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 struct _AppSectionPrivate
 {
 	GDesktopAppInfo * appinfo;
-	guint unreadcount;
+	GFileMonitor *desktop_file_monitor;
 
 	IndicatorDesktopShortcuts * ids;
 
@@ -50,6 +50,7 @@ struct _AppSectionPrivate
 
 	gboolean draws_attention;
 	gboolean uses_chat_status;
+	gchar *chat_status;
 
 	guint name_watch_id;
 };
@@ -60,10 +61,12 @@ enum {
 	PROP_ACTIONS,
 	PROP_DRAWS_ATTENTION,
 	PROP_USES_CHAT_STATUS,
+	PROP_CHAT_STATUS,
 	NUM_PROPERTIES
 };
 
 static GParamSpec *properties[NUM_PROPERTIES];
+static guint destroy_signal;
 
 /* Prototypes */
 static void app_section_class_init   (AppSectionClass *klass);
@@ -77,6 +80,7 @@ static void app_section_set_property (GObject      *object,
 				      const GValue *value,
 				      GParamSpec   *pspec);
 static void app_section_dispose      (GObject *object);
+static void app_section_finalize     (GObject *object);
 static void activate_cb              (GSimpleAction *action,
 				      GVariant *param,
 				      gpointer userdata);
@@ -98,6 +102,11 @@ static void	action_removed			(GActionGroup *group,
 						 const gchar *action_name,
 						 gpointer user_data);
 static gboolean	action_draws_attention		(GVariant *state);
+static void	desktop_file_changed_cb		(GFileMonitor      *monitor,
+						 GFile             *file,
+						 GFile             *other_file,
+						 GFileMonitorEvent  event,
+						 gpointer           user_data);
 
 /* GObject Boilerplate */
 G_DEFINE_TYPE (AppSection, app_section, G_TYPE_OBJECT);
@@ -112,6 +121,7 @@ app_section_class_init (AppSectionClass *klass)
 	object_class->get_property = app_section_get_property;
 	object_class->set_property = app_section_set_property;
 	object_class->dispose = app_section_dispose;
+	object_class->finalize = app_section_finalize;
 
 	properties[PROP_APPINFO] = g_param_spec_object ("app-info",
 							"AppInfo",
@@ -137,7 +147,22 @@ app_section_class_init (AppSectionClass *klass)
 								  FALSE,
 								  G_PARAM_READABLE);
 
+	properties[PROP_CHAT_STATUS] = g_param_spec_string ("chat-status",
+							    "Chat status",
+							    "Current chat status of the application",
+							    NULL,
+							    G_PARAM_READWRITE |
+							    G_PARAM_STATIC_STRINGS);
+
 	g_object_class_install_properties (object_class, NUM_PROPERTIES, properties);
+
+	destroy_signal = g_signal_new ("destroy",
+				       APP_SECTION_TYPE,
+				       G_SIGNAL_RUN_FIRST,
+				       0,
+				       NULL, NULL,
+				       g_cclosure_marshal_VOID__VOID,
+				       G_TYPE_NONE, 0);
 }
 
 static void
@@ -151,7 +176,6 @@ app_section_init (AppSection *self)
 	priv = self->priv;
 
 	priv->appinfo = NULL;
-	priv->unreadcount = 0;
 
 	priv->menu = g_menu_new ();
 	priv->static_shortcuts = g_simple_action_group_new ();
@@ -186,6 +210,10 @@ app_section_get_property (GObject    *object,
 		g_value_set_boolean (value, app_section_get_uses_chat_status (self));
 		break;
 
+	case PROP_CHAT_STATUS:
+		g_value_set_string (value, app_section_get_status (self));
+		break;
+
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 	}
@@ -205,15 +233,25 @@ app_section_set_property (GObject      *object,
 		app_section_set_app_info (self, g_value_get_object (value));
 		break;
 
+	case PROP_CHAT_STATUS:
+		app_section_set_status (self, g_value_get_string (value));
+		break;
+
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 	}
 }
+
 static void
 app_section_dispose (GObject *object)
 {
 	AppSection * self = APP_SECTION(object);
 	AppSectionPrivate * priv = self->priv;
+
+	if (priv->desktop_file_monitor) {
+		g_signal_handlers_disconnect_by_func (priv->desktop_file_monitor, desktop_file_changed_cb, self);
+		g_clear_object (&priv->desktop_file_monitor);
+	}
 
 	g_clear_object (&priv->menu);
 	g_clear_object (&priv->static_shortcuts);
@@ -238,6 +276,16 @@ app_section_dispose (GObject *object)
 	g_clear_object (&priv->source_menu);
 	g_clear_object (&priv->ids);
 	g_clear_object (&priv->appinfo);
+
+	G_OBJECT_CLASS (app_section_parent_class)->dispose (object);
+}
+
+static void
+app_section_finalize (GObject *object)
+{
+	AppSection * self = APP_SECTION(object);
+
+	g_free (self->priv->chat_status);
 
 	G_OBJECT_CLASS (app_section_parent_class)->dispose (object);
 }
@@ -289,6 +337,9 @@ keyfile_loaded (GObject *source_object,
 							       G_KEY_FILE_DESKTOP_GROUP,
 							       "X-MessagingMenu-UsesChatSection",
 							       &error);
+
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USES_CHAT_STATUS]);
+
 	if (error) {
 		if (error->code != G_KEY_FILE_ERROR_KEY_NOT_FOUND) {
 			g_warning ("could not read X-MessagingMenu-UsesChatSection: %s",
@@ -298,34 +349,48 @@ keyfile_loaded (GObject *source_object,
 		goto out;
 	}
 
-	if (self->priv->uses_chat_status)
-		g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USES_CHAT_STATUS]);
-
 out:
 	g_key_file_free (keyfile);
 	g_free (contents);
 }
 
 static void
-app_section_set_app_info (AppSection *self,
-			  GDesktopAppInfo *appinfo)
+g_menu_clear (GMenu *menu)
+{
+	gint n_items = g_menu_model_get_n_items (G_MENU_MODEL (menu));
+
+	while (n_items--)
+		g_menu_remove (menu, 0);
+}
+
+static void
+g_simple_action_group_clear (GSimpleActionGroup *group)
+{
+	gchar **actions;
+	gchar **it;
+
+	actions = g_action_group_list_actions (G_ACTION_GROUP (group));
+	for (it = actions; *it; it++)
+		g_simple_action_group_remove (group, *it);
+
+	g_strfreev (actions);
+}
+
+static void
+app_section_update_menu (AppSection *self)
 {
 	AppSectionPrivate *priv = self->priv;
 	GSimpleAction *launch;
 	GFile *keyfile;
 	GMenuItem *item;
 	gchar *iconstr;
+	gboolean is_running;
 
-	g_return_if_fail (priv->appinfo == NULL);
+	g_menu_clear (priv->menu);
+	g_simple_action_group_clear (priv->static_shortcuts);
 
-	if (appinfo == NULL) {
-		g_warning ("appinfo must not be NULL");
-		return;
-	}
-
-	priv->appinfo = g_object_ref (appinfo);
-
-	launch = g_simple_action_new_stateful ("launch", NULL, g_variant_new_boolean (FALSE));
+	is_running = priv->name_watch_id > 0;
+	launch = g_simple_action_new_stateful ("launch", NULL, g_variant_new_boolean (is_running));
 	g_signal_connect (launch, "activate", G_CALLBACK (activate_cb), self);
 	g_signal_connect (launch, "change-state", G_CALLBACK (launch_action_change_state), self);
 	g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (launch));
@@ -366,12 +431,63 @@ app_section_set_app_info (AppSection *self,
 
 	keyfile = g_file_new_for_path (g_desktop_app_info_get_filename (priv->appinfo));
 	g_file_load_contents_async (keyfile, NULL, keyfile_loaded, self);
-	g_object_unref (keyfile);
 
-	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_APPINFO]);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
 
+	g_object_unref (keyfile);
 	g_object_unref (launch);
+}
+
+static void
+desktop_file_changed_cb (GFileMonitor      *monitor,
+			 GFile             *file,
+			 GFile             *other_file,
+			 GFileMonitorEvent  event,
+			 gpointer           user_data)
+{
+	AppSection *self = user_data;
+
+	if (event == G_FILE_MONITOR_EVENT_CHANGED) {
+		app_section_update_menu (self);
+	}
+	else if (event == G_FILE_MONITOR_EVENT_DELETED ||
+		 event == G_FILE_MONITOR_EVENT_UNMOUNTED) {
+		g_signal_emit (self, destroy_signal, 0);
+	}
+}
+
+static void
+app_section_set_app_info (AppSection *self,
+			  GDesktopAppInfo *appinfo)
+{
+	AppSectionPrivate *priv = self->priv;
+	GFile *desktop_file;
+	GError *error = NULL;
+
+	g_return_if_fail (priv->appinfo == NULL);
+	g_return_if_fail (priv->desktop_file_monitor == NULL);
+
+	if (appinfo == NULL) {
+		g_warning ("appinfo must not be NULL");
+		return;
+	}
+
+	priv->appinfo = g_object_ref (appinfo);
+
+	desktop_file = g_file_new_for_path (g_desktop_app_info_get_filename (appinfo));
+	priv->desktop_file_monitor = g_file_monitor (desktop_file, G_FILE_MONITOR_SEND_MOVED, NULL, &error);
+	if (priv->desktop_file_monitor == NULL) {
+		g_warning ("unable to watch desktop file: %s", error->message);
+		g_error_free (error);
+	}
+	g_signal_connect (priv->desktop_file_monitor, "changed",
+			  G_CALLBACK (desktop_file_changed_cb), self);
+
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_APPINFO]);
+
+	app_section_update_menu (self);
+
+	g_object_unref (desktop_file);
 }
 
 AppSection *
@@ -405,25 +521,6 @@ launch_action_change_state (GSimpleAction *action,
 			    gpointer       user_data)
 {
 	g_simple_action_set_state (action, value);
-}
-
-guint
-app_section_get_count (AppSection * self)
-{
-	AppSectionPrivate * priv = self->priv;
-
-	return priv->unreadcount;
-}
-
-const gchar *
-app_section_get_name (AppSection * self)
-{
-	AppSectionPrivate * priv = self->priv;
-
-	if (priv->appinfo) {
-		return g_app_info_get_name(G_APP_INFO(priv->appinfo));
-	}
-	return NULL;
 }
 
 const gchar *
@@ -600,10 +697,12 @@ app_section_unset_object_path (AppSection *self)
 	}
 
 	priv->draws_attention = FALSE;
+	g_clear_pointer (&priv->chat_status, g_free);
 
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIONS]);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
 	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USES_CHAT_STATUS]);
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CHAT_STATUS]);
 
 	g_action_group_change_action_state (G_ACTION_GROUP (priv->static_shortcuts),
 					    "launch", g_variant_new_boolean (FALSE));
@@ -694,4 +793,24 @@ app_section_get_uses_chat_status (AppSection *self)
 	AppSectionPrivate * priv = self->priv;
 
 	return priv->uses_chat_status;
+}
+
+const gchar *
+app_section_get_status (AppSection *self)
+{
+	AppSectionPrivate * priv = self->priv;
+
+	return priv->chat_status;
+}
+
+void
+app_section_set_status (AppSection  *self,
+			const gchar *status)
+{
+	AppSectionPrivate * priv = self->priv;
+
+	g_free (priv->chat_status);
+	priv->chat_status = g_strdup (status);
+
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CHAT_STATUS]);
 }

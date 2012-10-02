@@ -58,7 +58,6 @@ struct _IndicatorMessages {
 	IndicatorObject parent;
 	IndicatorServiceManager * service;
 	GActionGroup *actions;
-	GMenu *menu_wrapper;
 	GMenuModel *menu;
 	GtkWidget *image;
 	GtkWidget *gtkmenu;
@@ -83,17 +82,19 @@ static GtkImage * get_image               (IndicatorObject * io);
 static GtkMenu * get_menu                 (IndicatorObject * io);
 static const gchar * get_accessible_desc  (IndicatorObject * io);
 static const gchar * get_name_hint        (IndicatorObject * io);
-static void update_root_item              (IndicatorMessages * self);
-static void update_menu                   (IndicatorMessages *self);
 static void menu_items_changed            (GMenuModel *menu,
                                            gint        position,
                                            gint        removed,
                                            gint        added,
                                            gpointer    user_data);
+static void messages_action_added         (GActionGroup *action_group,
+                                           gchar        *action_name,
+                                           gpointer      user_data);
 static void messages_state_changed        (GActionGroup *action_group,
                                            gchar        *action_name,
                                            GVariant     *value,
                                            gpointer      user_data);
+static void indicator_messages_add_toplevel_menu (IndicatorMessages *self);
 
 G_DEFINE_TYPE (IndicatorMessages, indicator_messages, INDICATOR_OBJECT_TYPE);
 
@@ -122,8 +123,7 @@ indicator_messages_init (IndicatorMessages *self)
 	g_signal_connect (self->service, "connection-change",
 			  G_CALLBACK (service_connection_changed), self);
 
-	self->menu_wrapper = g_menu_new ();
-	self->gtkmenu = gtk_menu_new_from_model (G_MENU_MODEL (self->menu_wrapper));
+	self->gtkmenu = gtk_menu_new ();
 	g_object_ref_sink (self->gtkmenu);
 
 	self->image = g_object_ref_sink (gtk_image_new ());
@@ -143,7 +143,6 @@ indicator_messages_dispose (GObject *object)
 	g_return_if_fail(self != NULL);
 
 	g_clear_object (&self->service);
-	g_clear_object (&self->menu_wrapper);
 	g_clear_object (&self->actions);
 	g_clear_object (&self->menu);
 	g_clear_object (&self->gtkmenu);
@@ -178,6 +177,7 @@ static void service_connection_changed (IndicatorServiceManager *sm,
 	GError *error = NULL;
 
 	if (self->actions != NULL) {
+		g_signal_handlers_disconnect_by_func (self->actions, messages_action_added, self);
 		g_signal_handlers_disconnect_by_func (self->actions, messages_state_changed, self);
 		g_clear_object (&self->actions);
 	}
@@ -185,8 +185,7 @@ static void service_connection_changed (IndicatorServiceManager *sm,
 		g_signal_handlers_disconnect_by_func (self->menu, menu_items_changed, self);
 		g_clear_object (&self->menu);
 	}
-	if (g_menu_model_get_n_items (G_MENU_MODEL (self->menu_wrapper)) == 1)
-		g_menu_remove (self->menu_wrapper, 0);
+	gtk_menu_shell_bind_model (GTK_MENU_SHELL (self->gtkmenu), NULL, NULL, FALSE);
 
 	if (connected == FALSE)
 		return;
@@ -204,6 +203,8 @@ static void service_connection_changed (IndicatorServiceManager *sm,
 	gtk_widget_insert_action_group (self->gtkmenu, 
 					get_name_hint (INDICATOR_OBJECT (self)),
 					self->actions);
+	g_signal_connect (self->actions, "action-added::messages",
+			  G_CALLBACK (messages_action_added), self);
 	g_signal_connect (self->actions, "action-state-changed::messages",
 			  G_CALLBACK (messages_state_changed), self);
 
@@ -212,8 +213,10 @@ static void service_connection_changed (IndicatorServiceManager *sm,
 							  INDICATOR_MESSAGES_DBUS_OBJECT));
 	g_signal_connect (self->menu, "items-changed", G_CALLBACK (menu_items_changed), self);
 
-	update_root_item (self);
-	update_menu (self);
+	if (g_menu_model_get_n_items (self->menu) == 1)
+		indicator_messages_add_toplevel_menu (self);
+	else
+		indicator_object_set_visible (INDICATOR_OBJECT (self), FALSE);
 
 	g_object_unref (bus);
 }
@@ -261,24 +264,19 @@ indicator_messages_accessible_desc_updated (IndicatorMessages *self)
 	g_list_free (entries);
 }
 
-static void
-update_root_item (IndicatorMessages * self)
+static GIcon *
+g_menu_model_get_item_attribute_icon (GMenuModel  *menu,
+				      gint         index,
+				      const gchar *attribute)
 {
 	gchar *iconstr;
+	GIcon *icon = NULL;
 
-	if (g_menu_model_get_n_items (self->menu) == 0)
-		return;
-
-	if (g_menu_model_get_item_attribute (self->menu, 0, "x-canonical-icon", "s", &iconstr)) {
-		GIcon *icon;
+	if (g_menu_model_get_item_attribute (menu, index, attribute, "s", &iconstr)) {
 		GError *error;
 
 		icon = g_icon_new_for_string (iconstr, &error);
-		if (icon) {
-			gtk_image_set_from_gicon (GTK_IMAGE (self->image), icon, GTK_ICON_SIZE_MENU);
-			g_object_unref (icon);
-		}
-		else {
+		if (icon == NULL) {
 			g_warning ("unable to load icon: %s", error->message);
 			g_error_free (error);
 		}
@@ -286,37 +284,39 @@ update_root_item (IndicatorMessages * self)
 		g_free (iconstr);
 	}
 
-	g_free (self->accessible_desc);
-	self->accessible_desc = NULL;
-
-	g_menu_model_get_item_attribute (self->menu, 0, "x-canonical-accessible-description",
-					 "s", &self->accessible_desc);
-	indicator_messages_accessible_desc_updated (self);
+	return icon;
 }
 
 static void
-update_menu (IndicatorMessages *self)
+indicator_messages_add_toplevel_menu (IndicatorMessages *self)
 {
+	GIcon *icon;
 	GMenuModel *popup;
-	GMenuItem *item;
 
-	if (self->menu == NULL || g_menu_model_get_n_items (self->menu) == 0)
-		return;
+	indicator_object_set_visible (INDICATOR_OBJECT (self), TRUE);
+
+	icon = g_menu_model_get_item_attribute_icon (self->menu, 0, "x-canonical-icon");
+	if (icon) {
+		gtk_image_set_from_gicon (GTK_IMAGE (self->image), icon, GTK_ICON_SIZE_LARGE_TOOLBAR);
+		g_object_unref (icon);
+	}
+
+	g_free (self->accessible_desc);
+	self->accessible_desc = NULL;
+	if (g_menu_model_get_item_attribute (self->menu, 0, "x-canonical-accessible-description",
+					     "s", &self->accessible_desc)) {
+		indicator_messages_accessible_desc_updated (self);
+	}
 
 	popup = g_menu_model_get_item_link (self->menu, 0, G_MENU_LINK_SUBMENU);
-	if (popup == NULL)
-		return;
+	if (popup) {
+		gtk_menu_shell_bind_model (GTK_MENU_SHELL (self->gtkmenu),
+					   popup,
+					   get_name_hint (INDICATOR_OBJECT (self)),
+					   TRUE);
 
-	if (g_menu_model_get_n_items (G_MENU_MODEL (self->menu_wrapper)) == 1)
-		g_menu_remove (self->menu_wrapper, 0);
-
-	item = g_menu_item_new_section (NULL, popup);
-	g_menu_item_set_attribute (item, "action-namespace",
-				   "s", get_name_hint (INDICATOR_OBJECT (self)));
-	g_menu_append_item (self->menu_wrapper, item);
-
-	g_object_unref (item);
-	g_object_unref (popup);
+		g_object_unref (popup);
+	}
 }
 
 static void
@@ -328,10 +328,46 @@ menu_items_changed (GMenuModel *menu,
 {
 	IndicatorMessages *self = user_data;
 
-	if (position == 0) {
-		update_root_item (self);
-		update_menu (self);
+	g_return_if_fail (position == 0);
+
+	if (added == 1)
+		indicator_messages_add_toplevel_menu (self);
+	else if (removed == 1)
+		indicator_object_set_visible (INDICATOR_OBJECT (self), FALSE);
+}
+
+static void
+indicator_messages_update_icon (IndicatorMessages *self,
+                                GVariant          *state)
+{
+	GIcon *icon;
+	GError *error = NULL;
+
+	g_return_if_fail (g_variant_is_of_type (state, G_VARIANT_TYPE_STRING));
+
+	icon = g_icon_new_for_string (g_variant_get_string (state, NULL), &error);
+	if (icon == NULL) {
+		g_warning ("unable to load icon: %s", error->message);
+		g_error_free (error);
 	}
+	else {
+		gtk_image_set_from_gicon (GTK_IMAGE (self->image), icon, GTK_ICON_SIZE_LARGE_TOOLBAR);
+		g_object_unref (icon);
+	}
+}
+
+static void
+messages_action_added (GActionGroup *action_group,
+                       gchar        *action_name,
+                       gpointer      user_data)
+{
+	IndicatorMessages *self = user_data;
+	GVariant *state;
+	
+	state = g_action_group_get_action_state (action_group, "messages");
+	indicator_messages_update_icon (self, state);
+
+	g_variant_unref (state);
 }
 
 static void
@@ -342,10 +378,5 @@ messages_state_changed (GActionGroup *action_group,
 {
 	IndicatorMessages *self = user_data;
 
-	g_return_if_fail (g_variant_is_of_type (value, G_VARIANT_TYPE_BOOLEAN));
-
-	if (g_variant_get_boolean (value))
-		gtk_image_set_from_icon_name (GTK_IMAGE (self->image), "indicator-messages-new", GTK_ICON_SIZE_MENU);
-	else
-		gtk_image_set_from_icon_name (GTK_IMAGE (self->image), "indicator-messages", GTK_ICON_SIZE_MENU);
+	indicator_messages_update_icon (self, value);
 }
