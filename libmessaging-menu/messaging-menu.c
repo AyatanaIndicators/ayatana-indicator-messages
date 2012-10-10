@@ -34,7 +34,7 @@
  * application through a desktop file id, which must be passed to
  * messaging_menu_app_new().
  *
- * To register the appliction with the Messaging Menu, call
+ * To register the application with the Messaging Menu, call
  * messaging_menu_app_register().  This signifies that the application
  * should be present in the menu and be marked as "running".
  *
