@@ -190,7 +190,7 @@ export_menus_and_actions (GObject      *source,
   if (!id)
     {
       g_warning ("unable to export action group: %s", error->message);
-      g_error_free (error);
+      g_clear_error (&error);
     }
 
   id = g_dbus_connection_export_menu_model (bus,
@@ -200,7 +200,7 @@ export_menus_and_actions (GObject      *source,
   if (!id)
     {
       g_warning ("unable to export menu: %s", error->message);
-      g_error_free (error);
+      g_clear_error (&error);
     }
 
   g_object_unref (bus);
