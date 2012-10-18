@@ -105,9 +105,12 @@ struct _MessagingMenuApp
   gboolean status_set;
   GSimpleActionGroup *source_actions;
   GMenu *menu;
+  GDBusConnection *bus;
 
   IndicatorMessagesService *messages_service;
   guint watch_id;
+  guint action_export_id;
+  guint menu_export_id;
 
   GCancellable *cancellable;
 };
@@ -166,44 +169,41 @@ export_menus_and_actions (GObject      *source,
                           gpointer      user_data)
 {
   MessagingMenuApp *app = user_data;
-  GDBusConnection *bus;
   GError *error = NULL;
-  guint id;
   gchar *object_path;
 
   object_path = messaging_menu_app_get_dbus_object_path (app);
   if (!object_path)
     return;
 
-  bus = g_bus_get_finish (res, &error);
-  if (bus == NULL)
+  app->bus = g_bus_get_finish (res, &error);
+  if (app->bus == NULL)
     {
       g_warning ("unable to connect to session bus: %s", error->message);
       g_error_free (error);
       return;
     }
 
-  id = g_dbus_connection_export_action_group (bus,
-                                              object_path,
-                                              G_ACTION_GROUP (app->source_actions),
-                                              &error);
-  if (!id)
+  app->action_export_id = g_dbus_connection_export_action_group (app->bus,
+                                                                 object_path,
+                                                                 G_ACTION_GROUP (app->source_actions),
+                                                                 &error);
+  if (!app->action_export_id)
     {
       g_warning ("unable to export action group: %s", error->message);
       g_clear_error (&error);
     }
 
-  id = g_dbus_connection_export_menu_model (bus,
-                                            object_path,
-                                            G_MENU_MODEL (app->menu),
-                                            &error);
-  if (!id)
+  app->menu_export_id = g_dbus_connection_export_menu_model (app->bus,
+                                                             object_path,
+                                                             G_MENU_MODEL (app->menu),
+                                                             &error);
+  if (!app->menu_export_id)
     {
       g_warning ("unable to export menu: %s", error->message);
       g_clear_error (&error);
     }
 
-  g_object_unref (bus);
   g_free (object_path);
 }
 
@@ -256,6 +256,20 @@ static void
 messaging_menu_app_dispose (GObject *object)
 {
   MessagingMenuApp *app = MESSAGING_MENU_APP (object);
+
+  if (app->bus)
+    {
+      if (app->action_export_id > 0)
+        g_dbus_connection_unexport_action_group (app->bus, app->action_export_id);
+
+      if (app->menu_export_id > 0)
+        g_dbus_connection_unexport_menu_model (app->bus, app->menu_export_id);
+
+      app->action_export_id = 0;
+      app->menu_export_id = 0;
+      g_object_unref (app->bus);
+      app->bus = NULL;
+    }
 
   if (app->watch_id > 0)
     {
@@ -416,6 +430,10 @@ messaging_menu_app_init (MessagingMenuApp *app)
 {
   app->registered = -1;
   app->status_set = FALSE;
+  app->bus = NULL;
+
+  app->action_export_id = 0;
+  app->menu_export_id = 0;
 
   app->cancellable = g_cancellable_new ();
 
