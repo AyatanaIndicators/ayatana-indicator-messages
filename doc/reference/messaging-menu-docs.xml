@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC '-//OASIS//DTD DocBook XML V4.5//EN'
                       'http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd' [
 <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
-<!ENTITY version "12.10.4">
+<!ENTITY version "12.10.5">
 ]>
 <book lang="en" id="messaging-menu" xmlns:xi="http://www.w3.org/2003/XInclude">
 <title>Messaging Menu Reference Manual</title>
