@@ -1033,7 +1033,7 @@ messaging_menu_app_set_source_label (MessagingMenuApp *app,
  * messaging_menu_app_set_source_icon:
  * @app: a #MessagingMenuApp
  * @source_id: a source id
- * @icon: the new icon for the source
+ * @icon: (allow-none): the new icon for the source
  *
  * Changes the icon of @source_id to @icon.
  */
@@ -1044,7 +1044,6 @@ messaging_menu_app_set_source_icon (MessagingMenuApp *app,
 {
   gint pos;
   GMenuItem *item;
-  gchar *iconstr;
 
   g_return_if_fail (MESSAGING_MENU_IS_APP (app));
   g_return_if_fail (source_id != NULL);
@@ -1053,11 +1052,22 @@ messaging_menu_app_set_source_icon (MessagingMenuApp *app,
   if (item == NULL)
     return;
 
-  iconstr = icon ? g_icon_to_string (icon) : NULL;
-  g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
+  if (icon)
+    {
+      gchar *iconstr;
+
+      iconstr = g_icon_to_string (icon);
+      g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
+
+      g_free (iconstr);
+    }
+  else
+    {
+      g_menu_item_set_attribute_value (item, "x-canonical-icon", NULL);
+    }
+
   g_menu_replace_item (app->menu, pos, item);
 
-  g_free (iconstr);
   g_object_unref (item);
 }
 
