@@ -1,4 +1,11 @@
 
+12.10.5
+
+* fix crash caused by GError not being cleared (lp #1064314)
+* fix crash when registering an app that was previously unregistered (lp #1065169)
+* remove the icon if NULL is passed to source_set_icon (lp #1070421)
+* call gtk-update-icon-cache (lp #1060618)
+
 12.10.4
 
 * specify fallback icons for the ones with status emblem (lp #1056595)
