@@ -21,6 +21,7 @@
 #define __messaging_menu_app_h__
 
 #include <gio/gio.h>
+#include "messaging-menu-message.h"
 
 G_BEGIN_DECLS
 
@@ -142,6 +143,16 @@ void                messaging_menu_app_draw_attention            (MessagingMenuA
 
 void                messaging_menu_app_remove_attention          (MessagingMenuApp *app,
                                                                   const gchar      *source_id);
+
+void                messaging_menu_app_append_message            (MessagingMenuApp     *app,
+                                                                  MessagingMenuMessage *msg,
+                                                                  const gchar          *source_id);
+
+void                messaging_menu_app_remove_message            (MessagingMenuApp     *app,
+                                                                  MessagingMenuMessage *msg);
+
+void                messaging_menu_app_remove_message_by_id      (MessagingMenuApp     *app,
+                                                                  const gchar          *id);
 
 G_END_DECLS
 

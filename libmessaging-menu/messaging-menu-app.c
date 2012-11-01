@@ -1139,3 +1139,66 @@ messaging_menu_app_remove_attention (MessagingMenuApp *app,
   messaging_menu_app_set_source_action (app, source_id, INDEX_DRAWS_ATTENTION,
                                         g_variant_new_boolean (FALSE));
 }
+
+/**
+ * messaging_menu_app_append_message:
+ * @app: a #MessagingMenuApp
+ * @msg: the #MessagingMenuMessage to append
+ * @source_id: (allow-none): the source id to which @msg is added, or NULL
+ * @notify: whether a notification bubble should be shown for this
+ *          message
+ *
+ * Appends @msg to the source with id @source_id of @app.  The messaging
+ * menu might not display this message immediately if other messages are
+ * queued before this one.
+ *
+ * If @source_id has a count associated with it, that count will be
+ * increased by one.
+ *
+ * If @source_id is %NULL, @msg won't be associated with a source.
+ */
+void
+messaging_menu_app_append_message (MessagingMenuApp     *app,
+                                   MessagingMenuMessage *msg,
+                                   const gchar          *source_id,
+                                   gboolean              notify)
+{
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (MESSAGING_MENU_IS_MESSAGE (app));
+}
+
+/**
+ * messaging_menu_app_remove_message:
+ * @app: a #MessagingMenuApp
+ * @msg: the #MessagingMenuMessage to remove
+ *
+ * Removes @msg from @app.
+ *
+ * If @source_id has a count associated with it, that count will be
+ * decreased by one.
+ */
+void
+messaging_menu_app_remove_message (MessagingMenuApp     *app,
+                                   MessagingMenuMessage *msg)
+{
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (MESSAGING_MENU_IS_MESSAGE (app));
+}
+
+/**
+ * messaging_menu_app_remove_message_by_id:
+ * @app: a #MessagingMenuApp
+ * @id: the unique id of @msg
+ *
+ * Removes the message with the id @id from @app.
+ *
+ * If @source_id has a count associated with it, that count will be
+ * decreased by one.
+ */
+void
+messaging_menu_app_remove_message_by_id (MessagingMenuApp     *app,
+                                         const gchar          *id)
+{
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (id != NULL);
+}
