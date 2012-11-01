@@ -17,7 +17,7 @@
  *     Lars Uebernickel <lars.uebernickel@canonical.com>
  */
 
-#include "messaging-menu.h"
+#include "messaging-menu-app.h"
 #include "indicator-messages-service.h"
 #include "gtupleaction.h"
 

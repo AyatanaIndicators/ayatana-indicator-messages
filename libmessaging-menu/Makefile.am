@@ -4,12 +4,13 @@ lib_LTLIBRARIES = libmessaging-menu.la
 libmessaging_menu_ladir = $(includedir)/messaging-menu
 
 libmessaging_menu_la_SOURCES = \
-	messaging-menu.c \
+	messaging-menu-app.c \
 	gtupleaction.c \
 	gtupleaction.h \
 	$(BUILT_SOURCES)
 
 libmessaging_menu_la_HEADERS = \
+	messaging-menu-app.h \
 	messaging-menu.h
 
 libmessaging_menu_la_LIBADD = $(GIO_LIBS)
@@ -52,7 +53,7 @@ MessagingMenu_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
 MessagingMenu_1_0_gir_CFLAGS = $(INCLUDES) $(GIO_CFLAGS)
 MessagingMenu_1_0_gir_SCANNERFLAGS = --c-include="messaging-menu.h"
 MessagingMenu_1_0_gir_LIBS = libmessaging-menu.la
-MessagingMenu_1_0_gir_FILES = messaging-menu.c messaging-menu.h
+MessagingMenu_1_0_gir_FILES = messaging-menu-app.c messaging-menu-app.h
 MessagingMenu_1_0_gir_EXPORT_PACKAGES = messaging-menu
 INTROSPECTION_GIRS += MessagingMenu-1.0.gir
 
