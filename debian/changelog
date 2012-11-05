@@ -1,4 +1,4 @@
-indicator-messages (12.10.5-0ubuntu1) UNRELEASED; urgency=low
+indicator-messages (12.10.5-0ubuntu1) quantal-proposed; urgency=low
 
   * New upstream release:
     - fix crash caused by GError not being cleared (lp #1064314)
@@ -6,7 +6,7 @@ indicator-messages (12.10.5-0ubuntu1) UNRELEASED; urgency=low
       (lp #1065169)
     - remove the icon if NULL is passed to source_set_icon (lp #1070421)
 
- -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 24 Oct 2012 17:22:44 +0200
+ -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 24 Oct 2012 17:30:45 +0200
 
 indicator-messages (12.10.4-0ubuntu1) quantal; urgency=low
 
