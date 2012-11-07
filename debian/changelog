@@ -1,8 +1,8 @@
-indicator-messages (12.10.5-0ubuntu2) UNRELEASED; urgency=low
+indicator-messages (12.10.5-0ubuntu2) raring; urgency=low
 
   * Upload to raring
 
- -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 07 Nov 2012 15:15:29 +0100
+ -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 07 Nov 2012 15:16:08 +0100
 
 indicator-messages (12.10.5-0ubuntu1) quantal-proposed; urgency=low
 
