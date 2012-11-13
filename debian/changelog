@@ -2,6 +2,8 @@ indicator-messages (12.10.6-0ubuntu1) UNRELEASED; urgency=low
 
   * debian/rules:
     - Use autogen.sh for dh_autoreconf.
+    - Drop the override for dh_makeshlibs.
+    - Add DPKG_GENSYMBOLS_CHECK_LEVEL=4.
   * debian/control:
     - Fix styling: add trailing commas at the end of lists. 
     - Update Vcs-Bzr, Vcs-Browser fields and add a notice for developers.
