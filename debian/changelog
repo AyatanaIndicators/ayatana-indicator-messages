@@ -1,3 +1,10 @@
+indicator-messages (12.10.6-0ubuntu1) UNRELEASED; urgency=low
+
+  * debian/rules:
+    - Use autogen.sh for dh_autoreconf.
+
+ -- Mathieu Trudel-Lapierre <mathieu-tl@ubuntu.com>  Tue, 13 Nov 2012 13:37:56 -0500
+
 indicator-messages (12.10.5-0ubuntu2) raring; urgency=low
 
   * Upload to raring
