@@ -5,6 +5,7 @@ indicator-messages (12.10.6-0ubuntu1) UNRELEASED; urgency=low
   * debian/control:
     - Fix styling: add trailing commas at the end of lists. 
     - Update Vcs-Bzr, Vcs-Browser fields and add a notice for developers.
+    - Add libgtest-dev to Build-Depends.
 
  -- Mathieu Trudel-Lapierre <mathieu-tl@ubuntu.com>  Tue, 13 Nov 2012 13:37:56 -0500
 
