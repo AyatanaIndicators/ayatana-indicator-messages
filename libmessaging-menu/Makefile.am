@@ -7,35 +7,23 @@ libmessaging_menu_la_SOURCES = \
 	messaging-menu-app.c \
 	messaging-menu-message.c \
 	gtupleaction.c \
-	gtupleaction.h \
-	$(BUILT_SOURCES)
+	gtupleaction.h
 
 libmessaging_menu_la_HEADERS = \
 	messaging-menu-app.h \
 	messaging-menu.h \
 	messaging-menu-message.h
 
-libmessaging_menu_la_LIBADD = $(GIO_LIBS)
+libmessaging_menu_la_LIBADD = \
+	$(GIO_LIBS) \
+	$(top_builddir)/common/libmessaging-common.la
 
 libmessaging_menu_la_CFLAGS = \
+	-I$(top_builddir)/common \
 	$(GIO_CFLAGS) \
 	-Wall
 
 libmessaging_menu_la_LDFLAGS = -export-symbols-regex "^messaging_menu_.*"
-
-BUILT_SOURCES = \
-	indicator-messages-service.c \
-	indicator-messages-service.h
-
-CLEANFILES = $(BUILT_SOURCES)
-
-indicator-messages-service.c: $(top_srcdir)/src/messages-service.xml
-	$(AM_V_GEN) gdbus-codegen \
-	    --interface-prefix com.canonical.indicator.messages. \
-	    --generate-c-code indicator-messages-service \
-	    --c-namespace IndicatorMessages \
-	    $^
-indicator-messages-service.h: indicator-messages-service.c
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = messaging-menu.pc
@@ -69,5 +57,5 @@ gir_DATA = $(INTROSPECTION_GIRS)
 typelibdir = $(libdir)/girepository-1.0
 typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 
-CLEANFILES +=$(gir_DATA) $(typelib_DATA)
+CLEANFILES = $(gir_DATA) $(typelib_DATA)
 endif
