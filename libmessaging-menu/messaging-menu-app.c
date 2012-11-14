@@ -151,8 +151,10 @@ static void global_status_changed (IndicatorMessagesService *service,
                                    gpointer user_data);
 
 static void
-source_free (Source *source)
+source_free (gpointer data)
 {
+  Source *source = data;
+
   if (source)
     {
       g_free (source->id);
@@ -301,6 +303,8 @@ messaging_menu_app_dispose (GObject *object)
                                             app);
       g_clear_object (&app->messages_service);
     }
+
+  g_list_free_full (app->sources, source_free);
 
   g_clear_object (&app->app_interface);
   g_clear_object (&app->appinfo);
