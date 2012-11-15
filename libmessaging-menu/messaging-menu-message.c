@@ -225,7 +225,7 @@ messaging_menu_message_init (MessagingMenuMessage *self)
 /**
  * messaging_menu_message_new:
  * @id: unique id of the message
- * @icon: (transfer full): a #GIcon representing the message
+ * @icon: (transfer full) (allow-none): a #GIcon representing the message
  * @title: the title of the message
  * @subtitle: (allow-none): the subtitle of the message
  * @body: (allow-none): the message body

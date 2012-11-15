@@ -106,6 +106,7 @@ struct _MessagingMenuApp
   gboolean status_set;
   GDBusConnection *bus;
 
+  GHashTable *messages;
   GList *sources;
   IndicatorMessagesApplication *app_interface;
 
@@ -125,6 +126,7 @@ enum {
 
 enum {
   ACTIVATE_SOURCE,
+  ACTIVATE_MESSAGE,
   STATUS_CHANGED,
   N_SIGNALS
 };
@@ -180,6 +182,29 @@ source_to_variant (Source *source)
                                   source->time,
                                   source->string ? source->string : "",
                                   source->draws_attention);
+
+  g_free (iconstr);
+
+  return v;
+}
+
+static GVariant *
+messaging_menu_message_to_variant (MessagingMenuMessage *message)
+{
+  GVariant *v;
+  GIcon *icon;
+  gchar *iconstr;
+
+  icon = messaging_menu_message_get_icon (message);
+  iconstr = icon ? g_icon_to_string (icon) : NULL;
+
+  v = g_variant_new ("(sssssxb)", messaging_menu_message_get_id (message),
+                                  iconstr ? iconstr : "",
+                                  messaging_menu_message_get_title (message),
+                                  messaging_menu_message_get_subtitle (message),
+                                  messaging_menu_message_get_body (message),
+                                  messaging_menu_message_get_time (message),
+                                  messaging_menu_message_get_draws_attention (message));
 
   g_free (iconstr);
 
@@ -304,7 +329,10 @@ messaging_menu_app_dispose (GObject *object)
       g_clear_object (&app->messages_service);
     }
 
+  g_clear_pointer (&app->messages, g_hash_table_unref);
+
   g_list_free_full (app->sources, source_free);
+  app->sources = NULL;
 
   g_clear_object (&app->app_interface);
   g_clear_object (&app->appinfo);
@@ -356,6 +384,27 @@ messaging_menu_app_class_init (MessagingMenuAppClass *class)
                                            NULL, NULL,
                                            g_cclosure_marshal_VOID__STRING,
                                            G_TYPE_NONE, 1, G_TYPE_STRING);
+
+  /**
+   * MessagingMenuApp::activate-message:
+   * @mmapp: the #MessagingMenuApp
+   * @message: the activated #MessagingMenuMessage
+   *
+   * Emitted when the user has activated a message.  The message is
+   * immediately removed from the application's menu, handlers of this
+   * signal do not need to call messaging_menu_app_remove_message().
+   *
+   * To get notified about the activation of a specific message, set the
+   * signal's detail to the message id.
+   */
+  signals[ACTIVATE_MESSAGE] = g_signal_new ("activate-message",
+                                            MESSAGING_MENU_TYPE_APP,
+                                            G_SIGNAL_RUN_FIRST |
+                                            G_SIGNAL_DETAILED,
+                                            0,
+                                            NULL, NULL,
+                                            g_cclosure_marshal_VOID__OBJECT,
+                                            G_TYPE_NONE, 1, MESSAGING_MENU_TYPE_MESSAGE);
 
   /**
    * MessagingMenuApp::status-changed:
@@ -488,6 +537,13 @@ messaging_menu_app_remove_source_internal (MessagingMenuApp *app,
 }
 
 static gboolean
+messaging_menu_app_remove_message_internal (MessagingMenuApp *app,
+                                            const gchar      *message_id)
+{
+  return g_hash_table_remove (app->messages, message_id);
+}
+
+static gboolean
 messaging_menu_app_activate_source (IndicatorMessagesApplication *app_interface,
                                     GDBusMethodInvocation        *invocation,
                                     const gchar                  *source_id,
@@ -496,11 +552,57 @@ messaging_menu_app_activate_source (IndicatorMessagesApplication *app_interface,
   MessagingMenuApp *app = user_data;
   GQuark q = g_quark_from_string (source_id);
 
-  /* Activate implies removing the source, no need for SourcesChanged */
+  /* Activate implies removing the source, no need for SourceRemoved */
   if (messaging_menu_app_remove_source_internal (app, source_id))
     g_signal_emit (app, signals[ACTIVATE_SOURCE], q, source_id);
 
   indicator_messages_application_complete_activate_source (app_interface, invocation);
+
+  return TRUE;
+}
+
+static gboolean
+messaging_menu_app_list_messages (IndicatorMessagesApplication *app_interface,
+                                  GDBusMethodInvocation        *invocation,
+                                  gpointer                      user_data)
+{
+  MessagingMenuApp *app = user_data;
+  GVariantBuilder builder;
+  GHashTableIter iter;
+  MessagingMenuMessage *message;
+
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sssssxb)"));
+
+  g_hash_table_iter_init (&iter, app->messages);
+  while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &message))
+    g_variant_builder_add_value (&builder, messaging_menu_message_to_variant (message));
+
+  indicator_messages_application_complete_list_messages (app_interface,
+                                                         invocation,
+                                                         g_variant_builder_end (&builder));
+
+  return TRUE;
+}
+
+static gboolean
+messaging_menu_app_activate_message (IndicatorMessagesApplication *app_interface,
+                                     GDBusMethodInvocation        *invocation,
+                                     const gchar                  *message_id,
+                                     gpointer                      user_data)
+{
+  MessagingMenuApp *app = user_data;
+  MessagingMenuMessage *msg;
+
+  msg = g_hash_table_lookup (app->messages, message_id);
+  if (msg)
+    {
+      g_signal_emit (app, signals[ACTIVATE_MESSAGE], g_quark_from_string (message_id), msg);
+
+      /* Activate implies removing the message, no need for MessageRemoved  */
+      messaging_menu_app_remove_message_internal (app, message_id);
+    }
+
+  indicator_messages_application_complete_activate_message (app_interface, invocation);
 
   return TRUE;
 }
@@ -519,8 +621,12 @@ messaging_menu_app_init (MessagingMenuApp *app)
                     G_CALLBACK (messaging_menu_app_list_sources), app);
   g_signal_connect (app->app_interface, "handle-activate-source",
                     G_CALLBACK (messaging_menu_app_activate_source), app);
+  g_signal_connect (app->app_interface, "handle-list-messages",
+                    G_CALLBACK (messaging_menu_app_list_messages), app);
+  g_signal_connect (app->app_interface, "handle-activate-message",
+                    G_CALLBACK (messaging_menu_app_activate_message), app);
 
-  app->cancellable = g_cancellable_new ();
+  app->messages = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 
   app->watch_id = g_bus_watch_name (G_BUS_TYPE_SESSION,
                                     "com.canonical.indicator.messages",
@@ -1226,8 +1332,34 @@ messaging_menu_app_append_message (MessagingMenuApp     *app,
                                    const gchar          *source_id,
                                    gboolean              notify)
 {
+  const gchar *id;
+
   g_return_if_fail (MESSAGING_MENU_IS_APP (app));
-  g_return_if_fail (MESSAGING_MENU_IS_MESSAGE (app));
+  g_return_if_fail (MESSAGING_MENU_IS_MESSAGE (msg));
+
+  id = messaging_menu_message_get_id (msg);
+
+  if (g_hash_table_lookup (app->messages, id))
+    {
+      g_warning ("a message with id '%s' already exists", id);
+      return;
+    }
+
+  g_hash_table_insert (app->messages, g_strdup (id), g_object_ref (msg));
+  indicator_messages_application_emit_message_added (app->app_interface,
+                                                     messaging_menu_message_to_variant (msg));
+
+  if (source_id)
+    {
+      Source *source;
+
+      source = messaging_menu_app_get_source (app, source_id);
+      if (source && source->count >= 0)
+        {
+          source->count++;
+          messaging_menu_app_notify_source_changed (app, source);
+        }
+    }
 }
 
 /**
@@ -1244,8 +1376,7 @@ void
 messaging_menu_app_remove_message (MessagingMenuApp     *app,
                                    MessagingMenuMessage *msg)
 {
-  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
-  g_return_if_fail (MESSAGING_MENU_IS_MESSAGE (app));
+  messaging_menu_app_remove_message_by_id (app, messaging_menu_message_get_id (msg));
 }
 
 /**
@@ -1264,4 +1395,7 @@ messaging_menu_app_remove_message_by_id (MessagingMenuApp     *app,
 {
   g_return_if_fail (MESSAGING_MENU_IS_APP (app));
   g_return_if_fail (id != NULL);
+
+  if (messaging_menu_app_remove_message_internal (app, id))
+    indicator_messages_application_emit_source_removed (app->app_interface, id);
 }
