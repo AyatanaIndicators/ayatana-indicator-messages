@@ -209,15 +209,14 @@ messages_listed (GObject      *source_object,
 		g_simple_action_group_insert (G_SIMPLE_ACTION_GROUP (app_actions), G_ACTION (action));
 
 		action_name = g_strconcat (app_id, ".", id, NULL);
-		item = g_menu_item_new (NULL, action_name);
+		item = g_menu_item_new (title, action_name);
 		g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.messageitem");
 		g_menu_item_set_attribute (item, "x-canonical-message-id", "s", id);
-		g_menu_item_set_attribute (item, "x-canonical-sender", "s", title);
-		g_menu_item_set_attribute (item, "x-canonical-subject", "s", subtitle);
-		g_menu_item_set_attribute (item, "x-canonical-body", "s", body);
+		g_menu_item_set_attribute (item, "x-canonical-subtitle", "s", subtitle);
+		g_menu_item_set_attribute (item, "x-canonical-text", "s", body);
 		g_menu_item_set_attribute (item, "x-canonical-time", "x", time);
 		if (iconstr && *iconstr)
-			g_menu_item_set_attribute (item, "x-canonical-avatar", "s", iconstr);
+			g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
 		g_menu_append_item (messages_section, item);
 
 		g_object_unref (action);
@@ -362,7 +361,7 @@ got_bus (GObject *object,
 	}
 
 	g_dbus_connection_export_menu_model (bus, INDICATOR_MESSAGES_DBUS_OBJECT "/phone",
-					     G_MENU_MODEL (toplevel_menu), &error);
+					     G_MENU_MODEL (menu), &error);
 	if (error) {
 		g_warning ("unable to export menu on dbus: %s", error->message);
 		g_error_free (error);
