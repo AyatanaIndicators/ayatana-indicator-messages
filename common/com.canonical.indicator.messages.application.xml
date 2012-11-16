@@ -27,7 +27,7 @@
       <arg type="(sssssxb)" name="message" direction="in" />
     </signal>
     <signal name="MessageRemoved">
-      <arg type="(sssssxb)" name="message" direction="in" />
+      <arg type="s" name="message_id" direction="in" />
     </signal>
   </interface>
 </node>
