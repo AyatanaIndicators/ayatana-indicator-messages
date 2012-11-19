@@ -4,7 +4,7 @@ AC_INIT(indicator-messages, 12.10.5)
 AC_PREREQ(2.62)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE()
+AM_INIT_AUTOMAKE([check-news])
 
 AM_MAINTAINER_MODE
 
