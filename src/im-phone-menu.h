@@ -64,4 +64,7 @@ void                im_phone_menu_remove_source         (ImPhoneMenu        *men
                                                          GDesktopAppInfo    *app,
                                                          const gchar        *id);
 
+void                im_phone_menu_remove_application    (ImPhoneMenu     *menu,
+                                                         GDesktopAppInfo *app);
+
 #endif

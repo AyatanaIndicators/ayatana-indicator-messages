@@ -273,6 +273,8 @@ main (int argc, char ** argv)
 				  G_CALLBACK (im_phone_menu_add_message), menu);
 	g_signal_connect_swapped (applications, "message-removed",
 				  G_CALLBACK (im_phone_menu_remove_message), menu);
+	g_signal_connect_swapped (applications, "app-stopped",
+				  G_CALLBACK (im_phone_menu_remove_application), menu);
 
 	g_main_loop_run(mainloop);
 

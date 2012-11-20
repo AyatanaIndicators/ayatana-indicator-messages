@@ -214,3 +214,46 @@ im_phone_menu_remove_source (ImPhoneMenu     *menu,
 
   g_free (action_name);
 }
+
+static void
+im_phone_menu_remove_all_for_app (GMenu           *menu,
+                                  GDesktopAppInfo *app)
+{
+  gchar *prefix;
+  gint n_items;
+  gint i = 0;
+
+  prefix = g_strconcat (g_app_info_get_id (G_APP_INFO (app)), ".", NULL);
+
+  n_items = g_menu_model_get_n_items (G_MENU_MODEL (menu));
+  while (i < n_items)
+    {
+      gchar *action;
+
+      g_menu_model_get_item_attribute (G_MENU_MODEL (menu), i, G_MENU_ATTRIBUTE_ACTION, "s", &action);
+      if (g_str_has_prefix (action, prefix))
+        {
+          g_menu_remove (menu, i);
+          n_items--;
+        }
+      else
+        {
+          i++;
+        }
+
+      g_free (action);
+    }
+
+  g_free (prefix);
+}
+
+void
+im_phone_menu_remove_application (ImPhoneMenu     *menu,
+                                  GDesktopAppInfo *app)
+{
+  g_return_if_fail (IM_IS_PHONE_MENU (menu));
+  g_return_if_fail (G_IS_DESKTOP_APP_INFO (app));
+
+  im_phone_menu_remove_all_for_app (menu->source_section, app);
+  im_phone_menu_remove_all_for_app (menu->message_section, app);
+}

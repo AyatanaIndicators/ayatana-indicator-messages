@@ -43,6 +43,7 @@ enum
   SOURCE_REMOVED,
   MESSAGE_ADDED,
   MESSAGE_REMOVED,
+  APP_STOPPED,
   N_SIGNALS
 };
 
@@ -179,6 +180,16 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                            2,
                                            G_TYPE_DESKTOP_APP_INFO,
                                            G_TYPE_STRING);
+
+  signals[APP_STOPPED] = g_signal_new ("app-stopped",
+                                       IM_TYPE_APPLICATION_LIST,
+                                       G_SIGNAL_RUN_FIRST,
+                                       0,
+                                       NULL, NULL,
+                                       g_cclosure_marshal_VOID__OBJECT,
+                                       G_TYPE_NONE,
+                                       1,
+                                       G_TYPE_DESKTOP_APP_INFO);
 }
 
 static void
@@ -394,6 +405,31 @@ im_application_list_messages_listed (GObject      *source_object,
 }
 
 static void
+im_application_list_app_vanished (GDBusConnection *connection,
+                                  const gchar     *name,
+                                  gpointer         user_data)
+{
+  Application *app = user_data;
+
+  if (app->cancellable)
+    {
+      g_cancellable_cancel (app->cancellable);
+      g_clear_object (&app->cancellable);
+    }
+  g_clear_object (&app->proxy);
+
+  /* clear actions by creating a new action group and overriding it in
+   * the muxer */
+  g_object_unref (app->actions);
+  app->actions = g_simple_action_group_new ();
+  g_action_muxer_insert (app->list->muxer,
+                         g_app_info_get_id (G_APP_INFO (app->info)),
+                         G_ACTION_GROUP (app->actions));
+
+  g_signal_emit (app->list, signals[APP_STOPPED], 0, app->info);
+}
+
+static void
 im_application_list_proxy_created (GObject      *source_object,
                                    GAsyncResult *result,
                                    gpointer      user_data)
@@ -419,6 +455,12 @@ im_application_list_proxy_created (GObject      *source_object,
   g_signal_connect_swapped (app->proxy, "source-removed", G_CALLBACK (im_application_list_source_removed), app);
   g_signal_connect_swapped (app->proxy, "message-added", G_CALLBACK (im_application_list_message_added), app);
   g_signal_connect_swapped (app->proxy, "message-removed", G_CALLBACK (im_application_list_message_removed), app);
+
+  g_bus_watch_name_on_connection (g_dbus_proxy_get_connection (G_DBUS_PROXY (app->proxy)),
+                                  g_dbus_proxy_get_name (G_DBUS_PROXY (app->proxy)),
+                                  G_BUS_NAME_WATCHER_FLAGS_NONE,
+                                  NULL, im_application_list_app_vanished,
+                                  app, NULL);
 }
 
 void
