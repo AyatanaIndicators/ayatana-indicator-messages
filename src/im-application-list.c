@@ -242,10 +242,19 @@ void
 im_application_list_remove (ImApplicationList *list,
                             const gchar       *id)
 {
+  Application *app;
+
   g_return_if_fail (IM_IS_APPLICATION_LIST (list));
 
-  g_hash_table_remove (list->applications, id);
-  g_action_muxer_remove (list->muxer, id);
+  app = g_hash_table_lookup (list->applications, id);
+  if (app)
+    {
+      if (app->proxy || app->cancellable)
+        g_signal_emit (app->list, signals[APP_STOPPED], 0, app->info);
+
+      g_hash_table_remove (list->applications, id);
+      g_action_muxer_remove (list->muxer, id);
+    }
 }
 
 static void
@@ -401,11 +410,11 @@ im_application_list_messages_listed (GObject      *source_object,
 }
 
 static void
-im_application_list_app_vanished (GDBusConnection *connection,
-                                  const gchar     *name,
-                                  gpointer         user_data)
+im_application_list_unset_remote (Application *app)
 {
-  Application *app = user_data;
+  gboolean was_running;
+
+  was_running = app->proxy || app->cancellable;
 
   if (app->cancellable)
     {
@@ -422,7 +431,18 @@ im_application_list_app_vanished (GDBusConnection *connection,
                          g_app_info_get_id (G_APP_INFO (app->info)),
                          G_ACTION_GROUP (app->actions));
 
-  g_signal_emit (app->list, signals[APP_STOPPED], 0, app->info);
+  if (was_running)
+    g_signal_emit (app->list, signals[APP_STOPPED], 0, app->info);
+}
+
+static void
+im_application_list_app_vanished (GDBusConnection *connection,
+                                  const gchar     *name,
+                                  gpointer         user_data)
+{
+  Application *app = user_data;
+
+  im_application_list_unset_remote (app);
 }
 
 static void
@@ -481,9 +501,7 @@ im_application_list_set_remote (ImApplicationList *list,
     {
       g_warning ("replacing '%s' at %s with %s", id, unique_bus_name,
                  g_dbus_proxy_get_name_owner (G_DBUS_PROXY (app->proxy)));
-      g_cancellable_cancel (app->cancellable);
-      g_object_unref (app->cancellable);
-      g_clear_object (&app->proxy);
+      im_application_list_unset_remote (app);
     }
 
   app->cancellable = g_cancellable_new ();
