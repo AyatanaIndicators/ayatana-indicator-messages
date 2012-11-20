@@ -205,7 +205,7 @@ im_application_list_new (void)
   return g_object_new (IM_TYPE_APPLICATION_LIST, NULL);
 }
 
-gboolean
+void
 im_application_list_add (ImApplicationList  *list,
                          const gchar        *desktop_id)
 {
@@ -213,20 +213,18 @@ im_application_list_add (ImApplicationList  *list,
   Application *app;
   const gchar *id;
 
-  g_return_val_if_fail (IM_IS_APPLICATION_LIST (list), FALSE);
-  g_return_val_if_fail (desktop_id != NULL, FALSE);
+  g_return_if_fail (IM_IS_APPLICATION_LIST (list));
+  g_return_if_fail (desktop_id != NULL);
 
-  if (g_hash_table_contains (list->applications, desktop_id))
-    {
-      g_warning ("an application with id '%s' already exists", desktop_id);
-      return FALSE;
-    }
+  app = g_hash_table_lookup (list->applications, desktop_id);
+  if (app)
+    return;
 
   info = g_desktop_app_info_new (desktop_id);
   if (!info)
     {
-      g_warning ("application with id '%s' already exists", desktop_id);
-      return FALSE;
+      g_warning ("an application with id '%s' is no installed", desktop_id);
+      return;
     }
 
   id = g_app_info_get_id (G_APP_INFO (info));
@@ -238,8 +236,6 @@ im_application_list_add (ImApplicationList  *list,
 
   g_hash_table_insert (list->applications, (gpointer) id, app);
   g_action_muxer_insert (list->muxer, id, G_ACTION_GROUP (app->actions));
-
-  return TRUE;
 }
 
 void
@@ -483,9 +479,11 @@ im_application_list_set_remote (ImApplicationList *list,
 
   if (app->proxy || app->cancellable)
     {
-      g_warning ("application '%s' is already running on '%s'",
-                 id, g_dbus_proxy_get_name_owner (G_DBUS_PROXY (app->proxy)));
-      return;
+      g_warning ("replacing '%s' at %s with %s", id, unique_bus_name,
+                 g_dbus_proxy_get_name_owner (G_DBUS_PROXY (app->proxy)));
+      g_cancellable_cancel (app->cancellable);
+      g_object_unref (app->cancellable);
+      g_clear_object (&app->proxy);
     }
 
   app->cancellable = g_cancellable_new ();

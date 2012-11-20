@@ -119,12 +119,7 @@ register_application (IndicatorMessagesService *service,
 	GDBusConnection *bus;
 	const gchar *sender;
 
-	if (!im_application_list_add (applications, desktop_id)) {
-		g_dbus_method_invocation_return_dbus_error (invocation,
-							    "com.canonical.indicator.messages.RegistrationFailed",
-							    "registration failed");
-		return;
-	}
+	im_application_list_add (applications, desktop_id);
 
 	bus = g_dbus_interface_skeleton_get_connection (G_DBUS_INTERFACE_SKELETON (service));
 	sender = g_dbus_method_invocation_get_sender (invocation);
