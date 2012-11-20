@@ -34,6 +34,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "gmenuutils.h"
 #include "indicator-messages-service.h"
 #include "indicator-messages-application.h"
+#include "im-phone-menu.h"
 
 #define NUM_STATUSES 5
 
@@ -43,9 +44,7 @@ static IndicatorMessagesService *messages_service;
 static GSimpleActionGroup *actions;
 static GActionMuxer *action_muxer;
 static GMenu *toplevel_menu;
-static GMenu *menu;
-static GMenu *messages_section;
-static GMenu *sources_section;
+static ImPhoneMenu *menu;
 static GSettings *settings;
 static gboolean draws_attention;
 static const gchar *global_status[6]; /* max 5: available, away, busy, invisible, offline */
@@ -117,7 +116,7 @@ sources_listed (GObject      *source_object,
 		GAsyncResult *result,
 		gpointer      user_data)
 {
-	gchar *app_id = user_data;
+	GDesktopAppInfo *app = user_data;
 	GVariant *sources;
 	GVariantIter iter;
 	const gchar *id;
@@ -134,7 +133,7 @@ sources_listed (GObject      *source_object,
 	{
 		g_warning ("could not fetch the list of sources: %s", error->message);
 		g_error_free (error);
-		g_free (app_id);
+		g_object_unref (app);
 		return;
 	}
 
@@ -142,30 +141,21 @@ sources_listed (GObject      *source_object,
 	while (g_variant_iter_next (&iter, "(&s&s&sux&sb)", &id, &label, &iconstr, &count,
 							    &time, &string, &draws_attention))
 	{
-		GMenuItem *item;
 		GActionGroup *app_actions;
 		GSimpleAction *action;
-		gchar *action_name;
 
-		app_actions = g_action_muxer_get_group (action_muxer, app_id);
+		app_actions = g_action_muxer_get_group (action_muxer, g_app_info_get_id (G_APP_INFO (app)));
 		g_assert (app_actions);
 		action = g_simple_action_new_stateful (id, NULL, g_variant_new_uint32 (count));
 		g_simple_action_group_insert (G_SIMPLE_ACTION_GROUP (app_actions), G_ACTION (action));
 
-		action_name = g_strconcat (app_id, ".", id, NULL);
-		item = g_menu_item_new (label, action_name);
-		g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.sourceitem");
-		if (iconstr && *iconstr)
-			g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
-		g_menu_append_item (sources_section, item);
+		im_phone_menu_add_source (menu, app, id, label, iconstr, count, time, string);
 
 		g_object_unref (action);
-		g_free (action_name);
-		g_object_unref (item);
 	}
 
 	g_variant_unref (sources);
-	g_free (app_id);
+	g_object_unref (app);
 }
 
 static void
@@ -173,7 +163,7 @@ messages_listed (GObject      *source_object,
 		 GAsyncResult *result,
 		 gpointer      user_data)
 {
-	gchar *app_id = user_data;
+	GDesktopAppInfo *app = user_data;
 	GVariant *messages;
 	GError *error = NULL;
 	GVariantIter iter;
@@ -190,7 +180,7 @@ messages_listed (GObject      *source_object,
 	{
 		g_warning ("could not fetch the list of messages: %s", error->message);
 		g_error_free (error);
-		g_free (app_id);
+		g_object_unref (app);
 		return;
 	}
 
@@ -198,34 +188,21 @@ messages_listed (GObject      *source_object,
 	while (g_variant_iter_next (&iter, "(&s&s&s&s&sxb)", &id, &iconstr, &title, &subtitle, &body,
 							     &time, &draws_attention))
 	{
-		GMenuItem *item;
 		GActionGroup *app_actions;
 		GSimpleAction *action;
-		gchar *action_name;
 
-		app_actions = g_action_muxer_get_group (action_muxer, app_id);
+		app_actions = g_action_muxer_get_group (action_muxer, g_app_info_get_id (G_APP_INFO (app)));
 		g_assert (app_actions);
 		action = g_simple_action_new (id, NULL);
 		g_simple_action_group_insert (G_SIMPLE_ACTION_GROUP (app_actions), G_ACTION (action));
 
-		action_name = g_strconcat (app_id, ".", id, NULL);
-		item = g_menu_item_new (title, action_name);
-		g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.messageitem");
-		g_menu_item_set_attribute (item, "x-canonical-message-id", "s", id);
-		g_menu_item_set_attribute (item, "x-canonical-subtitle", "s", subtitle);
-		g_menu_item_set_attribute (item, "x-canonical-text", "s", body);
-		g_menu_item_set_attribute (item, "x-canonical-time", "x", time);
-		if (iconstr && *iconstr)
-			g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
-		g_menu_append_item (messages_section, item);
+		im_phone_menu_add_message (menu, app, id, iconstr, title, subtitle, body, time);
 
 		g_object_unref (action);
-		g_free (action_name);
-		g_object_unref (item);
 	}
 
 	g_variant_unref (messages);
-	g_free (app_id);
+	g_object_unref (app);
 }
 
 static void
@@ -233,7 +210,7 @@ app_proxy_created (GObject      *source_object,
 		   GAsyncResult *result,
 		   gpointer      user_data)
 {
-	gchar *desktop_id = user_data;
+	GDesktopAppInfo *app = user_data;
 	IndicatorMessagesApplication *app_proxy;
 	GError *error = NULL;
 
@@ -244,11 +221,12 @@ app_proxy_created (GObject      *source_object,
 		return;
 	}
 
-	/* hash table takes ownership of desktop_id and app_proxy */
-	g_hash_table_insert (applications, desktop_id, app_proxy);
+	g_hash_table_insert (applications, (gpointer) g_app_info_get_id (G_APP_INFO (app)), app_proxy);
 
-	indicator_messages_application_call_list_sources (app_proxy, NULL, sources_listed, g_strdup (desktop_id));
-	indicator_messages_application_call_list_messages (app_proxy, NULL, messages_listed, g_strdup (desktop_id));
+	indicator_messages_application_call_list_sources (app_proxy, NULL, sources_listed, g_object_ref (app));
+	indicator_messages_application_call_list_messages (app_proxy, NULL, messages_listed, g_object_ref (app));
+
+	g_object_unref (app);
 }
 
 static void
@@ -261,6 +239,7 @@ register_application (IndicatorMessagesService *service,
 	GDBusConnection *bus;
 	const gchar *sender;
 	GSimpleActionGroup *app_actions;
+	GDesktopAppInfo *app;
 
 	if (g_hash_table_lookup (applications, desktop_id)) {
 		g_warning ("application with id '%s' already exists", desktop_id);
@@ -270,12 +249,21 @@ register_application (IndicatorMessagesService *service,
 		return;
 	}
 
+	app = g_desktop_app_info_new (desktop_id);
+	if (!app) {
+		g_warning ("application with id '%s' already exists", desktop_id);
+		g_dbus_method_invocation_return_dbus_error (invocation,
+							    "com.canonical.indicator.messages.UnknownApplication",
+							    "an application with the given id doesn't exist");
+		return;
+	}
+
 	bus = g_dbus_interface_skeleton_get_connection (G_DBUS_INTERFACE_SKELETON (service));
 	sender = g_dbus_method_invocation_get_sender (invocation);
 
 	indicator_messages_application_proxy_new (bus, G_DBUS_PROXY_FLAGS_NONE,
 						  sender, menu_path, NULL,
-						  app_proxy_created, g_strdup (desktop_id));
+						  app_proxy_created, g_object_ref (app));
 
 	app_actions = g_simple_action_group_new ();
 	g_action_muxer_insert (action_muxer, desktop_id, G_ACTION_GROUP (app_actions));
@@ -285,6 +273,7 @@ register_application (IndicatorMessagesService *service,
 	indicator_messages_service_complete_register_application (service, invocation);
 
 	g_object_unref (app_actions);
+	g_object_unref (app);
 }
 
 static void
@@ -361,7 +350,7 @@ got_bus (GObject *object,
 	}
 
 	g_dbus_connection_export_menu_model (bus, INDICATOR_MESSAGES_DBUS_OBJECT "/phone",
-					     G_MENU_MODEL (menu), &error);
+					     im_phone_menu_get_model (menu), &error);
 	if (error) {
 		g_warning ("unable to export menu on dbus: %s", error->message);
 		g_error_free (error);
@@ -416,14 +405,10 @@ main (int argc, char ** argv)
 	g_signal_connect (messages_service, "handle-unregister-application",
 			  G_CALLBACK (unregister_application), NULL);
 
-	menu = g_menu_new ();
-	sources_section = g_menu_new ();
-	messages_section = g_menu_new ();
-	g_menu_append_section (menu, NULL, G_MENU_MODEL (sources_section));
-	g_menu_append_section (menu, NULL, G_MENU_MODEL (messages_section));
+	menu = im_phone_menu_new ();
 
 	toplevel_menu = g_menu_new ();
-	g_menu_append_submenu (toplevel_menu, NULL, G_MENU_MODEL (menu));
+	g_menu_append_submenu (toplevel_menu, NULL, im_phone_menu_get_model (menu));
 
 	settings = g_settings_new ("com.canonical.indicator.messages");
 
