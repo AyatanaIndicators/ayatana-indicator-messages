@@ -1397,5 +1397,5 @@ messaging_menu_app_remove_message_by_id (MessagingMenuApp     *app,
   g_return_if_fail (id != NULL);
 
   if (messaging_menu_app_remove_message_internal (app, id))
-    indicator_messages_application_emit_source_removed (app->app_interface, id);
+    indicator_messages_application_emit_message_removed (app->app_interface, id);
 }
