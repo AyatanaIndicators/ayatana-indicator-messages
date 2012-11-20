@@ -267,8 +267,12 @@ main (int argc, char ** argv)
 	applications = im_application_list_new ();
 	g_signal_connect_swapped (applications, "source-added",
 				  G_CALLBACK (im_phone_menu_add_source), menu);
+	g_signal_connect_swapped (applications, "source-removed",
+				  G_CALLBACK (im_phone_menu_remove_source), menu);
 	g_signal_connect_swapped (applications, "message-added",
 				  G_CALLBACK (im_phone_menu_add_message), menu);
+	g_signal_connect_swapped (applications, "message-removed",
+				  G_CALLBACK (im_phone_menu_remove_message), menu);
 
 	g_main_loop_run(mainloop);
 

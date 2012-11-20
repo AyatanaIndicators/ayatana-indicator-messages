@@ -39,7 +39,10 @@ G_DEFINE_TYPE (ImApplicationList, im_application_list, G_TYPE_OBJECT);
 enum
 {
   SOURCE_ADDED,
+  SOURCE_CHANGED,
+  SOURCE_REMOVED,
   MESSAGE_ADDED,
+  MESSAGE_REMOVED,
   N_SIGNALS
 };
 
@@ -121,6 +124,34 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                         G_TYPE_STRING,
                                         G_TYPE_BOOLEAN);
 
+  signals[SOURCE_CHANGED] = g_signal_new ("source-changed",
+                                          IM_TYPE_APPLICATION_LIST,
+                                          G_SIGNAL_RUN_FIRST,
+                                          0,
+                                          NULL, NULL,
+                                          g_cclosure_marshal_generic,
+                                          G_TYPE_NONE,
+                                          8,
+                                          G_TYPE_DESKTOP_APP_INFO,
+                                          G_TYPE_STRING,
+                                          G_TYPE_STRING,
+                                          G_TYPE_STRING,
+                                          G_TYPE_UINT,
+                                          G_TYPE_INT64,
+                                          G_TYPE_STRING,
+                                          G_TYPE_BOOLEAN);
+
+  signals[SOURCE_REMOVED] = g_signal_new ("source-removed",
+                                          IM_TYPE_APPLICATION_LIST,
+                                          G_SIGNAL_RUN_FIRST,
+                                          0,
+                                          NULL, NULL,
+                                          g_cclosure_marshal_generic,
+                                          G_TYPE_NONE,
+                                          2,
+                                          G_TYPE_DESKTOP_APP_INFO,
+                                          G_TYPE_STRING);
+
   signals[MESSAGE_ADDED] = g_signal_new ("message-added",
                                          IM_TYPE_APPLICATION_LIST,
                                          G_SIGNAL_RUN_FIRST,
@@ -137,6 +168,17 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                          G_TYPE_STRING,
                                          G_TYPE_INT64,
                                          G_TYPE_BOOLEAN);
+
+  signals[MESSAGE_REMOVED] = g_signal_new ("message-removed",
+                                           IM_TYPE_APPLICATION_LIST,
+                                           G_SIGNAL_RUN_FIRST,
+                                           0,
+                                           NULL, NULL,
+                                           g_cclosure_marshal_generic,
+                                           G_TYPE_NONE,
+                                           2,
+                                           G_TYPE_DESKTOP_APP_INFO,
+                                           G_TYPE_STRING);
 }
 
 static void
@@ -200,6 +242,63 @@ im_application_list_remove (ImApplicationList *list,
 }
 
 static void
+im_application_list_source_added (Application *app,
+                                  guint        position,
+                                  GVariant    *source)
+{
+  const gchar *id;
+  const gchar *label;
+  const gchar *iconstr;
+  guint32 count;
+  gint64 time;
+  const gchar *string;
+  gboolean draws_attention;
+  GSimpleAction *action;
+
+  g_variant_get (source, "(&s&s&sux&sb)",
+                 &id, &label, &iconstr, &count, &time, &string, &draws_attention);
+
+  action = g_simple_action_new_stateful (id, NULL, g_variant_new_uint32 (count));
+  g_simple_action_group_insert (app->actions, G_ACTION (action));
+
+  g_signal_emit (app->list, signals[SOURCE_ADDED], 0,
+                 app->info, id, label, iconstr, count, time, string, draws_attention);
+
+  g_object_unref (action);
+}
+
+static void
+im_application_list_source_changed (Application *app,
+                                    GVariant    *source)
+{
+  const gchar *id;
+  const gchar *label;
+  const gchar *iconstr;
+  guint32 count;
+  gint64 time;
+  const gchar *string;
+  gboolean draws_attention;
+
+  g_variant_get (source, "(&s&s&sux&sb)",
+                 &id, &label, &iconstr, &count, &time, &string, &draws_attention);
+
+  g_action_group_change_action_state (G_ACTION_GROUP (app->actions), id,
+                                      g_variant_new_uint32 (count));
+
+  g_signal_emit (app->list, signals[SOURCE_CHANGED], 0,
+                 app->info, id, label, iconstr, count, time, string, draws_attention);
+}
+
+static void
+im_application_list_source_removed (Application *app,
+                                    const gchar *id)
+{
+  g_simple_action_group_remove (app->actions, id);
+
+  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->info, id);
+}
+
+static void
 im_application_list_sources_listed (GObject      *source_object,
                                     GAsyncResult *result,
                                     gpointer      user_data)
@@ -211,28 +310,16 @@ im_application_list_sources_listed (GObject      *source_object,
   if (indicator_messages_application_call_list_sources_finish (app->proxy, &sources, result, &error))
     {
       GVariantIter iter;
-      const gchar *id;
-      const gchar *label;
-      const gchar *iconstr;
-      guint32 count;
-      gint64 time;
-      const gchar *string;
-      gboolean draws_attention;
+      GVariant *source;
+      guint i = 0;
 
       g_variant_iter_init (&iter, sources);
-      while (g_variant_iter_next (&iter, "(&s&s&sux&sb)", &id, &label, &iconstr, &count,
-                                  &time, &string, &draws_attention))
+      while ((source = g_variant_iter_next_value (&iter)))
         {
-          GSimpleAction *action;
-
-          action = g_simple_action_new_stateful (id, NULL, g_variant_new_uint32 (count));
-          g_simple_action_group_insert (app->actions, G_ACTION (action));
-
-          g_signal_emit (app->list, signals[SOURCE_ADDED], 0,
-                         app->info, id, label, iconstr, count, time, string, draws_attention);
-
-          g_object_unref (action);
+          im_application_list_source_added (app, i++, source);
+          g_variant_unref (source);
         }
+
       g_variant_unref (sources);
     }
   else
@@ -240,6 +327,40 @@ im_application_list_sources_listed (GObject      *source_object,
       g_warning ("could not fetch the list of sources: %s", error->message);
       g_error_free (error);
     }
+}
+
+static void
+im_application_list_message_added (Application *app,
+                                   GVariant    *message)
+{
+  const gchar *id;
+  const gchar *iconstr;
+  const gchar *title;
+  const gchar *subtitle;
+  const gchar *body;
+  gint64 time;
+  gboolean draws_attention;
+  GSimpleAction *action;
+
+  g_variant_get (message, "(&s&s&s&s&sxb)",
+                 &id, &iconstr, &title, &subtitle, &body, &time, &draws_attention);
+
+  action = g_simple_action_new (id, NULL);
+  g_simple_action_group_insert (G_SIMPLE_ACTION_GROUP (app->actions), G_ACTION (action));
+
+  g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
+                 app->info, id, iconstr, title, subtitle, body, time, draws_attention);
+
+  g_object_unref (action);
+}
+
+static void
+im_application_list_message_removed (Application *app,
+                                     const gchar *id)
+{
+  g_simple_action_group_remove (app->actions, id);
+
+  g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->info, id);
 }
 
 static void
@@ -254,27 +375,13 @@ im_application_list_messages_listed (GObject      *source_object,
   if (indicator_messages_application_call_list_messages_finish (app->proxy, &messages, result, &error))
     {
       GVariantIter iter;
-      const gchar *id;
-      const gchar *iconstr;
-      const gchar *title;
-      const gchar *subtitle;
-      const gchar *body;
-      gint64 time;
-      gboolean draws_attention;
+      GVariant *message;
 
       g_variant_iter_init (&iter, messages);
-      while (g_variant_iter_next (&iter, "(&s&s&s&s&sxb)", &id, &iconstr, &title, &subtitle, &body,
-                                  &time, &draws_attention))
+      while ((message = g_variant_iter_next_value (&iter)))
         {
-          GSimpleAction *action;
-
-          action = g_simple_action_new (id, NULL);
-          g_simple_action_group_insert (G_SIMPLE_ACTION_GROUP (app->actions), G_ACTION (action));
-
-          g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
-                         app->info, id, iconstr, title, subtitle, body, time, draws_attention);
-
-          g_object_unref (action);
+          im_application_list_message_added (app, message);
+          g_variant_unref (message);
         }
 
       g_variant_unref (messages);
@@ -306,6 +413,12 @@ im_application_list_proxy_created (GObject      *source_object,
                                                     im_application_list_sources_listed, app);
   indicator_messages_application_call_list_messages (app->proxy, app->cancellable,
                                                      im_application_list_messages_listed, app);
+
+  g_signal_connect_swapped (app->proxy, "source-added", G_CALLBACK (im_application_list_source_added), app);
+  g_signal_connect_swapped (app->proxy, "source-changed", G_CALLBACK (im_application_list_source_changed), app);
+  g_signal_connect_swapped (app->proxy, "source-removed", G_CALLBACK (im_application_list_source_removed), app);
+  g_signal_connect_swapped (app->proxy, "message-added", G_CALLBACK (im_application_list_message_added), app);
+  g_signal_connect_swapped (app->proxy, "message-removed", G_CALLBACK (im_application_list_message_removed), app);
 }
 
 void
