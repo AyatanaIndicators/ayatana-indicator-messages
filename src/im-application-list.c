@@ -115,15 +115,11 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                         NULL, NULL,
                                         g_cclosure_marshal_generic,
                                         G_TYPE_NONE,
-                                        8,
+                                        4,
                                         G_TYPE_DESKTOP_APP_INFO,
                                         G_TYPE_STRING,
                                         G_TYPE_STRING,
-                                        G_TYPE_STRING,
-                                        G_TYPE_UINT,
-                                        G_TYPE_INT64,
-                                        G_TYPE_STRING,
-                                        G_TYPE_BOOLEAN);
+                                        G_TYPE_STRING);
 
   signals[SOURCE_CHANGED] = g_signal_new ("source-changed",
                                           IM_TYPE_APPLICATION_LIST,
@@ -132,15 +128,11 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                           NULL, NULL,
                                           g_cclosure_marshal_generic,
                                           G_TYPE_NONE,
-                                          8,
+                                          4,
                                           G_TYPE_DESKTOP_APP_INFO,
                                           G_TYPE_STRING,
                                           G_TYPE_STRING,
-                                          G_TYPE_STRING,
-                                          G_TYPE_UINT,
-                                          G_TYPE_INT64,
-                                          G_TYPE_STRING,
-                                          G_TYPE_BOOLEAN);
+                                          G_TYPE_STRING);
 
   signals[SOURCE_REMOVED] = g_signal_new ("source-removed",
                                           IM_TYPE_APPLICATION_LIST,
@@ -277,8 +269,7 @@ im_application_list_source_added (Application *app,
   action = g_simple_action_new_stateful (id, NULL, g_variant_new_uint32 (count));
   g_simple_action_group_insert (app->actions, G_ACTION (action));
 
-  g_signal_emit (app->list, signals[SOURCE_ADDED], 0,
-                 app->info, id, label, iconstr, count, time, string, draws_attention);
+  g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->info, id, label, iconstr);
 
   g_object_unref (action);
 }
@@ -301,8 +292,7 @@ im_application_list_source_changed (Application *app,
   g_action_group_change_action_state (G_ACTION_GROUP (app->actions), id,
                                       g_variant_new_uint32 (count));
 
-  g_signal_emit (app->list, signals[SOURCE_CHANGED], 0,
-                 app->info, id, label, iconstr, count, time, string, draws_attention);
+  g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->info, id, label, iconstr);
 }
 
 static void

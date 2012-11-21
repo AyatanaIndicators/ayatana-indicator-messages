@@ -55,10 +55,7 @@ void                im_phone_menu_add_source            (ImPhoneMenu        *men
                                                          GDesktopAppInfo    *app,
                                                          const gchar        *id,
                                                          const gchar        *label,
-                                                         const gchar        *iconstr,
-                                                         guint32             count,
-                                                         gint64              time,
-                                                         const gchar        *string);
+                                                         const gchar        *iconstr);
 
 void                im_phone_menu_remove_source         (ImPhoneMenu        *menu,
                                                          GDesktopAppInfo    *app,

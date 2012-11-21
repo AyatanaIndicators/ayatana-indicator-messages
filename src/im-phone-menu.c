@@ -172,10 +172,7 @@ im_phone_menu_add_source (ImPhoneMenu     *menu,
                           GDesktopAppInfo *app,
                           const gchar     *id,
                           const gchar     *label,
-                          const gchar     *iconstr,
-                          guint32          count,
-                          gint64           time,
-                          const gchar     *string)
+                          const gchar     *iconstr)
 {
   GMenuItem *item;
   gchar *action_name;
