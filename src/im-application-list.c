@@ -215,7 +215,7 @@ im_application_list_add (ImApplicationList  *list,
   info = g_desktop_app_info_new (desktop_id);
   if (!info)
     {
-      g_warning ("an application with id '%s' is no installed", desktop_id);
+      g_warning ("an application with id '%s' is not installed", desktop_id);
       return;
     }
 
@@ -483,7 +483,7 @@ im_application_list_set_remote (ImApplicationList *list,
   app = g_hash_table_lookup (list->applications, id);
   if (!app)
     {
-      g_warning ("'%s' is not a registered appliction", id);
+      g_warning ("'%s' is not a registered application", id);
       return;
     }
 
