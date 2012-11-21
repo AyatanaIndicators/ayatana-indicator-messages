@@ -52,7 +52,11 @@ indicator_messages_service_SOURCES = \
 	gsettingsstrv.c \
 	gsettingsstrv.h \
 	gmenuutils.c \
-	gmenuutils.h
+	gmenuutils.h \
+	im-phone-menu.c \
+	im-phone-menu.h \
+	im-application-list.c \
+	im-application-list.h
 
 indicator_messages_service_CFLAGS = \
 	$(APPLET_CFLAGS) \
