@@ -715,7 +715,7 @@ messaging_menu_app_set_draws_attention (MessagingMenuApp *app,
     return;
 
   state = g_action_get_state (G_ACTION (action));
-  g_variant_get (state, "(ux&sb)", &count, &time, &string);
+  g_variant_get (state, "(ux&sb)", &count, &time, &string, NULL);
 
   new_state = g_variant_new ("(uxsb)", count, time, string, TRUE);
   g_simple_action_set_state (action, new_state);
