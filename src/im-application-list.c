@@ -261,12 +261,14 @@ im_application_list_source_added (Application *app,
   gint64 time;
   const gchar *string;
   gboolean draws_attention;
+  GVariant *state;
   GSimpleAction *action;
 
   g_variant_get (source, "(&s&s&sux&sb)",
                  &id, &label, &iconstr, &count, &time, &string, &draws_attention);
 
-  action = g_simple_action_new_stateful (id, NULL, g_variant_new_uint32 (count));
+  state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
+  action = g_simple_action_new_stateful (id, NULL, state);
   g_simple_action_group_insert (app->actions, G_ACTION (action));
 
   g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->info, id, label, iconstr);
@@ -290,7 +292,7 @@ im_application_list_source_changed (Application *app,
                  &id, &label, &iconstr, &count, &time, &string, &draws_attention);
 
   g_action_group_change_action_state (G_ACTION_GROUP (app->actions), id,
-                                      g_variant_new_uint32 (count));
+                                      g_variant_new ("(uxsb)", count, time, string, draws_attention));
 
   g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->info, id, label, iconstr);
 }
