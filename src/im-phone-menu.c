@@ -124,6 +124,7 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   const gchar *app_id;
   GMenuItem *item;
   gchar *action_name;
+  GIcon *app_icon;
 
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
   g_return_if_fail (G_IS_DESKTOP_APP_INFO (app));
@@ -142,6 +143,17 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
 
   if (iconstr)
     g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
+
+  app_icon = g_app_info_get_icon (G_APP_INFO (app));
+  if (app_icon)
+    {
+      gchar *app_iconstr;
+
+      app_iconstr = g_icon_to_string (app_icon);
+      g_menu_item_set_attribute (item, "x-canonical-app-icon", "s", app_iconstr);
+
+      g_free (app_iconstr);
+    }
 
   g_menu_append_item (menu->message_section, item);
 
