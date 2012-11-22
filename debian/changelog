@@ -1,3 +1,13 @@
+indicator-messages (12.10.6daily12.11.22-0ubuntu1) raring; urgency=low
+
+  [ Lars Uebernickel ]
+  * Crash in g_variant_valist_get_leaf when highlighted (LP: #1081754)
+
+  [ Automatic PS uploader ]
+  * Automatic snapshot from revision 333
+
+ -- Automatic PS uploader <ps-jenkins@lists.canonical.com>  Thu, 22 Nov 2012 10:02:35 +0000
+
 indicator-messages (12.10.6daily12.11.21.1-0ubuntu1) raring; urgency=low
 
   [ Mathieu Trudel-Lapierre ]
