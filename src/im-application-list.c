@@ -153,6 +153,33 @@ im_application_list_message_activated (GSimpleAction *action,
 }
 
 static void
+im_application_list_remove_all (GSimpleAction *action,
+                                GVariant      *parameter,
+                                gpointer       user_data)
+{
+  ImApplicationList *list = user_data;
+  GHashTableIter iter;
+  Application *app;
+
+  g_hash_table_iter_init (&iter, list->applications);
+  while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &app))
+    {
+      gchar **actions;
+      gchar **it;
+
+      actions = g_action_group_list_actions (G_ACTION_GROUP (app->source_actions));
+      for (it = actions; *it; it++)
+        im_application_list_source_removed (app, *it);
+      g_strfreev (actions);
+
+      actions = g_action_group_list_actions (G_ACTION_GROUP (app->message_actions));
+      for (it = actions; *it; it++)
+        im_application_list_message_removed (app, *it);
+      g_strfreev (actions);
+    }
+}
+
+static void
 im_application_list_dispose (GObject *object)
 {
   ImApplicationList *list = IM_APPLICATION_LIST (object);
@@ -256,8 +283,23 @@ im_application_list_class_init (ImApplicationListClass *klass)
 static void
 im_application_list_init (ImApplicationList *list)
 {
+  GSimpleActionGroup *actions;
+  GSimpleAction *remove_all_action;
+
   list->applications = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, application_free);
   list->muxer = g_action_muxer_new ();
+
+  actions = g_simple_action_group_new ();
+
+  remove_all_action = g_simple_action_new ("remove-all", NULL);
+  g_signal_connect (remove_all_action, "activate", G_CALLBACK (im_application_list_remove_all), list);
+
+  g_simple_action_group_insert (actions, G_ACTION (remove_all_action));
+
+  g_action_muxer_insert (list->muxer, NULL, G_ACTION_GROUP (actions));
+
+  g_object_unref (remove_all_action);
+  g_object_unref (actions);
 }
 
 ImApplicationList *
@@ -460,7 +502,7 @@ im_application_list_message_added (Application *app,
   action = g_simple_action_new (id, G_VARIANT_TYPE_BOOLEAN);
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_message_activated), app);
 
-  g_simple_action_group_insert (G_SIMPLE_ACTION_GROUP (app->message_actions), G_ACTION (action));
+  g_simple_action_group_insert (app->message_actions, G_ACTION (action));
 
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
                  app->id, app_iconstr, id, iconstr, title, subtitle, body, time, draws_attention);

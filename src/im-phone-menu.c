@@ -89,12 +89,20 @@ im_phone_menu_class_init (ImPhoneMenuClass *klass)
 static void
 im_phone_menu_init (ImPhoneMenu *menu)
 {
+  GMenuItem *item;
+
   menu->message_section = g_menu_new ();
   menu->source_section = g_menu_new ();
 
   menu->toplevel_menu = g_menu_new ();
   g_menu_append_section (menu->toplevel_menu, NULL, G_MENU_MODEL (menu->message_section));
   g_menu_append_section (menu->toplevel_menu, NULL, G_MENU_MODEL (menu->source_section));
+
+  item = g_menu_item_new ("Clear All", "remove-all");
+  g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.button");
+  g_menu_append_item (menu->toplevel_menu, item);
+
+  g_object_unref (item);
 }
 
 ImPhoneMenu *
