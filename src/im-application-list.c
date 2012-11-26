@@ -87,6 +87,60 @@ application_free (gpointer data)
 }
 
 static void
+im_application_list_source_removed (Application *app,
+                                    const gchar *id)
+{
+  g_simple_action_group_remove (app->actions, id);
+
+  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
+}
+
+static void
+im_application_list_source_activated (GSimpleAction *action,
+                                      GVariant      *parameter,
+                                      gpointer       user_data)
+{
+  Application *app = user_data;
+  const gchar *source_id;
+
+  source_id = g_action_get_name (G_ACTION (action));
+
+  indicator_messages_application_call_activate_source (app->proxy,
+                                                       source_id,
+                                                       app->cancellable,
+                                                       NULL, NULL);
+
+  im_application_list_source_removed (app, source_id);
+}
+
+static void
+im_application_list_message_removed (Application *app,
+                                     const gchar *id)
+{
+  g_simple_action_group_remove (app->actions, id);
+
+  g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, id);
+}
+
+static void
+im_application_list_message_activated (GSimpleAction *action,
+                                       GVariant      *parameter,
+                                       gpointer       user_data)
+{
+  Application *app = user_data;
+  const gchar *message_id;
+
+  message_id = g_action_get_name (G_ACTION (action));
+
+  indicator_messages_application_call_activate_message (app->proxy,
+                                                        message_id,
+                                                        app->cancellable,
+                                                        NULL, NULL);
+
+  im_application_list_message_removed (app, message_id);
+}
+
+static void
 im_application_list_dispose (GObject *object)
 {
   ImApplicationList *list = IM_APPLICATION_LIST (object);
@@ -304,6 +358,8 @@ im_application_list_source_added (Application *app,
 
   state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
   action = g_simple_action_new_stateful (id, NULL, state);
+  g_signal_connect (action, "activate", G_CALLBACK (im_application_list_source_activated), app);
+
   g_simple_action_group_insert (app->actions, G_ACTION (action));
 
   g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, iconstr);
@@ -330,15 +386,6 @@ im_application_list_source_changed (Application *app,
                                       g_variant_new ("(uxsb)", count, time, string, draws_attention));
 
   g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, id, label, iconstr);
-}
-
-static void
-im_application_list_source_removed (Application *app,
-                                    const gchar *id)
-{
-  g_simple_action_group_remove (app->actions, id);
-
-  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
 }
 
 static void
@@ -394,6 +441,8 @@ im_application_list_message_added (Application *app,
   app_iconstr = app_icon ? g_icon_to_string (app_icon) : NULL;
 
   action = g_simple_action_new (id, NULL);
+  g_signal_connect (action, "activate", G_CALLBACK (im_application_list_message_activated), app);
+
   g_simple_action_group_insert (G_SIMPLE_ACTION_GROUP (app->actions), G_ACTION (action));
 
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
@@ -401,15 +450,6 @@ im_application_list_message_added (Application *app,
 
   g_free (app_iconstr);
   g_object_unref (action);
-}
-
-static void
-im_application_list_message_removed (Application *app,
-                                     const gchar *id)
-{
-  g_simple_action_group_remove (app->actions, id);
-
-  g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, id);
 }
 
 static void
