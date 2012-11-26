@@ -105,10 +105,13 @@ im_application_list_source_activated (GSimpleAction *action,
 
   source_id = g_action_get_name (G_ACTION (action));
 
-  indicator_messages_application_call_activate_source (app->proxy,
-                                                       source_id,
-                                                       app->cancellable,
-                                                       NULL, NULL);
+  if (g_variant_get_boolean (parameter))
+    {
+      indicator_messages_application_call_activate_source (app->proxy,
+                                                           source_id,
+                                                           app->cancellable,
+                                                           NULL, NULL);
+    }
 
   im_application_list_source_removed (app, source_id);
 }
@@ -132,10 +135,13 @@ im_application_list_message_activated (GSimpleAction *action,
 
   message_id = g_action_get_name (G_ACTION (action));
 
-  indicator_messages_application_call_activate_message (app->proxy,
-                                                        message_id,
-                                                        app->cancellable,
-                                                        NULL, NULL);
+  if (g_variant_get_boolean (parameter))
+    {
+      indicator_messages_application_call_activate_message (app->proxy,
+                                                            message_id,
+                                                            app->cancellable,
+                                                            NULL, NULL);
+    }
 
   im_application_list_message_removed (app, message_id);
 }
@@ -357,7 +363,7 @@ im_application_list_source_added (Application *app,
                  &id, &label, &iconstr, &count, &time, &string, &draws_attention);
 
   state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
-  action = g_simple_action_new_stateful (id, NULL, state);
+  action = g_simple_action_new_stateful (id, G_VARIANT_TYPE_BOOLEAN, state);
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_source_activated), app);
 
   g_simple_action_group_insert (app->actions, G_ACTION (action));
@@ -440,7 +446,7 @@ im_application_list_message_added (Application *app,
   app_icon = g_app_info_get_icon (G_APP_INFO (app->info));
   app_iconstr = app_icon ? g_icon_to_string (app_icon) : NULL;
 
-  action = g_simple_action_new (id, NULL);
+  action = g_simple_action_new (id, G_VARIANT_TYPE_BOOLEAN);
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_message_activated), app);
 
   g_simple_action_group_insert (G_SIMPLE_ACTION_GROUP (app->actions), G_ACTION (action));
