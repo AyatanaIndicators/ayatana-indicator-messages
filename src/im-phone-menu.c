@@ -159,7 +159,7 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
   g_return_if_fail (app_id);
 
-  action_name = g_strconcat (app_id, ".", id, NULL);
+  action_name = g_strconcat (app_id, ".msg.", id, NULL);
 
   item = g_menu_item_new (title, action_name);
   g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.messageitem");
@@ -190,7 +190,7 @@ im_phone_menu_remove_message (ImPhoneMenu     *menu,
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
   g_return_if_fail (app_id != NULL);
 
-  action_name = g_strconcat (app_id, ".", id, NULL);
+  action_name = g_strconcat (app_id, ".msg.", id, NULL);
   im_phone_menu_foreach_item_with_action (G_MENU_MODEL (menu->message_section),
                                           action_name,
                                           (ImMenuForeachFunc) g_menu_remove);
@@ -211,7 +211,7 @@ im_phone_menu_add_source (ImPhoneMenu     *menu,
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
   g_return_if_fail (app_id != NULL);
 
-  action_name = g_strconcat (app_id, ".", id, NULL);
+  action_name = g_strconcat (app_id, ".src.", id, NULL);
 
   item = g_menu_item_new (label, action_name);
   g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.sourceitem");
@@ -235,7 +235,7 @@ im_phone_menu_remove_source (ImPhoneMenu     *menu,
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
   g_return_if_fail (app_id != NULL);
 
-  action_name = g_strconcat (app_id, ".", id, NULL);
+  action_name = g_strconcat (app_id, ".src.", id, NULL);
   im_phone_menu_foreach_item_with_action (G_MENU_MODEL (menu->source_section),
                                           action_name,
                                           (ImMenuForeachFunc) g_menu_remove);
