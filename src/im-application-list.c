@@ -56,7 +56,9 @@ typedef struct
   GDesktopAppInfo *info;
   gchar *id;
   IndicatorMessagesApplication *proxy;
-  GSimpleActionGroup *actions;
+  GActionMuxer *actions;
+  GSimpleActionGroup *source_actions;
+  GSimpleActionGroup *message_actions;
   GCancellable *cancellable;
 } Application;
 
@@ -81,7 +83,11 @@ application_free (gpointer data)
     g_object_unref (app->proxy);
 
   if (app->actions)
-    g_object_unref (app->actions);
+    {
+      g_object_unref (app->actions);
+      g_object_unref (app->source_actions);
+      g_object_unref (app->message_actions);
+    }
 
   g_slice_free (Application, app);
 }
@@ -90,7 +96,7 @@ static void
 im_application_list_source_removed (Application *app,
                                     const gchar *id)
 {
-  g_simple_action_group_remove (app->actions, id);
+  g_simple_action_group_remove (app->source_actions, id);
 
   g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
 }
@@ -120,7 +126,7 @@ static void
 im_application_list_message_removed (Application *app,
                                      const gchar *id)
 {
-  g_simple_action_group_remove (app->actions, id);
+  g_simple_action_group_remove (app->message_actions, id);
 
   g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, id);
 }
@@ -319,7 +325,12 @@ im_application_list_add (ImApplicationList  *list,
   app->info = info;
   app->id = im_application_list_canonical_id (id);
   app->list = list;
-  app->actions = g_simple_action_group_new ();
+  app->actions = g_action_muxer_new ();
+  app->source_actions = g_simple_action_group_new ();
+  app->message_actions = g_simple_action_group_new ();
+
+  g_action_muxer_insert (app->actions, "src", G_ACTION_GROUP (app->source_actions));
+  g_action_muxer_insert (app->actions, "msg", G_ACTION_GROUP (app->message_actions));
 
   g_hash_table_insert (list->applications, (gpointer) app->id, app);
   g_action_muxer_insert (list->muxer, app->id, G_ACTION_GROUP (app->actions));
@@ -366,7 +377,7 @@ im_application_list_source_added (Application *app,
   action = g_simple_action_new_stateful (id, G_VARIANT_TYPE_BOOLEAN, state);
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_source_activated), app);
 
-  g_simple_action_group_insert (app->actions, G_ACTION (action));
+  g_simple_action_group_insert (app->source_actions, G_ACTION (action));
 
   g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, iconstr);
 
@@ -388,7 +399,7 @@ im_application_list_source_changed (Application *app,
   g_variant_get (source, "(&s&s&sux&sb)",
                  &id, &label, &iconstr, &count, &time, &string, &draws_attention);
 
-  g_action_group_change_action_state (G_ACTION_GROUP (app->actions), id,
+  g_action_group_change_action_state (G_ACTION_GROUP (app->source_actions), id,
                                       g_variant_new ("(uxsb)", count, time, string, draws_attention));
 
   g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, id, label, iconstr);
@@ -449,7 +460,7 @@ im_application_list_message_added (Application *app,
   action = g_simple_action_new (id, G_VARIANT_TYPE_BOOLEAN);
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_message_activated), app);
 
-  g_simple_action_group_insert (G_SIMPLE_ACTION_GROUP (app->actions), G_ACTION (action));
+  g_simple_action_group_insert (G_SIMPLE_ACTION_GROUP (app->message_actions), G_ACTION (action));
 
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
                  app->id, app_iconstr, id, iconstr, title, subtitle, body, time, draws_attention);
@@ -504,9 +515,12 @@ im_application_list_unset_remote (Application *app)
 
   /* clear actions by creating a new action group and overriding it in
    * the muxer */
-  g_object_unref (app->actions);
-  app->actions = g_simple_action_group_new ();
-  g_action_muxer_insert (app->list->muxer, app->id, G_ACTION_GROUP (app->actions));
+  g_object_unref (app->source_actions);
+  g_object_unref (app->message_actions);
+  app->source_actions = g_simple_action_group_new ();
+  app->message_actions = g_simple_action_group_new ();
+  g_action_muxer_insert (app->actions, "src", G_ACTION_GROUP (app->source_actions));
+  g_action_muxer_insert (app->actions, "msg", G_ACTION_GROUP (app->message_actions));
 
   if (was_running)
     g_signal_emit (app->list, signals[APP_STOPPED], 0, app->id);
