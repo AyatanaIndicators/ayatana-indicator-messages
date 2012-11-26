@@ -13,6 +13,10 @@
     <method name="ActivateMessage">
       <arg type="s" name="message_id" direction="in" />
     </method>
+    <method name="Dismiss">
+      <arg type="as" name="sources" direction="in" />
+      <arg type="as" name="messages" direction="in" />
+    </method>
     <signal name="SourceAdded">
       <arg type="u" name="position" direction="in" />
       <arg type="(sssuxsb)" name="source" direction="in" />

@@ -23,6 +23,7 @@
 #include "gactionmuxer.h"
 
 #include <gio/gdesktopappinfo.h>
+#include <string.h>
 
 typedef GObjectClass ImApplicationListClass;
 
@@ -53,8 +54,11 @@ typedef struct
 {
   ImApplicationList *list;
   GDesktopAppInfo *info;
+  gchar *id;
   IndicatorMessagesApplication *proxy;
-  GSimpleActionGroup *actions;
+  GActionMuxer *actions;
+  GSimpleActionGroup *source_actions;
+  GSimpleActionGroup *message_actions;
   GCancellable *cancellable;
 } Application;
 
@@ -66,7 +70,8 @@ application_free (gpointer data)
   if (!app)
     return;
 
-  g_clear_object (&app->info);
+  g_object_unref (app->info);
+  g_free (app->id);
 
   if (app->cancellable)
     {
@@ -78,9 +83,121 @@ application_free (gpointer data)
     g_object_unref (app->proxy);
 
   if (app->actions)
-    g_object_unref (app->actions);
+    {
+      g_object_unref (app->actions);
+      g_object_unref (app->source_actions);
+      g_object_unref (app->message_actions);
+    }
 
   g_slice_free (Application, app);
+}
+
+static void
+im_application_list_source_removed (Application *app,
+                                    const gchar *id)
+{
+  g_simple_action_group_remove (app->source_actions, id);
+
+  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
+}
+
+static void
+im_application_list_source_activated (GSimpleAction *action,
+                                      GVariant      *parameter,
+                                      gpointer       user_data)
+{
+  Application *app = user_data;
+  const gchar *source_id;
+
+  source_id = g_action_get_name (G_ACTION (action));
+
+  if (g_variant_get_boolean (parameter))
+    {
+      indicator_messages_application_call_activate_source (app->proxy,
+                                                           source_id,
+                                                           app->cancellable,
+                                                           NULL, NULL);
+    }
+  else
+    {
+      const gchar *sources[] = { source_id, NULL };
+      const gchar *messages[] = { NULL };
+      indicator_messages_application_call_dismiss (app->proxy, sources, messages,
+                                                   app->cancellable, NULL, NULL);
+    }
+
+  im_application_list_source_removed (app, source_id);
+}
+
+static void
+im_application_list_message_removed (Application *app,
+                                     const gchar *id)
+{
+  g_simple_action_group_remove (app->message_actions, id);
+
+  g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, id);
+}
+
+static void
+im_application_list_message_activated (GSimpleAction *action,
+                                       GVariant      *parameter,
+                                       gpointer       user_data)
+{
+  Application *app = user_data;
+  const gchar *message_id;
+
+  message_id = g_action_get_name (G_ACTION (action));
+
+  if (g_variant_get_boolean (parameter))
+    {
+      indicator_messages_application_call_activate_message (app->proxy,
+                                                            message_id,
+                                                            app->cancellable,
+                                                            NULL, NULL);
+    }
+  else
+    {
+      const gchar *sources[] = { NULL };
+      const gchar *messages[] = { message_id, NULL };
+      indicator_messages_application_call_dismiss (app->proxy, sources, messages,
+                                                   app->cancellable, NULL, NULL);
+    }
+
+  im_application_list_message_removed (app, message_id);
+}
+
+static void
+im_application_list_remove_all (GSimpleAction *action,
+                                GVariant      *parameter,
+                                gpointer       user_data)
+{
+  ImApplicationList *list = user_data;
+  GHashTableIter iter;
+  Application *app;
+
+  g_hash_table_iter_init (&iter, list->applications);
+  while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &app))
+    {
+      gchar **source_actions;
+      gchar **message_actions;
+      gchar **it;
+
+      source_actions = g_action_group_list_actions (G_ACTION_GROUP (app->source_actions));
+      for (it = source_actions; *it; it++)
+        im_application_list_source_removed (app, *it);
+
+      message_actions = g_action_group_list_actions (G_ACTION_GROUP (app->message_actions));
+      for (it = message_actions; *it; it++)
+        im_application_list_message_removed (app, *it);
+
+      indicator_messages_application_call_dismiss (app->proxy, 
+                                                   (const gchar * const *) source_actions,
+                                                   (const gchar * const *) message_actions,
+                                                   app->cancellable, NULL, NULL);
+
+      g_strfreev (source_actions);
+      g_strfreev (message_actions);
+    }
 }
 
 static void
@@ -116,7 +233,7 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                         g_cclosure_marshal_generic,
                                         G_TYPE_NONE,
                                         4,
-                                        G_TYPE_DESKTOP_APP_INFO,
+                                        G_TYPE_STRING,
                                         G_TYPE_STRING,
                                         G_TYPE_STRING,
                                         G_TYPE_STRING);
@@ -129,7 +246,7 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                           g_cclosure_marshal_generic,
                                           G_TYPE_NONE,
                                           4,
-                                          G_TYPE_DESKTOP_APP_INFO,
+                                          G_TYPE_STRING,
                                           G_TYPE_STRING,
                                           G_TYPE_STRING,
                                           G_TYPE_STRING);
@@ -142,7 +259,7 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                           g_cclosure_marshal_generic,
                                           G_TYPE_NONE,
                                           2,
-                                          G_TYPE_DESKTOP_APP_INFO,
+                                          G_TYPE_STRING,
                                           G_TYPE_STRING);
 
   signals[MESSAGE_ADDED] = g_signal_new ("message-added",
@@ -153,7 +270,7 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                          g_cclosure_marshal_generic,
                                          G_TYPE_NONE,
                                          8,
-                                         G_TYPE_DESKTOP_APP_INFO,
+                                         G_TYPE_STRING,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
@@ -170,7 +287,7 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                            g_cclosure_marshal_generic,
                                            G_TYPE_NONE,
                                            2,
-                                           G_TYPE_DESKTOP_APP_INFO,
+                                           G_TYPE_STRING,
                                            G_TYPE_STRING);
 
   signals[APP_STOPPED] = g_signal_new ("app-stopped",
@@ -181,20 +298,66 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                        g_cclosure_marshal_VOID__OBJECT,
                                        G_TYPE_NONE,
                                        1,
-                                       G_TYPE_DESKTOP_APP_INFO);
+                                       G_TYPE_STRING);
 }
 
 static void
 im_application_list_init (ImApplicationList *list)
 {
+  GSimpleActionGroup *actions;
+  GSimpleAction *remove_all_action;
+
   list->applications = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, application_free);
   list->muxer = g_action_muxer_new ();
+
+  actions = g_simple_action_group_new ();
+
+  remove_all_action = g_simple_action_new ("remove-all", NULL);
+  g_signal_connect (remove_all_action, "activate", G_CALLBACK (im_application_list_remove_all), list);
+
+  g_simple_action_group_insert (actions, G_ACTION (remove_all_action));
+
+  g_action_muxer_insert (list->muxer, NULL, G_ACTION_GROUP (actions));
+
+  g_object_unref (remove_all_action);
+  g_object_unref (actions);
 }
 
 ImApplicationList *
 im_application_list_new (void)
 {
   return g_object_new (IM_TYPE_APPLICATION_LIST, NULL);
+}
+
+static gchar *
+im_application_list_canonical_id (const gchar *id)
+{
+  gchar *str;
+  gchar *p;
+
+  str = g_strndup (id, strlen (id) - g_str_has_suffix (id, ".desktop") ? 7 : 0);
+
+  for (p = str; *p; p++)
+    {
+      if (*p == '.')
+        *p = '_';
+    }
+
+  return str;
+}
+
+static Application *
+im_application_list_lookup (ImApplicationList *list,
+                            const gchar       *desktop_id)
+{
+  gchar *id;
+  Application *app;
+
+  id = im_application_list_canonical_id (desktop_id);
+  app = g_hash_table_lookup (list->applications, id);
+
+  g_free (id);
+  return app;
 }
 
 void
@@ -208,8 +371,7 @@ im_application_list_add (ImApplicationList  *list,
   g_return_if_fail (IM_IS_APPLICATION_LIST (list));
   g_return_if_fail (desktop_id != NULL);
 
-  app = g_hash_table_lookup (list->applications, desktop_id);
-  if (app)
+  if (im_application_list_lookup (list, desktop_id))
     return;
 
   info = g_desktop_app_info_new (desktop_id);
@@ -220,14 +382,21 @@ im_application_list_add (ImApplicationList  *list,
     }
 
   id = g_app_info_get_id (G_APP_INFO (info));
+  g_return_if_fail (id != NULL);
 
   app = g_slice_new0 (Application);
-  app->list = list;
   app->info = info;
-  app->actions = g_simple_action_group_new ();
+  app->id = im_application_list_canonical_id (id);
+  app->list = list;
+  app->actions = g_action_muxer_new ();
+  app->source_actions = g_simple_action_group_new ();
+  app->message_actions = g_simple_action_group_new ();
 
-  g_hash_table_insert (list->applications, (gpointer) id, app);
-  g_action_muxer_insert (list->muxer, id, G_ACTION_GROUP (app->actions));
+  g_action_muxer_insert (app->actions, "src", G_ACTION_GROUP (app->source_actions));
+  g_action_muxer_insert (app->actions, "msg", G_ACTION_GROUP (app->message_actions));
+
+  g_hash_table_insert (list->applications, (gpointer) app->id, app);
+  g_action_muxer_insert (list->muxer, app->id, G_ACTION_GROUP (app->actions));
 }
 
 void
@@ -238,11 +407,11 @@ im_application_list_remove (ImApplicationList *list,
 
   g_return_if_fail (IM_IS_APPLICATION_LIST (list));
 
-  app = g_hash_table_lookup (list->applications, id);
+  app = im_application_list_lookup (list, id);
   if (app)
     {
       if (app->proxy || app->cancellable)
-        g_signal_emit (app->list, signals[APP_STOPPED], 0, app->info);
+        g_signal_emit (app->list, signals[APP_STOPPED], 0, app->id);
 
       g_hash_table_remove (list->applications, id);
       g_action_muxer_remove (list->muxer, id);
@@ -261,15 +430,19 @@ im_application_list_source_added (Application *app,
   gint64 time;
   const gchar *string;
   gboolean draws_attention;
+  GVariant *state;
   GSimpleAction *action;
 
   g_variant_get (source, "(&s&s&sux&sb)",
                  &id, &label, &iconstr, &count, &time, &string, &draws_attention);
 
-  action = g_simple_action_new_stateful (id, NULL, g_variant_new_uint32 (count));
-  g_simple_action_group_insert (app->actions, G_ACTION (action));
+  state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
+  action = g_simple_action_new_stateful (id, G_VARIANT_TYPE_BOOLEAN, state);
+  g_signal_connect (action, "activate", G_CALLBACK (im_application_list_source_activated), app);
 
-  g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->info, id, label, iconstr);
+  g_simple_action_group_insert (app->source_actions, G_ACTION (action));
+
+  g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, iconstr);
 
   g_object_unref (action);
 }
@@ -289,19 +462,10 @@ im_application_list_source_changed (Application *app,
   g_variant_get (source, "(&s&s&sux&sb)",
                  &id, &label, &iconstr, &count, &time, &string, &draws_attention);
 
-  g_action_group_change_action_state (G_ACTION_GROUP (app->actions), id,
-                                      g_variant_new_uint32 (count));
+  g_action_group_change_action_state (G_ACTION_GROUP (app->source_actions), id,
+                                      g_variant_new ("(uxsb)", count, time, string, draws_attention));
 
-  g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->info, id, label, iconstr);
-}
-
-static void
-im_application_list_source_removed (Application *app,
-                                    const gchar *id)
-{
-  g_simple_action_group_remove (app->actions, id);
-
-  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->info, id);
+  g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, id, label, iconstr);
 }
 
 static void
@@ -347,26 +511,25 @@ im_application_list_message_added (Application *app,
   gint64 time;
   gboolean draws_attention;
   GSimpleAction *action;
+  GIcon *app_icon;
+  gchar *app_iconstr;
 
   g_variant_get (message, "(&s&s&s&s&sxb)",
                  &id, &iconstr, &title, &subtitle, &body, &time, &draws_attention);
 
-  action = g_simple_action_new (id, NULL);
-  g_simple_action_group_insert (G_SIMPLE_ACTION_GROUP (app->actions), G_ACTION (action));
+  app_icon = g_app_info_get_icon (G_APP_INFO (app->info));
+  app_iconstr = app_icon ? g_icon_to_string (app_icon) : NULL;
+
+  action = g_simple_action_new (id, G_VARIANT_TYPE_BOOLEAN);
+  g_signal_connect (action, "activate", G_CALLBACK (im_application_list_message_activated), app);
+
+  g_simple_action_group_insert (app->message_actions, G_ACTION (action));
 
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
-                 app->info, id, iconstr, title, subtitle, body, time, draws_attention);
+                 app->id, app_iconstr, id, iconstr, title, subtitle, body, time, draws_attention);
 
+  g_free (app_iconstr);
   g_object_unref (action);
-}
-
-static void
-im_application_list_message_removed (Application *app,
-                                     const gchar *id)
-{
-  g_simple_action_group_remove (app->actions, id);
-
-  g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->info, id);
 }
 
 static void
@@ -415,14 +578,15 @@ im_application_list_unset_remote (Application *app)
 
   /* clear actions by creating a new action group and overriding it in
    * the muxer */
-  g_object_unref (app->actions);
-  app->actions = g_simple_action_group_new ();
-  g_action_muxer_insert (app->list->muxer,
-                         g_app_info_get_id (G_APP_INFO (app->info)),
-                         G_ACTION_GROUP (app->actions));
+  g_object_unref (app->source_actions);
+  g_object_unref (app->message_actions);
+  app->source_actions = g_simple_action_group_new ();
+  app->message_actions = g_simple_action_group_new ();
+  g_action_muxer_insert (app->actions, "src", G_ACTION_GROUP (app->source_actions));
+  g_action_muxer_insert (app->actions, "msg", G_ACTION_GROUP (app->message_actions));
 
   if (was_running)
-    g_signal_emit (app->list, signals[APP_STOPPED], 0, app->info);
+    g_signal_emit (app->list, signals[APP_STOPPED], 0, app->id);
 }
 
 static void
@@ -480,7 +644,7 @@ im_application_list_set_remote (ImApplicationList *list,
 
   g_return_if_fail (IM_IS_APPLICATION_LIST (list));
 
-  app = g_hash_table_lookup (list->applications, id);
+  app = im_application_list_lookup (list, id);
   if (!app)
     {
       g_warning ("'%s' is not a registered application", id);

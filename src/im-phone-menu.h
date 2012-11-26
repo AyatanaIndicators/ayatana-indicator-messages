@@ -21,7 +21,6 @@
 #define __IM_PHONE_MENU_H__
 
 #include <gio/gio.h>
-#include <gio/gdesktopappinfo.h>
 
 #define IM_TYPE_PHONE_MENU            (im_phone_menu_get_type ())
 #define IM_PHONE_MENU(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), IM_TYPE_PHONE_MENU, ImPhoneMenu))
@@ -39,7 +38,8 @@ ImPhoneMenu *       im_phone_menu_new                   (void);
 GMenuModel *        im_phone_menu_get_model             (ImPhoneMenu        *menu);
 
 void                im_phone_menu_add_message           (ImPhoneMenu        *menu,
-                                                         GDesktopAppInfo    *app,
+                                                         const gchar        *app_id,
+                                                         const gchar        *app_icon,
                                                          const gchar        *id,
                                                          const gchar        *iconstr,
                                                          const gchar        *title,
@@ -48,20 +48,20 @@ void                im_phone_menu_add_message           (ImPhoneMenu        *men
                                                          gint64              time);
 
 void                im_phone_menu_remove_message        (ImPhoneMenu        *menu,
-                                                         GDesktopAppInfo    *app,
+                                                         const gchar        *app_id,
                                                          const gchar        *id);
 
 void                im_phone_menu_add_source            (ImPhoneMenu        *menu,
-                                                         GDesktopAppInfo    *app,
+                                                         const gchar        *app_id,
                                                          const gchar        *id,
                                                          const gchar        *label,
                                                          const gchar        *iconstr);
 
 void                im_phone_menu_remove_source         (ImPhoneMenu        *menu,
-                                                         GDesktopAppInfo    *app,
+                                                         const gchar        *app_id,
                                                          const gchar        *id);
 
-void                im_phone_menu_remove_application    (ImPhoneMenu     *menu,
-                                                         GDesktopAppInfo *app);
+void                im_phone_menu_remove_application    (ImPhoneMenu        *menu,
+                                                         const gchar        *app_id);
 
 #endif
