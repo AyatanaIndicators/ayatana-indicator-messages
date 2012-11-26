@@ -118,6 +118,13 @@ im_application_list_source_activated (GSimpleAction *action,
                                                            app->cancellable,
                                                            NULL, NULL);
     }
+  else
+    {
+      const gchar *sources[] = { source_id, NULL };
+      const gchar *messages[] = { NULL };
+      indicator_messages_application_call_dismiss (app->proxy, sources, messages,
+                                                   app->cancellable, NULL, NULL);
+    }
 
   im_application_list_source_removed (app, source_id);
 }
@@ -148,6 +155,13 @@ im_application_list_message_activated (GSimpleAction *action,
                                                             app->cancellable,
                                                             NULL, NULL);
     }
+  else
+    {
+      const gchar *sources[] = { NULL };
+      const gchar *messages[] = { message_id, NULL };
+      indicator_messages_application_call_dismiss (app->proxy, sources, messages,
+                                                   app->cancellable, NULL, NULL);
+    }
 
   im_application_list_message_removed (app, message_id);
 }
@@ -164,18 +178,25 @@ im_application_list_remove_all (GSimpleAction *action,
   g_hash_table_iter_init (&iter, list->applications);
   while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &app))
     {
-      gchar **actions;
+      gchar **source_actions;
+      gchar **message_actions;
       gchar **it;
 
-      actions = g_action_group_list_actions (G_ACTION_GROUP (app->source_actions));
-      for (it = actions; *it; it++)
+      source_actions = g_action_group_list_actions (G_ACTION_GROUP (app->source_actions));
+      for (it = source_actions; *it; it++)
         im_application_list_source_removed (app, *it);
-      g_strfreev (actions);
 
-      actions = g_action_group_list_actions (G_ACTION_GROUP (app->message_actions));
-      for (it = actions; *it; it++)
+      message_actions = g_action_group_list_actions (G_ACTION_GROUP (app->message_actions));
+      for (it = message_actions; *it; it++)
         im_application_list_message_removed (app, *it);
-      g_strfreev (actions);
+
+      indicator_messages_application_call_dismiss (app->proxy, 
+                                                   (const gchar * const *) source_actions,
+                                                   (const gchar * const *) message_actions,
+                                                   app->cancellable, NULL, NULL);
+
+      g_strfreev (source_actions);
+      g_strfreev (message_actions);
     }
 }
 

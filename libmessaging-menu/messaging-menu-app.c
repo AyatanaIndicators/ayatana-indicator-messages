@@ -607,6 +607,25 @@ messaging_menu_app_activate_message (IndicatorMessagesApplication *app_interface
   return TRUE;
 }
 
+static gboolean
+messaging_menu_app_dismiss (IndicatorMessagesApplication *app_interface,
+                            GDBusMethodInvocation        *invocation,
+                            const gchar * const          *sources,
+                            const gchar * const          *messages,
+                            gpointer                      user_data)
+{
+  MessagingMenuApp *app = user_data;
+  const gchar * const *it;
+
+  for (it = sources; *it; it++)
+    messaging_menu_app_remove_source_internal (app, *it);
+
+  for (it = messages; *it; it++)
+    messaging_menu_app_remove_message_internal (app, *it);
+
+  return TRUE;
+}
+
 static void
 messaging_menu_app_init (MessagingMenuApp *app)
 {
@@ -625,6 +644,8 @@ messaging_menu_app_init (MessagingMenuApp *app)
                     G_CALLBACK (messaging_menu_app_list_messages), app);
   g_signal_connect (app->app_interface, "handle-activate-message",
                     G_CALLBACK (messaging_menu_app_activate_message), app);
+  g_signal_connect (app->app_interface, "handle-dismiss",
+                    G_CALLBACK (messaging_menu_app_dismiss), app);
 
   app->messages = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 
