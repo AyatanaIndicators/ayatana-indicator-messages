@@ -113,7 +113,8 @@ im_phone_menu_get_model (ImPhoneMenu *menu)
 
 void
 im_phone_menu_add_message (ImPhoneMenu     *menu,
-                           GDesktopAppInfo *app,
+                           const gchar     *app_id,
+                           const gchar     *app_icon,
                            const gchar     *id,
                            const gchar     *iconstr,
                            const gchar     *title,
@@ -121,15 +122,10 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
                            const gchar     *body,
                            gint64           time)
 {
-  const gchar *app_id;
   GMenuItem *item;
   gchar *action_name;
-  GIcon *app_icon;
 
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
-  g_return_if_fail (G_IS_DESKTOP_APP_INFO (app));
-
-  app_id = g_app_info_get_id (G_APP_INFO (app));
   g_return_if_fail (app_id);
 
   action_name = g_strconcat (app_id, ".", id, NULL);
@@ -144,16 +140,8 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   if (iconstr)
     g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
 
-  app_icon = g_app_info_get_icon (G_APP_INFO (app));
   if (app_icon)
-    {
-      gchar *app_iconstr;
-
-      app_iconstr = g_icon_to_string (app_icon);
-      g_menu_item_set_attribute (item, "x-canonical-app-icon", "s", app_iconstr);
-
-      g_free (app_iconstr);
-    }
+    g_menu_item_set_attribute (item, "x-canonical-app-icon", "s", app_icon);
 
   g_menu_append_item (menu->message_section, item);
 
@@ -163,15 +151,15 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
 
 void
 im_phone_menu_remove_message (ImPhoneMenu     *menu,
-                              GDesktopAppInfo *app,
+                              const gchar     *app_id,
                               const gchar     *id)
 {
   gchar *action_name;
 
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
-  g_return_if_fail (G_IS_DESKTOP_APP_INFO (app));
+  g_return_if_fail (app_id != NULL);
 
-  action_name = g_strconcat (g_app_info_get_id (G_APP_INFO (app)), ".", id, NULL);
+  action_name = g_strconcat (app_id, ".", id, NULL);
   im_phone_menu_foreach_item_with_action (G_MENU_MODEL (menu->message_section),
                                           action_name,
                                           (ImMenuForeachFunc) g_menu_remove);
@@ -181,7 +169,7 @@ im_phone_menu_remove_message (ImPhoneMenu     *menu,
 
 void
 im_phone_menu_add_source (ImPhoneMenu     *menu,
-                          GDesktopAppInfo *app,
+                          const gchar     *app_id,
                           const gchar     *id,
                           const gchar     *label,
                           const gchar     *iconstr)
@@ -190,9 +178,9 @@ im_phone_menu_add_source (ImPhoneMenu     *menu,
   gchar *action_name;
 
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
-  g_return_if_fail (G_IS_DESKTOP_APP_INFO (app));
+  g_return_if_fail (app_id != NULL);
 
-  action_name = g_strconcat (g_app_info_get_id (G_APP_INFO (app)), ".", id, NULL);
+  action_name = g_strconcat (app_id, ".", id, NULL);
 
   item = g_menu_item_new (label, action_name);
   g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.sourceitem");
@@ -208,15 +196,15 @@ im_phone_menu_add_source (ImPhoneMenu     *menu,
 
 void
 im_phone_menu_remove_source (ImPhoneMenu     *menu,
-                             GDesktopAppInfo *app,
+                             const gchar     *app_id,
                              const gchar     *id)
 {
   gchar *action_name;
 
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
-  g_return_if_fail (G_IS_DESKTOP_APP_INFO (app));
+  g_return_if_fail (app_id != NULL);
 
-  action_name = g_strconcat (g_app_info_get_id (G_APP_INFO (app)), ".", id, NULL);
+  action_name = g_strconcat (app_id, ".", id, NULL);
   im_phone_menu_foreach_item_with_action (G_MENU_MODEL (menu->source_section),
                                           action_name,
                                           (ImMenuForeachFunc) g_menu_remove);
@@ -226,13 +214,13 @@ im_phone_menu_remove_source (ImPhoneMenu     *menu,
 
 static void
 im_phone_menu_remove_all_for_app (GMenu           *menu,
-                                  GDesktopAppInfo *app)
+                                  const gchar     *app_id)
 {
   gchar *prefix;
   gint n_items;
   gint i = 0;
 
-  prefix = g_strconcat (g_app_info_get_id (G_APP_INFO (app)), ".", NULL);
+  prefix = g_strconcat (app_id, ".", NULL);
 
   n_items = g_menu_model_get_n_items (G_MENU_MODEL (menu));
   while (i < n_items)
@@ -258,11 +246,11 @@ im_phone_menu_remove_all_for_app (GMenu           *menu,
 
 void
 im_phone_menu_remove_application (ImPhoneMenu     *menu,
-                                  GDesktopAppInfo *app)
+                                  const gchar     *app_id)
 {
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
-  g_return_if_fail (G_IS_DESKTOP_APP_INFO (app));
+  g_return_if_fail (app_id != NULL);
 
-  im_phone_menu_remove_all_for_app (menu->source_section, app);
-  im_phone_menu_remove_all_for_app (menu->message_section, app);
+  im_phone_menu_remove_all_for_app (menu->source_section, app_id);
+  im_phone_menu_remove_all_for_app (menu->message_section, app_id);
 }
