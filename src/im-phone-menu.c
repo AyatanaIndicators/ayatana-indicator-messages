@@ -60,6 +60,33 @@ im_phone_menu_foreach_item_with_action (GMenuModel        *menu,
 }
 
 static void
+im_phone_menu_update_toplevel (ImPhoneMenu *menu)
+{
+  if (g_menu_model_get_n_items (G_MENU_MODEL (menu->message_section)) ||
+      g_menu_model_get_n_items (G_MENU_MODEL (menu->source_section)))
+    {
+      if (g_menu_model_get_n_items (G_MENU_MODEL (menu->toplevel_menu)) == 0)
+        {
+          GMenuItem *item;
+
+          g_menu_append_section (menu->toplevel_menu, NULL, G_MENU_MODEL (menu->message_section));
+          g_menu_append_section (menu->toplevel_menu, NULL, G_MENU_MODEL (menu->source_section));
+
+          item = g_menu_item_new ("Clear All", "remove-all");
+          g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.button");
+          g_menu_append_item (menu->toplevel_menu, item);
+
+          g_object_unref (item);
+        }
+    }
+  else
+    {
+      while (g_menu_model_get_n_items (G_MENU_MODEL (menu->toplevel_menu)))
+        g_menu_remove (menu->toplevel_menu, 0);
+    }
+}
+
+static void
 im_phone_menu_dispose (GObject *object)
 {
   ImPhoneMenu *menu = IM_PHONE_MENU (object);
@@ -89,20 +116,16 @@ im_phone_menu_class_init (ImPhoneMenuClass *klass)
 static void
 im_phone_menu_init (ImPhoneMenu *menu)
 {
-  GMenuItem *item;
-
+  menu->toplevel_menu = g_menu_new ();
   menu->message_section = g_menu_new ();
   menu->source_section = g_menu_new ();
 
-  menu->toplevel_menu = g_menu_new ();
-  g_menu_append_section (menu->toplevel_menu, NULL, G_MENU_MODEL (menu->message_section));
-  g_menu_append_section (menu->toplevel_menu, NULL, G_MENU_MODEL (menu->source_section));
+  g_signal_connect_swapped (menu->message_section, "items-changed",
+                            G_CALLBACK (im_phone_menu_update_toplevel), menu);
+  g_signal_connect_swapped (menu->source_section, "items-changed",
+                            G_CALLBACK (im_phone_menu_update_toplevel), menu);
 
-  item = g_menu_item_new ("Clear All", "remove-all");
-  g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.button");
-  g_menu_append_item (menu->toplevel_menu, item);
-
-  g_object_unref (item);
+  im_phone_menu_update_toplevel (menu);
 }
 
 ImPhoneMenu *
