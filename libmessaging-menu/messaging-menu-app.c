@@ -152,6 +152,9 @@ static void global_status_changed (IndicatorMessagesService *service,
                                    const gchar *status_str,
                                    gpointer user_data);
 
+/* in messaging-menu-message.c */
+GVariant * messaging_menu_message_to_variant (MessagingMenuMessage *msg);
+
 static void
 source_free (gpointer data)
 {
@@ -182,29 +185,6 @@ source_to_variant (Source *source)
                                   source->time,
                                   source->string ? source->string : "",
                                   source->draws_attention);
-
-  g_free (iconstr);
-
-  return v;
-}
-
-static GVariant *
-messaging_menu_message_to_variant (MessagingMenuMessage *message)
-{
-  GVariant *v;
-  GIcon *icon;
-  gchar *iconstr;
-
-  icon = messaging_menu_message_get_icon (message);
-  iconstr = icon ? g_icon_to_string (icon) : NULL;
-
-  v = g_variant_new ("(sssssxb)", messaging_menu_message_get_id (message),
-                                  iconstr ? iconstr : "",
-                                  messaging_menu_message_get_title (message),
-                                  messaging_menu_message_get_subtitle (message),
-                                  messaging_menu_message_get_body (message),
-                                  messaging_menu_message_get_time (message),
-                                  messaging_menu_message_get_draws_attention (message));
 
   g_free (iconstr);
 
@@ -571,7 +551,7 @@ messaging_menu_app_list_messages (IndicatorMessagesApplication *app_interface,
   GHashTableIter iter;
   MessagingMenuMessage *message;
 
-  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sssssxb)"));
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sssssxa(ssgav)b)"));
 
   g_hash_table_iter_init (&iter, app->messages);
   while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &message))

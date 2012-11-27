@@ -509,13 +509,14 @@ im_application_list_message_added (Application *app,
   const gchar *subtitle;
   const gchar *body;
   gint64 time;
+  GVariantIter *action_iter;
   gboolean draws_attention;
   GSimpleAction *action;
   GIcon *app_icon;
   gchar *app_iconstr;
 
-  g_variant_get (message, "(&s&s&s&s&sxb)",
-                 &id, &iconstr, &title, &subtitle, &body, &time, &draws_attention);
+  g_variant_get (message, "(&s&s&s&s&sxa(ssgav)b)",
+                 &id, &iconstr, &title, &subtitle, &body, &time, &action_iter, &draws_attention);
 
   app_icon = g_app_info_get_icon (G_APP_INFO (app->info));
   app_iconstr = app_icon ? g_icon_to_string (app_icon) : NULL;
@@ -528,6 +529,7 @@ im_application_list_message_added (Application *app,
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
                  app->id, app_iconstr, id, iconstr, title, subtitle, body, time, draws_attention);
 
+  g_variant_iter_free (action_iter);
   g_free (app_iconstr);
   g_object_unref (action);
 }
