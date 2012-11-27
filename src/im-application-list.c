@@ -152,6 +152,8 @@ im_application_list_message_activated (GSimpleAction *action,
     {
       indicator_messages_application_call_activate_message (app->proxy,
                                                             message_id,
+                                                            "",
+                                                            g_variant_new_array (G_VARIANT_TYPE_VARIANT, NULL, 0),
                                                             app->cancellable,
                                                             NULL, NULL);
     }

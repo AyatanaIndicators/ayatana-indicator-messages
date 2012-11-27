@@ -546,6 +546,8 @@ static gboolean
 messaging_menu_app_activate_message (IndicatorMessagesApplication *app_interface,
                                      GDBusMethodInvocation        *invocation,
                                      const gchar                  *message_id,
+                                     const gchar                  *action_id,
+                                     GVariant                     *params,
                                      gpointer                      user_data)
 {
   MessagingMenuApp *app = user_data;
@@ -554,7 +556,26 @@ messaging_menu_app_activate_message (IndicatorMessagesApplication *app_interface
   msg = g_hash_table_lookup (app->messages, message_id);
   if (msg)
     {
-      g_signal_emit_by_name (msg, "activate", NULL, NULL);
+      if (*action_id)
+        {
+          gchar *signal;
+
+          signal = g_strconcat ("activate::", action_id, NULL);
+
+          if (g_variant_n_children (params))
+            {
+              GVariant *param = g_variant_get_child_value (params, 0);
+              g_signal_emit_by_name (msg, signal, action_id, param);
+              g_variant_unref (param);
+            }
+          else
+            g_signal_emit_by_name (msg, signal, action_id, NULL);
+
+          g_free (signal);
+        }
+      else
+        g_signal_emit_by_name (msg, "activate", NULL, NULL);
+
 
       /* Activate implies removing the message, no need for MessageRemoved  */
       messaging_menu_app_remove_message_internal (app, message_id);

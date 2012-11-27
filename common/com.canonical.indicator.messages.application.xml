@@ -12,6 +12,8 @@
     </method>
     <method name="ActivateMessage">
       <arg type="s" name="message_id" direction="in" />
+      <arg type="s" name="action_id" direction="in" />
+      <arg type="av" name="parameter" direction="in" />
     </method>
     <method name="Dismiss">
       <arg type="as" name="sources" direction="in" />
