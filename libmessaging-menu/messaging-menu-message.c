@@ -245,6 +245,26 @@ messaging_menu_message_class_init (MessagingMenuMessageClass *klass)
                                                            G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (klass, NUM_PROPERTIES, properties);
+
+  /**
+   * MessagingMenuMessage::activate:
+   * @msg: the #MessagingMenuMessage
+   * @action: (allow-none): the id of activated action, or %NULL
+   * @parameter: (allow-none): activation parameter, or %NULL
+   *
+   * Emitted when the user has activated the message.  The message is
+   * immediately removed from the application's menu, handlers of this
+   * signal do not need to call messaging_menu_app_remove_message().
+   */
+  g_signal_new ("activate",
+                MESSAGING_MENU_TYPE_MESSAGE,
+                G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
+                0,
+                NULL, NULL,
+                g_cclosure_marshal_generic,
+                G_TYPE_NONE, 2,
+                G_TYPE_STRING,
+                G_TYPE_VARIANT);
 }
 
 static void

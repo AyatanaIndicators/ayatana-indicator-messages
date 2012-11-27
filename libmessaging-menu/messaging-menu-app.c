@@ -126,7 +126,6 @@ enum {
 
 enum {
   ACTIVATE_SOURCE,
-  ACTIVATE_MESSAGE,
   STATUS_CHANGED,
   N_SIGNALS
 };
@@ -366,27 +365,6 @@ messaging_menu_app_class_init (MessagingMenuAppClass *class)
                                            G_TYPE_NONE, 1, G_TYPE_STRING);
 
   /**
-   * MessagingMenuApp::activate-message:
-   * @mmapp: the #MessagingMenuApp
-   * @message: the activated #MessagingMenuMessage
-   *
-   * Emitted when the user has activated a message.  The message is
-   * immediately removed from the application's menu, handlers of this
-   * signal do not need to call messaging_menu_app_remove_message().
-   *
-   * To get notified about the activation of a specific message, set the
-   * signal's detail to the message id.
-   */
-  signals[ACTIVATE_MESSAGE] = g_signal_new ("activate-message",
-                                            MESSAGING_MENU_TYPE_APP,
-                                            G_SIGNAL_RUN_FIRST |
-                                            G_SIGNAL_DETAILED,
-                                            0,
-                                            NULL, NULL,
-                                            g_cclosure_marshal_VOID__OBJECT,
-                                            G_TYPE_NONE, 1, MESSAGING_MENU_TYPE_MESSAGE);
-
-  /**
    * MessagingMenuApp::status-changed:
    * @mmapp: the #MessagingMenuApp
    * @status: a #MessagingMenuStatus
@@ -576,7 +554,7 @@ messaging_menu_app_activate_message (IndicatorMessagesApplication *app_interface
   msg = g_hash_table_lookup (app->messages, message_id);
   if (msg)
     {
-      g_signal_emit (app, signals[ACTIVATE_MESSAGE], g_quark_from_string (message_id), msg);
+      g_signal_emit_by_name (msg, "activate", NULL, NULL);
 
       /* Activate implies removing the message, no need for MessageRemoved  */
       messaging_menu_app_remove_message_internal (app, message_id);
