@@ -1,3 +1,14 @@
+indicator-messages (12.10.6-0ubuntu1phablet2) quantal; urgency=low
+
+  [Lars Uebernickel]
+  * refactor messages-service.c
+  * notify applications about message and source activations
+  * add "Clear All" menu item
+  * allow dismissing of messages
+  * include application icons on message items
+
+ -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Mon, 26 Nov 2012 22:19:51 +0100
+
 indicator-messages (12.10.6-0ubuntu1phablet1) quantal; urgency=low
 
   [ Mathieu Trudel-Lapierre ]
