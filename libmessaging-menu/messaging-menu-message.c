@@ -470,24 +470,22 @@ action_to_variant (Action *action)
 {
   GVariantBuilder builder;
 
-  g_variant_builder_init (&builder, G_VARIANT_TYPE ("(ssgav)"));
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
 
-  g_variant_builder_add (&builder, "s", action->id);
-  g_variant_builder_add (&builder, "s", action->label ? action->label : "");
+  g_variant_builder_add (&builder, "{sv}", "name", g_variant_new_string (action->id));
+
+  if (action->label)
+    g_variant_builder_add (&builder, "{sv}", "label", g_variant_new_string (action->label));
 
   if (action->parameter_type)
     {
       gchar *type = g_variant_type_dup_string (action->parameter_type);
-      g_variant_builder_add (&builder, "g", type);
+      g_variant_builder_add (&builder, "{sv}", "parameter-type", g_variant_new_signature (type));
       g_free (type);
     }
-  else
-    g_variant_builder_add (&builder, "g", "");
 
-  g_variant_builder_open (&builder, G_VARIANT_TYPE ("av"));
   if (action->parameter_hint)
-    g_variant_builder_add (&builder, "v", action->parameter_hint);
-  g_variant_builder_close (&builder);
+    g_variant_builder_add (&builder, "{sv}", "parameter-hint", action->parameter_hint);
 
   return g_variant_builder_end (&builder);
 }
@@ -496,7 +494,7 @@ action_to_variant (Action *action)
  * messaging_menu_message_to_variant:
  * @msg: a #MessagingMenuMessage
  *
- * Serializes @msg to a #GVariant of the form (sssssxa(ssgav)b):
+ * Serializes @msg to a #GVariant of the form (sssssxaa{sv}b):
  *
  *   id
  *   icon
@@ -504,10 +502,7 @@ action_to_variant (Action *action)
  *   subtitle
  *   body
  *   time
- *   array of actions: id
- *                     label
- *                     parameter_type
- *                     parameter_hint (0 or 1 elements)
+ *   array of action dictionaries
  *   draws_attention
  *
  * Returns: a new floating #GVariant instance
@@ -520,7 +515,7 @@ messaging_menu_message_to_variant (MessagingMenuMessage *msg)
 
   g_return_val_if_fail (MESSAGING_MENU_IS_MESSAGE (msg), NULL);
 
-  g_variant_builder_init (&builder, G_VARIANT_TYPE ("(sssssxa(ssgav)b)"));
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("(sssssxaa{sv}b)"));
 
   g_variant_builder_add (&builder, "s", msg->id);
 
@@ -541,7 +536,7 @@ messaging_menu_message_to_variant (MessagingMenuMessage *msg)
   g_variant_builder_add (&builder, "s", msg->body ? msg->body : "");
   g_variant_builder_add (&builder, "x", msg->time);
 
-  g_variant_builder_open (&builder, G_VARIANT_TYPE ("a(ssgav)"));
+  g_variant_builder_open (&builder, G_VARIANT_TYPE ("aa{sv}"));
   for (it = msg->actions; it; it = it->next)
     g_variant_builder_add_value (&builder, action_to_variant (it->data));
   g_variant_builder_close (&builder);

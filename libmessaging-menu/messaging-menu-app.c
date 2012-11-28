@@ -529,7 +529,7 @@ messaging_menu_app_list_messages (IndicatorMessagesApplication *app_interface,
   GHashTableIter iter;
   MessagingMenuMessage *message;
 
-  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sssssxa(ssgav)b)"));
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sssssxaa{sv}b)"));
 
   g_hash_table_iter_init (&iter, app->messages);
   while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &message))
