@@ -166,6 +166,7 @@ main (int argc, char ** argv)
 
 	toplevel_menu = g_menu_new ();
 	root = g_menu_item_new (NULL, "messages");
+	g_menu_item_set_attribute (root, "x-canonical-type", "s", "com.canonical.indicator.root");
 	g_menu_item_set_submenu (root, im_phone_menu_get_model (menu));
 	g_menu_append_item (toplevel_menu, root);
 
