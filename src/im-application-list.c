@@ -271,13 +271,15 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                          NULL, NULL,
                                          g_cclosure_marshal_generic,
                                          G_TYPE_NONE,
-                                         8,
+                                         10,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
+                                         G_TYPE_STRING,
+                                         G_TYPE_VARIANT,
                                          G_TYPE_INT64,
                                          G_TYPE_BOOLEAN);
 
@@ -529,7 +531,7 @@ im_application_list_message_added (Application *app,
   g_simple_action_group_insert (app->message_actions, G_ACTION (action));
 
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
-                 app->id, app_iconstr, id, iconstr, title, subtitle, body, time, draws_attention);
+                 app->id, app_iconstr, id, iconstr, title, subtitle, body, actions, time, draws_attention);
 
   g_variant_unref (actions);
   g_free (app_iconstr);

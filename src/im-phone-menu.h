@@ -45,6 +45,7 @@ void                im_phone_menu_add_message           (ImPhoneMenu        *men
                                                          const gchar        *title,
                                                          const gchar        *subtitle,
                                                          const gchar        *body,
+                                                         GVariant           *actions,
                                                          gint64              time);
 
 void                im_phone_menu_remove_message        (ImPhoneMenu        *menu,
