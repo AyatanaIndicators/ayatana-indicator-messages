@@ -200,7 +200,7 @@ got_bus (GObject *object,
 	}
 
 	g_dbus_connection_export_menu_model (bus, INDICATOR_MESSAGES_DBUS_OBJECT "/phone",
-					     im_phone_menu_get_model (menu), &error);
+					     G_MENU_MODEL (toplevel_menu), &error);
 	if (error) {
 		g_warning ("unable to export menu on dbus: %s", error->message);
 		g_error_free (error);
@@ -224,6 +224,7 @@ main (int argc, char ** argv)
 {
 	GMainLoop * mainloop = NULL;
 	IndicatorService * service = NULL;
+	GMenuItem *root;
 
 	/* Glib init */
 	g_type_init();
@@ -255,7 +256,9 @@ main (int argc, char ** argv)
 	menu = im_phone_menu_new ();
 
 	toplevel_menu = g_menu_new ();
-	g_menu_append_submenu (toplevel_menu, NULL, im_phone_menu_get_model (menu));
+	root = g_menu_item_new (NULL, "messages");
+	g_menu_item_set_submenu (root, im_phone_menu_get_model (menu));
+	g_menu_append_item (toplevel_menu, root);
 
 	settings = g_settings_new ("com.canonical.indicator.messages");
 
@@ -274,6 +277,7 @@ main (int argc, char ** argv)
 	g_main_loop_run(mainloop);
 
 	/* Clean up */
+	g_object_unref (root);
 	g_object_unref (messages_service);
 	g_object_unref (settings);
 	g_object_unref (applications);
