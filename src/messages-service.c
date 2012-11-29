@@ -40,45 +40,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 static ImApplicationList *applications;
 
 static IndicatorMessagesService *messages_service;
-static GSimpleActionGroup *actions;
 static GMenu *toplevel_menu;
 static ImPhoneMenu *menu;
 static GSettings *settings;
-static gboolean draws_attention;
-static const gchar *global_status[6]; /* max 5: available, away, busy, invisible, offline */
-
-static gchar *
-indicator_messages_get_icon_name ()
-{
-	GString *name;
-	GIcon *icon;
-	gchar *iconstr;
-
-	name = g_string_new ("indicator-messages");
-
-	if (global_status[0] != NULL)
-	{
-		if (global_status[1] != NULL)
-			g_string_append (name, "-mixed");
-		else
-			g_string_append_printf (name, "-%s", global_status[0]);
-	}
-
-	if (draws_attention)
-		g_string_append (name, "-new");
-
-	icon = g_themed_icon_new (name->str);
-	g_themed_icon_append_name (G_THEMED_ICON (icon),
-				   draws_attention ? "indicator-messages-new"
-						   : "indicator-messages");
-
-	iconstr = g_icon_to_string (icon);
-
-	g_object_unref (icon);
-	g_string_free (name, TRUE);
-
-	return iconstr;
-}
 
 static void 
 service_shutdown (IndicatorService * service, gpointer user_data)
@@ -87,26 +51,6 @@ service_shutdown (IndicatorService * service, gpointer user_data)
 
 	g_warning("Shutting down service!");
 	g_main_loop_quit(mainloop);
-}
-
-static void
-clear_action_activate (GSimpleAction *simple,
-		       GVariant *param,
-		       gpointer user_data)
-{
-	/* TODO */
-}
-
-static void
-status_action_activate (GSimpleAction *action,
-			GVariant *parameter,
-			gpointer user_data)
-{
-	const gchar *status;
-
-	status = g_variant_get_string (parameter, NULL);
-
-	indicator_messages_service_emit_status_changed (messages_service, status);
 }
 
 static void
@@ -142,39 +86,6 @@ unregister_application (IndicatorMessagesService *service,
 	indicator_messages_service_complete_unregister_application (service, invocation);
 }
 
-static GSimpleActionGroup *
-create_action_group (void)
-{
-	GSimpleActionGroup *actions;
-	GSimpleAction *messages;
-	GSimpleAction *clear;
-	GSimpleAction *status;
-	const gchar *default_status[] = { "offline", NULL };
-	gchar *icon;
-
-	actions = g_simple_action_group_new ();
-
-	/* state of the messages action is its icon name */
-	icon = indicator_messages_get_icon_name ();
-	messages = g_simple_action_new_stateful ("messages", G_VARIANT_TYPE ("s"),
-						 g_variant_new_string (icon));
-
-	status = g_simple_action_new_stateful ("status", G_VARIANT_TYPE ("s"),
-					       g_variant_new_strv (default_status, -1));
-	g_signal_connect (status, "activate", G_CALLBACK (status_action_activate), NULL);
-
-	clear = g_simple_action_new ("clear", NULL);
-	g_simple_action_set_enabled (clear, FALSE);
-	g_signal_connect (clear, "activate", G_CALLBACK (clear_action_activate), NULL);
-
-	g_simple_action_group_insert (actions, G_ACTION (messages));
-	g_simple_action_group_insert (actions, G_ACTION (status));
-	g_simple_action_group_insert (actions, G_ACTION (clear));
-
-	g_free (icon);
-	return actions;
-}
-
 static void
 got_bus (GObject *object,
 	 GAsyncResult * res,
@@ -200,7 +111,7 @@ got_bus (GObject *object,
 	}
 
 	g_dbus_connection_export_menu_model (bus, INDICATOR_MESSAGES_DBUS_OBJECT "/phone",
-					     im_phone_menu_get_model (menu), &error);
+					     G_MENU_MODEL (toplevel_menu), &error);
 	if (error) {
 		g_warning ("unable to export menu on dbus: %s", error->message);
 		g_error_free (error);
@@ -224,6 +135,7 @@ main (int argc, char ** argv)
 {
 	GMainLoop * mainloop = NULL;
 	IndicatorService * service = NULL;
+	GMenuItem *root;
 
 	/* Glib init */
 	g_type_init();
@@ -245,8 +157,6 @@ main (int argc, char ** argv)
 
 	g_bus_get (G_BUS_TYPE_SESSION, NULL, got_bus, NULL);
 
-	actions = create_action_group ();
-
 	g_signal_connect (messages_service, "handle-register-application",
 			  G_CALLBACK (register_application), NULL);
 	g_signal_connect (messages_service, "handle-unregister-application",
@@ -255,7 +165,10 @@ main (int argc, char ** argv)
 	menu = im_phone_menu_new ();
 
 	toplevel_menu = g_menu_new ();
-	g_menu_append_submenu (toplevel_menu, NULL, im_phone_menu_get_model (menu));
+	root = g_menu_item_new (NULL, "messages");
+	g_menu_item_set_attribute (root, "x-canonical-type", "s", "com.canonical.indicator.root");
+	g_menu_item_set_submenu (root, im_phone_menu_get_model (menu));
+	g_menu_append_item (toplevel_menu, root);
 
 	settings = g_settings_new ("com.canonical.indicator.messages");
 
@@ -274,6 +187,7 @@ main (int argc, char ** argv)
 	g_main_loop_run(mainloop);
 
 	/* Clean up */
+	g_object_unref (root);
 	g_object_unref (messages_service);
 	g_object_unref (settings);
 	g_object_unref (applications);
