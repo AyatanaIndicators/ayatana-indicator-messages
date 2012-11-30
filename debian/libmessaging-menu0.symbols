@@ -24,6 +24,7 @@ libmessaging-menu.so.0 libmessaging-menu0 #MINVER#
  messaging_menu_app_set_source_time@Base 12.10.0
  messaging_menu_app_set_status@Base 12.10.0
  messaging_menu_app_unregister@Base 12.10.0
+ messaging_menu_message_add_action@Base 12.10.6-0ubuntu1phablet3
  messaging_menu_message_get_body@Base 12.10.6-0ubuntu1phablet1
  messaging_menu_message_get_draws_attention@Base 12.10.6-0ubuntu1phablet1
  messaging_menu_message_get_icon@Base 12.10.6-0ubuntu1phablet1
