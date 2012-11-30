@@ -152,7 +152,7 @@ static void global_status_changed (IndicatorMessagesService *service,
                                    gpointer user_data);
 
 /* in messaging-menu-message.c */
-GVariant * messaging_menu_message_to_variant (MessagingMenuMessage *msg);
+GVariant * _messaging_menu_message_to_variant (MessagingMenuMessage *msg);
 
 static void
 source_free (gpointer data)
@@ -533,7 +533,7 @@ messaging_menu_app_list_messages (IndicatorMessagesApplication *app_interface,
 
   g_hash_table_iter_init (&iter, app->messages);
   while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &message))
-    g_variant_builder_add_value (&builder, messaging_menu_message_to_variant (message));
+    g_variant_builder_add_value (&builder, _messaging_menu_message_to_variant (message));
 
   indicator_messages_application_complete_list_messages (app_interface,
                                                          invocation,
@@ -1347,7 +1347,7 @@ messaging_menu_app_append_message (MessagingMenuApp     *app,
 
   g_hash_table_insert (app->messages, g_strdup (id), g_object_ref (msg));
   indicator_messages_application_emit_message_added (app->app_interface,
-                                                     messaging_menu_message_to_variant (msg));
+                                                     _messaging_menu_message_to_variant (msg));
 
   if (source_id)
     {

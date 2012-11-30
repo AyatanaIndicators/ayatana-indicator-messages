@@ -491,7 +491,7 @@ action_to_variant (Action *action)
 }
 
 /*<internal>
- * messaging_menu_message_to_variant:
+ * _messaging_menu_message_to_variant:
  * @msg: a #MessagingMenuMessage
  *
  * Serializes @msg to a #GVariant of the form (sssssxaa{sv}b):
@@ -508,7 +508,7 @@ action_to_variant (Action *action)
  * Returns: a new floating #GVariant instance
  */
 GVariant *
-messaging_menu_message_to_variant (MessagingMenuMessage *msg)
+_messaging_menu_message_to_variant (MessagingMenuMessage *msg)
 {
   GVariantBuilder builder;
   GSList *it;
