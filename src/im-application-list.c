@@ -339,22 +339,21 @@ im_application_list_class_init (ImApplicationListClass *klass)
 static void
 im_application_list_init (ImApplicationList *list)
 {
+  const GActionEntry action_entries[] = {
+    { "messages", NULL, NULL, "('', 'indicator-messages', 'Messages', true)", NULL },
+    { "remove-all", im_application_list_remove_all }
+  };
+
   GSimpleActionGroup *actions;
-  GSimpleAction *remove_all_action;
 
   list->applications = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, application_free);
-  list->muxer = g_action_muxer_new ();
 
   actions = g_simple_action_group_new ();
+  g_simple_action_group_add_entries (actions, action_entries, G_N_ELEMENTS (action_entries), list);
 
-  remove_all_action = g_simple_action_new ("remove-all", NULL);
-  g_signal_connect (remove_all_action, "activate", G_CALLBACK (im_application_list_remove_all), list);
-
-  g_simple_action_group_insert (actions, G_ACTION (remove_all_action));
-
+  list->muxer = g_action_muxer_new ();
   g_action_muxer_insert (list->muxer, NULL, G_ACTION_GROUP (actions));
 
-  g_object_unref (remove_all_action);
   g_object_unref (actions);
 }
 
