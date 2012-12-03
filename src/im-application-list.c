@@ -545,14 +545,15 @@ im_application_list_message_added (Application *app,
   const gchar *subtitle;
   const gchar *body;
   gint64 time;
-  GVariant *actions;
+  GVariantIter *action_iter;
   gboolean draws_attention;
   GSimpleAction *action;
   GIcon *app_icon;
   gchar *app_iconstr;
+  GVariant *actions = NULL;
 
-  g_variant_get (message, "(&s&s&s&s&sx@aa{sv}b)",
-                 &id, &iconstr, &title, &subtitle, &body, &time, &actions, &draws_attention);
+  g_variant_get (message, "(&s&s&s&s&sxaa{sv}b)",
+                 &id, &iconstr, &title, &subtitle, &body, &time, &action_iter, &draws_attention);
 
   app_icon = g_app_info_get_icon (G_APP_INFO (app->info));
   app_iconstr = app_icon ? g_icon_to_string (app_icon) : NULL;
@@ -562,20 +563,22 @@ im_application_list_message_added (Application *app,
   g_simple_action_group_insert (app->message_actions, G_ACTION (action));
 
   {
-    GVariantIter iter;
     GVariant *entry;
     GSimpleActionGroup *action_group;
+    GVariantBuilder actions_builder;
 
+    g_variant_builder_init (&actions_builder, G_VARIANT_TYPE ("aa{sv}"));
     action_group = g_simple_action_group_new ();
 
-    g_variant_iter_init (&iter, actions);
-    while ((entry = g_variant_iter_next_value (&iter)))
+    while ((entry = g_variant_iter_next_value (action_iter)))
       {
         const gchar *name;
         GSimpleAction *action;
         GVariant *label;
         const gchar *type = NULL;
         GVariant *hint;
+        GVariantBuilder dict_builder;
+        gchar *prefixed_name;
 
         if (!g_variant_lookup (entry, "name", "&s", &name))
           {
@@ -592,15 +595,35 @@ im_application_list_message_added (Application *app,
         g_signal_connect (action, "activate", G_CALLBACK (im_application_list_sub_message_activated), app);
         g_simple_action_group_insert (action_group, G_ACTION (action));
 
-        g_object_unref (action);
+        g_variant_builder_init (&dict_builder, G_VARIANT_TYPE ("a{sv}"));
+
+        prefixed_name = g_strjoin (".", app->id, "msg-actions", id, name, NULL);
+        g_variant_builder_add (&dict_builder, "{sv}", "name", g_variant_new_string (prefixed_name));
+
         if (label)
-          g_variant_unref (label);
+          {
+            g_variant_builder_add (&dict_builder, "{sv}", "label", label);
+            g_variant_unref (label);
+          }
+
+        if (type)
+          g_variant_builder_add (&dict_builder, "{sv}", "parameter-type", g_variant_new_string (type));
+
         if (hint)
-          g_variant_unref (hint);
+          {
+            g_variant_builder_add (&dict_builder, "{sv}", "parameter-hint", hint);
+            g_variant_unref (hint);
+          }
+
+        g_variant_builder_add (&actions_builder, "a{sv}", &dict_builder);
+
+        g_object_unref (action);
         g_variant_unref (entry);
+        g_free (prefixed_name);
       }
 
     g_action_muxer_insert (app->message_sub_actions, id, G_ACTION_GROUP (action_group));
+    actions = g_variant_builder_end (&actions_builder);
 
     g_object_unref (action_group);
   }
@@ -608,7 +631,7 @@ im_application_list_message_added (Application *app,
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
                  app->id, app_iconstr, id, iconstr, title, subtitle, body, actions, time, draws_attention);
 
-  g_variant_unref (actions);
+  g_variant_iter_free (action_iter);
   g_free (app_iconstr);
   g_object_unref (action);
 }
