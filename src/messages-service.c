@@ -23,7 +23,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <config.h>
 #include <locale.h>
-#include <libindicator/indicator-service.h>
 #include <gio/gio.h>
 #include <glib/gi18n.h>
 
@@ -43,15 +42,6 @@ static IndicatorMessagesService *messages_service;
 static GMenu *toplevel_menu;
 static ImPhoneMenu *menu;
 static GSettings *settings;
-
-static void 
-service_shutdown (IndicatorService * service, gpointer user_data)
-{
-	GMainLoop *mainloop = user_data;
-
-	g_warning("Shutting down service!");
-	g_main_loop_quit(mainloop);
-}
 
 static void
 register_application (IndicatorMessagesService *service,
@@ -87,19 +77,11 @@ unregister_application (IndicatorMessagesService *service,
 }
 
 static void
-got_bus (GObject *object,
-	 GAsyncResult * res,
-	 gpointer user_data)
+on_bus_acquired (GDBusConnection *bus,
+		 const gchar     *name,
+		 gpointer         user_data)
 {
-	GDBusConnection *bus;
 	GError *error = NULL;
-
-	bus = g_bus_get_finish (res, &error);
-	if (!bus) {
-		g_warning ("unable to connect to the session bus: %s", error->message);
-		g_error_free (error);
-		return;
-	}
 
 	g_dbus_connection_export_action_group (bus, INDICATOR_MESSAGES_DBUS_OBJECT,
 					       im_application_list_get_action_group (applications),
@@ -130,21 +112,27 @@ got_bus (GObject *object,
 	g_object_unref (bus);
 }
 
+static void
+on_name_lost (GDBusConnection *bus,
+	      const gchar     *name,
+	      gpointer         user_data)
+{
+	GMainLoop *mainloop = user_data;
+
+	g_main_loop_quit (mainloop);
+}
+
 int
 main (int argc, char ** argv)
 {
 	GMainLoop * mainloop = NULL;
-	IndicatorService * service = NULL;
 	GMenuItem *root;
+	GBusNameOwnerFlags flags;
 
 	/* Glib init */
 	g_type_init();
 
 	mainloop = g_main_loop_new (NULL, FALSE);
-
-	/* Create the Indicator Service interface */
-	service = indicator_service_new_version(INDICATOR_MESSAGES_DBUS_NAME, 1);
-	g_signal_connect(service, INDICATOR_SERVICE_SIGNAL_SHUTDOWN, G_CALLBACK(service_shutdown), mainloop);
 
 	/* Setting up i18n and gettext.  Apparently, we need
 	   all of these. */
@@ -155,7 +143,12 @@ main (int argc, char ** argv)
 	/* Bring up the service DBus interface */
 	messages_service = indicator_messages_service_skeleton_new ();
 
-	g_bus_get (G_BUS_TYPE_SESSION, NULL, got_bus, NULL);
+	flags = G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT;
+	if (argc >= 2 && g_str_equal (argv[1], "--replace"))
+		flags |= G_BUS_NAME_OWNER_FLAGS_REPLACE;
+
+	g_bus_own_name (G_BUS_TYPE_SESSION, "com.canonical.indicator.messages", flags,
+			on_bus_acquired, NULL, on_name_lost, mainloop, NULL);
 
 	g_signal_connect (messages_service, "handle-register-application",
 			  G_CALLBACK (register_application), NULL);
