@@ -32,6 +32,8 @@ struct _MessagingMenuMessage
   gchar *body;
   gint64 time;
   gboolean draws_attention;
+
+  GSList *actions;
 };
 
 G_DEFINE_TYPE (MessagingMenuMessage, messaging_menu_message, G_TYPE_OBJECT);
@@ -50,6 +52,31 @@ enum
 };
 
 static GParamSpec *properties[NUM_PROPERTIES];
+
+typedef struct
+{
+  gchar *id;
+  gchar *label;
+  GVariantType *parameter_type;
+  GVariant *parameter_hint;
+} Action;
+
+static void
+action_free (gpointer data)
+{
+  Action *action = data;
+
+  g_free (action->id);
+  g_free (action->label);
+
+  if (action->parameter_type)
+    g_variant_type_free (action->parameter_type);
+
+  if (action->parameter_hint)
+    g_variant_unref (action->parameter_hint);
+
+  g_slice_free (Action, action);
+}
 
 static void
 messaging_menu_message_dispose (GObject *object)
@@ -70,6 +97,9 @@ messaging_menu_message_finalize (GObject *object)
   g_free (msg->title);
   g_free (msg->subtitle);
   g_free (msg->body);
+
+  g_slist_free_full (msg->actions, action_free);
+  msg->actions = NULL;
 
   G_OBJECT_CLASS (messaging_menu_message_parent_class)->finalize (object);
 }
@@ -215,6 +245,26 @@ messaging_menu_message_class_init (MessagingMenuMessageClass *klass)
                                                            G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (klass, NUM_PROPERTIES, properties);
+
+  /**
+   * MessagingMenuMessage::activate:
+   * @msg: the #MessagingMenuMessage
+   * @action: (allow-none): the id of activated action, or %NULL
+   * @parameter: (allow-none): activation parameter, or %NULL
+   *
+   * Emitted when the user has activated the message.  The message is
+   * immediately removed from the application's menu, handlers of this
+   * signal do not need to call messaging_menu_app_remove_message().
+   */
+  g_signal_new ("activate",
+                MESSAGING_MENU_TYPE_MESSAGE,
+                G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
+                0,
+                NULL, NULL,
+                g_cclosure_marshal_generic,
+                G_TYPE_NONE, 2,
+                G_TYPE_STRING,
+                G_TYPE_VARIANT);
 }
 
 static void
@@ -369,4 +419,129 @@ messaging_menu_message_set_draws_attention  (MessagingMenuMessage *msg,
 
   msg->draws_attention = draws_attention;
   g_object_notify_by_pspec (G_OBJECT (msg), properties[PROP_DRAWS_ATTENTION]);
+}
+
+/**
+ * messaging_menu_message_add_action:
+ * @msg: a #MessagingMenuMessage
+ * @id: unique id of the action
+ * @label: (allow-none): label of the action
+ * @parameter_type: (allow-none): a #GVariantType
+ * @parameter_hint: (allow-none): a #GVariant suggesting a valid range
+ * for parameters
+ *
+ * Adds an action with @id and @label to @message.  Actions are an
+ * alternative way for users to activate a message.  Note that messages
+ * can still be activated without an action.
+ *
+ * If @parameter_type is non-%NULL, the action is able to receive user
+ * input in addition to simply activating the action.  Currently, only
+ * string parameters are supported.
+ *
+ * A list of predefined parameters can be supplied as a #GVariant array
+ * of @parameter_type in @parameter_hint.  If @parameter_hint is
+ * floating, it will be consumed.
+ *
+ * It is recommended to add at most two actions to a message.
+ */
+void
+messaging_menu_message_add_action (MessagingMenuMessage *msg,
+                                   const gchar          *id,
+                                   const gchar          *label,
+                                   const GVariantType   *parameter_type,
+                                   GVariant             *parameter_hint)
+{
+  Action *action;
+
+  g_return_if_fail (MESSAGING_MENU_IS_MESSAGE (msg));
+  g_return_if_fail (id != NULL);
+
+  action = g_slice_new (Action);
+  action->id = g_strdup (id);
+  action->label = g_strdup (label);
+  action->parameter_type = parameter_type ? g_variant_type_copy (parameter_type) : NULL;
+  action->parameter_hint = parameter_hint ? g_variant_ref_sink (parameter_hint) : NULL;
+
+  msg->actions = g_slist_append (msg->actions, action);
+}
+
+static GVariant *
+action_to_variant (Action *action)
+{
+  GVariantBuilder builder;
+
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
+
+  g_variant_builder_add (&builder, "{sv}", "name", g_variant_new_string (action->id));
+
+  if (action->label)
+    g_variant_builder_add (&builder, "{sv}", "label", g_variant_new_string (action->label));
+
+  if (action->parameter_type)
+    {
+      gchar *type = g_variant_type_dup_string (action->parameter_type);
+      g_variant_builder_add (&builder, "{sv}", "parameter-type", g_variant_new_signature (type));
+      g_free (type);
+    }
+
+  if (action->parameter_hint)
+    g_variant_builder_add (&builder, "{sv}", "parameter-hint", action->parameter_hint);
+
+  return g_variant_builder_end (&builder);
+}
+
+/*<internal>
+ * _messaging_menu_message_to_variant:
+ * @msg: a #MessagingMenuMessage
+ *
+ * Serializes @msg to a #GVariant of the form (sssssxaa{sv}b):
+ *
+ *   id
+ *   icon
+ *   title
+ *   subtitle
+ *   body
+ *   time
+ *   array of action dictionaries
+ *   draws_attention
+ *
+ * Returns: a new floating #GVariant instance
+ */
+GVariant *
+_messaging_menu_message_to_variant (MessagingMenuMessage *msg)
+{
+  GVariantBuilder builder;
+  GSList *it;
+
+  g_return_val_if_fail (MESSAGING_MENU_IS_MESSAGE (msg), NULL);
+
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("(sssssxaa{sv}b)"));
+
+  g_variant_builder_add (&builder, "s", msg->id);
+
+  if (msg->icon)
+    {
+      gchar *iconstr;
+
+      iconstr = g_icon_to_string (msg->icon);
+      g_variant_builder_add (&builder, "s", iconstr);
+
+      g_free (iconstr);
+    }
+  else
+    g_variant_builder_add (&builder, "s", "");
+
+  g_variant_builder_add (&builder, "s", msg->title ? msg->title : "");
+  g_variant_builder_add (&builder, "s", msg->subtitle ? msg->subtitle : "");
+  g_variant_builder_add (&builder, "s", msg->body ? msg->body : "");
+  g_variant_builder_add (&builder, "x", msg->time);
+
+  g_variant_builder_open (&builder, G_VARIANT_TYPE ("aa{sv}"));
+  for (it = msg->actions; it; it = it->next)
+    g_variant_builder_add_value (&builder, action_to_variant (it->data));
+  g_variant_builder_close (&builder);
+
+  g_variant_builder_add (&builder, "b", msg->draws_attention);
+
+  return g_variant_builder_end (&builder);
 }

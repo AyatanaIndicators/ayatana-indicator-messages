@@ -59,6 +59,7 @@ typedef struct
   GActionMuxer *actions;
   GSimpleActionGroup *source_actions;
   GSimpleActionGroup *message_actions;
+  GActionMuxer *message_sub_actions;
   GCancellable *cancellable;
 } Application;
 
@@ -87,6 +88,7 @@ application_free (gpointer data)
       g_object_unref (app->actions);
       g_object_unref (app->source_actions);
       g_object_unref (app->message_actions);
+      g_object_unref (app->message_sub_actions);
     }
 
   g_slice_free (Application, app);
@@ -134,6 +136,7 @@ im_application_list_message_removed (Application *app,
                                      const gchar *id)
 {
   g_simple_action_group_remove (app->message_actions, id);
+  g_action_muxer_remove (app->message_sub_actions, id);
 
   g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, id);
 }
@@ -152,6 +155,8 @@ im_application_list_message_activated (GSimpleAction *action,
     {
       indicator_messages_application_call_activate_message (app->proxy,
                                                             message_id,
+                                                            "",
+                                                            g_variant_new_array (G_VARIANT_TYPE_VARIANT, NULL, 0),
                                                             app->cancellable,
                                                             NULL, NULL);
     }
@@ -165,6 +170,34 @@ im_application_list_message_activated (GSimpleAction *action,
 
   im_application_list_message_removed (app, message_id);
 }
+
+static void
+im_application_list_sub_message_activated (GSimpleAction *action,
+                                           GVariant      *parameter,
+                                           gpointer       user_data)
+{
+  Application *app = user_data;
+  const gchar *message_id;
+  const gchar *action_id;
+  GVariantBuilder builder;
+
+  message_id = g_object_get_data (G_OBJECT (action), "message");
+  action_id = g_action_get_name (G_ACTION (action));
+
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("av"));
+  if (parameter)
+    g_variant_builder_add (&builder, "v", parameter);
+
+  indicator_messages_application_call_activate_message (app->proxy,
+                                                        message_id,
+                                                        action_id,
+                                                        g_variant_builder_end (&builder),
+                                                        app->cancellable,
+                                                        NULL, NULL);
+
+  im_application_list_message_removed (app, message_id);
+}
+
 
 static void
 im_application_list_remove_all (GSimpleAction *action,
@@ -269,7 +302,7 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                          NULL, NULL,
                                          g_cclosure_marshal_generic,
                                          G_TYPE_NONE,
-                                         9,
+                                         10,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
@@ -277,6 +310,7 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
+                                         G_TYPE_VARIANT,
                                          G_TYPE_INT64,
                                          G_TYPE_BOOLEAN);
 
@@ -391,9 +425,11 @@ im_application_list_add (ImApplicationList  *list,
   app->actions = g_action_muxer_new ();
   app->source_actions = g_simple_action_group_new ();
   app->message_actions = g_simple_action_group_new ();
+  app->message_sub_actions = g_action_muxer_new ();
 
   g_action_muxer_insert (app->actions, "src", G_ACTION_GROUP (app->source_actions));
   g_action_muxer_insert (app->actions, "msg", G_ACTION_GROUP (app->message_actions));
+  g_action_muxer_insert (app->actions, "msg-actions", G_ACTION_GROUP (app->message_sub_actions));
 
   g_hash_table_insert (list->applications, (gpointer) app->id, app);
   g_action_muxer_insert (list->muxer, app->id, G_ACTION_GROUP (app->actions));
@@ -509,25 +545,93 @@ im_application_list_message_added (Application *app,
   const gchar *subtitle;
   const gchar *body;
   gint64 time;
+  GVariantIter *action_iter;
   gboolean draws_attention;
   GSimpleAction *action;
   GIcon *app_icon;
   gchar *app_iconstr;
+  GVariant *actions = NULL;
 
-  g_variant_get (message, "(&s&s&s&s&sxb)",
-                 &id, &iconstr, &title, &subtitle, &body, &time, &draws_attention);
+  g_variant_get (message, "(&s&s&s&s&sxaa{sv}b)",
+                 &id, &iconstr, &title, &subtitle, &body, &time, &action_iter, &draws_attention);
 
   app_icon = g_app_info_get_icon (G_APP_INFO (app->info));
   app_iconstr = app_icon ? g_icon_to_string (app_icon) : NULL;
 
   action = g_simple_action_new (id, G_VARIANT_TYPE_BOOLEAN);
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_message_activated), app);
-
   g_simple_action_group_insert (app->message_actions, G_ACTION (action));
 
-  g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
-                 app->id, app_iconstr, id, iconstr, title, subtitle, body, time, draws_attention);
+  {
+    GVariant *entry;
+    GSimpleActionGroup *action_group;
+    GVariantBuilder actions_builder;
 
+    g_variant_builder_init (&actions_builder, G_VARIANT_TYPE ("aa{sv}"));
+    action_group = g_simple_action_group_new ();
+
+    while ((entry = g_variant_iter_next_value (action_iter)))
+      {
+        const gchar *name;
+        GSimpleAction *action;
+        GVariant *label;
+        const gchar *type = NULL;
+        GVariant *hint;
+        GVariantBuilder dict_builder;
+        gchar *prefixed_name;
+
+        if (!g_variant_lookup (entry, "name", "&s", &name))
+          {
+            g_warning ("action dictionary for message '%s' is missing 'name' key", id);
+            continue;
+          }
+
+        label = g_variant_lookup_value (entry, "label", G_VARIANT_TYPE_STRING);
+        g_variant_lookup (entry, "parameter-type", "&g", &type);
+        hint = g_variant_lookup_value (entry, "parameter-hint", NULL);
+
+        action = g_simple_action_new (name, type ? G_VARIANT_TYPE (type) : NULL);
+        g_object_set_data_full (G_OBJECT (action), "message", g_strdup (id), g_free);
+        g_signal_connect (action, "activate", G_CALLBACK (im_application_list_sub_message_activated), app);
+        g_simple_action_group_insert (action_group, G_ACTION (action));
+
+        g_variant_builder_init (&dict_builder, G_VARIANT_TYPE ("a{sv}"));
+
+        prefixed_name = g_strjoin (".", app->id, "msg-actions", id, name, NULL);
+        g_variant_builder_add (&dict_builder, "{sv}", "name", g_variant_new_string (prefixed_name));
+
+        if (label)
+          {
+            g_variant_builder_add (&dict_builder, "{sv}", "label", label);
+            g_variant_unref (label);
+          }
+
+        if (type)
+          g_variant_builder_add (&dict_builder, "{sv}", "parameter-type", g_variant_new_string (type));
+
+        if (hint)
+          {
+            g_variant_builder_add (&dict_builder, "{sv}", "parameter-hint", hint);
+            g_variant_unref (hint);
+          }
+
+        g_variant_builder_add (&actions_builder, "a{sv}", &dict_builder);
+
+        g_object_unref (action);
+        g_variant_unref (entry);
+        g_free (prefixed_name);
+      }
+
+    g_action_muxer_insert (app->message_sub_actions, id, G_ACTION_GROUP (action_group));
+    actions = g_variant_builder_end (&actions_builder);
+
+    g_object_unref (action_group);
+  }
+
+  g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
+                 app->id, app_iconstr, id, iconstr, title, subtitle, body, actions, time, draws_attention);
+
+  g_variant_iter_free (action_iter);
   g_free (app_iconstr);
   g_object_unref (action);
 }
@@ -580,10 +684,13 @@ im_application_list_unset_remote (Application *app)
    * the muxer */
   g_object_unref (app->source_actions);
   g_object_unref (app->message_actions);
+  g_object_unref (app->message_sub_actions);
   app->source_actions = g_simple_action_group_new ();
   app->message_actions = g_simple_action_group_new ();
+  app->message_sub_actions = g_action_muxer_new ();
   g_action_muxer_insert (app->actions, "src", G_ACTION_GROUP (app->source_actions));
   g_action_muxer_insert (app->actions, "msg", G_ACTION_GROUP (app->message_actions));
+  g_action_muxer_insert (app->actions, "msg-actions", G_ACTION_GROUP (app->message_sub_actions));
 
   if (was_running)
     g_signal_emit (app->list, signals[APP_STOPPED], 0, app->id);

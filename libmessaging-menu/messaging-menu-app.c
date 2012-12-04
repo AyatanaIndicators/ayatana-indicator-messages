@@ -126,7 +126,6 @@ enum {
 
 enum {
   ACTIVATE_SOURCE,
-  ACTIVATE_MESSAGE,
   STATUS_CHANGED,
   N_SIGNALS
 };
@@ -151,6 +150,9 @@ typedef struct
 static void global_status_changed (IndicatorMessagesService *service,
                                    const gchar *status_str,
                                    gpointer user_data);
+
+/* in messaging-menu-message.c */
+GVariant * _messaging_menu_message_to_variant (MessagingMenuMessage *msg);
 
 static void
 source_free (gpointer data)
@@ -182,29 +184,6 @@ source_to_variant (Source *source)
                                   source->time,
                                   source->string ? source->string : "",
                                   source->draws_attention);
-
-  g_free (iconstr);
-
-  return v;
-}
-
-static GVariant *
-messaging_menu_message_to_variant (MessagingMenuMessage *message)
-{
-  GVariant *v;
-  GIcon *icon;
-  gchar *iconstr;
-
-  icon = messaging_menu_message_get_icon (message);
-  iconstr = icon ? g_icon_to_string (icon) : NULL;
-
-  v = g_variant_new ("(sssssxb)", messaging_menu_message_get_id (message),
-                                  iconstr ? iconstr : "",
-                                  messaging_menu_message_get_title (message),
-                                  messaging_menu_message_get_subtitle (message),
-                                  messaging_menu_message_get_body (message),
-                                  messaging_menu_message_get_time (message),
-                                  messaging_menu_message_get_draws_attention (message));
 
   g_free (iconstr);
 
@@ -386,27 +365,6 @@ messaging_menu_app_class_init (MessagingMenuAppClass *class)
                                            G_TYPE_NONE, 1, G_TYPE_STRING);
 
   /**
-   * MessagingMenuApp::activate-message:
-   * @mmapp: the #MessagingMenuApp
-   * @message: the activated #MessagingMenuMessage
-   *
-   * Emitted when the user has activated a message.  The message is
-   * immediately removed from the application's menu, handlers of this
-   * signal do not need to call messaging_menu_app_remove_message().
-   *
-   * To get notified about the activation of a specific message, set the
-   * signal's detail to the message id.
-   */
-  signals[ACTIVATE_MESSAGE] = g_signal_new ("activate-message",
-                                            MESSAGING_MENU_TYPE_APP,
-                                            G_SIGNAL_RUN_FIRST |
-                                            G_SIGNAL_DETAILED,
-                                            0,
-                                            NULL, NULL,
-                                            g_cclosure_marshal_VOID__OBJECT,
-                                            G_TYPE_NONE, 1, MESSAGING_MENU_TYPE_MESSAGE);
-
-  /**
    * MessagingMenuApp::status-changed:
    * @mmapp: the #MessagingMenuApp
    * @status: a #MessagingMenuStatus
@@ -571,11 +529,11 @@ messaging_menu_app_list_messages (IndicatorMessagesApplication *app_interface,
   GHashTableIter iter;
   MessagingMenuMessage *message;
 
-  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sssssxb)"));
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sssssxaa{sv}b)"));
 
   g_hash_table_iter_init (&iter, app->messages);
   while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &message))
-    g_variant_builder_add_value (&builder, messaging_menu_message_to_variant (message));
+    g_variant_builder_add_value (&builder, _messaging_menu_message_to_variant (message));
 
   indicator_messages_application_complete_list_messages (app_interface,
                                                          invocation,
@@ -588,6 +546,8 @@ static gboolean
 messaging_menu_app_activate_message (IndicatorMessagesApplication *app_interface,
                                      GDBusMethodInvocation        *invocation,
                                      const gchar                  *message_id,
+                                     const gchar                  *action_id,
+                                     GVariant                     *params,
                                      gpointer                      user_data)
 {
   MessagingMenuApp *app = user_data;
@@ -596,7 +556,26 @@ messaging_menu_app_activate_message (IndicatorMessagesApplication *app_interface
   msg = g_hash_table_lookup (app->messages, message_id);
   if (msg)
     {
-      g_signal_emit (app, signals[ACTIVATE_MESSAGE], g_quark_from_string (message_id), msg);
+      if (*action_id)
+        {
+          gchar *signal;
+
+          signal = g_strconcat ("activate::", action_id, NULL);
+
+          if (g_variant_n_children (params))
+            {
+              GVariant *param = g_variant_get_child_value (params, 0);
+              g_signal_emit_by_name (msg, signal, action_id, param);
+              g_variant_unref (param);
+            }
+          else
+            g_signal_emit_by_name (msg, signal, action_id, NULL);
+
+          g_free (signal);
+        }
+      else
+        g_signal_emit_by_name (msg, "activate", NULL, NULL);
+
 
       /* Activate implies removing the message, no need for MessageRemoved  */
       messaging_menu_app_remove_message_internal (app, message_id);
@@ -1368,7 +1347,7 @@ messaging_menu_app_append_message (MessagingMenuApp     *app,
 
   g_hash_table_insert (app->messages, g_strdup (id), g_object_ref (msg));
   indicator_messages_application_emit_message_added (app->app_interface,
-                                                     messaging_menu_message_to_variant (msg));
+                                                     _messaging_menu_message_to_variant (msg));
 
   if (source_id)
     {

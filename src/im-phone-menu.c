@@ -151,6 +151,7 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
                            const gchar     *title,
                            const gchar     *subtitle,
                            const gchar     *body,
+                           GVariant        *actions,
                            gint64           time)
 {
   GMenuItem *item;
@@ -162,7 +163,15 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   action_name = g_strconcat (app_id, ".msg.", id, NULL);
 
   item = g_menu_item_new (title, action_name);
-  g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.messageitem");
+
+  if (g_variant_n_children (actions))
+    {
+      g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.snapdecision");
+      g_menu_item_set_attribute (item, "x-canonical-message-actions", "v", actions);
+    }
+  else
+    g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.messageitem");
+
   g_menu_item_set_attribute (item, "x-canonical-message-id", "s", id);
   g_menu_item_set_attribute (item, "x-canonical-subtitle", "s", subtitle);
   g_menu_item_set_attribute (item, "x-canonical-text", "s", body);

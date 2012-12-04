@@ -59,6 +59,12 @@ gboolean                messaging_menu_message_get_draws_attention  (MessagingMe
 void                    messaging_menu_message_set_draws_attention  (MessagingMenuMessage *msg,
                                                                      gboolean              draws_attention);
 
+void                    messaging_menu_message_add_action           (MessagingMenuMessage *msg,
+                                                                     const gchar          *id,
+                                                                     const gchar          *label,
+                                                                     const GVariantType   *parameter_type,
+                                                                     GVariant             *parameter_hint);
+
 G_END_DECLS
 
 #endif
