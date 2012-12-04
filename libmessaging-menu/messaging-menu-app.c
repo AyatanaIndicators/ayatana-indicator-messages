@@ -1363,6 +1363,27 @@ messaging_menu_app_append_message (MessagingMenuApp     *app,
 }
 
 /**
+ * messaging_menu_app_get_message:
+ * @app: a #MessagingMenuApp
+ * @id: id of the message to retrieve
+ *
+ * Retrieves the message with @id, that was added with
+ * messaging_menu_app_append_message().
+ *
+ * Returns: (transfer none) (allow-none): the #MessagingMenuApp with
+ * @id, or %NULL
+ */
+MessagingMenuMessage *
+messaging_menu_app_get_message (MessagingMenuApp *app,
+                                const gchar      *id)
+{
+  g_return_val_if_fail (MESSAGING_MENU_IS_APP (app), NULL);
+  g_return_val_if_fail (id != NULL, NULL);
+
+  return g_hash_table_lookup (app->messages, id);
+}
+
+/**
  * messaging_menu_app_remove_message:
  * @app: a #MessagingMenuApp
  * @msg: the #MessagingMenuMessage to remove
