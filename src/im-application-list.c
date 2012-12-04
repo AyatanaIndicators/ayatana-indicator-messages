@@ -577,8 +577,8 @@ im_application_list_message_added (Application *app,
   gboolean draws_attention;
   GSimpleAction *action;
   GIcon *app_icon;
-  gchar *app_iconstr;
-  gchar *symbolic_app_iconstr;
+  gchar *app_iconstr = NULL;
+  gchar *symbolic_app_iconstr = NULL;
   GVariant *actions = NULL;
 
   g_variant_get (message, "(&s&s&s&s&sxaa{sv}b)",
