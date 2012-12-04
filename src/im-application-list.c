@@ -168,7 +168,7 @@ im_application_list_update_draws_attention (ImApplicationList *list)
     icon_name = "indicator-messages";
 
   main_actions = g_action_muxer_get_group (list->muxer, NULL);
-  state = g_variant_new ("(sssb)", "", "Messages", icon_name, TRUE);
+  state = g_variant_new ("(sssb)", "", icon_name, "Messages", TRUE);
   g_action_group_change_action_state (main_actions, "messages", state);
 }
 
