@@ -302,8 +302,7 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                          NULL, NULL,
                                          g_cclosure_marshal_generic,
                                          G_TYPE_NONE,
-                                         11,
-                                         G_TYPE_STRING,
+                                         10,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
@@ -578,7 +577,6 @@ im_application_list_message_added (Application *app,
   GSimpleAction *action;
   GIcon *app_icon;
   gchar *app_iconstr = NULL;
-  gchar *symbolic_app_iconstr = NULL;
   GVariant *actions = NULL;
 
   g_variant_get (message, "(&s&s&s&s&sxaa{sv}b)",
@@ -586,10 +584,7 @@ im_application_list_message_added (Application *app,
 
   app_icon = g_app_info_get_icon (G_APP_INFO (app->info));
   if (app_icon)
-    {
-      app_iconstr = g_icon_to_string (app_icon);
-      symbolic_app_iconstr = get_symbolic_app_icon_string (app_icon);
-    }
+    app_iconstr = get_symbolic_app_icon_string (app_icon);
 
   action = g_simple_action_new (id, G_VARIANT_TYPE_BOOLEAN);
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_message_activated), app);
@@ -662,12 +657,11 @@ im_application_list_message_added (Application *app,
   }
 
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
-                 app->id, app_iconstr, symbolic_app_iconstr, id,
-                 iconstr, title, subtitle, body, actions, time, draws_attention);
+                 app->id, app_iconstr, id, iconstr, title,
+                 subtitle, body, actions, time, draws_attention);
 
   g_variant_iter_free (action_iter);
   g_free (app_iconstr);
-  g_free (symbolic_app_iconstr);
   g_object_unref (action);
 }
 
