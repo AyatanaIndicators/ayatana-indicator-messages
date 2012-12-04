@@ -131,12 +131,55 @@ im_application_list_source_activated (GSimpleAction *action,
   im_application_list_source_removed (app, source_id);
 }
 
+static guint
+g_action_group_get_n_actions (GActionGroup *group)
+{
+  guint len;
+  gchar **actions;
+
+  actions = g_action_group_list_actions (group);
+  len = g_strv_length (actions);
+
+  g_strfreev (actions);
+  return len;
+}
+
+static gboolean
+application_draws_attention (gpointer key,
+                             gpointer value,
+                             gpointer user_data)
+{
+  Application *app = value;
+
+  return (g_action_group_get_n_actions (G_ACTION_GROUP (app->source_actions)) +
+          g_action_group_get_n_actions (G_ACTION_GROUP (app->message_actions))) > 0;
+}
+
+static void
+im_application_list_update_draws_attention (ImApplicationList *list)
+{
+  const gchar *icon_name;
+  GVariant *state;
+  GActionGroup *main_actions;
+
+  if (g_hash_table_find (list->applications, application_draws_attention, NULL))
+    icon_name = "indicator-messages-new";
+  else
+    icon_name = "indicator-messages";
+
+  main_actions = g_action_muxer_get_group (list->muxer, NULL);
+  state = g_variant_new ("(sssb)", "", "Messages", icon_name, TRUE);
+  g_action_group_change_action_state (main_actions, "messages", state);
+}
+
 static void
 im_application_list_message_removed (Application *app,
                                      const gchar *id)
 {
   g_simple_action_group_remove (app->message_actions, id);
   g_action_muxer_remove (app->message_sub_actions, id);
+
+  im_application_list_update_draws_attention (app->list);
 
   g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, id);
 }
@@ -661,6 +704,8 @@ im_application_list_message_added (Application *app,
     g_object_unref (action_group);
   }
 
+  im_application_list_update_draws_attention (app->list);
+
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
                  app->id, app_iconstr, symbolic_app_iconstr, id,
                  iconstr, title, subtitle, body, actions, time, draws_attention);
@@ -726,6 +771,8 @@ im_application_list_unset_remote (Application *app)
   g_action_muxer_insert (app->actions, "src", G_ACTION_GROUP (app->source_actions));
   g_action_muxer_insert (app->actions, "msg", G_ACTION_GROUP (app->message_actions));
   g_action_muxer_insert (app->actions, "msg-actions", G_ACTION_GROUP (app->message_sub_actions));
+
+  im_application_list_update_draws_attention (app->list);
 
   if (was_running)
     g_signal_emit (app->list, signals[APP_STOPPED], 0, app->id);
