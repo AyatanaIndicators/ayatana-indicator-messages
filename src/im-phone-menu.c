@@ -146,6 +146,7 @@ void
 im_phone_menu_add_message (ImPhoneMenu     *menu,
                            const gchar     *app_id,
                            const gchar     *app_icon,
+                           const gchar     *symbolic_app_icon,
                            const gchar     *id,
                            const gchar     *iconstr,
                            const gchar     *title,
@@ -182,6 +183,9 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
 
   if (app_icon)
     g_menu_item_set_attribute (item, "x-canonical-app-icon", "s", app_icon);
+
+  if (symbolic_app_icon)
+    g_menu_item_set_attribute (item, "x-canonical-app-icon-symbolic", "s", symbolic_app_icon);
 
   g_menu_prepend_item (menu->message_section, item);
 
