@@ -183,7 +183,7 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   if (app_icon)
     g_menu_item_set_attribute (item, "x-canonical-app-icon", "s", app_icon);
 
-  g_menu_append_item (menu->message_section, item);
+  g_menu_prepend_item (menu->message_section, item);
 
   g_free (action_name);
   g_object_unref (item);
@@ -228,7 +228,7 @@ im_phone_menu_add_source (ImPhoneMenu     *menu,
   if (iconstr)
     g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
 
-  g_menu_append_item (menu->source_section, item);
+  g_menu_prepend_item (menu->source_section, item);
 
   g_free (action_name);
   g_object_unref (item);
