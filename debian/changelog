@@ -1,3 +1,14 @@
+indicator-messages (12.10.6-0ubuntu1phablet4) quantal; urgency=low
+
+  [Lars Uebernickel]
+  * Add the concept of actions to messages
+  * Stop using IndicatorService
+  * Reverse order of messages
+  * Expose symbolic application icon
+  * Change icon when there are any messages in the menu
+
+ -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Tue, 04 Dec 2012 21:10:26 +0000
+
 indicator-messages (12.10.6-0ubuntu1phablet3) quantal; urgency=low
 
   [Lars Uebernickel]
