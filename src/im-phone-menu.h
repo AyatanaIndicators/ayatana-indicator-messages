@@ -40,6 +40,7 @@ GMenuModel *        im_phone_menu_get_model             (ImPhoneMenu        *men
 void                im_phone_menu_add_message           (ImPhoneMenu        *menu,
                                                          const gchar        *app_id,
                                                          const gchar        *app_icon,
+                                                         const gchar        *symbolic_app_icon,
                                                          const gchar        *id,
                                                          const gchar        *iconstr,
                                                          const gchar        *title,
