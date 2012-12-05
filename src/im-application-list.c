@@ -411,8 +411,13 @@ im_application_list_canonical_id (const gchar *id)
 {
   gchar *str;
   gchar *p;
+  int len;
 
-  str = g_strndup (id, strlen (id) - g_str_has_suffix (id, ".desktop") ? 7 : 0);
+  len = strlen (id);
+  if (g_str_has_suffix (id, ".desktop"))
+    len -= 8;
+
+  str = g_strndup (id, len);
 
   for (p = str; *p; p++)
     {
