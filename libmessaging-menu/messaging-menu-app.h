@@ -149,6 +149,9 @@ void                messaging_menu_app_append_message            (MessagingMenuA
                                                                   const gchar          *source_id,
                                                                   gboolean              notify);
 
+MessagingMenuMessage * messaging_menu_app_get_message            (MessagingMenuApp *app,
+                                                                  const gchar      *id);
+
 void                messaging_menu_app_remove_message            (MessagingMenuApp     *app,
                                                                   MessagingMenuMessage *msg);
 
