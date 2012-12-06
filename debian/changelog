@@ -1,3 +1,10 @@
+indicator-messages (12.10.6-0ubuntu1phablet5) quantal; urgency=low
+
+  * Don't shorten the app id to seven characters (fixes LP #1086729)
+  * Add messaging_menu_app_get_message
+
+ -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Thu, 06 Dec 2012 15:06:34 +0000
+
 indicator-messages (12.10.6-0ubuntu1phablet4) quantal; urgency=low
 
   [Lars Uebernickel]
