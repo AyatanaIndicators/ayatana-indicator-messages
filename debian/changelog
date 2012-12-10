@@ -1,3 +1,10 @@
+indicator-messages (12.10.6-0ubuntu1phablet6) quantal; urgency=low
+
+  * Don't show sources
+  * Always use the "messageitem" widget type for messages
+
+ -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Mon, 10 Dec 2012 14:38:16 +0100
+
 indicator-messages (12.10.6-0ubuntu1phablet5) quantal; urgency=low
 
   * Don't shorten the app id to seven characters (fixes LP #1086729)
