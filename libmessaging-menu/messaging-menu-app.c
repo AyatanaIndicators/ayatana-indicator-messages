@@ -564,8 +564,11 @@ messaging_menu_app_activate_message (IndicatorMessagesApplication *app_interface
 
           if (g_variant_n_children (params))
             {
-              GVariant *param = g_variant_get_child_value (params, 0);
+              GVariant *param;
+
+              g_variant_get_child (params, 0, "v", &param);
               g_signal_emit_by_name (msg, signal, action_id, param);
+
               g_variant_unref (param);
             }
           else
