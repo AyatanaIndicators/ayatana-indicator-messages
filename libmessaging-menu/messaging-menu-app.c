@@ -1397,7 +1397,11 @@ void
 messaging_menu_app_remove_message (MessagingMenuApp     *app,
                                    MessagingMenuMessage *msg)
 {
+  /* take a ref of @msg here to make sure the pointer returned by
+   * _get_id() is valid for the duration of remove_message_by_id. */
+  g_object_ref (msg);
   messaging_menu_app_remove_message_by_id (app, messaging_menu_message_get_id (msg));
+  g_object_unref (msg);
 }
 
 /**
