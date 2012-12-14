@@ -796,9 +796,10 @@ im_application_list_proxy_created (GObject      *source_object,
   GError *error = NULL;
 
   app->proxy = indicator_messages_application_proxy_new_finish (result, &error);
-  if (!app)
+  if (!app->proxy)
     {
-      g_warning ("could not create application proxy: %s", error->message);
+      if (error->code != G_IO_ERROR_CANCELLED)
+        g_warning ("could not create application proxy: %s", error->message);
       g_error_free (error);
       return;
     }
