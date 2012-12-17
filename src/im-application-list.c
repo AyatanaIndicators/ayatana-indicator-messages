@@ -796,9 +796,10 @@ im_application_list_proxy_created (GObject      *source_object,
   GError *error = NULL;
 
   app->proxy = indicator_messages_application_proxy_new_finish (result, &error);
-  if (!app)
+  if (!app->proxy)
     {
-      g_warning ("could not create application proxy: %s", error->message);
+      if (error->code != G_IO_ERROR_CANCELLED)
+        g_warning ("could not create application proxy: %s", error->message);
       g_error_free (error);
       return;
     }
@@ -839,11 +840,17 @@ im_application_list_set_remote (ImApplicationList *list,
       return;
     }
 
-  if (app->proxy || app->cancellable)
+  if (app->cancellable)
     {
-      g_warning ("replacing '%s' at %s with %s", id, unique_bus_name,
-                 g_dbus_proxy_get_name_owner (G_DBUS_PROXY (app->proxy)));
+      gchar *name_owner = NULL;
+
+      if (app->proxy)
+        name_owner = g_dbus_proxy_get_name_owner (G_DBUS_PROXY (app->proxy));
+      g_warning ("replacing '%s' at %s with %s", id, name_owner, unique_bus_name);
+
       im_application_list_unset_remote (app);
+
+      g_free (name_owner);
     }
 
   app->cancellable = g_cancellable_new ();
