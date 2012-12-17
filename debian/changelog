@@ -1,3 +1,12 @@
+indicator-messages (12.10.6-0ubuntu1phablet8) quantal; urgency=low
+
+  * Make messaging_menu_app_remove_message() work for messages with a ref count of 1
+  * Make handling of multiple processes with the same desktop id more robust
+  * ImPhoneMenu: sort messages by time (fixes LP #1090266)
+  * Don't show message sources
+
+ -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Mon, 17 Dec 2012 14:42:03 +0100
+
 indicator-messages (12.10.6-0ubuntu1phablet7) quantal; urgency=low
 
   * Remove variant wrapper from 'parameter' argument of the "activate" signal
