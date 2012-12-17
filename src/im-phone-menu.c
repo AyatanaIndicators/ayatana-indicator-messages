@@ -142,6 +142,17 @@ im_phone_menu_get_model (ImPhoneMenu *menu)
   return G_MENU_MODEL (menu->toplevel_menu);
 }
 
+static gint64
+im_phone_menu_get_message_time (GMenuModel *model,
+                                gint        i)
+{
+  gint64 time;
+
+  g_menu_model_get_item_attribute (model, i, "x-canonical-time", "x", &time);
+
+  return time;
+}
+
 void
 im_phone_menu_add_message (ImPhoneMenu     *menu,
                            const gchar     *app_id,
@@ -156,6 +167,8 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
 {
   GMenuItem *item;
   gchar *action_name;
+  gint n_messages;
+  gint pos;
 
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
   g_return_if_fail (app_id);
@@ -179,7 +192,13 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   if (actions)
     g_menu_item_set_attribute (item, "x-canonical-message-actions", "v", actions);
 
-  g_menu_prepend_item (menu->message_section, item);
+  n_messages = g_menu_model_get_n_items (G_MENU_MODEL (menu->message_section));
+  pos = 0;
+  while (pos < n_messages &&
+         time < im_phone_menu_get_message_time (G_MENU_MODEL (menu->message_section), pos))
+    pos++;
+
+  g_menu_insert_item (menu->message_section, pos, item);
 
   g_free (action_name);
   g_object_unref (item);
