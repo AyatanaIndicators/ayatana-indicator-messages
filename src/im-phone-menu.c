@@ -309,3 +309,23 @@ im_phone_menu_remove_application (ImPhoneMenu     *menu,
   im_phone_menu_remove_all_for_app (menu->source_section, app_id);
   im_phone_menu_remove_all_for_app (menu->message_section, app_id);
 }
+
+void
+im_phone_menu_remove_all (ImPhoneMenu *menu)
+{
+  g_return_if_fail (IM_IS_PHONE_MENU (menu));
+
+  while (g_menu_model_get_n_items (G_MENU_MODEL (menu->toplevel_menu)))
+    g_menu_remove (menu->toplevel_menu, 0);
+
+  g_object_unref (menu->message_section);
+  g_object_unref (menu->source_section);
+
+  menu->message_section = g_menu_new ();
+  menu->source_section = g_menu_new ();
+
+  g_signal_connect_swapped (menu->message_section, "items-changed",
+                            G_CALLBACK (im_phone_menu_update_toplevel), menu);
+  g_signal_connect_swapped (menu->source_section, "items-changed",
+                            G_CALLBACK (im_phone_menu_update_toplevel), menu);
+}
