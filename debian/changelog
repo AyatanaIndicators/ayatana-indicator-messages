@@ -1,3 +1,9 @@
+indicator-messages (12.10.6-0ubuntu1phablet9) quantal; urgency=low
+
+  * add "remove-all" signal to imapplicationlist (temporarily)
+
+ -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Thu, 20 Dec 2012 18:49:50 +0100
+
 indicator-messages (12.10.6-0ubuntu1phablet8) quantal; urgency=low
 
   * Make messaging_menu_app_remove_message() work for messages with a ref count of 1
