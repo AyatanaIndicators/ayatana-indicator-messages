@@ -45,6 +45,7 @@ enum
   MESSAGE_ADDED,
   MESSAGE_REMOVED,
   APP_STOPPED,
+  REMOVE_ALL,
   N_SIGNALS
 };
 
@@ -251,6 +252,8 @@ im_application_list_remove_all (GSimpleAction *action,
   GHashTableIter iter;
   Application *app;
 
+  g_signal_emit (list, signals[REMOVE_ALL], 0);
+
   g_hash_table_iter_init (&iter, list->applications);
   while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &app))
     {
@@ -377,6 +380,15 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                        G_TYPE_NONE,
                                        1,
                                        G_TYPE_STRING);
+
+  signals[REMOVE_ALL] = g_signal_new ("remove-all",
+                                      IM_TYPE_APPLICATION_LIST,
+                                      G_SIGNAL_RUN_FIRST,
+                                      0,
+                                      NULL, NULL,
+                                      g_cclosure_marshal_VOID__VOID,
+                                      G_TYPE_NONE,
+                                      0);
 }
 
 static void

@@ -65,4 +65,6 @@ void                im_phone_menu_remove_source         (ImPhoneMenu        *men
 void                im_phone_menu_remove_application    (ImPhoneMenu        *menu,
                                                          const gchar        *app_id);
 
+void                im_phone_menu_remove_all            (ImPhoneMenu        *menu);
+
 #endif
