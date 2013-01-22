@@ -28,8 +28,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 int
 main (int argc, char ** argv)
 {
-	g_type_init();
-
 	guint returnval = 0;
 	GError * error = NULL;
 

@@ -619,11 +619,8 @@ got_bus (GObject *object,
 int
 main (int argc, char ** argv)
 {
-	GMainLoop * mainloop = NULL;
-	IndicatorService * service = NULL;
-
-	/* Glib init */
-	g_type_init();
+	GMainLoop * mainloop;
+	IndicatorService * service;
 
 	mainloop = g_main_loop_new (NULL, FALSE);
 
