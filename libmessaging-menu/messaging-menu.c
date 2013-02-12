@@ -717,7 +717,7 @@ messaging_menu_app_set_draws_attention (MessagingMenuApp *app,
   state = g_action_get_state (G_ACTION (action));
   g_variant_get (state, "(ux&sb)", &count, &time, &string, NULL);
 
-  new_state = g_variant_new ("(uxsb)", count, time, string, TRUE);
+  new_state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
   g_simple_action_set_state (action, new_state);
 
   g_variant_unref (state);
@@ -1191,5 +1191,5 @@ void
 messaging_menu_app_remove_attention (MessagingMenuApp *app,
                                      const gchar      *source_id)
 {
-  messaging_menu_app_set_draws_attention (app, source_id, TRUE);
+  messaging_menu_app_set_draws_attention (app, source_id, FALSE);
 }
