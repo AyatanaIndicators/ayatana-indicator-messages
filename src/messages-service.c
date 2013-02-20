@@ -473,6 +473,29 @@ unregister_application (IndicatorMessagesService *service,
 }
 
 static void
+application_stopped_running (IndicatorMessagesService *service,
+			     GDBusMethodInvocation    *invocation,
+			     const gchar              *desktop_id,
+			     gpointer                  user_data)
+{
+	GDesktopAppInfo *appinfo;
+	gchar *id;
+	AppSection *section;
+
+	indicator_messages_service_complete_application_stopped_running (service, invocation);
+
+	if (!(appinfo = g_desktop_app_info_new (desktop_id)))
+		return;
+
+	id = g_app_info_get_simple_id (G_APP_INFO (appinfo));
+	section = g_hash_table_lookup (applications, id);
+	app_section_unset_object_path (section);
+
+	g_free (id);
+	g_object_unref (appinfo);
+}
+
+static void
 set_status (IndicatorMessagesService *service,
 	    GDBusMethodInvocation *invocation,
 	    const gchar *desktop_id,
@@ -648,6 +671,8 @@ main (int argc, char ** argv)
 			  G_CALLBACK (register_application), NULL);
 	g_signal_connect (messages_service, "handle-unregister-application",
 			  G_CALLBACK (unregister_application), NULL);
+	g_signal_connect (messages_service, "handle-application-stopped-running",
+			  G_CALLBACK (application_stopped_running), NULL);
 	g_signal_connect (messages_service, "handle-set-status",
 			  G_CALLBACK (set_status), NULL);
 
