@@ -65,3 +65,13 @@ libindicator_messages_service_la_LIBADD = \
 
 libindicator_messages_service_la_LDFLAGS = \
 	$(COVERAGE_LDFLAGS)
+
+######################################
+# Test client with dbusmock
+######################################
+
+TESTS_ENVIRONMENT = \
+	export LD_LIBRARY_PATH=$(top_builddir)/libmessaging-menu/.libs; \
+	export GI_TYPELIB_PATH=$(top_builddir)/libmessaging-menu;
+
+TESTS += test-client.py
