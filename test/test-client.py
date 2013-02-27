@@ -44,25 +44,25 @@ class MessagingMenuTest(dbusmock.DBusTestCase):
                 self.assertEqual(args[i], expected_args[i])
 
     def test_registration(self):
-        mmapp = MessagingMenu.App.new('empathy.desktop')
+        mmapp = MessagingMenu.App.new('test.desktop')
         mmapp.register()
         self.spin_loop()
-        self.assertMethodCalled('RegisterApplication', 'empathy.desktop', None)
+        self.assertMethodCalled('RegisterApplication', 'test.desktop', None)
 
         mmapp.unregister()
         self.spin_loop()
-        self.assertMethodCalled('UnregisterApplication', 'empathy.desktop')
+        self.assertMethodCalled('UnregisterApplication', 'test.desktop')
 
         # ApplicationStoppedRunning is called when the last ref on mmapp is dropped
         del mmapp
         self.spin_loop()
-        self.assertMethodCalled('ApplicationStoppedRunning', 'empathy.desktop')
+        self.assertMethodCalled('ApplicationStoppedRunning', 'test.desktop')
 
     def test_status(self):
-        mmapp = MessagingMenu.App.new('empathy.desktop')
+        mmapp = MessagingMenu.App.new('test.desktop')
         mmapp.register()
         mmapp.set_status(MessagingMenu.Status.AWAY)
         self.spin_loop()
-        self.assertMethodCalled('SetStatus', 'empathy.desktop', 'away')
+        self.assertMethodCalled('SetStatus', 'test.desktop', 'away')
 
 unittest.main(testRunner=unittest.TextTestRunner())
