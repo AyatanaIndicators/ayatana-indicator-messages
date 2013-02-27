@@ -30,39 +30,43 @@ class MessagingMenuTest(dbusmock.DBusTestCase):
         self.messaging_service.terminate()
         self.messaging_service.wait()
 
-    def spin_loop(self, ms=10):
-        GLib.timeout_add(ms, lambda: self.loop.quit())
-        self.loop.run()
-
-    def assertMethodCalled(self, name, *expected_args):
-        calls = self.mock.GetMethodCalls(name)
-        self.assertEqual(len(calls), 1, 'method %s was not called' % name)
-        args = calls[0][1]
+    def assertArgumentsEqual(self, args, *expected_args):
         self.assertEqual(len(args), len(expected_args))
         for i in range(len(args)):
             if expected_args[i]:
                 self.assertEqual(args[i], expected_args[i])
 
+    def assertMethodCalled(self, name, *expected_args):
+        # set a flag on timeout, assertions don't get bubbled up through c functions
+        self.timed_out = False
+        def timeout(): self.timed_out = True
+        timeout_id = GLib.timeout_add_seconds(10, timeout)
+        while 1:
+            calls = self.mock.GetMethodCalls(name)
+            if len(calls) > 0:
+                GLib.source_remove(timeout_id)
+                self.assertArgumentsEqual(calls[0][1], *expected_args)
+                break
+            GLib.MainContext.default().iteration(True)
+            if self.timed_out:
+                raise self.failureException('method %s was not called after 10 seconds' % name)
+
     def test_registration(self):
         mmapp = MessagingMenu.App.new('test.desktop')
         mmapp.register()
-        self.spin_loop()
         self.assertMethodCalled('RegisterApplication', 'test.desktop', None)
 
         mmapp.unregister()
-        self.spin_loop()
         self.assertMethodCalled('UnregisterApplication', 'test.desktop')
 
         # ApplicationStoppedRunning is called when the last ref on mmapp is dropped
         del mmapp
-        self.spin_loop()
         self.assertMethodCalled('ApplicationStoppedRunning', 'test.desktop')
 
     def test_status(self):
         mmapp = MessagingMenu.App.new('test.desktop')
         mmapp.register()
         mmapp.set_status(MessagingMenu.Status.AWAY)
-        self.spin_loop()
         self.assertMethodCalled('SetStatus', 'test.desktop', 'away')
 
 unittest.main(testRunner=unittest.TextTestRunner())
