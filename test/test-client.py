@@ -2,9 +2,12 @@
 
 import unittest
 import dbus
+from dbus.mainloop.glib import DBusGMainLoop
 import dbusmock
 import subprocess
 from gi.repository import GLib, Gio, MessagingMenu
+
+DBusGMainLoop(set_as_default=True)
 
 class MessagingMenuTest(dbusmock.DBusTestCase):
     @classmethod
