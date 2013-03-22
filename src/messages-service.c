@@ -130,7 +130,9 @@ main (int argc, char ** argv)
 	GBusNameOwnerFlags flags;
 
 	/* Glib init */
+#if G_ENCODE_VERSION(GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION) <= GLIB_VERSION_2_34
 	g_type_init();
+#endif
 
 	mainloop = g_main_loop_new (NULL, FALSE);
 
