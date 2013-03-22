@@ -4,7 +4,6 @@ DOC_MAIN_SGML_FILE=$(DOC_MODULE)-docs.xml
 
 DOC_SOURCE_DIR = $(top_srcdir)/libmessaging-menu
 
-SCANGOBJ_OPTIONS=--type-init-func="g_type_init()"
 MKDB_OPTIONS=--xml-mode --output-format=xml
 
 # Used for dependencies. The docs will be rebuilt if any of these change.

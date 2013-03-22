@@ -18,7 +18,8 @@
 
   <chapter>
     <title>API Reference</title>
-    <xi:include href="xml/messaging-menu.xml"/>
+    <xi:include href="xml/messaging-menu-app.xml" />
+    <xi:include href="xml/messaging-menu-message.xml" />
   </chapter>
 
   <chapter id="object-tree">

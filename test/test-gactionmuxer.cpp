@@ -43,7 +43,9 @@ strv_contains (gchar **str_array,
 TEST(GActionMuxerTest, Sanity) {
 	GActionMuxer *muxer;
 
+#if G_ENCODE_VERSION(GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION) <= GLIB_VERSION_2_34
 	g_type_init ();
+#endif
 
 	g_action_muxer_insert (NULL, NULL, NULL);
 	g_action_muxer_remove (NULL, NULL);
@@ -64,7 +66,9 @@ TEST(GActionMuxerTest, Empty) {
 	GActionMuxer *muxer;
 	gchar **actions;
 
+#if G_ENCODE_VERSION(GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION) <= GLIB_VERSION_2_34
 	g_type_init ();
+#endif
 
 	muxer = g_action_muxer_new ();
 
@@ -85,7 +89,9 @@ TEST(GActionMuxerTest, AddAndRemove) {
 	GActionMuxer *muxer;
 	gchar **actions;
 
+#if G_ENCODE_VERSION(GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION) <= GLIB_VERSION_2_34
 	g_type_init ();
+#endif
 
 	group1 = g_simple_action_group_new ();
 	g_simple_action_group_add_entries (group1,
@@ -178,7 +184,9 @@ TEST(GActionMuxerTest, ActionAttributes) {
 	GVariant *state_hint[2];
 	GVariant *state[2];
 
+#if G_ENCODE_VERSION(GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION) <= GLIB_VERSION_2_34
 	g_type_init ();
+#endif
 
 	group = g_simple_action_group_new ();
 	action = g_simple_action_new ("one", G_VARIANT_TYPE_STRING);
