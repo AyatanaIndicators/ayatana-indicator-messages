@@ -238,7 +238,10 @@ im_app_menu_item_activate (GtkMenuItem *item)
   ImAppMenuItemPrivate *priv = IM_APP_MENU_ITEM (item)->priv;
 
   if (priv->action && priv->action_group)
-    g_action_group_activate_action (priv->action_group, priv->action, NULL);
+    {
+      guint32 event_time = gtk_get_current_event_time ();
+      g_action_group_activate_action (priv->action_group, priv->action, g_variant_new_uint32(event_time));
+    }
 }
 
 static void
