@@ -25,6 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #endif
 
+#include <gdk/gdk.h>
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
 #include <gio/gio.h>
@@ -390,7 +391,7 @@ app_section_update_menu (AppSection *self)
 	g_simple_action_group_clear (priv->static_shortcuts);
 
 	is_running = priv->name_watch_id > 0;
-	launch = g_simple_action_new_stateful ("launch", NULL, g_variant_new_boolean (is_running));
+	launch = g_simple_action_new_stateful ("launch", G_VARIANT_TYPE_UINT32, g_variant_new_boolean (is_running));
 	g_signal_connect (launch, "activate", G_CALLBACK (activate_cb), self);
 	g_signal_connect (launch, "change-state", G_CALLBACK (launch_action_change_state), self);
 	g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (launch));
@@ -506,13 +507,19 @@ activate_cb (GSimpleAction *action,
 	AppSection * mi = APP_SECTION (userdata);
 	AppSectionPrivate * priv = mi->priv;
 	GError *error = NULL;
+	GdkDisplay *display = gdk_display_get_default();
+	GdkAppLaunchContext *launch_context = gdk_display_get_app_launch_context (display);
 
-	if (!g_app_info_launch (G_APP_INFO (priv->appinfo), NULL, NULL, &error)) {
+	gdk_app_launch_context_set_timestamp (launch_context, g_variant_get_uint32 (param));
+
+	if (!g_app_info_launch (G_APP_INFO (priv->appinfo), NULL, G_APP_LAUNCH_CONTEXT (launch_context), &error)) {
 		g_warning("Unable to execute application for desktop file '%s': %s",
 			  g_desktop_app_info_get_filename (priv->appinfo),
 			  error->message);
 		g_error_free (error);
 	}
+
+	g_object_unref (launch_context);
 }
 
 static void

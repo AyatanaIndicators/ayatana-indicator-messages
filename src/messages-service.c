@@ -24,6 +24,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <config.h>
 #include <locale.h>
 #include <libindicator/indicator-service.h>
+#include <gdk/gdk.h>
 #include <gio/gio.h>
 #include <gio/gdesktopappinfo.h>
 #include <glib/gi18n.h>
@@ -622,6 +623,7 @@ main (int argc, char ** argv)
 	GMainLoop * mainloop;
 	IndicatorService * service;
 
+	gdk_init(&argc, &argv);
 	mainloop = g_main_loop_new (NULL, FALSE);
 
 	/* Create the Indicator Service interface */
