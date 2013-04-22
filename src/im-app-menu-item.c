@@ -240,7 +240,7 @@ im_app_menu_item_activate (GtkMenuItem *item)
   if (priv->action && priv->action_group)
     {
       guint32 event_time = gtk_get_current_event_time ();
-      g_action_group_activate_action (priv->action_group, priv->action, g_variant_new_uint32(event_time));
+      g_action_group_activate_action (priv->action_group, priv->action, g_variant_new_uint32 (event_time));
     }
 }
 
