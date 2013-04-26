@@ -1,3 +1,9 @@
+indicator-messages (13.10.0phablet1) raring; urgency=low
+
+  * Version bump to not pull from archives
+
+ -- Sergio Schvezov <sergio.schvezov@canonical.com>  Fri, 26 Apr 2013 13:53:53 -0300
+
 indicator-messages (12.10.6phablet1) quantal; urgency=low
 
   * Adding guards for g_type_init
