@@ -1,3 +1,20 @@
+indicator-messages (12.10.6daily13.04.09-0ubuntu1) raring; urgency=low
+
+  * Automatic snapshot from revision 340
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 09 Apr 2013 02:02:02 +0000
+
+indicator-messages (12.10.6daily13.04.08-0ubuntu1) raring; urgency=low
+
+  [ Marco Trevisan (Treviño) ]
+  * Window management - Apps raised from indicators sometimes dont have
+    the focus (LP: #627195)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 339
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 08 Apr 2013 02:02:06 +0000
+
 indicator-messages (12.10.6daily13.02.13-0ubuntu1) raring; urgency=low
 
   [ Jason Conti ]
