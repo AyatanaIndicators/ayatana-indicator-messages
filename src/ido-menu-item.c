@@ -282,10 +282,24 @@ static void
 ido_menu_item_activate (GtkMenuItem *item)
 {
   IdoMenuItemPrivate *priv = IDO_MENU_ITEM (item)->priv;
+  GVariant *parameter;
 
   /* see ido_menu_item_set_active */
   if (!priv->in_set_active && priv->action && priv->action_group)
-    g_action_group_activate_action (priv->action_group, priv->action, priv->target);
+    {
+      guint32 event_time = gtk_get_current_event_time ();
+
+      if (priv->target)
+        {
+          parameter = priv->target;
+        }
+      else
+        {
+          parameter = g_variant_new_uint32 (event_time);
+        }
+
+      g_action_group_activate_action (priv->action_group, priv->action, parameter);
+    }
 
   if (priv->in_set_active)
     GTK_MENU_ITEM_CLASS (ido_menu_item_parent_class)->activate (item);

@@ -291,6 +291,17 @@ app_section_finalize (GObject *object)
 	G_OBJECT_CLASS (app_section_parent_class)->dispose (object);
 }
 
+static GAppLaunchContext *
+get_launch_context (guint32 timestamp)
+{
+	GdkDisplay *display = gdk_display_get_default();
+	GdkAppLaunchContext *launch_context = gdk_display_get_app_launch_context (display);
+
+	gdk_app_launch_context_set_timestamp (launch_context, timestamp);
+
+	return G_APP_LAUNCH_CONTEXT (launch_context);
+}
+
 /* Respond to one of the shortcuts getting clicked on. */
 static void
 nick_activate_cb (GSimpleAction *action,
@@ -303,10 +314,14 @@ nick_activate_cb (GSimpleAction *action,
 
 	g_return_if_fail(priv->ids != NULL);
 
-	if (!indicator_desktop_shortcuts_nick_exec_with_context(priv->ids, nick, NULL)) {
+	GAppLaunchContext *context = get_launch_context (g_variant_get_uint32 (param));
+
+	if (!indicator_desktop_shortcuts_nick_exec_with_context(priv->ids, nick, context)) {
 		g_warning("Unable to execute nick '%s' for desktop file '%s'",
 			  nick, g_desktop_app_info_get_filename (priv->appinfo));
 	}
+
+	g_object_unref (context);
 }
 
 static void
@@ -416,7 +431,7 @@ app_section_update_menu (AppSection *self)
 
 		name = indicator_desktop_shortcuts_nick_get_name(priv->ids, nicks[i]);
 
-		action = g_simple_action_new (nicks[i], NULL);
+		action = g_simple_action_new (nicks[i], G_VARIANT_TYPE_UINT32);
 		g_signal_connect(action, "activate", G_CALLBACK (nick_activate_cb), self);
 		g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (action));
 		g_object_unref (action);
@@ -507,12 +522,9 @@ activate_cb (GSimpleAction *action,
 	AppSection * mi = APP_SECTION (userdata);
 	AppSectionPrivate * priv = mi->priv;
 	GError *error = NULL;
-	GdkDisplay *display = gdk_display_get_default();
-	GdkAppLaunchContext *launch_context = gdk_display_get_app_launch_context (display);
+	GAppLaunchContext *launch_context = get_launch_context (g_variant_get_uint32 (param));
 
-	gdk_app_launch_context_set_timestamp (launch_context, g_variant_get_uint32 (param));
-
-	if (!g_app_info_launch (G_APP_INFO (priv->appinfo), NULL, G_APP_LAUNCH_CONTEXT (launch_context), &error)) {
+	if (!g_app_info_launch (G_APP_INFO (priv->appinfo), NULL, launch_context, &error)) {
 		g_warning("Unable to execute application for desktop file '%s': %s",
 			  g_desktop_app_info_get_filename (priv->appinfo),
 			  error->message);
