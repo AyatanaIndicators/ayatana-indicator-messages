@@ -1,3 +1,16 @@
+indicator-messages (12.10.6daily13.05.15-0ubuntu1) saucy; urgency=low
+
+  [ Lars Uebernickel ]
+  * libmessaging-menu: don't use detailed action names Detailed action
+    names are of the form action::target or action(target), so they
+    can't have colons or parens in them. This restriction does not apply
+    to messaging menu ids. (LP: #1180302)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 344
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 15 May 2013 16:59:49 +0000
+
 indicator-messages (12.10.6daily13.05.02-0ubuntu1) saucy; urgency=low
 
   [ Marco Trevisan (Treviño) ]
