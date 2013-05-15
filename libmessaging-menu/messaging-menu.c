@@ -644,7 +644,8 @@ messaging_menu_app_insert_source_action (MessagingMenuApp *app,
   g_simple_action_group_insert (app->source_actions, G_ACTION (action));
   g_object_unref (action);
 
-  menuitem = g_menu_item_new (label, id);
+  menuitem = g_menu_item_new (label, NULL);
+  g_menu_item_set_action_and_target_value (menuitem, id, NULL);
   g_menu_item_set_attribute (menuitem, "x-canonical-type", "s", "ImSourceMenuItem");
   if (icon)
     {
