@@ -140,8 +140,9 @@ gtk_widget_get_font_metrics (GtkWidget    *widget,
 {
   const PangoFontDescription *font;
 
-  font = gtk_style_context_get_font (gtk_widget_get_style_context (widget),
-                                     gtk_widget_get_state_flags (widget));
+  gtk_style_context_get (gtk_widget_get_style_context (widget),
+                         gtk_widget_get_state_flags (widget), 
+                         "font", &font, NULL);
 
   return pango_context_get_metrics (context,
                                     font,
