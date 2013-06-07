@@ -68,6 +68,7 @@ Architecture: any
 Section: libdevel
 Depends: ${shlibs:Depends},
          ${misc:Depends},
+         gir1.2-messagingmenu-1.0 (=${binary:Version}),
          libmessaging-menu0 (=${binary:Version}),
          libglib2.0-dev,
 Description: Messaging Menu - library development files
@@ -75,7 +76,7 @@ Description: Messaging Menu - library development files
  the messaging menu.
 
 Package: gir1.2-messagingmenu-1.0
-Section: libs
+Section: introspection
 Architecture: any
 Depends: ${misc:Depends},
          ${gir:Depends},
