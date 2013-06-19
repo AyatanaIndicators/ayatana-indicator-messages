@@ -1,3 +1,23 @@
+indicator-messages (12.10.6daily13.06.19-0ubuntu1) saucy; urgency=low
+
+  [ Sebastien Bacher ]
+  * use gtk_style_context_get instead of deprecated
+    gtk_style_context_get_font.
+
+  [ Jeremy Bicha ]
+  * Have libmessaging-menu-dev depend on gir1.2-messagingmenu-1.0.
+
+  [ Lars Uebernickel ]
+  * use gtk_style_context_get instead of deprecated
+    gtk_style_context_get_font.
+  * Notify the service when an app unrefs its MessagingMenuApp. (LP:
+    #1154099)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 348
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 19 Jun 2013 02:01:48 +0000
+
 indicator-messages (12.10.6daily13.05.15-0ubuntu1) saucy; urgency=low
 
   [ Lars Uebernickel ]
