@@ -95,7 +95,7 @@ im_source_menu_item_time_span_string (gint64 timestamp)
   if (hours == 0)
     {
       /* TRANSLATORS: number of minutes that have passed */
-      str = g_strdup_printf (ngettext ("%d m", "%d m", minutes), minutes);
+      str = g_strdup_printf (ngettext ("%d min", "%d min", minutes), minutes);
     }
   else
     {
