@@ -1,3 +1,13 @@
+indicator-messages (12.10.6+13.10.20130702-0ubuntu1) saucy; urgency=low
+
+  [ Mathias Dietrich ]
+  * Change abbreviation for minutes from m to min. (LP: #652845)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 350
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 02 Jul 2013 02:02:36 +0000
+
 indicator-messages (12.10.6daily13.06.19-0ubuntu1) saucy; urgency=low
 
   [ Sebastien Bacher ]
