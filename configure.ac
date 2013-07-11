@@ -122,6 +122,22 @@ else
 fi
 AC_SUBST(DBUSSERVICEDIR)
 
+###########################
+# Vala API Generation
+###########################
+
+AC_ARG_ENABLE([vala],
+        AC_HELP_STRING([--disable-vala], [Disable vala]),
+        [enable_vala=$enableval], [enable_vala=yes])
+
+AS_IF([test "x$enable_vala" != "xno"],[
+        AM_COND_IF([HAVE_INTROSPECTION],,[
+                AC_MSG_ERROR([Vala bindings require introspection support, please --enable-introspection])
+        ])
+AC_PATH_PROG([VALA_API_GEN], [vapigen])
+])
+AM_CONDITIONAL([HAVE_VALA], [test -n "$VALA_API_GEN"])
+
 ##############################
 # Custom Junk
 ##############################
@@ -197,5 +213,6 @@ Messaging Indicator Configuration:
 	gtest:         $enable_tests
 	gcov:          $use_gcov
 	introspecion:  $enable_introspection
+	Vala bindings: $enable_vala
 	documentation: $enable_gtk_doc
 ])
