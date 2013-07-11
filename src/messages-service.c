@@ -622,9 +622,6 @@ main (int argc, char ** argv)
 	GMainLoop * mainloop = NULL;
 	IndicatorService * service = NULL;
 
-	/* Glib init */
-	g_type_init();
-
 	mainloop = g_main_loop_new (NULL, FALSE);
 
 	/* Create the Indicator Service interface */

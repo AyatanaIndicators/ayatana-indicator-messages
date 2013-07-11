@@ -302,7 +302,7 @@ nick_activate_cb (GSimpleAction *action,
 
 	g_return_if_fail(priv->ids != NULL);
 
-	if (!indicator_desktop_shortcuts_nick_exec(priv->ids, nick)) {
+	if (!indicator_desktop_shortcuts_nick_exec_with_context(priv->ids, nick, NULL)) {
 		g_warning("Unable to execute nick '%s' for desktop file '%s'",
 			  nick, g_desktop_app_info_get_filename (priv->appinfo));
 	}
