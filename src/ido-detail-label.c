@@ -138,14 +138,18 @@ static PangoFontMetrics *
 gtk_widget_get_font_metrics (GtkWidget    *widget,
                              PangoContext *context)
 {
-  const PangoFontDescription *font;
+  PangoFontMetrics *font_metrics;
+  PangoFontDescription *font;
+  GtkStyleContext *style;
+  style = gtk_widget_get_style_context (GTK_WIDGET (widget));
+  gtk_style_context_get (style, GTK_STATE_FLAG_NORMAL,
+                         "font", &font, NULL);
 
-  font = gtk_style_context_get_font (gtk_widget_get_style_context (widget),
-                                     gtk_widget_get_state_flags (widget));
-
-  return pango_context_get_metrics (context,
-                                    font,
-                                    pango_context_get_language (context));
+  font_metrics = pango_context_get_metrics (context,
+                                            font,
+                                            pango_context_get_language (context));
+  pango_font_description_free (font);
+  return font_metrics;
 }
 
 static gint
