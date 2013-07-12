@@ -68,7 +68,7 @@ vapidir = $(datadir)/vala/vapi
 vapi_DATA = MessagingMenu-1.0.vapi
 
 MessagingMenu-1.0.vapi: MessagingMenu-1.0.gir
-	$(VALA_API_GEN) --library=MessagingMenu-1.0 $<
+	$(VALA_API_GEN) --pkg gio-2.0 --library=MessagingMenu-1.0 $<
 
 CLEANFILES += $(vapi_DATA)
 
