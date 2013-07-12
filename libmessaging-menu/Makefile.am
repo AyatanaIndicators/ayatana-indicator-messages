@@ -56,4 +56,22 @@ typelibdir = $(libdir)/girepository-1.0
 typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 
 CLEANFILES = $(gir_DATA) $(typelib_DATA)
+
+
+#########################
+# VAPI Files
+#########################
+
+if HAVE_VALA
+
+vapidir = $(datadir)/vala/vapi
+vapi_DATA = MessagingMenu-1.0.vapi
+
+MessagingMenu-1.0.vapi: MessagingMenu-1.0.gir
+	$(VALA_API_GEN) --pkg gio-2.0 --library=MessagingMenu-1.0 $<
+
+CLEANFILES += $(vapi_DATA)
+
+endif
+
 endif
