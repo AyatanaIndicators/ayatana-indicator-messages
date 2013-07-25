@@ -61,6 +61,12 @@ GTK_DOC_CHECK([1.18], [--flavour no-tmpl])
 
 GOBJECT_INTROSPECTION_CHECK([$INTROSPECTION_REQUIRED_VERSION])
 
+AC_ARG_WITH([indicator-dir],
+	    [AS_HELP_STRING([--with-indicator-dir=DIR], [Indicator directory [default=$datadir/unity/indicators]])],
+	    [],
+	    [with_indicator_dir=$datadir/unity/indicators])
+AC_SUBST([INDICATOR_DIR], [$with_indicator_dir])
+
 ###########################
 # gcov coverage reporting
 ###########################
