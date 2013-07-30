@@ -100,35 +100,6 @@ fi
 AM_CONDITIONAL([BUILD_TESTS],[test "x$enable_tests" = "xyes"])
 
 ###########################
-# Check to see if we're local
-###########################
-
-with_localinstall="no"
-AC_ARG_ENABLE(localinstall, AS_HELP_STRING([--enable-localinstall], [install all of the files localy instead of system directories (for distcheck)]), with_localinstall=$enableval, with_localinstall=no)
-
-###########################
-# Indicator Info
-###########################
-
-if test "x$with_localinstall" = "xyes"; then
-	INDICATORDIR="${libdir}/indicators/2/"
-else
-	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator3-0.4`
-fi
-AC_SUBST(INDICATORDIR)
-
-###########################
-# DBus Service Info
-###########################
-
-if test "x$with_localinstall" = "xyes"; then
-	DBUSSERVICEDIR="${datadir}/dbus-1/services/"
-else
-	DBUSSERVICEDIR=`$PKG_CONFIG --variable=session_bus_services_dir dbus-1`
-fi
-AC_SUBST(DBUSSERVICEDIR)
-
-###########################
 # Vala API Generation
 ###########################
 
@@ -215,7 +186,6 @@ AC_MSG_NOTICE([
 Messaging Indicator Configuration:
 
 	Prefix:        $prefix
-	Indicator Dir: $INDICATORDIR
 	gtest:         $enable_tests
 	gcov:          $use_gcov
 	introspecion:  $enable_introspection
