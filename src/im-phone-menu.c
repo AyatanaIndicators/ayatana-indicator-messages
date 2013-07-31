@@ -72,7 +72,7 @@ im_phone_menu_update_toplevel (ImPhoneMenu *menu)
           g_menu_append_section (menu->toplevel_menu, NULL, G_MENU_MODEL (menu->message_section));
           g_menu_append_section (menu->toplevel_menu, NULL, G_MENU_MODEL (menu->source_section));
 
-          item = g_menu_item_new ("Clear All", "remove-all");
+          item = g_menu_item_new ("Clear All", "indicator.remove-all");
           g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.button");
           g_menu_append_item (menu->toplevel_menu, item);
 
@@ -173,7 +173,7 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
   g_return_if_fail (app_id);
 
-  action_name = g_strconcat (app_id, ".msg.", id, NULL);
+  action_name = g_strconcat ("indicator.", app_id, ".msg.", id, NULL);
 
   item = g_menu_item_new (title, action_name);
 
@@ -235,7 +235,7 @@ im_phone_menu_add_source (ImPhoneMenu     *menu,
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
   g_return_if_fail (app_id != NULL);
 
-  action_name = g_strconcat (app_id, ".src.", id, NULL);
+  action_name = g_strconcat ("indicator.", app_id, ".src.", id, NULL);
 
   item = g_menu_item_new (label, action_name);
   g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.sourceitem");
