@@ -39,8 +39,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 static ImApplicationList *applications;
 
 static IndicatorMessagesService *messages_service;
-static GMenu *toplevel_menu;
-static ImPhoneMenu *menu;
+static GHashTable *menus;
 static GSettings *settings;
 
 static void
@@ -82,6 +81,9 @@ on_bus_acquired (GDBusConnection *bus,
 		 gpointer         user_data)
 {
 	GError *error = NULL;
+	GHashTableIter it;
+	const gchar *profile;
+	ImMenu *menu;
 
 	g_dbus_connection_export_action_group (bus, INDICATOR_MESSAGES_DBUS_OBJECT,
 					       im_application_list_get_action_group (applications),
@@ -92,12 +94,17 @@ on_bus_acquired (GDBusConnection *bus,
 		return;
 	}
 
-	g_dbus_connection_export_menu_model (bus, INDICATOR_MESSAGES_DBUS_OBJECT "/phone",
-					     G_MENU_MODEL (toplevel_menu), &error);
-	if (error) {
-		g_warning ("unable to export menu on dbus: %s", error->message);
-		g_error_free (error);
-		return;
+	g_hash_table_iter_init (&it, menus);
+	while (g_hash_table_iter_next (&it, (gpointer *) &profile, (gpointer *) &menu)) {
+		gchar *object_path;
+
+		object_path = g_strconcat (INDICATOR_MESSAGES_DBUS_OBJECT, "/", profile, NULL);
+		if (!im_menu_export (menu, bus, object_path, &error)) {
+			g_warning ("unable to export menu for profile '%s': %s", profile, error->message);
+			g_clear_error (&error);
+		}
+
+		g_free (object_path);
 	}
 
 	g_dbus_interface_skeleton_export (G_DBUS_INTERFACE_SKELETON (messages_service),
@@ -126,7 +133,6 @@ int
 main (int argc, char ** argv)
 {
 	GMainLoop * mainloop = NULL;
-	GMenuItem *root;
 	GBusNameOwnerFlags flags;
 
 	/* Glib init */
@@ -157,30 +163,17 @@ main (int argc, char ** argv)
 	g_signal_connect (messages_service, "handle-unregister-application",
 			  G_CALLBACK (unregister_application), NULL);
 
-	menu = im_phone_menu_new ();
-
-	toplevel_menu = g_menu_new ();
-	root = g_menu_item_new (NULL, "indicator.messages");
-	g_menu_item_set_attribute (root, "x-canonical-type", "s", "com.canonical.indicator.root");
-	g_menu_item_set_submenu (root, im_phone_menu_get_model (menu));
-	g_menu_append_item (toplevel_menu, root);
-
 	settings = g_settings_new ("com.canonical.indicator.messages");
 
 	applications = im_application_list_new ();
-	g_signal_connect_swapped (applications, "message-added",
-				  G_CALLBACK (im_phone_menu_add_message), menu);
-	g_signal_connect_swapped (applications, "message-removed",
-				  G_CALLBACK (im_phone_menu_remove_message), menu);
-	g_signal_connect_swapped (applications, "app-stopped",
-				  G_CALLBACK (im_phone_menu_remove_application), menu);
-	g_signal_connect_swapped (applications, "remove-all",
-				  G_CALLBACK (im_phone_menu_remove_all), menu);
+
+	menus = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
+	g_hash_table_insert (menus, "phone", im_phone_menu_new (applications));
 
 	g_main_loop_run(mainloop);
 
 	/* Clean up */
-	g_object_unref (root);
+	g_hash_table_unref (menus);
 	g_object_unref (messages_service);
 	g_object_unref (settings);
 	g_object_unref (applications);

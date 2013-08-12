@@ -21,19 +21,18 @@
 
 #include <string.h>
 
-typedef GObjectClass ImPhoneMenuClass;
+typedef ImMenuClass ImPhoneMenuClass;
 
 struct _ImPhoneMenu
 {
-  GObject parent;
+  ImMenu parent;
 
   GMenu *toplevel_menu;
   GMenu *message_section;
   GMenu *source_section;
-
 };
 
-G_DEFINE_TYPE (ImPhoneMenu, im_phone_menu, G_TYPE_OBJECT);
+G_DEFINE_TYPE (ImPhoneMenu, im_phone_menu, IM_TYPE_MENU);
 
 typedef void (*ImMenuForeachFunc) (GMenuModel *menu, gint pos);
 
@@ -87,6 +86,22 @@ im_phone_menu_update_toplevel (ImPhoneMenu *menu)
 }
 
 static void
+im_phone_menu_constructed (GObject *object)
+{
+  ImPhoneMenu *menu = IM_PHONE_MENU (object);
+  ImApplicationList *applist;
+
+  applist = im_menu_get_application_list (IM_MENU (menu));
+
+  g_signal_connect_swapped (applist, "message-added", G_CALLBACK (im_phone_menu_add_message), menu);
+  g_signal_connect_swapped (applist, "message-removed", G_CALLBACK (im_phone_menu_remove_message), menu);
+  g_signal_connect_swapped (applist, "app-stopped", G_CALLBACK (im_phone_menu_remove_application), menu);
+  g_signal_connect_swapped (applist, "remove-all", G_CALLBACK (im_phone_menu_remove_all), menu);
+
+  G_OBJECT_CLASS (im_phone_menu_parent_class)->constructed (object);
+}
+
+static void
 im_phone_menu_dispose (GObject *object)
 {
   ImPhoneMenu *menu = IM_PHONE_MENU (object);
@@ -109,6 +124,7 @@ im_phone_menu_class_init (ImPhoneMenuClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+  object_class->constructed = im_phone_menu_constructed;
   object_class->dispose = im_phone_menu_dispose;
   object_class->finalize = im_phone_menu_finalize;
 }
@@ -129,17 +145,13 @@ im_phone_menu_init (ImPhoneMenu *menu)
 }
 
 ImPhoneMenu *
-im_phone_menu_new (void)
+im_phone_menu_new (ImApplicationList  *applist)
 {
-  return g_object_new (IM_TYPE_PHONE_MENU, NULL);
-}
+  g_return_val_if_fail (IM_IS_APPLICATION_LIST (applist), NULL);
 
-GMenuModel *
-im_phone_menu_get_model (ImPhoneMenu *menu)
-{
-  g_return_val_if_fail (IM_IS_PHONE_MENU (menu), NULL);
-
-  return G_MENU_MODEL (menu->toplevel_menu);
+  return g_object_new (IM_TYPE_PHONE_MENU,
+                       "application-list", applist,
+                       NULL);
 }
 
 static gint64

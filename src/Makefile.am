@@ -14,6 +14,8 @@ indicator_messages_service_SOURCES = \
 	gsettingsstrv.h \
 	gmenuutils.c \
 	gmenuutils.h \
+	im-menu.c \
+	im-menu.h \
 	im-phone-menu.c \
 	im-phone-menu.h \
 	im-application-list.c \

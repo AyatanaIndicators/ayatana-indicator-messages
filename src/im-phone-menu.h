@@ -20,7 +20,7 @@
 #ifndef __IM_PHONE_MENU_H__
 #define __IM_PHONE_MENU_H__
 
-#include <gio/gio.h>
+#include "im-menu.h"
 
 #define IM_TYPE_PHONE_MENU            (im_phone_menu_get_type ())
 #define IM_PHONE_MENU(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), IM_TYPE_PHONE_MENU, ImPhoneMenu))
@@ -33,9 +33,7 @@ typedef struct _ImPhoneMenu ImPhoneMenu;
 
 GType               im_phone_menu_get_type              (void);
 
-ImPhoneMenu *       im_phone_menu_new                   (void);
-
-GMenuModel *        im_phone_menu_get_model             (ImPhoneMenu        *menu);
+ImPhoneMenu *       im_phone_menu_new                   (ImApplicationList  *applist);
 
 void                im_phone_menu_add_message           (ImPhoneMenu        *menu,
                                                          const gchar        *app_id,
