@@ -53,4 +53,7 @@ gboolean                im_menu_export                                  (ImMenu 
                                                                          const gchar      *object_path,
                                                                          GError          **error);
 
+void                    im_menu_append_section                          (ImMenu     *menu,
+                                                                         GMenuModel *section);
+
 #endif

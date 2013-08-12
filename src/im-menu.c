@@ -146,3 +146,17 @@ im_menu_export (ImMenu           *menu,
                                               G_MENU_MODEL (priv->toplevel_menu),
                                               error) > 0;
 }
+
+void
+im_menu_append_section (ImMenu     *menu,
+                        GMenuModel *section)
+{
+  ImMenuPrivate *priv;
+
+  g_return_if_fail (IM_IS_MENU (menu));
+  g_return_if_fail (G_IS_MENU_MODEL (section));
+
+  priv = im_menu_get_instance_private (menu);
+
+  g_menu_append_section (priv->menu, NULL, section);
+}

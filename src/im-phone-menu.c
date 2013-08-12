@@ -27,7 +27,6 @@ struct _ImPhoneMenu
 {
   ImMenu parent;
 
-  GMenu *toplevel_menu;
   GMenu *message_section;
   GMenu *source_section;
 };
@@ -59,37 +58,29 @@ im_phone_menu_foreach_item_with_action (GMenuModel        *menu,
 }
 
 static void
-im_phone_menu_update_toplevel (ImPhoneMenu *menu)
-{
-  if (g_menu_model_get_n_items (G_MENU_MODEL (menu->message_section)) ||
-      g_menu_model_get_n_items (G_MENU_MODEL (menu->source_section)))
-    {
-      if (g_menu_model_get_n_items (G_MENU_MODEL (menu->toplevel_menu)) == 0)
-        {
-          GMenuItem *item;
-
-          g_menu_append_section (menu->toplevel_menu, NULL, G_MENU_MODEL (menu->message_section));
-          g_menu_append_section (menu->toplevel_menu, NULL, G_MENU_MODEL (menu->source_section));
-
-          item = g_menu_item_new ("Clear All", "indicator.remove-all");
-          g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.button");
-          g_menu_append_item (menu->toplevel_menu, item);
-
-          g_object_unref (item);
-        }
-    }
-  else
-    {
-      while (g_menu_model_get_n_items (G_MENU_MODEL (menu->toplevel_menu)))
-        g_menu_remove (menu->toplevel_menu, 0);
-    }
-}
-
-static void
 im_phone_menu_constructed (GObject *object)
 {
   ImPhoneMenu *menu = IM_PHONE_MENU (object);
   ImApplicationList *applist;
+
+  im_menu_append_section (IM_MENU (menu), G_MENU_MODEL (menu->message_section));
+  im_menu_append_section (IM_MENU (menu), G_MENU_MODEL (menu->source_section));
+
+  {
+    GMenu *clear_section;
+    GMenuItem *item;
+
+    clear_section = g_menu_new ();
+
+    item = g_menu_item_new ("Clear All", "indicator.remove-all");
+    g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.button");
+    g_menu_append_item (clear_section, item);
+
+    im_menu_append_section (IM_MENU (menu), G_MENU_MODEL (clear_section));
+
+    g_object_unref (item);
+    g_object_unref (clear_section);
+  }
 
   applist = im_menu_get_application_list (IM_MENU (menu));
 
@@ -106,7 +97,6 @@ im_phone_menu_dispose (GObject *object)
 {
   ImPhoneMenu *menu = IM_PHONE_MENU (object);
 
-  g_clear_object (&menu->toplevel_menu);
   g_clear_object (&menu->message_section);
   g_clear_object (&menu->source_section);
 
@@ -132,16 +122,8 @@ im_phone_menu_class_init (ImPhoneMenuClass *klass)
 static void
 im_phone_menu_init (ImPhoneMenu *menu)
 {
-  menu->toplevel_menu = g_menu_new ();
   menu->message_section = g_menu_new ();
   menu->source_section = g_menu_new ();
-
-  g_signal_connect_swapped (menu->message_section, "items-changed",
-                            G_CALLBACK (im_phone_menu_update_toplevel), menu);
-  g_signal_connect_swapped (menu->source_section, "items-changed",
-                            G_CALLBACK (im_phone_menu_update_toplevel), menu);
-
-  im_phone_menu_update_toplevel (menu);
 }
 
 ImPhoneMenu *
@@ -327,17 +309,9 @@ im_phone_menu_remove_all (ImPhoneMenu *menu)
 {
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
 
-  while (g_menu_model_get_n_items (G_MENU_MODEL (menu->toplevel_menu)))
-    g_menu_remove (menu->toplevel_menu, 0);
+  while (g_menu_model_get_n_items (G_MENU_MODEL (menu->message_section)))
+    g_menu_remove (menu->message_section, 0);
 
-  g_object_unref (menu->message_section);
-  g_object_unref (menu->source_section);
-
-  menu->message_section = g_menu_new ();
-  menu->source_section = g_menu_new ();
-
-  g_signal_connect_swapped (menu->message_section, "items-changed",
-                            G_CALLBACK (im_phone_menu_update_toplevel), menu);
-  g_signal_connect_swapped (menu->source_section, "items-changed",
-                            G_CALLBACK (im_phone_menu_update_toplevel), menu);
+  while (g_menu_model_get_n_items (G_MENU_MODEL (menu->source_section)))
+    g_menu_remove (menu->source_section, 0);
 }
