@@ -318,7 +318,7 @@ nick_activate_cb (GSimpleAction *action,
 			  nick, g_desktop_app_info_get_filename (priv->appinfo));
 	}
 
-	g_object_unref (context);
+	return;
 }
 
 static void
