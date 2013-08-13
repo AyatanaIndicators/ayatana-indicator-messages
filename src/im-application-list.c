@@ -861,6 +861,7 @@ im_application_list_unset_remote (Application *app)
   g_action_muxer_insert (app->muxer, "msg-actions", G_ACTION_GROUP (app->message_sub_actions));
 
   im_application_list_update_draws_attention (app->list);
+  g_action_group_change_action_state (G_ACTION_GROUP (app->muxer), "launch", g_variant_new_boolean (FALSE));
 
   if (was_running)
     g_signal_emit (app->list, signals[APP_STOPPED], 0, app->id);
@@ -903,6 +904,8 @@ im_application_list_proxy_created (GObject      *source_object,
   g_signal_connect_swapped (app->proxy, "source-removed", G_CALLBACK (im_application_list_source_removed), app);
   g_signal_connect_swapped (app->proxy, "message-added", G_CALLBACK (im_application_list_message_added), app);
   g_signal_connect_swapped (app->proxy, "message-removed", G_CALLBACK (im_application_list_message_removed), app);
+
+  g_action_group_change_action_state (G_ACTION_GROUP (app->muxer), "launch", g_variant_new_boolean (TRUE));
 
   g_bus_watch_name_on_connection (g_dbus_proxy_get_connection (G_DBUS_PROXY (app->proxy)),
                                   g_dbus_proxy_get_name (G_DBUS_PROXY (app->proxy)),

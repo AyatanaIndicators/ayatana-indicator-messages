@@ -164,9 +164,19 @@ main (int argc, char ** argv)
 	g_signal_connect (messages_service, "handle-unregister-application",
 			  G_CALLBACK (unregister_application), NULL);
 
-	settings = g_settings_new ("com.canonical.indicator.messages");
-
 	applications = im_application_list_new ();
+
+	settings = g_settings_new ("com.canonical.indicator.messages");
+	{
+		gchar **app_ids;
+		gchar **id;
+
+		app_ids = g_settings_get_strv (settings, "applications");
+		for (id = app_ids; *id; id++)
+			im_application_list_add (applications, *id);
+
+		g_strfreev (app_ids);
+	}
 
 	menus = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
 	g_hash_table_insert (menus, "phone", im_phone_menu_new (applications));
