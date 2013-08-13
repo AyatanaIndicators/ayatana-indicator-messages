@@ -302,6 +302,10 @@ messaging_menu_app_dispose (GObject *object)
 
   if (app->messages_service)
     {
+      indicator_messages_service_call_application_stopped_running (app->messages_service,
+                                                                   g_app_info_get_id (G_APP_INFO (app->appinfo)),
+                                                                   NULL, NULL, NULL);
+
       g_signal_handlers_disconnect_by_func (app->messages_service,
                                             global_status_changed,
                                             app);

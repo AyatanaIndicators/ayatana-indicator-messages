@@ -41,7 +41,7 @@ AC_PROG_CXX
 GTK_REQUIRED_VERSION=3.5.18
 GIO_UNIX_REQUIRED_VERSION=2.33.10
 INDICATOR_REQUIRED_VERSION=0.3.19
-GLIB_REQUIRED_VERSION=2.33.10
+GLIB_REQUIRED_VERSION=2.35.4
 INTROSPECTION_REQUIRED_VERSION=1.32.0
 
 PKG_CHECK_MODULES(APPLET, gtk+-3.0 >= $GTK_REQUIRED_VERSION
@@ -81,7 +81,7 @@ AC_SUBST(COVERAGE_CXXFLAGS)
 AC_SUBST(COVERAGE_LDFLAGS)
 
 ###########################
-# Google Test framework
+# Tests
 ###########################
 
 AC_ARG_ENABLE([tests],
@@ -91,10 +91,16 @@ AC_ARG_ENABLE([tests],
 if test "x$enable_tests" != "xno"; then
     m4_include([m4/gtest.m4])
     CHECK_GTEST
-    if test "x$enable_tests" = "xauto"; then
-        enable_tests=${have_gtest}
-    elif test "x$enable_tests" = "xyes" && test "x$have_gtest" != "xyes"; then
-        AC_MSG_ERROR([tests were requested but gtest is not installed.])
+    AM_PATH_PYTHON(3.0,, [:])
+    AC_PYTHON_MODULE(dbusmock)
+    if test "x$have_gtest" = "xyes" -a "x$HAVE_PYMOD_DBUSMOCK" = "xyes"; then
+        enable_tests="yes"
+    else
+        if test "x$enable_tests" = "xyes"; then
+            AC_MSG_ERROR([tests were requested but gtest or dbusmock are not installed.])
+        else
+            enable_tests="no"
+        fi
     fi
 fi
 AM_CONDITIONAL([BUILD_TESTS],[test "x$enable_tests" = "xyes"])
@@ -186,7 +192,8 @@ AC_MSG_NOTICE([
 Messaging Indicator Configuration:
 
 	Prefix:        $prefix
-	gtest:         $enable_tests
+	Indicator Dir: $INDICATORDIR
+	tests:         $enable_tests
 	gcov:          $use_gcov
 	introspecion:  $enable_introspection
 	Vala bindings: $enable_vala

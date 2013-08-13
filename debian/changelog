@@ -4,11 +4,134 @@ indicator-messages (13.10.0phablet1) raring; urgency=low
 
  -- Sergio Schvezov <sergio.schvezov@canonical.com>  Fri, 26 Apr 2013 13:53:53 -0300
 
+indicator-messages (12.10.6+13.10.20130702-0ubuntu1) saucy; urgency=low
+
+  [ Mathias Dietrich ]
+  * Change abbreviation for minutes from m to min. (LP: #652845)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 350
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 02 Jul 2013 02:02:36 +0000
+
 indicator-messages (12.10.6phablet1) quantal; urgency=low
 
   * Adding guards for g_type_init
 
  -- Sergio Schvezov <sergio.schvezov@canonical.com>  Fri, 22 Mar 2013 17:23:45 -0300
+
+indicator-messages (12.10.6daily13.06.19-0ubuntu1) saucy; urgency=low
+
+  [ Sebastien Bacher ]
+  * use gtk_style_context_get instead of deprecated
+    gtk_style_context_get_font.
+
+  [ Jeremy Bicha ]
+  * Have libmessaging-menu-dev depend on gir1.2-messagingmenu-1.0.
+
+  [ Lars Uebernickel ]
+  * use gtk_style_context_get instead of deprecated
+    gtk_style_context_get_font.
+  * Notify the service when an app unrefs its MessagingMenuApp. (LP:
+    #1154099)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 348
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 19 Jun 2013 02:01:48 +0000
+
+indicator-messages (12.10.6daily13.05.15-0ubuntu1) saucy; urgency=low
+
+  [ Lars Uebernickel ]
+  * libmessaging-menu: don't use detailed action names Detailed action
+    names are of the form action::target or action(target), so they
+    can't have colons or parens in them. This restriction does not apply
+    to messaging menu ids. (LP: #1180302)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 344
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 15 May 2013 16:59:49 +0000
+
+indicator-messages (12.10.6daily13.05.02-0ubuntu1) saucy; urgency=low
+
+  [ Marco Trevisan (Treviño) ]
+  * Opening new-window from quicklist static action does not focus the
+    newly opened window (LP: #1164483)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 342
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 02 May 2013 22:59:03 +0000
+
+indicator-messages (12.10.6daily13.04.09-0ubuntu1) raring; urgency=low
+
+  * Automatic snapshot from revision 340
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 09 Apr 2013 02:02:02 +0000
+
+indicator-messages (12.10.6daily13.04.08-0ubuntu1) raring; urgency=low
+
+  [ Marco Trevisan (Treviño) ]
+  * Window management - Apps raised from indicators sometimes dont have
+    the focus (LP: #627195)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 339
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 08 Apr 2013 02:02:06 +0000
+
+indicator-messages (12.10.6daily13.02.13-0ubuntu1) raring; urgency=low
+
+  [ Jason Conti ]
+  * Stuck notifications (blue envolope remains after I've already read
+    msg) (LP: #1113721)
+
+  [ Automatic PS uploader ]
+  * Automatic snapshot from revision 337
+
+ -- Automatic PS uploader <ps-jenkins@lists.canonical.com>  Wed, 13 Feb 2013 02:02:11 +0000
+
+indicator-messages (12.10.6daily13.01.25-0ubuntu1) raring; urgency=low
+
+  [ Charles Kerr ]
+  * indicators call deprecated glib function g_type_init() (LP:
+    #1103087)
+
+  [ Automatic PS uploader ]
+  * Automatic snapshot from revision 335
+
+ -- Automatic PS uploader <ps-jenkins@lists.canonical.com>  Fri, 25 Jan 2013 02:01:11 +0000
+
+indicator-messages (12.10.6daily12.11.22-0ubuntu1) raring; urgency=low
+
+  [ Lars Uebernickel ]
+  * Crash in g_variant_valist_get_leaf when highlighted (LP: #1081754)
+
+  [ Automatic PS uploader ]
+  * Automatic snapshot from revision 333
+
+ -- Automatic PS uploader <ps-jenkins@lists.canonical.com>  Thu, 22 Nov 2012 10:02:35 +0000
+
+indicator-messages (12.10.6daily12.11.21.1-0ubuntu1) raring; urgency=low
+
+  [ Mathieu Trudel-Lapierre ]
+  * debian/rules:
+    - Use autogen.sh for dh_autoreconf.
+    - Drop the override for dh_makeshlibs.
+    - Add DPKG_GENSYMBOLS_CHECK_LEVEL=4.
+  * debian/control:
+    - Fix styling: add trailing commas at the end of lists. 
+    - Update Vcs-Bzr, Vcs-Browser fields and add a notice for developers.
+    - Add libgtest-dev to Build-Depends.
+  * Automatic snapshot from revision 329 (bootstrap):
+    - Clear the detail (count or time) of a source when another type of detail
+      is set. (LP: #1071640)
+
+  [ Automatic PS uploader ]
+  * Automatic snapshot from revision 331
+
+ -- Automatic PS uploader <ps-jenkins@lists.canonical.com>  Wed, 21 Nov 2012 10:41:37 +0000
 
 indicator-messages (12.10.6-0ubuntu1phablet9) quantal; urgency=low
 
