@@ -18,6 +18,8 @@ indicator_messages_service_SOURCES = \
 	im-menu.h \
 	im-phone-menu.c \
 	im-phone-menu.h \
+	im-desktop-menu.c \
+	im-desktop-menu.h \
 	im-application-list.c \
 	im-application-list.h
 

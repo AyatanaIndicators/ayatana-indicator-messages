@@ -21,6 +21,7 @@
 #define __IM_APPLICATION_LIST_H__
 
 #include <gio/gio.h>
+#include <gio/gdesktopappinfo.h>
 
 #define IM_TYPE_APPLICATION_LIST            (im_application_list_get_type ())
 #define IM_APPLICATION_LIST(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), IM_TYPE_APPLICATION_LIST, ImApplicationList))
@@ -48,5 +49,10 @@ void                    im_application_list_set_remote          (ImApplicationLi
                                                                  const gchar       *object_path);
 
 GActionGroup *          im_application_list_get_action_group    (ImApplicationList *list);
+
+GList *                 im_application_list_get_applications    (ImApplicationList *list);
+
+GDesktopAppInfo *       im_application_list_get_application     (ImApplicationList *list,
+                                                                 const gchar       *id);
 
 #endif

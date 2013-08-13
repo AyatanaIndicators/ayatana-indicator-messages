@@ -113,6 +113,7 @@ im_menu_init (ImMenu *menu)
 
   root = g_menu_item_new (NULL, "indicator.messages");
   g_menu_item_set_attribute (root, "x-canonical-type", "s", "com.canonical.indicator.root");
+  g_menu_item_set_attribute (root, "action-namespace", "s", "indicator");
   g_menu_item_set_submenu (root, G_MENU_MODEL (priv->menu));
   g_menu_append_item (priv->toplevel_menu, root);
 
@@ -159,4 +160,32 @@ im_menu_append_section (ImMenu     *menu,
   priv = im_menu_get_instance_private (menu);
 
   g_menu_append_section (priv->menu, NULL, section);
+}
+
+void
+im_menu_insert_section (ImMenu      *menu,
+                        gint         position,
+                        const gchar *namespace,
+                        GMenuModel  *section)
+{
+  ImMenuPrivate *priv;
+  GMenuItem *item;
+
+  g_return_if_fail (IM_IS_MENU (menu));
+  g_return_if_fail (G_IS_MENU_MODEL (section));
+
+  priv = im_menu_get_instance_private (menu);
+
+  /* count from the back if position is < 0 */
+  if (position < 0)
+    position = g_menu_model_get_n_items (G_MENU_MODEL (priv->menu)) + position;
+
+  item = g_menu_item_new_section (NULL, section);
+
+  if (namespace)
+    g_menu_item_set_attribute (item, "action-namespace", "s", namespace);
+
+  g_menu_insert_item (priv->menu, position, item);
+
+  g_object_unref (item);
 }

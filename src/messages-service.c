@@ -32,6 +32,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "indicator-messages-service.h"
 #include "indicator-messages-application.h"
 #include "im-phone-menu.h"
+#include "im-desktop-menu.h"
 #include "im-application-list.h"
 
 #define NUM_STATUSES 5
@@ -169,6 +170,7 @@ main (int argc, char ** argv)
 
 	menus = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
 	g_hash_table_insert (menus, "phone", im_phone_menu_new (applications));
+	g_hash_table_insert (menus, "desktop", im_desktop_menu_new (applications));
 
 	g_main_loop_run(mainloop);
 

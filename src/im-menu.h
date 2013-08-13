@@ -56,4 +56,9 @@ gboolean                im_menu_export                                  (ImMenu 
 void                    im_menu_append_section                          (ImMenu     *menu,
                                                                          GMenuModel *section);
 
+void                    im_menu_insert_section                          (ImMenu      *menu,
+                                                                         gint         position,
+                                                                         const gchar *namespace,
+                                                                         GMenuModel  *section);
+
 #endif

@@ -3,5 +3,8 @@ Name=indicator-messages
 ObjectPath=/com/canonical/indicator/messages
 Position=50
 
+[desktop]
+ObjectPath=/com/canonical/indicator/messages/desktop
+
 [phone]
 ObjectPath=/com/canonical/indicator/messages/phone
