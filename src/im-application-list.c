@@ -468,9 +468,9 @@ im_application_list_lookup (ImApplicationList *list,
 }
 
 void
-im_application_list_activate_launch (ImApplicationList *list,
-                                     GVariant          *parameter,
-                                     gpointer           user_data)
+im_application_list_activate_launch (GSimpleAction *action,
+                                     GVariant      *parameter,
+                                     gpointer       user_data)
 {
   Application *app = user_data;
   GError *error = NULL;
@@ -480,6 +480,16 @@ im_application_list_activate_launch (ImApplicationList *list,
       g_warning ("unable to launch application: %s", error->message);
       g_error_free (error);
     }
+}
+
+void
+im_application_list_activate_app_action (GSimpleAction *action,
+                                         GVariant      *parameter,
+                                         gpointer       user_data)
+{
+  Application *app = user_data;
+
+  g_desktop_app_info_launch_action (app->info, g_action_get_name (G_ACTION (action)), NULL);
 }
 
 void
@@ -517,11 +527,26 @@ im_application_list_add (ImApplicationList  *list,
   app->message_actions = g_simple_action_group_new ();
   app->message_sub_actions = g_action_muxer_new ();
 
+  actions = g_simple_action_group_new ();
+
   launch_action = g_simple_action_new_stateful ("launch", NULL, g_variant_new_boolean (FALSE));
   g_signal_connect (launch_action, "activate", G_CALLBACK (im_application_list_activate_launch), app);
-
-  actions = g_simple_action_group_new ();
   g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (launch_action));
+
+  {
+    const gchar *const *app_actions;
+
+    for (app_actions = g_desktop_app_info_list_actions (app->info); *app_actions; app_actions++)
+      {
+        GSimpleAction *action;
+
+        action = g_simple_action_new (*app_actions, NULL);
+        g_signal_connect (action, "activate", G_CALLBACK (im_application_list_activate_app_action), app);
+        g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
+
+        g_object_unref (action);
+      }
+  }
 
   g_action_muxer_insert (app->muxer, NULL, G_ACTION_GROUP (actions));
   g_action_muxer_insert (app->muxer, "src", G_ACTION_GROUP (app->source_actions));

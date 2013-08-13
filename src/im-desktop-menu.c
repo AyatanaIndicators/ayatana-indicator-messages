@@ -64,7 +64,20 @@ im_desktop_menu_app_added (ImApplicationList *applist,
     g_object_unref (item);
   }
 
-  /* TODO application actions */
+  /* application actions */
+  {
+    const gchar *const *actions;
+
+    for (actions = g_desktop_app_info_list_actions (app_info); *actions; actions++)
+      {
+        gchar *label;
+
+        label = g_desktop_app_info_get_action_name (app_info, *actions);
+        g_menu_append (app_section, label, *actions);
+
+        g_free (label);
+      }
+  }
 
   source_section = g_menu_new ();
 
