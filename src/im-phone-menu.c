@@ -178,7 +178,7 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   g_menu_item_set_attribute (item, "x-canonical-time", "x", time);
 
   if (iconstr)
-    g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
+    g_menu_item_set_attribute (item, "icon", "s", iconstr);
 
   if (app_icon)
     g_menu_item_set_attribute (item, "x-canonical-app-icon", "s", app_icon);

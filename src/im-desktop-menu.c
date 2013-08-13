@@ -55,7 +55,7 @@ im_desktop_menu_app_added (ImApplicationList *applist,
     icon = g_icon_serialize (g_app_info_get_icon (G_APP_INFO (app_info)));
     if (icon)
       {
-        g_menu_item_set_attribute_value (item, "x-canonical-icon", icon);
+        g_menu_item_set_attribute_value (item, "icon", icon);
         g_variant_unref (icon);
       }
 
@@ -114,7 +114,7 @@ im_desktop_menu_source_added (ImApplicationList *applist,
   item = g_menu_item_new (label, NULL);
   g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.source");
   if (icon)
-    g_menu_item_set_attribute (item, "x-canonical-icon", "s", icon);
+    g_menu_item_set_attribute (item, "icon", "s", icon);
 
   g_menu_append_item (source_section, item);
 
