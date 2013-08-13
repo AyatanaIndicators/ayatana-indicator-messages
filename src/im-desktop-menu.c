@@ -95,6 +95,68 @@ im_desktop_menu_app_added (ImApplicationList *applist,
 }
 
 static void
+im_desktop_menu_source_added (ImApplicationList *applist,
+                              const gchar       *app_id,
+                              const gchar       *source_id,
+                              const gchar       *label,
+                              const gchar       *icon,
+                              gpointer           user_data)
+{
+  ImDesktopMenu *menu = user_data;
+  GMenu *source_section;
+  GMenuItem *item;
+  gchar *action;
+
+  source_section = g_hash_table_lookup (menu->source_sections, app_id);
+  g_return_if_fail (source_section != NULL);
+
+  action = g_strconcat ("src.", source_id, NULL);
+  item = g_menu_item_new (label, NULL);
+  g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.source");
+  if (icon)
+    g_menu_item_set_attribute (item, "x-canonical-icon", "s", icon);
+
+  g_menu_append_item (source_section, item);
+
+  g_free (action);
+  g_object_unref (item);
+}
+
+static void
+im_desktop_menu_source_removed (ImApplicationList *applist,
+                                const gchar       *app_id,
+                                const gchar       *source_id,
+                                gpointer           user_data)
+{
+  ImDesktopMenu *menu = user_data;
+  GMenu *source_section;
+  gint n_items;
+  gchar *action;
+  gint i;
+
+  source_section = g_hash_table_lookup (menu->source_sections, app_id);
+  g_return_if_fail (source_section != NULL);
+
+  n_items = g_menu_model_get_n_items (G_MENU_MODEL (source_section));
+  action = g_strconcat ("src.", source_id, NULL);
+
+  for (i = 0; i < n_items; i++)
+    {
+      gchar *item_action;
+
+      if (g_menu_model_get_item_attribute (G_MENU_MODEL (source_section), i, "action", "s", &item_action))
+        {
+          if (g_str_equal (action, item_action))
+            g_menu_remove (source_section, i);
+
+          g_free (item_action);
+        }
+    }
+
+  g_free (action);
+}
+
+static void
 im_desktop_menu_remove_all (ImApplicationList *applist,
                             gpointer           user_data)
 {
@@ -146,6 +208,8 @@ im_desktop_menu_constructed (GObject *object)
 
 
   g_signal_connect (applist, "app-added", G_CALLBACK (im_desktop_menu_app_added), menu);
+  g_signal_connect (applist, "source-added", G_CALLBACK (im_desktop_menu_source_added), menu);
+  g_signal_connect (applist, "source-removed", G_CALLBACK (im_desktop_menu_source_removed), menu);
   g_signal_connect (applist, "remove-all", G_CALLBACK (im_desktop_menu_remove_all), menu);
 
   G_OBJECT_CLASS (im_desktop_menu_parent_class)->constructed (object);
