@@ -97,43 +97,6 @@ application_free (gpointer data)
   g_slice_free (Application, app);
 }
 
-static void
-im_application_list_source_removed (Application *app,
-                                    const gchar *id)
-{
-  g_simple_action_group_remove (app->source_actions, id);
-
-  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
-}
-
-static void
-im_application_list_source_activated (GSimpleAction *action,
-                                      GVariant      *parameter,
-                                      gpointer       user_data)
-{
-  Application *app = user_data;
-  const gchar *source_id;
-
-  source_id = g_action_get_name (G_ACTION (action));
-
-  if (g_variant_get_boolean (parameter))
-    {
-      indicator_messages_application_call_activate_source (app->proxy,
-                                                           source_id,
-                                                           app->cancellable,
-                                                           NULL, NULL);
-    }
-  else
-    {
-      const gchar *sources[] = { source_id, NULL };
-      const gchar *messages[] = { NULL };
-      indicator_messages_application_call_dismiss (app->proxy, sources, messages,
-                                                   app->cancellable, NULL, NULL);
-    }
-
-  im_application_list_source_removed (app, source_id);
-}
-
 static guint
 g_action_group_get_n_actions (GActionGroup *group)
 {
@@ -173,6 +136,45 @@ im_application_list_update_draws_attention (ImApplicationList *list)
   main_actions = g_action_muxer_get_group (list->muxer, NULL);
   state = g_variant_new ("(sssb)", "", icon_name, "Messages", TRUE);
   g_action_group_change_action_state (main_actions, "messages", state);
+}
+
+static void
+im_application_list_source_removed (Application *app,
+                                    const gchar *id)
+{
+  g_simple_action_group_remove (app->source_actions, id);
+
+  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
+
+  im_application_list_update_draws_attention (app->list);
+}
+
+static void
+im_application_list_source_activated (GSimpleAction *action,
+                                      GVariant      *parameter,
+                                      gpointer       user_data)
+{
+  Application *app = user_data;
+  const gchar *source_id;
+
+  source_id = g_action_get_name (G_ACTION (action));
+
+  if (g_variant_get_boolean (parameter))
+    {
+      indicator_messages_application_call_activate_source (app->proxy,
+                                                           source_id,
+                                                           app->cancellable,
+                                                           NULL, NULL);
+    }
+  else
+    {
+      const gchar *sources[] = { source_id, NULL };
+      const gchar *messages[] = { NULL };
+      indicator_messages_application_call_dismiss (app->proxy, sources, messages,
+                                                   app->cancellable, NULL, NULL);
+    }
+
+  im_application_list_source_removed (app, source_id);
 }
 
 static void
@@ -279,6 +281,8 @@ im_application_list_remove_all (GSimpleAction *action,
       g_strfreev (source_actions);
       g_strfreev (message_actions);
     }
+
+  im_application_list_update_draws_attention (list);
 }
 
 static void
@@ -578,6 +582,8 @@ im_application_list_remove (ImApplicationList *list,
 
       g_hash_table_remove (list->applications, id);
       g_action_muxer_remove (list->muxer, id);
+
+      im_application_list_update_draws_attention (list);
     }
 }
 
@@ -607,6 +613,8 @@ im_application_list_source_added (Application *app,
 
   g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, iconstr);
 
+  im_application_list_update_draws_attention (app->list);
+
   g_object_unref (action);
 }
 
@@ -629,6 +637,8 @@ im_application_list_source_changed (Application *app,
                                       g_variant_new ("(uxsb)", count, time, string, draws_attention));
 
   g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, id, label, iconstr);
+
+  im_application_list_update_draws_attention (app->list);
 }
 
 static void
