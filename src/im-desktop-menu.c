@@ -65,6 +65,7 @@ im_desktop_menu_app_added (ImApplicationList *applist,
   }
 
   /* application actions */
+#if 0
   {
     const gchar *const *actions;
 
@@ -78,6 +79,7 @@ im_desktop_menu_app_added (ImApplicationList *applist,
         g_free (label);
       }
   }
+#endif
 
   source_section = g_menu_new ();
 
