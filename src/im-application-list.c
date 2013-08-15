@@ -1012,15 +1012,21 @@ status_activated (GSimpleAction * action, GVariant * param, gpointer user_data)
 {
   g_return_if_fail (IM_IS_APPLICATION_LIST(user_data));
   ImApplicationList * list = IM_APPLICATION_LIST(user_data);
+  const gchar * status = g_variant_get_string(param, NULL);
 
   g_simple_action_set_state(action, param);
 
-  /* We assume all the applications are now seeing our status
-     and updating.  We don't need to track their status until
-	 they tell us different. */
-  g_hash_table_remove_all(list->app_status);
+  GList * appshash = g_hash_table_get_keys(list->app_status);
+  GList * appsfree = g_list_copy_deep(appshash, (GCopyFunc)g_strdup, NULL);
+  GList * app;
 
-  const gchar * status = g_variant_get_string(param, NULL);
+  for (app = appsfree; app != NULL; app = g_list_next(app)) {
+    g_hash_table_insert(list->app_status, app->data, g_strdup(status));
+  }
+
+  g_list_free(appshash);
+  g_list_free(appsfree);
+
   g_signal_emit (list, signals[STATUS_SET], 0, status);
 
   return;
@@ -1054,15 +1060,7 @@ im_application_list_set_status (ImApplicationList * list, const gchar * id, cons
 
 	g_hash_table_insert(list->app_status, im_application_list_canonical_id(id), g_strdup(status));
 
-	GVariant * action_state = NULL;
-	g_object_get(list->statusaction, "state", &action_state, NULL);
-
 	guint final_status = STATUS_ID_OFFLINE;
-
-	if (action_state != NULL) {
-		final_status = status2val(g_variant_get_string(action_state, NULL));
-		g_variant_unref(action_state);
-	}
 
 	GList * statuses = g_hash_table_get_values(list->app_status);
 	GList * statusentry;
