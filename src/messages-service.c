@@ -107,6 +107,13 @@ set_status (IndicatorMessagesService *service,
 	g_object_unref (appinfo);
 }
 
+/* The status has been set by the user, let's tell the world! */
+static void
+status_set_by_user (ImApplicationList * list, const gchar * status, gpointer user_data)
+{
+	indicator_messages_service_emit_status_changed(messages_service, status);
+	return;
+}
 
 static void
 on_bus_acquired (GDBusConnection *bus,
@@ -199,6 +206,8 @@ main (int argc, char ** argv)
 			  G_CALLBACK (set_status), NULL);
 
 	applications = im_application_list_new ();
+	g_signal_connect (applications, "status-set",
+			  G_CALLBACK (status_set_by_user), NULL);
 
 	settings = g_settings_new ("com.canonical.indicator.messages");
 	{
