@@ -33,6 +33,9 @@ struct _ImApplicationList
 
   GHashTable *applications;
   GActionMuxer *muxer;
+
+  GSimpleActionGroup * globalactions;
+  GSimpleAction * statusaction;
 };
 
 G_DEFINE_TYPE (ImApplicationList, im_application_list, G_TYPE_OBJECT);
@@ -290,6 +293,9 @@ im_application_list_dispose (GObject *object)
 {
   ImApplicationList *list = IM_APPLICATION_LIST (object);
 
+  g_clear_object (&list->statusaction);
+  g_clear_object (&list->globalactions);
+
   g_clear_pointer (&list->applications, g_hash_table_unref);
   g_clear_object (&list->muxer);
 
@@ -416,17 +422,17 @@ im_application_list_init (ImApplicationList *list)
     { "remove-all", im_application_list_remove_all }
   };
 
-  GSimpleActionGroup *actions;
-
   list->applications = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, application_free);
 
-  actions = g_simple_action_group_new ();
-  g_simple_action_group_add_entries (actions, action_entries, G_N_ELEMENTS (action_entries), list);
+  list->globalactions = g_simple_action_group_new ();
+  g_simple_action_group_add_entries (list->globalactions, action_entries, G_N_ELEMENTS (action_entries), list);
+
+  list->statusaction = g_simple_action_new_stateful("status", G_VARIANT_TYPE_STRING, g_variant_new_string("offline"));
+  g_simple_action_group_insert(list->globalactions, G_ACTION(list->statusaction));
 
   list->muxer = g_action_muxer_new ();
-  g_action_muxer_insert (list->muxer, NULL, G_ACTION_GROUP (actions));
+  g_action_muxer_insert (list->muxer, NULL, G_ACTION_GROUP (list->globalactions));
 
-  g_object_unref (actions);
 }
 
 ImApplicationList *
