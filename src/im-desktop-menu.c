@@ -18,6 +18,7 @@
  */
 
 #include "im-desktop-menu.h"
+#include <glib/gi18n.h>
 
 typedef ImMenuClass ImDesktopMenuClass;
 
@@ -174,13 +175,54 @@ im_desktop_menu_remove_all (ImApplicationList *applist,
     }
 }
 
+static GMenu *
+create_status_section (void)
+{
+	GMenu *menu;
+	GMenuItem *item;
+	struct status_item {
+		gchar *label;
+		gchar *action;
+		gchar *icon_name;
+	} status_items[] = {
+		{ _("Available"), "indicator.status::available", "user-available" },
+		{ _("Away"),      "indicator.status::away",      "user-away" },
+		{ _("Busy"),      "indicator.status::busy",      "user-busy" },
+		{ _("Invisible"), "indicator.status::invisible", "user-invisible" },
+		{ _("Offline"),   "indicator.status::offline",   "user-offline" }
+	};
+	int i;
+
+	menu = g_menu_new ();
+
+	item = g_menu_item_new (NULL, NULL);
+	g_menu_item_set_attribute (item, "x-canonical-type", "s", "IdoMenuItem");
+
+	for (i = 0; i < G_N_ELEMENTS (status_items); i++) {
+		g_menu_item_set_label (item, status_items[i].label);
+		g_menu_item_set_detailed_action (item, status_items[i].action);
+		g_menu_item_set_attribute (item, "x-canonical-icon", "s", status_items[i].icon_name);
+		g_menu_append_item (menu, item);
+	}
+
+	g_object_unref (item);
+	return menu;
+}
+
 static void
 im_desktop_menu_constructed (GObject *object)
 {
   ImDesktopMenu *menu = IM_DESKTOP_MENU (object);
   ImApplicationList *applist;
 
-  /* TODO: chat section */
+  {
+    GMenu *status_section;
+
+    status_section = create_status_section();
+    im_menu_append_section (IM_MENU (menu), G_MENU_MODEL (status_section));
+
+    g_object_unref (status_section);
+  }
 
   {
     GMenu *clear_section;
