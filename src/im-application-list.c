@@ -52,6 +52,7 @@ enum
   APP_ADDED,
   APP_STOPPED,
   REMOVE_ALL,
+  STATUS_SET,
   N_SIGNALS
 };
 
@@ -421,6 +422,16 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                       g_cclosure_marshal_VOID__VOID,
                                       G_TYPE_NONE,
                                       0);
+
+  signals[STATUS_SET] = g_signal_new ("status-set",
+                                      IM_TYPE_APPLICATION_LIST,
+                                      G_SIGNAL_RUN_FIRST,
+                                      0,
+                                      NULL, NULL,
+                                      g_cclosure_marshal_generic,
+                                      G_TYPE_NONE,
+                                      1,
+                                      G_TYPE_STRING);
 }
 
 static void
@@ -1009,7 +1020,8 @@ status_activated (GSimpleAction * action, GVariant * param, gpointer user_data)
 	 they tell us different. */
   g_hash_table_remove_all(list->app_status);
 
-  /* TODO: Emit a state change */
+  const gchar * status = g_variant_get_string(param, NULL);
+  g_signal_emit (list, signals[STATUS_SET], 0, status);
 
   return;
 }
