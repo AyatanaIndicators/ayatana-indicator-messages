@@ -55,4 +55,8 @@ GList *                 im_application_list_get_applications    (ImApplicationLi
 GDesktopAppInfo *       im_application_list_get_application     (ImApplicationList *list,
                                                                  const gchar       *id);
 
+void                    im_application_list_set_status          (ImApplicationList *list,
+                                                                 const gchar       *id,
+                                                                 const gchar       *status);
+
 #endif

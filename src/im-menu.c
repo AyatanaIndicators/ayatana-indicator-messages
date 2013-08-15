@@ -189,19 +189,3 @@ im_menu_insert_section (ImMenu      *menu,
 
   g_object_unref (item);
 }
-
-void
-im_menu_set_status (ImMenu *     menu,
-                    const gchar *id,
-                    const gchar *status_str)
-{
-  g_return_if_fail(IM_IS_MENU(menu));
-  g_return_if_fail(id != NULL);
-  g_return_if_fail(status_str != NULL);
-
-  ImMenuClass * klass = IM_MENU_GET_CLASS(menu);
-  if (klass->set_status != NULL)
-    klass->set_status(menu, id, status_str);
-
-  return;
-}

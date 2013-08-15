@@ -978,3 +978,12 @@ im_application_list_get_application (ImApplicationList *list,
   app = g_hash_table_lookup (list->applications, id);
   return app ? app->info : NULL;
 }
+
+void
+im_application_list_set_status (ImApplicationList * list, const gchar * id, const gchar *status)
+{
+
+
+  return;
+}
+

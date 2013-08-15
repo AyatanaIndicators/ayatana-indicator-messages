@@ -85,7 +85,6 @@ set_status (IndicatorMessagesService *service,
 {
 	GDesktopAppInfo *appinfo;
 	const gchar *id;
-	GList * menulist, * menu;
 
 	g_return_if_fail (g_str_equal (status_str, "available") ||
 			  g_str_equal (status_str, "away")||
@@ -101,16 +100,11 @@ set_status (IndicatorMessagesService *service,
 
 	id = g_app_info_get_id (G_APP_INFO (appinfo));
 
-	menulist = g_hash_table_get_values(menus);
-	for (menu = menulist; menu != NULL; menu = g_list_next(menu)) {
-		ImMenu * immenu = IM_MENU(menu->data);
-		im_menu_set_status(immenu, id, status_str);
-	}
+	im_application_list_set_status(applications, id, status_str);
 
 	indicator_messages_service_complete_set_status (service, invocation);
 
 	g_object_unref (appinfo);
-	g_list_free(menulist);
 }
 
 
