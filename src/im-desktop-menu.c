@@ -196,12 +196,11 @@ create_status_section (void)
 	menu = g_menu_new ();
 
 	item = g_menu_item_new (NULL, NULL);
-	g_menu_item_set_attribute (item, "x-canonical-type", "s", "IdoMenuItem");
 
 	for (i = 0; i < G_N_ELEMENTS (status_items); i++) {
 		g_menu_item_set_label (item, status_items[i].label);
 		g_menu_item_set_detailed_action (item, status_items[i].action);
-		g_menu_item_set_attribute (item, "x-canonical-icon", "s", status_items[i].icon_name);
+		g_menu_item_set_attribute (item, "icon", "s", status_items[i].icon_name);
 		g_menu_append_item (menu, item);
 	}
 
