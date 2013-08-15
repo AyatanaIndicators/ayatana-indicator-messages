@@ -71,6 +71,12 @@ typedef struct
   GCancellable *cancellable;
 } Application;
 
+
+/* Prototypes */
+static void         status_activated           (GSimpleAction *    action,
+                                                GVariant *         param,
+                                                gpointer           user_data);
+
 static void
 application_free (gpointer data)
 {
@@ -432,6 +438,7 @@ im_application_list_init (ImApplicationList *list)
   g_simple_action_group_add_entries (list->globalactions, action_entries, G_N_ELEMENTS (action_entries), list);
 
   list->statusaction = g_simple_action_new_stateful("status", G_VARIANT_TYPE_STRING, g_variant_new_string("offline"));
+  g_signal_connect(list->statusaction, "activate", G_CALLBACK(status_activated), list);
   g_simple_action_group_insert(list->globalactions, G_ACTION(list->statusaction));
 
   list->muxer = g_action_muxer_new ();
@@ -987,6 +994,24 @@ im_application_list_get_application (ImApplicationList *list,
 
   app = g_hash_table_lookup (list->applications, id);
   return app ? app->info : NULL;
+}
+
+static void
+status_activated (GSimpleAction * action, GVariant * param, gpointer user_data)
+{
+  g_return_if_fail (IM_IS_APPLICATION_LIST(user_data));
+  ImApplicationList * list = IM_APPLICATION_LIST(user_data);
+
+  g_simple_action_set_state(action, param);
+
+  /* We assume all the applications are now seeing our status
+     and updating.  We don't need to track their status until
+	 they tell us different. */
+  g_hash_table_remove_all(list->app_status);
+
+  /* TODO: Emit a state change */
+
+  return;
 }
 
 void
