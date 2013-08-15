@@ -37,6 +37,7 @@ typedef struct _ImMenuPrivate ImMenuPrivate;
 struct _ImMenuClass
 {
   GObjectClass parent_class;
+  void (*set_status) (ImMenu * menu, const gchar * id, const gchar * status_str);
 };
 
 struct _ImMenu
@@ -60,5 +61,9 @@ void                    im_menu_insert_section                          (ImMenu 
                                                                          gint         position,
                                                                          const gchar *namespace,
                                                                          GMenuModel  *section);
+
+void                    im_menu_set_status                              (ImMenu *     menu,
+                                                                         const gchar *id,
+                                                                         const gchar *status_str);
 
 #endif
