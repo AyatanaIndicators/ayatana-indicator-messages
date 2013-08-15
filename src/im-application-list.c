@@ -1026,15 +1026,56 @@ status_activated (GSimpleAction * action, GVariant * param, gpointer user_data)
   return;
 }
 
+#define STATUS_ID_OFFLINE  (G_N_ELEMENTS(status_ids) - 1)
+static const gchar *status_ids[] = { "available", "away", "busy", "invisible", "offline" };
+
+static guint
+status2val (const gchar * string)
+{
+	if (string == NULL) return STATUS_ID_OFFLINE;
+
+	guint i;
+	for (i = 0; i < G_N_ELEMENTS(status_ids); i++) {
+		if (g_strcmp0(status_ids[i], string) == 0) {
+			break;
+		}
+	}
+
+	if (i > STATUS_ID_OFFLINE)
+		i = STATUS_ID_OFFLINE;
+
+	return i;
+}
+
 void
 im_application_list_set_status (ImApplicationList * list, const gchar * id, const gchar *status)
 {
-  g_return_if_fail (IM_IS_APPLICATION_LIST (list));
+	g_return_if_fail (IM_IS_APPLICATION_LIST (list));
 
-  g_hash_table_insert(list->app_status, im_application_list_canonical_id(id), g_strdup(status));
+	g_hash_table_insert(list->app_status, im_application_list_canonical_id(id), g_strdup(status));
 
-  /* TODO: Update status */
+	GVariant * action_state = NULL;
+	g_object_get(list->statusaction, "state", &action_state, NULL);
 
-  return;
+	guint final_status = STATUS_ID_OFFLINE;
+
+	if (action_state != NULL) {
+		final_status = status2val(g_variant_get_string(action_state, NULL));
+		g_variant_unref(action_state);
+	}
+
+	GList * statuses = g_hash_table_get_values(list->app_status);
+	GList * statusentry;
+
+	for (statusentry = statuses; statusentry != NULL; statusentry = g_list_next(statusentry)) {
+		guint statusval = status2val((gchar *)statusentry->data);
+		final_status = MIN(final_status, statusval);
+	}
+
+	g_list_free(statuses);
+
+	g_simple_action_set_state(list->statusaction, g_variant_new_string(status_ids[final_status]));
+
+	return;
 }
 
