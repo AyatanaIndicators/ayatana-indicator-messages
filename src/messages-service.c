@@ -77,6 +77,44 @@ unregister_application (IndicatorMessagesService *service,
 }
 
 static void
+set_status (IndicatorMessagesService *service,
+	    GDBusMethodInvocation *invocation,
+	    const gchar *desktop_id,
+	    const gchar *status_str,
+	    gpointer user_data)
+{
+	GDesktopAppInfo *appinfo;
+	const gchar *id;
+	GList * menulist, * menu;
+
+	g_return_if_fail (g_str_equal (status_str, "available") ||
+			  g_str_equal (status_str, "away")||
+			  g_str_equal (status_str, "busy") ||
+			  g_str_equal (status_str, "invisible") ||
+			  g_str_equal (status_str, "offline"));
+
+	appinfo = g_desktop_app_info_new (desktop_id);
+	if (!appinfo) {
+		g_warning ("could not set status for '%s', there's no desktop file with that id", desktop_id);
+		return;
+	}
+
+	id = g_app_info_get_id (G_APP_INFO (appinfo));
+
+	menulist = g_hash_table_get_values(menus);
+	for (menu = menulist; menu != NULL; menu = g_list_next(menu)) {
+		ImMenu * immenu = IM_MENU(menu->data);
+		im_menu_set_status(immenu, id, status_str);
+	}
+
+	indicator_messages_service_complete_set_status (service, invocation);
+
+	g_object_unref (appinfo);
+	g_list_free(menulist);
+}
+
+
+static void
 on_bus_acquired (GDBusConnection *bus,
 		 const gchar     *name,
 		 gpointer         user_data)
@@ -163,6 +201,8 @@ main (int argc, char ** argv)
 			  G_CALLBACK (register_application), NULL);
 	g_signal_connect (messages_service, "handle-unregister-application",
 			  G_CALLBACK (unregister_application), NULL);
+	g_signal_connect (messages_service, "handle-set-status",
+			  G_CALLBACK (set_status), NULL);
 
 	applications = im_application_list_new ();
 
