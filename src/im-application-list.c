@@ -36,6 +36,8 @@ struct _ImApplicationList
 
   GSimpleActionGroup * globalactions;
   GSimpleAction * statusaction;
+
+  GHashTable *app_status;
 };
 
 G_DEFINE_TYPE (ImApplicationList, im_application_list, G_TYPE_OBJECT);
@@ -295,6 +297,7 @@ im_application_list_dispose (GObject *object)
 
   g_clear_object (&list->statusaction);
   g_clear_object (&list->globalactions);
+  g_clear_pointer (&list->app_status, g_hash_table_unref);
 
   g_clear_pointer (&list->applications, g_hash_table_unref);
   g_clear_object (&list->muxer);
@@ -423,6 +426,7 @@ im_application_list_init (ImApplicationList *list)
   };
 
   list->applications = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, application_free);
+  list->app_status = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
   list->globalactions = g_simple_action_group_new ();
   g_simple_action_group_add_entries (list->globalactions, action_entries, G_N_ELEMENTS (action_entries), list);
@@ -988,7 +992,11 @@ im_application_list_get_application (ImApplicationList *list,
 void
 im_application_list_set_status (ImApplicationList * list, const gchar * id, const gchar *status)
 {
+  g_return_if_fail (IM_IS_APPLICATION_LIST (list));
 
+  g_hash_table_insert(list->app_status, im_application_list_canonical_id(id), g_strdup(status));
+
+  /* TODO: Update status */
 
   return;
 }
