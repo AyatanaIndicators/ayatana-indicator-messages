@@ -319,10 +319,14 @@ im_application_list_remove_all (GSimpleAction *action,
       for (it = message_actions; *it; it++)
         im_application_list_message_removed (app, *it);
 
-      indicator_messages_application_call_dismiss (app->proxy, 
-                                                   (const gchar * const *) source_actions,
-                                                   (const gchar * const *) message_actions,
-                                                   app->cancellable, NULL, NULL);
+      if (app->proxy != NULL) /* If it is remote, we tell the app we've cleared */
+        {
+		  gchar * null_list[1] = { NULL };
+          indicator_messages_application_call_dismiss (app->proxy, 
+                                                       (const gchar * const *) null_list,
+                                                       (const gchar * const *) message_actions,
+                                                       app->cancellable, NULL, NULL);
+        }
 
       g_strfreev (source_actions);
       g_strfreev (message_actions);
