@@ -812,6 +812,9 @@ im_application_list_message_added (Application *app,
     g_object_unref (action_group);
   }
 
+  if (draws_attention)
+    app->draws_attention = TRUE;
+
   im_application_list_update_draws_attention (app->list);
 
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
