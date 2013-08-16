@@ -411,7 +411,9 @@ app_section_update_menu (AppSection *self)
 	item = g_menu_item_new (g_app_info_get_name (G_APP_INFO (priv->appinfo)), "launch");
 	g_menu_item_set_attribute (item, "x-canonical-type", "s", "ImAppMenuItem");
 	iconstr = g_icon_to_string (g_app_info_get_icon (G_APP_INFO (priv->appinfo)));
-	g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
+	if (iconstr != NULL) {
+		g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
+	}
 	g_free (iconstr);
 
 	g_menu_append_item (priv->menu, item);
