@@ -70,6 +70,7 @@ typedef struct
   GSimpleActionGroup *message_actions;
   GActionMuxer *message_sub_actions;
   GCancellable *cancellable;
+  gboolean draws_attention;
 } Application;
 
 
@@ -109,19 +110,6 @@ application_free (gpointer data)
   g_slice_free (Application, app);
 }
 
-static guint
-g_action_group_get_n_actions (GActionGroup *group)
-{
-  guint len;
-  gchar **actions;
-
-  actions = g_action_group_list_actions (group);
-  len = g_strv_length (actions);
-
-  g_strfreev (actions);
-  return len;
-}
-
 static gboolean
 application_draws_attention (gpointer key,
                              gpointer value,
@@ -129,8 +117,7 @@ application_draws_attention (gpointer key,
 {
   Application *app = value;
 
-  return (g_action_group_get_n_actions (G_ACTION_GROUP (app->source_actions)) +
-          g_action_group_get_n_actions (G_ACTION_GROUP (app->message_actions))) > 0;
+  return app->draws_attention;
 }
 
 static void
@@ -558,6 +545,7 @@ im_application_list_add (ImApplicationList  *list,
   app->source_actions = g_simple_action_group_new ();
   app->message_actions = g_simple_action_group_new ();
   app->message_sub_actions = g_action_muxer_new ();
+  app->draws_attention = FALSE;
 
   actions = g_simple_action_group_new ();
 
@@ -640,6 +628,9 @@ im_application_list_source_added (Application *app,
   g_simple_action_group_insert (app->source_actions, G_ACTION (action));
 
   g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, iconstr);
+
+  if (draws_attention)
+    app->draws_attention = TRUE;
 
   im_application_list_update_draws_attention (app->list);
 
