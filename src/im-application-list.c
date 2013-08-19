@@ -245,54 +245,6 @@ im_application_list_sub_message_activated (GSimpleAction *action,
   im_application_list_message_removed (app, message_id);
 }
 
-/* If a source has a draw_attention state set, this clears it so that it
-   doesn't get calculated to draw attention */
-static void
-im_application_list_source_clear_attention (Application *  app,
-                                            gchar *        source_name)
-{
-  GVariant * action_value = NULL;
-  GVariant * action_state = g_action_group_get_action_state(G_ACTION_GROUP(app->source_actions), source_name);
-
-  /* If it doesn't draw attention, we're done */
-  action_value = g_variant_get_child_value(action_state, 3);
-  if (!g_variant_get_boolean(action_value))
-    {
-      g_variant_unref(action_value);
-      g_variant_unref(action_state);
-	  return;
-    }
-
-  g_variant_unref(action_value);
-
-  /* We need to build a new state without the draw attention */
-  GVariantBuilder new_state_builder;
-  g_variant_builder_init(&new_state_builder, G_VARIANT_TYPE_TUPLE);
-
-  /* Count */
-  action_value = g_variant_get_child_value(action_state, 0);
-  g_variant_builder_add_value(&new_state_builder, action_value);
-  g_variant_unref(action_value);
-
-  /* Time */
-  action_value = g_variant_get_child_value(action_state, 1);
-  g_variant_builder_add_value(&new_state_builder, action_value);
-  g_variant_unref(action_value);
-
-  /* String */
-  action_value = g_variant_get_child_value(action_state, 2);
-  g_variant_builder_add_value(&new_state_builder, action_value);
-  g_variant_unref(action_value);
-
-  /* Draws Attention */
-  g_variant_builder_add_value(&new_state_builder, g_variant_new_boolean(FALSE));
-
-  g_action_group_change_action_state(G_ACTION_GROUP(app->source_actions), source_name, g_variant_builder_end(&new_state_builder));
-
-  g_variant_unref(action_state);
-  return;
-}
-
 static void
 im_application_list_remove_all (GSimpleAction *action,
                                 GVariant      *parameter,
@@ -313,7 +265,7 @@ im_application_list_remove_all (GSimpleAction *action,
 
       source_actions = g_action_group_list_actions (G_ACTION_GROUP (app->source_actions));
       for (it = source_actions; *it; it++)
-        im_application_list_source_clear_attention (app, *it);
+        im_application_list_source_removed (app, *it);
 
       message_actions = g_action_group_list_actions (G_ACTION_GROUP (app->message_actions));
       for (it = message_actions; *it; it++)
@@ -321,9 +273,8 @@ im_application_list_remove_all (GSimpleAction *action,
 
       if (app->proxy != NULL) /* If it is remote, we tell the app we've cleared */
         {
-          gchar * null_list[1] = { NULL };
           indicator_messages_application_call_dismiss (app->proxy, 
-                                                       (const gchar * const *) null_list,
+                                                       (const gchar * const *) source_actions,
                                                        (const gchar * const *) message_actions,
                                                        app->cancellable, NULL, NULL);
         }
