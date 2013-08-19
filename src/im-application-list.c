@@ -141,14 +141,27 @@ im_application_list_update_draws_attention (ImApplicationList *list)
 static gboolean
 app_source_action_check_draw (Application * app, const gchar * action_name)
 {
+  gboolean retval = FALSE;
+  GVariant * state;
+  GVariant * draw;
 
-  return FALSE;
+  state = g_action_group_get_action_state (G_ACTION_GROUP(app->source_actions), action_name);
+
+  /* uxsb */
+  draw = g_variant_get_child_value(state, 3);
+  retval = g_variant_get_boolean(draw);
+
+  g_variant_unref(draw);
+  g_variant_unref(state);
+
+  return retval;
 }
 
 /* Check a message action to see if it draws */
 static gboolean
 app_message_action_check_draw (Application * app, const gchar * action_name)
 {
+  /* TODO: Not stored currently */
 
   return FALSE;
 }
