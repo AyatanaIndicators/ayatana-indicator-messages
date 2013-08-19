@@ -137,6 +137,47 @@ im_application_list_update_draws_attention (ImApplicationList *list)
   g_action_group_change_action_state (main_actions, "messages", state);
 }
 
+/* Check a source action to see if it draws */
+static gboolean
+app_source_action_check_draw (Application * app, const gchar * action_name)
+{
+
+  return FALSE;
+}
+
+/* Check a message action to see if it draws */
+static gboolean
+app_message_action_check_draw (Application * app, const gchar * action_name)
+{
+
+  return FALSE;
+}
+
+/* Regenerate the draw attention flag based on the sources and messages
+   that we have in the action groups */
+static void
+app_check_draw_attention (Application * app)
+{
+  gchar **source_actions = NULL;
+  gchar **message_actions = NULL;
+  gchar **it;
+
+  source_actions = g_action_group_list_actions (G_ACTION_GROUP (app->source_actions));
+  for (it = source_actions; *it && !app->draws_attention; it++)
+    app->draws_attention = app_source_action_check_draw (app, *it);
+
+  message_actions = g_action_group_list_actions (G_ACTION_GROUP (app->message_actions));
+  for (it = message_actions; *it; it++)
+    app->draws_attention = app_message_action_check_draw (app, *it);
+
+  g_strfreev (source_actions);
+  g_strfreev (message_actions);
+
+  return;
+}
+
+/* Remove a source from an application, signal up and update the status
+   of the draws attention flag. */
 static void
 im_application_list_source_removed (Application *app,
                                     const gchar *id)
@@ -144,6 +185,12 @@ im_application_list_source_removed (Application *app,
   g_simple_action_group_remove (app->source_actions, id);
 
   g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
+
+  if (app->draws_attention)
+    {
+      app->draws_attention = FALSE;
+      app_check_draw_attention(app);
+    }
 
   im_application_list_update_draws_attention (app->list);
 }
@@ -263,6 +310,8 @@ im_application_list_remove_all (GSimpleAction *action,
       gchar **message_actions;
       gchar **it;
 
+      app->draws_attention = FALSE;
+
       source_actions = g_action_group_list_actions (G_ACTION_GROUP (app->source_actions));
       for (it = source_actions; *it; it++)
         im_application_list_source_removed (app, *it);
@@ -281,8 +330,6 @@ im_application_list_remove_all (GSimpleAction *action,
 
       g_strfreev (source_actions);
       g_strfreev (message_actions);
-
-      app->draws_attention = FALSE;
     }
 
   im_application_list_update_draws_attention (list);
