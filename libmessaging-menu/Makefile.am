@@ -4,35 +4,24 @@ lib_LTLIBRARIES = libmessaging-menu.la
 libmessaging_menu_ladir = $(includedir)/messaging-menu
 
 libmessaging_menu_la_SOURCES = \
-	messaging-menu.c \
-	gtupleaction.c \
-	gtupleaction.h \
-	$(BUILT_SOURCES)
+	messaging-menu-app.c \
+	messaging-menu-message.c
 
 libmessaging_menu_la_HEADERS = \
-	messaging-menu.h
+	messaging-menu-app.h \
+	messaging-menu.h \
+	messaging-menu-message.h
 
-libmessaging_menu_la_LIBADD = $(GIO_LIBS)
+libmessaging_menu_la_LIBADD = \
+	$(GIO_LIBS) \
+	$(top_builddir)/common/libmessaging-common.la
 
 libmessaging_menu_la_CFLAGS = \
+	-I$(top_builddir)/common \
 	$(GIO_CFLAGS) \
 	-Wall
 
 libmessaging_menu_la_LDFLAGS = -export-symbols-regex "^messaging_menu_.*"
-
-BUILT_SOURCES = \
-	indicator-messages-service.c \
-	indicator-messages-service.h
-
-CLEANFILES = $(BUILT_SOURCES)
-
-indicator-messages-service.c: $(top_srcdir)/src/messages-service.xml
-	$(AM_V_GEN) gdbus-codegen \
-	    --interface-prefix com.canonical.indicator.messages. \
-	    --generate-c-code indicator-messages-service \
-	    --c-namespace IndicatorMessages \
-	    $^
-indicator-messages-service.h: indicator-messages-service.c
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = messaging-menu.pc
@@ -52,7 +41,11 @@ MessagingMenu_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
 MessagingMenu_1_0_gir_CFLAGS = $(INCLUDES) $(GIO_CFLAGS)
 MessagingMenu_1_0_gir_SCANNERFLAGS = --c-include="messaging-menu.h"
 MessagingMenu_1_0_gir_LIBS = libmessaging-menu.la
-MessagingMenu_1_0_gir_FILES = messaging-menu.c messaging-menu.h
+MessagingMenu_1_0_gir_FILES = \
+	messaging-menu-app.c \
+	messaging-menu-app.h \
+	messaging-menu-message.c \
+	messaging-menu-message.h
 MessagingMenu_1_0_gir_EXPORT_PACKAGES = messaging-menu
 INTROSPECTION_GIRS += MessagingMenu-1.0.gir
 
@@ -62,5 +55,23 @@ gir_DATA = $(INTROSPECTION_GIRS)
 typelibdir = $(libdir)/girepository-1.0
 typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 
-CLEANFILES +=$(gir_DATA) $(typelib_DATA)
+CLEANFILES = $(gir_DATA) $(typelib_DATA)
+
+
+#########################
+# VAPI Files
+#########################
+
+if HAVE_VALA
+
+vapidir = $(datadir)/vala/vapi
+vapi_DATA = MessagingMenu-1.0.vapi
+
+MessagingMenu-1.0.vapi: MessagingMenu-1.0.gir
+	$(VALA_API_GEN) --pkg gio-2.0 --library=MessagingMenu-1.0 $<
+
+CLEANFILES += $(vapi_DATA)
+
+endif
+
 endif

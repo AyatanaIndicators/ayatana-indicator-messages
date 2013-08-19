@@ -17,10 +17,12 @@
  *     Lars Uebernickel <lars.uebernickel@canonical.com>
  */
 
-#include "messaging-menu.h"
+#include "messaging-menu-app.h"
 #include "indicator-messages-service.h"
+#include "indicator-messages-application.h"
 
 #include <gio/gdesktopappinfo.h>
+#include <string.h>
 
 /**
  * SECTION:messaging-menu
@@ -102,14 +104,14 @@ struct _MessagingMenuApp
   int registered;  /* -1 for unknown */
   MessagingMenuStatus status;
   gboolean status_set;
-  GSimpleActionGroup *source_actions;
-  GMenu *menu;
   GDBusConnection *bus;
+
+  GHashTable *messages;
+  GList *sources;
+  IndicatorMessagesApplication *app_interface;
 
   IndicatorMessagesService *messages_service;
   guint watch_id;
-  guint action_export_id;
-  guint menu_export_id;
 
   GCancellable *cancellable;
 };
@@ -133,9 +135,60 @@ static guint signals[N_SIGNALS];
 
 static const gchar *status_ids[] = { "available", "away", "busy", "invisible", "offline" };
 
+typedef struct
+{
+  gchar *id;
+  GIcon *icon;
+  gchar *label;
+
+  guint32 count;
+  gint64 time;
+  gchar *string;
+  gboolean draws_attention;
+} Source;
+
 static void global_status_changed (IndicatorMessagesService *service,
                                    const gchar *status_str,
                                    gpointer user_data);
+
+/* in messaging-menu-message.c */
+GVariant * _messaging_menu_message_to_variant (MessagingMenuMessage *msg);
+
+static void
+source_free (gpointer data)
+{
+  Source *source = data;
+
+  if (source)
+    {
+      g_free (source->id);
+      g_clear_object (&source->icon);
+      g_free (source->label);
+      g_free (source->string);
+      g_slice_free (Source, source);
+    }
+}
+
+static GVariant *
+source_to_variant (Source *source)
+{
+  GVariant *v;
+  gchar *iconstr;
+
+  iconstr = source->icon ? g_icon_to_string (source->icon) : NULL;
+
+  v = g_variant_new ("(sssuxsb)", source->id,
+                                  source->label,
+                                  iconstr ? iconstr : "",
+                                  source->count,
+                                  source->time,
+                                  source->string ? source->string : "",
+                                  source->draws_attention);
+
+  g_free (iconstr);
+
+  return v;
+}
 
 static gchar *
 messaging_menu_app_get_dbus_object_path (MessagingMenuApp *app)
@@ -155,17 +208,13 @@ messaging_menu_app_get_dbus_object_path (MessagingMenuApp *app)
 }
 
 static void
-export_menus_and_actions (GObject      *source,
-                          GAsyncResult *res,
-                          gpointer      user_data)
+messaging_menu_app_got_bus (GObject      *source,
+                            GAsyncResult *res,
+                            gpointer      user_data)
 {
   MessagingMenuApp *app = user_data;
   GError *error = NULL;
   gchar *object_path;
-
-  object_path = messaging_menu_app_get_dbus_object_path (app);
-  if (!object_path)
-    return;
 
   app->bus = g_bus_get_finish (res, &error);
   if (app->bus == NULL)
@@ -175,23 +224,13 @@ export_menus_and_actions (GObject      *source,
       return;
     }
 
-  app->action_export_id = g_dbus_connection_export_action_group (app->bus,
-                                                                 object_path,
-                                                                 G_ACTION_GROUP (app->source_actions),
-                                                                 &error);
-  if (!app->action_export_id)
-    {
-      g_warning ("unable to export action group: %s", error->message);
-      g_clear_error (&error);
-    }
+  object_path = messaging_menu_app_get_dbus_object_path (app);
 
-  app->menu_export_id = g_dbus_connection_export_menu_model (app->bus,
-                                                             object_path,
-                                                             G_MENU_MODEL (app->menu),
-                                                             &error);
-  if (!app->menu_export_id)
+  if (object_path &&
+      !g_dbus_interface_skeleton_export (G_DBUS_INTERFACE_SKELETON (app->app_interface),
+                                         app->bus, object_path, &error))
     {
-      g_warning ("unable to export menu: %s", error->message);
+      g_warning ("unable to export application interface: %s", error->message);
       g_clear_error (&error);
     }
 
@@ -214,7 +253,7 @@ messaging_menu_app_set_desktop_id (MessagingMenuApp *app,
 
   g_bus_get (G_BUS_TYPE_SESSION,
              app->cancellable,
-             export_menus_and_actions,
+             messaging_menu_app_got_bus,
              app);
 }
 
@@ -248,20 +287,6 @@ messaging_menu_app_dispose (GObject *object)
 {
   MessagingMenuApp *app = MESSAGING_MENU_APP (object);
 
-  if (app->bus)
-    {
-      if (app->action_export_id > 0)
-        g_dbus_connection_unexport_action_group (app->bus, app->action_export_id);
-
-      if (app->menu_export_id > 0)
-        g_dbus_connection_unexport_menu_model (app->bus, app->menu_export_id);
-
-      app->action_export_id = 0;
-      app->menu_export_id = 0;
-      g_object_unref (app->bus);
-      app->bus = NULL;
-    }
-
   if (app->watch_id > 0)
     {
       g_bus_unwatch_name (app->watch_id);
@@ -287,9 +312,14 @@ messaging_menu_app_dispose (GObject *object)
       g_clear_object (&app->messages_service);
     }
 
+  g_clear_pointer (&app->messages, g_hash_table_unref);
+
+  g_list_free_full (app->sources, source_free);
+  app->sources = NULL;
+
+  g_clear_object (&app->app_interface);
   g_clear_object (&app->appinfo);
-  g_clear_object (&app->source_actions);
-  g_clear_object (&app->menu);
+  g_clear_object (&app->bus);
 
   G_OBJECT_CLASS (messaging_menu_app_parent_class)->dispose (object);
 }
@@ -420,6 +450,168 @@ indicator_messages_vanished (GDBusConnection *bus,
     }
 }
 
+static gboolean
+messaging_menu_app_list_sources (IndicatorMessagesApplication *app_interface,
+                                 GDBusMethodInvocation        *invocation,
+                                 gpointer                      user_data)
+{
+  MessagingMenuApp *app = user_data;
+  GVariantBuilder builder;
+  GList *it;
+
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sssuxsb)"));
+
+  for (it = app->sources; it; it = it->next)
+    g_variant_builder_add_value (&builder, source_to_variant (it->data));
+
+  indicator_messages_application_complete_list_sources (app_interface,
+                                                        invocation,
+                                                        g_variant_builder_end (&builder));
+
+  return TRUE;
+}
+
+static gint
+compare_source_id (gconstpointer a,
+                   gconstpointer b)
+{
+  const Source *source = a;
+  const gchar *id = b;
+
+  return strcmp (source->id, id);
+}
+
+static gboolean
+messaging_menu_app_remove_source_internal (MessagingMenuApp *app,
+                                           const gchar      *source_id)
+{
+  GList *node;
+
+  node = g_list_find_custom (app->sources, source_id, compare_source_id);
+  if (node)
+    {
+      source_free (node->data);
+      app->sources = g_list_delete_link (app->sources, node);
+      return TRUE;
+    }
+
+  return FALSE;
+}
+
+static gboolean
+messaging_menu_app_remove_message_internal (MessagingMenuApp *app,
+                                            const gchar      *message_id)
+{
+  return g_hash_table_remove (app->messages, message_id);
+}
+
+static gboolean
+messaging_menu_app_activate_source (IndicatorMessagesApplication *app_interface,
+                                    GDBusMethodInvocation        *invocation,
+                                    const gchar                  *source_id,
+                                    gpointer                      user_data)
+{
+  MessagingMenuApp *app = user_data;
+  GQuark q = g_quark_from_string (source_id);
+
+  /* Activate implies removing the source, no need for SourceRemoved */
+  if (messaging_menu_app_remove_source_internal (app, source_id))
+    g_signal_emit (app, signals[ACTIVATE_SOURCE], q, source_id);
+
+  indicator_messages_application_complete_activate_source (app_interface, invocation);
+
+  return TRUE;
+}
+
+static gboolean
+messaging_menu_app_list_messages (IndicatorMessagesApplication *app_interface,
+                                  GDBusMethodInvocation        *invocation,
+                                  gpointer                      user_data)
+{
+  MessagingMenuApp *app = user_data;
+  GVariantBuilder builder;
+  GHashTableIter iter;
+  MessagingMenuMessage *message;
+
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sssssxaa{sv}b)"));
+
+  g_hash_table_iter_init (&iter, app->messages);
+  while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &message))
+    g_variant_builder_add_value (&builder, _messaging_menu_message_to_variant (message));
+
+  indicator_messages_application_complete_list_messages (app_interface,
+                                                         invocation,
+                                                         g_variant_builder_end (&builder));
+
+  return TRUE;
+}
+
+static gboolean
+messaging_menu_app_activate_message (IndicatorMessagesApplication *app_interface,
+                                     GDBusMethodInvocation        *invocation,
+                                     const gchar                  *message_id,
+                                     const gchar                  *action_id,
+                                     GVariant                     *params,
+                                     gpointer                      user_data)
+{
+  MessagingMenuApp *app = user_data;
+  MessagingMenuMessage *msg;
+
+  msg = g_hash_table_lookup (app->messages, message_id);
+  if (msg)
+    {
+      if (*action_id)
+        {
+          gchar *signal;
+
+          signal = g_strconcat ("activate::", action_id, NULL);
+
+          if (g_variant_n_children (params))
+            {
+              GVariant *param;
+
+              g_variant_get_child (params, 0, "v", &param);
+              g_signal_emit_by_name (msg, signal, action_id, param);
+
+              g_variant_unref (param);
+            }
+          else
+            g_signal_emit_by_name (msg, signal, action_id, NULL);
+
+          g_free (signal);
+        }
+      else
+        g_signal_emit_by_name (msg, "activate", NULL, NULL);
+
+
+      /* Activate implies removing the message, no need for MessageRemoved  */
+      messaging_menu_app_remove_message_internal (app, message_id);
+    }
+
+  indicator_messages_application_complete_activate_message (app_interface, invocation);
+
+  return TRUE;
+}
+
+static gboolean
+messaging_menu_app_dismiss (IndicatorMessagesApplication *app_interface,
+                            GDBusMethodInvocation        *invocation,
+                            const gchar * const          *sources,
+                            const gchar * const          *messages,
+                            gpointer                      user_data)
+{
+  MessagingMenuApp *app = user_data;
+  const gchar * const *it;
+
+  for (it = sources; *it; it++)
+    messaging_menu_app_remove_source_internal (app, *it);
+
+  for (it = messages; *it; it++)
+    messaging_menu_app_remove_message_internal (app, *it);
+
+  return TRUE;
+}
+
 static void
 messaging_menu_app_init (MessagingMenuApp *app)
 {
@@ -427,15 +619,21 @@ messaging_menu_app_init (MessagingMenuApp *app)
   app->status_set = FALSE;
   app->bus = NULL;
 
-  app->action_export_id = 0;
-  app->menu_export_id = 0;
-
   app->cancellable = g_cancellable_new ();
 
-  app->source_actions = g_simple_action_group_new ();
-  app->menu = g_menu_new ();
+  app->app_interface = indicator_messages_application_skeleton_new ();
+  g_signal_connect (app->app_interface, "handle-list-sources",
+                    G_CALLBACK (messaging_menu_app_list_sources), app);
+  g_signal_connect (app->app_interface, "handle-activate-source",
+                    G_CALLBACK (messaging_menu_app_activate_source), app);
+  g_signal_connect (app->app_interface, "handle-list-messages",
+                    G_CALLBACK (messaging_menu_app_list_messages), app);
+  g_signal_connect (app->app_interface, "handle-activate-message",
+                    G_CALLBACK (messaging_menu_app_activate_message), app);
+  g_signal_connect (app->app_interface, "handle-dismiss",
+                    G_CALLBACK (messaging_menu_app_dismiss), app);
 
-  app->cancellable = g_cancellable_new ();
+  app->messages = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 
   app->watch_id = g_bus_watch_name (G_BUS_TYPE_SESSION,
                                     "com.canonical.indicator.messages",
@@ -608,124 +806,73 @@ global_status_changed (IndicatorMessagesService *service,
   g_signal_emit (app, signals[STATUS_CHANGED], 0, status);
 }
 
-static void
-source_action_activated (GSimpleAction *action,
-                         GVariant      *parameter,
-                         gpointer       user_data)
+static Source *
+messaging_menu_app_lookup_source (MessagingMenuApp *app,
+                                  const gchar      *id)
 {
-  MessagingMenuApp *app = user_data;
-  const gchar *name = g_action_get_name (G_ACTION (action));
-  GQuark q = g_quark_from_string (name);
+  GList *node;
 
-  messaging_menu_app_remove_source (app, name);
+  node = g_list_find_custom (app->sources, id, compare_source_id);
 
-  g_signal_emit (app, signals[ACTIVATE_SOURCE], q, name);
+  return node ? node->data : NULL;
+}
+
+static Source *
+messaging_menu_app_get_source (MessagingMenuApp *app,
+                               const gchar      *id)
+{
+  Source *source;
+
+  source = messaging_menu_app_lookup_source (app, id);
+  if (!source)
+    g_warning ("a source with id '%s' doesn't exist", id);
+
+  return source;
 }
 
 static void
-messaging_menu_app_insert_source_action (MessagingMenuApp *app,
-                                         gint              position,
-                                         const gchar      *id,
-                                         GIcon            *icon,
-                                         const gchar      *label,
-                                         GVariant         *state)
+messaging_menu_app_notify_source_changed (MessagingMenuApp *app,
+                                          Source           *source)
 {
-  GSimpleAction *action;
-  GMenuItem *menuitem;
+  indicator_messages_application_emit_source_changed (app->app_interface,
+                                                      source_to_variant (source));
+}
+
+static void
+messaging_menu_app_insert_source_internal (MessagingMenuApp *app,
+                                           gint              position,
+                                           const gchar      *id,
+                                           GIcon            *icon,
+                                           const gchar      *label,
+                                           guint             count,
+                                           gint64            time,
+                                           const gchar      *string)
+{
+  Source *source;
 
   g_return_if_fail (MESSAGING_MENU_IS_APP (app));
   g_return_if_fail (id != NULL);
+  g_return_if_fail (label != NULL);
 
-  if (g_simple_action_group_lookup (app->source_actions, id))
+  if (messaging_menu_app_lookup_source (app, id))
     {
       g_warning ("a source with id '%s' already exists", id);
       return;
     }
 
-  action = g_simple_action_new_stateful (id, NULL, state);
-  g_signal_connect (action, "activate",
-                    G_CALLBACK (source_action_activated), app);
-  g_simple_action_group_insert (app->source_actions, G_ACTION (action));
-  g_object_unref (action);
-
-  menuitem = g_menu_item_new (label, NULL);
-  g_menu_item_set_action_and_target_value (menuitem, id, NULL);
-  g_menu_item_set_attribute (menuitem, "x-canonical-type", "s", "ImSourceMenuItem");
+  source = g_slice_new0 (Source);
+  source->id = g_strdup (id);
+  source->label = g_strdup (label);
   if (icon)
-    {
-      gchar *iconstr = g_icon_to_string (icon);
-      g_menu_item_set_attribute (menuitem, "x-canonical-icon", "s", iconstr);
-      g_free (iconstr);
-    }
-  g_menu_insert_item (app->menu, position, menuitem);
-  g_object_unref (menuitem);
-}
+    source->icon = g_object_ref (icon);
+  source->count = count;
+  source->time = time;
+  source->string = g_strdup (string);
+  app->sources = g_list_insert (app->sources, source, position);
 
-static GSimpleAction *
-messaging_menu_app_get_source_action (MessagingMenuApp *app,
-                                      const gchar      *source_id)
-
-{
-  GAction *action;
-
-  g_return_val_if_fail (MESSAGING_MENU_IS_APP (app), NULL);
-  g_return_val_if_fail (source_id != NULL, NULL);
-
-  action = g_simple_action_group_lookup (app->source_actions, source_id);
-  if (action == NULL)
-    g_warning ("a source with id '%s' doesn't exist", source_id);
-
-  return G_SIMPLE_ACTION (action);
-}
-
-static void
-messaging_menu_app_set_source_action (MessagingMenuApp *app,
-                                      const gchar      *source_id,
-                                      guint             count,
-                                      gint64            time,
-                                      const gchar      *string)
-{
-  GSimpleAction *action;
-  GVariant *state;
-  gboolean draws_attention;
-  GVariant *new_state;
-
-  action = messaging_menu_app_get_source_action (app, source_id);
-  if (!action)
-    return;
-
-  state = g_action_get_state (G_ACTION (action));
-  g_variant_get_child (state, 3, "b", &draws_attention);
-
-  new_state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
-  g_simple_action_set_state (action, new_state);
-
-  g_variant_unref (state);
-}
-
-static void
-messaging_menu_app_set_draws_attention (MessagingMenuApp *app,
-                                        const gchar      *source_id,
-                                        gboolean          draws_attention)
-{
-  GSimpleAction *action;
-  GVariant *state;
-  guint count;
-  gint64 time;
-  const gchar *string;
-  GVariant *new_state;
-
-  action = messaging_menu_app_get_source_action (app, source_id);
-  if (!action)
-    return;
-
-  state = g_action_get_state (G_ACTION (action));
-  g_variant_get (state, "(ux&sb)", &count, &time, &string, NULL);
-
-  new_state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
-  g_simple_action_set_state (action, new_state);
-
-  g_variant_unref (state);
+  indicator_messages_application_emit_source_added (app->app_interface,
+                                                    position,
+                                                    source_to_variant (source));
 }
 
 /**
@@ -802,8 +949,7 @@ messaging_menu_app_insert_source_with_count (MessagingMenuApp *app,
                                              const gchar      *label,
                                              guint             count)
 {
-  messaging_menu_app_insert_source_action (app, position, id, icon, label,
-                                           g_variant_new ("(uxsb)", count, 0, "", FALSE));
+  messaging_menu_app_insert_source_internal (app, position, id, icon, label, count, 0, "");
 }
 
 /**
@@ -857,8 +1003,7 @@ messaging_menu_app_insert_source_with_time (MessagingMenuApp *app,
                                             const gchar      *label,
                                             gint64            time)
 {
-  messaging_menu_app_insert_source_action (app, position, id, icon, label,
-                                           g_variant_new ("(uxsb)", 0, time, "", FALSE));
+  messaging_menu_app_insert_source_internal (app, position, id, icon, label, 0, time, "");
 }
 
 /**
@@ -914,8 +1059,7 @@ messaging_menu_app_insert_source_with_string (MessagingMenuApp *app,
                                               const gchar      *label,
                                               const gchar      *str)
 {
-  messaging_menu_app_insert_source_action (app, position, id, icon, label,
-                                           g_variant_new ("(uxsb)", 0, 0, str, FALSE));
+  messaging_menu_app_insert_source_internal (app, position, id, icon, label, 0, 0, str);
 }
 
 /**
@@ -955,34 +1099,11 @@ void
 messaging_menu_app_remove_source (MessagingMenuApp *app,
                                   const gchar      *source_id)
 {
-  int n_items;
-  int i;
-
   g_return_if_fail (MESSAGING_MENU_IS_APP (app));
   g_return_if_fail (source_id != NULL);
 
-  if (g_simple_action_group_lookup (app->source_actions, source_id) == NULL)
-      return;
-
-  n_items = g_menu_model_get_n_items (G_MENU_MODEL (app->menu));
-  for (i = 0; i < n_items; i++)
-    {
-      gchar *action;
-
-      if (g_menu_model_get_item_attribute (G_MENU_MODEL (app->menu), i,
-                                           "action", "s", &action))
-        {
-          if (!g_strcmp0 (action, source_id))
-            {
-              g_menu_remove (app->menu, i);
-              break;
-            }
-
-          g_free (action);
-        }
-    }
-
-  g_simple_action_group_remove (app->source_actions, source_id);
+  if (messaging_menu_app_remove_source_internal (app, source_id))
+    indicator_messages_application_emit_source_removed (app->app_interface, source_id);
 }
 
 /**
@@ -999,46 +1120,7 @@ messaging_menu_app_has_source (MessagingMenuApp *app,
   g_return_val_if_fail (MESSAGING_MENU_IS_APP (app), FALSE);
   g_return_val_if_fail (source_id != NULL, FALSE);
 
-  return g_simple_action_group_lookup (app->source_actions, source_id) != NULL;
-}
-
-static GMenuItem *
-g_menu_find_item_with_action (GMenu        *menu,
-                              const gchar  *action,
-                              gint         *out_pos)
-{
-  gint i;
-  gint n_elements;
-  GMenuItem *item = NULL;
-
-  n_elements = g_menu_model_get_n_items (G_MENU_MODEL (menu));
-
-  for (i = 0; i < n_elements && item == NULL; i++)
-    {
-      GVariant *attr;
-
-      item = g_menu_item_new_from_model (G_MENU_MODEL (menu), i);
-      attr = g_menu_item_get_attribute_value (item, G_MENU_ATTRIBUTE_ACTION, G_VARIANT_TYPE_STRING);
-
-      if (!g_str_equal (action, g_variant_get_string (attr, NULL)))
-        g_clear_object (&item);
-
-      g_variant_unref (attr);
-    }
-
-  if (item && out_pos)
-    *out_pos = i - 1;
-
-  return item;
-}
-
-static void
-g_menu_replace_item (GMenu     *menu,
-                     gint       pos,
-                     GMenuItem *item)
-{
-  g_menu_remove (menu, pos);
-  g_menu_insert_item (menu, pos, item);
+  return messaging_menu_app_lookup_source (app, source_id) != NULL;
 }
 
 /**
@@ -1054,21 +1136,19 @@ messaging_menu_app_set_source_label (MessagingMenuApp *app,
                                      const gchar      *source_id,
                                      const gchar      *label)
 {
-  gint pos;
-  GMenuItem *item;
+  Source *source;
 
   g_return_if_fail (MESSAGING_MENU_IS_APP (app));
   g_return_if_fail (source_id != NULL);
   g_return_if_fail (label != NULL);
 
-  item = g_menu_find_item_with_action (app->menu, source_id, &pos);
-  if (item == NULL)
-    return;
-
-  g_menu_item_set_attribute (item, G_MENU_ATTRIBUTE_LABEL, "s", label);
-  g_menu_replace_item (app->menu, pos, item);
-
-  g_object_unref (item);
+  source = messaging_menu_app_get_source (app, source_id);
+  if (source)
+    {
+      g_free (source->label);
+      source->label = g_strdup (label);
+      messaging_menu_app_notify_source_changed (app, source);
+    }
 }
 
 /**
@@ -1084,33 +1164,19 @@ messaging_menu_app_set_source_icon (MessagingMenuApp *app,
                                     const gchar      *source_id,
                                     GIcon            *icon)
 {
-  gint pos;
-  GMenuItem *item;
+  Source *source;
 
   g_return_if_fail (MESSAGING_MENU_IS_APP (app));
   g_return_if_fail (source_id != NULL);
 
-  item = g_menu_find_item_with_action (app->menu, source_id, &pos);
-  if (item == NULL)
-    return;
-
-  if (icon)
+  source = messaging_menu_app_get_source (app, source_id);
+  if (source)
     {
-      gchar *iconstr;
-
-      iconstr = g_icon_to_string (icon);
-      g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
-
-      g_free (iconstr);
+      g_clear_object (&source->icon);
+      if (icon)
+        source->icon = g_object_ref (icon);
+      messaging_menu_app_notify_source_changed (app, source);
     }
-  else
-    {
-      g_menu_item_set_attribute_value (item, "x-canonical-icon", NULL);
-    }
-
-  g_menu_replace_item (app->menu, pos, item);
-
-  g_object_unref (item);
 }
 
 /**
@@ -1125,7 +1191,17 @@ void messaging_menu_app_set_source_count (MessagingMenuApp *app,
                                           const gchar      *source_id,
                                           guint             count)
 {
-  messaging_menu_app_set_source_action (app, source_id, count, 0, "");
+  Source *source;
+
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (source_id != NULL);
+
+  source = messaging_menu_app_get_source (app, source_id);
+  if (source)
+    {
+      source->count = count;
+      messaging_menu_app_notify_source_changed (app, source);
+    }
 }
 
 /**
@@ -1141,7 +1217,17 @@ messaging_menu_app_set_source_time (MessagingMenuApp *app,
                                     const gchar      *source_id,
                                     gint64            time)
 {
-  messaging_menu_app_set_source_action (app, source_id, 0, time, "");
+  Source *source;
+
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (source_id != NULL);
+
+  source = messaging_menu_app_get_source (app, source_id);
+  if (source)
+    {
+      source->time = time;
+      messaging_menu_app_notify_source_changed (app, source);
+    }
 }
 
 /**
@@ -1157,7 +1243,18 @@ messaging_menu_app_set_source_string (MessagingMenuApp *app,
                                       const gchar      *source_id,
                                       const gchar      *str)
 {
-  messaging_menu_app_set_source_action (app, source_id, 0, 0, str);
+  Source *source;
+
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (source_id != NULL);
+
+  source = messaging_menu_app_get_source (app, source_id);
+  if (source)
+    {
+      g_free (source->string);
+      source->string = g_strdup (str);
+      messaging_menu_app_notify_source_changed (app, source);
+    }
 }
 
 /**
@@ -1175,7 +1272,17 @@ void
 messaging_menu_app_draw_attention (MessagingMenuApp *app,
                                    const gchar      *source_id)
 {
-  messaging_menu_app_set_draws_attention (app, source_id, TRUE);
+  Source *source;
+
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (source_id != NULL);
+
+  source = messaging_menu_app_get_source (app, source_id);
+  if (source)
+    {
+      source->draws_attention = TRUE;
+      messaging_menu_app_notify_source_changed (app, source);
+    }
 }
 
 /**
@@ -1196,5 +1303,131 @@ void
 messaging_menu_app_remove_attention (MessagingMenuApp *app,
                                      const gchar      *source_id)
 {
-  messaging_menu_app_set_draws_attention (app, source_id, FALSE);
+  Source *source;
+
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (source_id != NULL);
+
+  source = messaging_menu_app_get_source (app, source_id);
+  if (source)
+    {
+      source->draws_attention = FALSE;
+      messaging_menu_app_notify_source_changed (app, source);
+    }
+}
+
+/**
+ * messaging_menu_app_append_message:
+ * @app: a #MessagingMenuApp
+ * @msg: the #MessagingMenuMessage to append
+ * @source_id: (allow-none): the source id to which @msg is added, or NULL
+ * @notify: whether a notification bubble should be shown for this
+ *          message
+ *
+ * Appends @msg to the source with id @source_id of @app.  The messaging
+ * menu might not display this message immediately if other messages are
+ * queued before this one.
+ *
+ * If @source_id has a count associated with it, that count will be
+ * increased by one.
+ *
+ * If @source_id is %NULL, @msg won't be associated with a source.
+ */
+void
+messaging_menu_app_append_message (MessagingMenuApp     *app,
+                                   MessagingMenuMessage *msg,
+                                   const gchar          *source_id,
+                                   gboolean              notify)
+{
+  const gchar *id;
+
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (MESSAGING_MENU_IS_MESSAGE (msg));
+
+  id = messaging_menu_message_get_id (msg);
+
+  if (g_hash_table_lookup (app->messages, id))
+    {
+      g_warning ("a message with id '%s' already exists", id);
+      return;
+    }
+
+  g_hash_table_insert (app->messages, g_strdup (id), g_object_ref (msg));
+  indicator_messages_application_emit_message_added (app->app_interface,
+                                                     _messaging_menu_message_to_variant (msg));
+
+  if (source_id)
+    {
+      Source *source;
+
+      source = messaging_menu_app_get_source (app, source_id);
+      if (source && source->count >= 0)
+        {
+          source->count++;
+          messaging_menu_app_notify_source_changed (app, source);
+        }
+    }
+}
+
+/**
+ * messaging_menu_app_get_message:
+ * @app: a #MessagingMenuApp
+ * @id: id of the message to retrieve
+ *
+ * Retrieves the message with @id, that was added with
+ * messaging_menu_app_append_message().
+ *
+ * Returns: (transfer none) (allow-none): the #MessagingMenuApp with
+ * @id, or %NULL
+ */
+MessagingMenuMessage *
+messaging_menu_app_get_message (MessagingMenuApp *app,
+                                const gchar      *id)
+{
+  g_return_val_if_fail (MESSAGING_MENU_IS_APP (app), NULL);
+  g_return_val_if_fail (id != NULL, NULL);
+
+  return g_hash_table_lookup (app->messages, id);
+}
+
+/**
+ * messaging_menu_app_remove_message:
+ * @app: a #MessagingMenuApp
+ * @msg: the #MessagingMenuMessage to remove
+ *
+ * Removes @msg from @app.
+ *
+ * If @source_id has a count associated with it, that count will be
+ * decreased by one.
+ */
+void
+messaging_menu_app_remove_message (MessagingMenuApp     *app,
+                                   MessagingMenuMessage *msg)
+{
+  /* take a ref of @msg here to make sure the pointer returned by
+   * _get_id() is valid for the duration of remove_message_by_id. */
+  g_object_ref (msg);
+  messaging_menu_app_remove_message_by_id (app, messaging_menu_message_get_id (msg));
+  g_object_unref (msg);
+}
+
+/**
+ * messaging_menu_app_remove_message_by_id:
+ * @app: a #MessagingMenuApp
+ * @id: the unique id of @msg
+ *
+ * Removes the message with the id @id from @app.
+ *
+ * If @source_id has a count associated with it, that count will be
+ * decreased by one.
+ */
+void
+messaging_menu_app_remove_message_by_id (MessagingMenuApp     *app,
+                                         const gchar          *id)
+{
+  g_return_if_fail (MESSAGING_MENU_IS_APP (app));
+  g_return_if_fail (id != NULL);
+
+  if (messaging_menu_app_remove_message_internal (app, id))
+    indicator_messages_application_emit_message_removed (app->app_interface, id);
 }
