@@ -41,6 +41,7 @@ struct _ImApplicationList
 };
 
 G_DEFINE_TYPE (ImApplicationList, im_application_list, G_TYPE_OBJECT);
+G_DEFINE_QUARK (draws_attention, message_action_draws_attention);
 
 enum
 {
@@ -161,9 +162,9 @@ app_source_action_check_draw (Application * app, const gchar * action_name)
 static gboolean
 app_message_action_check_draw (Application * app, const gchar * action_name)
 {
-  /* TODO: Not stored currently */
-
-  return FALSE;
+  GAction * action = NULL;
+  action = g_simple_action_group_lookup (app->message_actions, action_name);
+  return GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(action), message_action_draws_attention_quark()));
 }
 
 /* Regenerate the draw attention flag based on the sources and messages
@@ -807,6 +808,7 @@ im_application_list_message_added (Application *app,
     app_iconstr = get_symbolic_app_icon_string (app_icon);
 
   action = g_simple_action_new (id, G_VARIANT_TYPE_BOOLEAN);
+  g_object_set_qdata(G_OBJECT(action), message_action_draws_attention_quark(), GINT_TO_POINTER(draws_attention));
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_message_activated), app);
   g_simple_action_group_insert (app->message_actions, G_ACTION (action));
 
