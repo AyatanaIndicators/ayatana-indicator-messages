@@ -1,3 +1,9 @@
+indicator-messages (13.10.1-0ubuntu1) UNRELEASED; urgency=low
+
+  * Bumping version to ensure we override all PPAs when this lands
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 19 Aug 2013 10:09:40 -0500
+
 indicator-messages (13.10.0phablet1) raring; urgency=low
 
   * Version bump to not pull from archives
