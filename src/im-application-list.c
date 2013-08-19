@@ -576,7 +576,7 @@ im_application_list_activate_app_action (GSimpleAction *action,
   g_desktop_app_info_launch_action (app->info, g_action_get_name (G_ACTION (action)), NULL);
 }
 
-void
+gboolean
 im_application_list_add (ImApplicationList  *list,
                          const gchar        *desktop_id)
 {
@@ -590,13 +590,13 @@ im_application_list_add (ImApplicationList  *list,
   g_return_if_fail (desktop_id != NULL);
 
   if (im_application_list_lookup (list, desktop_id))
-    return;
+    return TRUE;
 
   info = g_desktop_app_info_new (desktop_id);
   if (!info)
     {
       g_warning ("an application with id '%s' is not installed", desktop_id);
-      return;
+      return FALSE;
     }
 
   id = g_app_info_get_id (G_APP_INFO (info));
@@ -645,6 +645,8 @@ im_application_list_add (ImApplicationList  *list,
 
   g_object_unref (launch_action);
   g_object_unref (actions);
+
+  return TRUE;
 }
 
 void
