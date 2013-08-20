@@ -25,6 +25,8 @@
 #include <gio/gdesktopappinfo.h>
 #include <string.h>
 
+#include "glib/gi18n.h"
+
 typedef GObjectClass ImApplicationListClass;
 
 struct _ImApplicationList
@@ -125,16 +127,20 @@ static void
 im_application_list_update_draws_attention (ImApplicationList *list)
 {
   const gchar *icon_name;
+  const gchar *accessible_name;
   GVariant *state;
   GActionGroup *main_actions;
 
-  if (g_hash_table_find (list->applications, application_draws_attention, NULL))
+  if (g_hash_table_find (list->applications, application_draws_attention, NULL)) {
     icon_name = "indicator-messages-new";
-  else
+    accessible_name = _("New Messages");
+  } else {
     icon_name = "indicator-messages";
+    accessible_name = _("Messages");
+  }
 
   main_actions = g_action_muxer_get_group (list->muxer, NULL);
-  state = g_variant_new ("(sssb)", "", icon_name, "Messages", TRUE);
+  state = g_variant_new ("(sssb)", "", icon_name, accessible_name, TRUE);
   g_action_group_change_action_state (main_actions, "messages", state);
 }
 
