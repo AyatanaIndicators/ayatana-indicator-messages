@@ -1,12 +1,13 @@
-indicator-messages (13.10.1-0ubuntu1) UNRELEASED; urgency=low
+indicator-messages (13.10.1+13.10.20130820-0ubuntu1) saucy; urgency=low
 
   [ Ted Gould ]
   * Bumping version to ensure we override all PPAs when this lands
 
   [ Ubuntu daily release ]
   * debian/*symbols: auto-update new symbols to released version
+  * Automatic snapshot from revision 352
 
- -- Ted Gould <ted@ubuntu.com>  Mon, 19 Aug 2013 10:09:40 -0500
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 20 Aug 2013 02:06:40 +0000
 
 indicator-messages (13.10.0phablet1) raring; urgency=low
 
