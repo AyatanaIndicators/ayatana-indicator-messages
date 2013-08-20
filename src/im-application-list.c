@@ -116,6 +116,34 @@ application_free (gpointer data)
   g_slice_free (Application, app);
 }
 
+/* Check to see if we have actions by getting the full list of
+   names and see if there is one.  Not exactly efficient :-/ */
+static gboolean
+_g_action_group_has_actions (GActionGroup * ag)
+{
+  gchar ** list = NULL;
+  gboolean retval = FALSE;
+
+  list = g_action_group_list_actions(ag);
+  retval = (list[0] != NULL);
+  g_strfreev(list);
+
+  return retval;
+}
+
+/* Check to see if either of our action groups has any actions, if
+   so return TRUE so we get chosen! */
+static gboolean
+application_has_items (gpointer key,
+                       gpointer value,
+                       gpointer user_data)
+{
+  Application *app = value;
+
+  return _g_action_group_has_actions(G_ACTION_GROUP(app->source_actions)) ||
+    _g_action_group_has_actions(G_ACTION_GROUP(app->message_actions));
+}
+
 static gboolean
 application_draws_attention (gpointer key,
                              gpointer value,
@@ -136,6 +164,7 @@ im_application_list_update_draws_attention (ImApplicationList *list)
   GVariantBuilder builder;
   GVariant *state;
 
+  /* Figure out what type of icon we should be drawing */
   if (g_hash_table_find (list->applications, application_draws_attention, NULL)) {
     base_icon_name = "indicator-messages-new-%s";
     accessible_name = _("New Messages");
@@ -144,12 +173,15 @@ im_application_list_update_draws_attention (ImApplicationList *list)
     accessible_name = _("Messages");
   }
 
+  /* Include the IM state in the icon */
   state = g_action_group_get_action_state(G_ACTION_GROUP(list->globalactions), "status");
   icon_name = g_strdup_printf(base_icon_name, g_variant_get_string(state, NULL));
   g_variant_unref(state);
 
+  /* Build up the dictionary of values for the state */
   g_variant_builder_init(&builder, G_VARIANT_TYPE_DICTIONARY);
 
+  /* icon */
   g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
   g_variant_builder_add_value(&builder, g_variant_new_string("icon"));
   icon = g_themed_icon_new_with_default_fallbacks(icon_name);
@@ -157,17 +189,29 @@ im_application_list_update_draws_attention (ImApplicationList *list)
   g_object_unref(icon);
   g_variant_builder_close(&builder);
 
+  /* accessible description */
   g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
   g_variant_builder_add_value(&builder, g_variant_new_string("accessible-desc"));
   g_variant_builder_add_value(&builder, g_variant_new_variant(g_variant_new_string(accessible_name)));
   g_variant_builder_close(&builder);
 
+  /* visibility */
   g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
   g_variant_builder_add_value(&builder, g_variant_new_string("visible"));
   g_variant_builder_add_value(&builder, g_variant_new_variant(g_variant_new_boolean(TRUE)));
   g_variant_builder_close(&builder);
 
+  /* Set the state */
   g_action_group_change_action_state (G_ACTION_GROUP(list->globalactions), "messages", g_variant_builder_end(&builder));
+
+  GAction * remove_action = g_simple_action_group_lookup(list->globalactions, "remove-all");
+  if (g_hash_table_find (list->applications, application_has_items, NULL)) {
+    g_debug("Enabling remove-all");
+    g_simple_action_set_enabled(G_SIMPLE_ACTION(remove_action), TRUE);
+  } else {
+    g_debug("Disabling remove-all");
+    g_simple_action_set_enabled(G_SIMPLE_ACTION(remove_action), FALSE);
+  }
 }
 
 /* Check a source action to see if it draws */
