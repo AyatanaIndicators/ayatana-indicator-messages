@@ -68,7 +68,6 @@ typedef struct
   gchar *id;
   IndicatorMessagesApplication *proxy;
   GActionMuxer *muxer;
-  GSimpleActionGroup *actions;
   GSimpleActionGroup *source_actions;
   GSimpleActionGroup *message_actions;
   GActionMuxer *message_sub_actions;
