@@ -1,14 +1,19 @@
-indicator-messages (13.10.1-0ubuntu1) UNRELEASED; urgency=low
+indicator-messages (13.10.1+13.10.20130820.2-0ubuntu1) saucy; urgency=low
 
+  * Automatic snapshot from revision 354
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 20 Aug 2013 08:59:34 +0000
+
+indicator-messages (13.10.1+13.10.20130820-0ubuntu1) saucy; urgency=low
+
+  [ Ted Gould ]
   * Bumping version to ensure we override all PPAs when this lands
 
- -- Ted Gould <ted@ubuntu.com>  Mon, 19 Aug 2013 10:09:40 -0500
+  [ Ubuntu daily release ]
+  * debian/*symbols: auto-update new symbols to released version
+  * Automatic snapshot from revision 352
 
-indicator-messages (13.10.0phablet1) raring; urgency=low
-
-  * Version bump to not pull from archives
-
- -- Sergio Schvezov <sergio.schvezov@canonical.com>  Fri, 26 Apr 2013 13:53:53 -0300
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 20 Aug 2013 02:06:40 +0000
 
 indicator-messages (12.10.6+13.10.20130702-0ubuntu1) saucy; urgency=low
 
@@ -19,12 +24,6 @@ indicator-messages (12.10.6+13.10.20130702-0ubuntu1) saucy; urgency=low
   * Automatic snapshot from revision 350
 
  -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 02 Jul 2013 02:02:36 +0000
-
-indicator-messages (12.10.6phablet1) quantal; urgency=low
-
-  * Adding guards for g_type_init
-
- -- Sergio Schvezov <sergio.schvezov@canonical.com>  Fri, 22 Mar 2013 17:23:45 -0300
 
 indicator-messages (12.10.6daily13.06.19-0ubuntu1) saucy; urgency=low
 
@@ -138,91 +137,6 @@ indicator-messages (12.10.6daily12.11.21.1-0ubuntu1) raring; urgency=low
   * Automatic snapshot from revision 331
 
  -- Automatic PS uploader <ps-jenkins@lists.canonical.com>  Wed, 21 Nov 2012 10:41:37 +0000
-
-indicator-messages (12.10.6-0ubuntu1phablet9) quantal; urgency=low
-
-  * add "remove-all" signal to imapplicationlist (temporarily)
-
- -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Thu, 20 Dec 2012 18:49:50 +0100
-
-indicator-messages (12.10.6-0ubuntu1phablet8) quantal; urgency=low
-
-  * Make messaging_menu_app_remove_message() work for messages with a ref count of 1
-  * Make handling of multiple processes with the same desktop id more robust
-  * ImPhoneMenu: sort messages by time (fixes LP #1090266)
-  * Don't show message sources
-
- -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Mon, 17 Dec 2012 14:42:03 +0100
-
-indicator-messages (12.10.6-0ubuntu1phablet7) quantal; urgency=low
-
-  * Remove variant wrapper from 'parameter' argument of the "activate" signal
-
- -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Tue, 11 Dec 2012 14:28:15 +0100
-
-indicator-messages (12.10.6-0ubuntu1phablet6) quantal; urgency=low
-
-  * Don't show sources
-  * Always use the "messageitem" widget type for messages
-
- -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Mon, 10 Dec 2012 14:38:16 +0100
-
-indicator-messages (12.10.6-0ubuntu1phablet5) quantal; urgency=low
-
-  * Don't shorten the app id to seven characters (fixes LP #1086729)
-  * Add messaging_menu_app_get_message
-
- -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Thu, 06 Dec 2012 15:06:34 +0000
-
-indicator-messages (12.10.6-0ubuntu1phablet4) quantal; urgency=low
-
-  [Lars Uebernickel]
-  * Add the concept of actions to messages
-  * Stop using IndicatorService
-  * Reverse order of messages
-  * Expose symbolic application icon
-  * Change icon when there are any messages in the menu
-
- -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Tue, 04 Dec 2012 21:10:26 +0000
-
-indicator-messages (12.10.6-0ubuntu1phablet3) quantal; urgency=low
-
-  [Lars Uebernickel]
-  * expose root menu item of which the indicator menu is a submenu
-  * fix crash in im-application-list on arm
-
- -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Thu, 29 Nov 2012 21:44:19 +0100
-
-indicator-messages (12.10.6-0ubuntu1phablet2) quantal; urgency=low
-
-  [Lars Uebernickel]
-  * refactor messages-service.c
-  * notify applications about message and source activations
-  * add "Clear All" menu item
-  * allow dismissing of messages
-  * include application icons on message items
-
- -- Lars Uebernickel <lars.uebernickel@ubuntu.com>  Mon, 26 Nov 2012 22:19:51 +0100
-
-indicator-messages (12.10.6-0ubuntu1phablet1) quantal; urgency=low
-
-  [ Mathieu Trudel-Lapierre ]
-  * debian/rules:
-    - Use autogen.sh for dh_autoreconf.
-    - Drop the override for dh_makeshlibs.
-    - Add DPKG_GENSYMBOLS_CHECK_LEVEL=4.
-  * debian/control:
-    - Fix styling: add trailing commas at the end of lists. 
-    - Update Vcs-Bzr, Vcs-Browser fields and add a notice for developers.
-    - Add libgtest-dev to Build-Depends.
-  * Automatic snapshot from revision 329 (bootstrap):
-    - Clear the detail (count or time) of a source when another type of detail
-      is set. (LP: #1071640)
-
-  [ Ricardo Mendoza ]
-  * Releasing upstream for phablet
-
- -- Ricardo Mendoza <ricardo.mendoza@canonical.com>  Tue, 20 Nov 2012 10:08:59 -0430
 
 indicator-messages (12.10.5-0ubuntu2) raring; urgency=low
 
