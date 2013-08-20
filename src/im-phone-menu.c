@@ -72,7 +72,7 @@ im_phone_menu_constructed (GObject *object)
 
     clear_section = g_menu_new ();
 
-    item = g_menu_item_new ("Clear All", "remove-all");
+    item = g_menu_item_new (_("Clear All"), "remove-all");
     g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.button");
     g_menu_append_item (clear_section, item);
 

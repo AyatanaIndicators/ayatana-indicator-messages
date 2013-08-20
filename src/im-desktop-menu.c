@@ -228,7 +228,7 @@ im_desktop_menu_constructed (GObject *object)
     GMenu *clear_section;
 
     clear_section = g_menu_new ();
-    g_menu_append (clear_section, "Clear", "indicator.remove-all");
+    g_menu_append (clear_section, _("Clear"), "indicator.remove-all");
     im_menu_append_section (IM_MENU (menu), G_MENU_MODEL (clear_section));
 
     g_object_unref (clear_section);
