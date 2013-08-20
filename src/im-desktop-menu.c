@@ -114,7 +114,8 @@ im_desktop_menu_source_added (ImApplicationList *applist,
   g_return_if_fail (source_section != NULL);
 
   action = g_strconcat ("src.", source_id, NULL);
-  item = g_menu_item_new (label, action);
+  item = g_menu_item_new (label, NULL);
+  g_menu_item_set_action_and_target_value(item, action, NULL);
   g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.source");
   if (icon && *icon)
     g_menu_item_set_attribute (item, "icon", "s", icon);
