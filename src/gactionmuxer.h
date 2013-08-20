@@ -40,5 +40,8 @@ void           g_action_muxer_insert   (GActionMuxer *muxer,
 void           g_action_muxer_remove   (GActionMuxer *muxer,
                                         const gchar  *prefix);
 
+GActionGroup * g_action_muxer_get_group (GActionMuxer *muxer,
+                                         const gchar  *prefix);
+
 #endif
 

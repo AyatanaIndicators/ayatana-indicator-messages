@@ -1,3 +1,21 @@
+/*
+An indicator to show information that is in messaging applications
+that the user is using.
+
+Copyright 2012 Canonical Ltd.
+
+This program is free software: you can redistribute it and/or modify it 
+under the terms of the GNU General Public License version 3, as published 
+by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but 
+WITHOUT ANY WARRANTY; without even the implied warranties of 
+MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along 
+with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <glib.h>
 #include <gio/gio.h>
@@ -25,6 +43,10 @@ strv_contains (gchar **str_array,
 TEST(GActionMuxerTest, Sanity) {
 	GActionMuxer *muxer;
 
+#if G_ENCODE_VERSION(GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION) <= GLIB_VERSION_2_34
+	g_type_init ();
+#endif
+
 	g_action_muxer_insert (NULL, NULL, NULL);
 	g_action_muxer_remove (NULL, NULL);
 
@@ -44,6 +66,10 @@ TEST(GActionMuxerTest, Empty) {
 	GActionMuxer *muxer;
 	gchar **actions;
 
+#if G_ENCODE_VERSION(GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION) <= GLIB_VERSION_2_34
+	g_type_init ();
+#endif
+
 	muxer = g_action_muxer_new ();
 
 	actions = g_action_group_list_actions (G_ACTION_GROUP (muxer));
@@ -62,6 +88,10 @@ TEST(GActionMuxerTest, AddAndRemove) {
 	GSimpleActionGroup *group3;
 	GActionMuxer *muxer;
 	gchar **actions;
+
+#if G_ENCODE_VERSION(GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION) <= GLIB_VERSION_2_34
+	g_type_init ();
+#endif
 
 	group1 = g_simple_action_group_new ();
 	g_simple_action_group_add_entries (group1,
@@ -153,6 +183,10 @@ TEST(GActionMuxerTest, ActionAttributes) {
 	const GVariantType *state_type[2];
 	GVariant *state_hint[2];
 	GVariant *state[2];
+
+#if G_ENCODE_VERSION(GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION) <= GLIB_VERSION_2_34
+	g_type_init ();
+#endif
 
 	group = g_simple_action_group_new ();
 	action = g_simple_action_new ("one", G_VARIANT_TYPE_STRING);

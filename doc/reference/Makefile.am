@@ -11,8 +11,7 @@ HFILE_GLOB = $(top_srcdir)/libmessaging-menu/*.h
 CFILE_GLOB = $(top_srcdir)/libmessaging-menu/*.c
 
 IGNORE_HFILES= \
-	indicator-messages-service.h \
-	gtupleaction.h
+	indicator-messages-service.h
 
 INCLUDES=-I$(top_srcdir)/libmessaging-menu $(GIO_CFLAGS)
 GTKDOC_LIBS=$(top_builddir)/libmessaging-menu/libmessaging-menu.la
