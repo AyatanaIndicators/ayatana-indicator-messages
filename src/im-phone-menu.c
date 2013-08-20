@@ -20,6 +20,7 @@
 #include "im-phone-menu.h"
 
 #include <string.h>
+#include <glib/gi18n.h>
 
 typedef ImMenuClass ImPhoneMenuClass;
 
