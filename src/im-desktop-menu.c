@@ -18,6 +18,7 @@
  */
 
 #include "im-desktop-menu.h"
+#include "indicator-desktop-shortcuts.h"
 #include <glib/gi18n.h>
 
 typedef ImMenuClass ImDesktopMenuClass;
@@ -66,21 +67,28 @@ im_desktop_menu_app_added (ImApplicationList *applist,
   }
 
   /* application actions */
-#if 0
   {
-    const gchar *const *actions;
+    const gchar * filename = NULL;
+    IndicatorDesktopShortcuts * shortcuts = NULL;
+    const gchar ** nicks = {NULL};
 
-    for (actions = g_desktop_app_info_list_actions (app_info); *actions; actions++)
-      {
-        gchar *label;
+    filename = g_desktop_app_info_get_filename(app_info);
+    if (filename != NULL)
+      shortcuts = indicator_desktop_shortcuts_new(filename, "Messaging Menu");
 
-        label = g_desktop_app_info_get_action_name (app_info, *actions);
-        g_menu_append (app_section, label, *actions);
+    if (shortcuts != NULL)
+      for (nicks = indicator_desktop_shortcuts_get_nicks(shortcuts); *nicks; nicks++)
+        {
+          gchar *label;
 
-        g_free (label);
-      }
+          label = indicator_desktop_shortcuts_nick_get_name (shortcuts, *nicks);
+          g_menu_append (app_section, label, *nicks);
+
+          g_free (label);
+        }
+
+    g_clear_object(&shortcuts);
   }
-#endif
 
   source_section = g_menu_new ();
 
