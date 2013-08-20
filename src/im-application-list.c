@@ -21,6 +21,7 @@
 
 #include "indicator-messages-application.h"
 #include "gactionmuxer.h"
+#include "indicator-desktop-shortcuts.h"
 
 #include <gio/gdesktopappinfo.h>
 #include <string.h>
@@ -73,6 +74,7 @@ typedef struct
   GActionMuxer *message_sub_actions;
   GCancellable *cancellable;
   gboolean draws_attention;
+  IndicatorDesktopShortcuts * shortcuts;
 } Application;
 
 
@@ -108,6 +110,8 @@ application_free (gpointer data)
       g_object_unref (app->message_actions);
       g_object_unref (app->message_sub_actions);
     }
+
+  g_clear_object (&app->shortcuts);
 
   g_slice_free (Application, app);
 }
@@ -617,6 +621,7 @@ im_application_list_add (ImApplicationList  *list,
   const gchar *id;
   GSimpleActionGroup *actions;
   GSimpleAction *launch_action;
+  IndicatorDesktopShortcuts * shortcuts = NULL;
 
   g_return_if_fail (IM_IS_APPLICATION_LIST (list));
   g_return_if_fail (desktop_id != NULL);
@@ -634,6 +639,12 @@ im_application_list_add (ImApplicationList  *list,
   id = g_app_info_get_id (G_APP_INFO (info));
   g_return_if_fail (id != NULL);
 
+  {
+    const char * filename = g_desktop_app_info_get_filename(info);
+    if (filename != NULL)
+      shortcuts = indicator_desktop_shortcuts_new(filename, "Messaging Menu");
+  }
+
   app = g_slice_new0 (Application);
   app->info = info;
   app->id = im_application_list_canonical_id (id);
@@ -643,6 +654,7 @@ im_application_list_add (ImApplicationList  *list,
   app->message_actions = g_simple_action_group_new ();
   app->message_sub_actions = g_action_muxer_new ();
   app->draws_attention = FALSE;
+  app->shortcuts = shortcuts;
 
   actions = g_simple_action_group_new ();
 
