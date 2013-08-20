@@ -609,7 +609,7 @@ im_application_list_activate_app_action (GSimpleAction *action,
 {
   Application *app = user_data;
 
-  g_desktop_app_info_launch_action (app->info, g_action_get_name (G_ACTION (action)), NULL);
+  indicator_desktop_shortcuts_nick_exec_with_context (app->shortcuts, g_action_get_name (G_ACTION (action)), NULL);
 }
 
 void
@@ -662,14 +662,14 @@ im_application_list_add (ImApplicationList  *list,
   g_signal_connect (launch_action, "activate", G_CALLBACK (im_application_list_activate_launch), app);
   g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (launch_action));
 
-  {
-    const gchar *const *app_actions;
+  if (app->shortcuts != NULL) {
+    const gchar ** nicks;
 
-    for (app_actions = g_desktop_app_info_list_actions (app->info); *app_actions; app_actions++)
+    for (nicks = indicator_desktop_shortcuts_get_nicks (app->shortcuts); *nicks; nicks++)
       {
         GSimpleAction *action;
 
-        action = g_simple_action_new (*app_actions, NULL);
+        action = g_simple_action_new (*nicks, NULL);
         g_signal_connect (action, "activate", G_CALLBACK (im_application_list_activate_app_action), app);
         g_action_map_add_action (G_ACTION_MAP (actions), G_ACTION (action));
 
