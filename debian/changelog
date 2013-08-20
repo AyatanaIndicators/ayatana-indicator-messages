@@ -1,6 +1,10 @@
 indicator-messages (13.10.1-0ubuntu1) UNRELEASED; urgency=low
 
+  [ Ted Gould ]
   * Bumping version to ensure we override all PPAs when this lands
+
+  [ Ubuntu daily release ]
+  * debian/*symbols: auto-update new symbols to released version
 
  -- Ted Gould <ted@ubuntu.com>  Mon, 19 Aug 2013 10:09:40 -0500
 
