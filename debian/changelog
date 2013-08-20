@@ -1,3 +1,9 @@
+indicator-messages (13.10.1+13.10.20130820.2-0ubuntu1) saucy; urgency=low
+
+  * Automatic snapshot from revision 354
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 20 Aug 2013 08:59:34 +0000
+
 indicator-messages (13.10.1+13.10.20130820-0ubuntu1) saucy; urgency=low
 
   [ Ted Gould ]
