@@ -34,7 +34,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "dbus-data.h"
 #include "gmenuutils.h"
 #include "gactionmuxer.h"
-#include "indicator-messages-application.h"
 
 struct _AppSectionPrivate
 {
@@ -43,14 +42,11 @@ struct _AppSectionPrivate
 
 	IndicatorDesktopShortcuts * ids;
 
-	GCancellable *app_proxy_cancellable;
-	IndicatorMessagesApplication *app_proxy;
-
 	GMenu *menu;
-	GMenu *source_menu;
+	GMenuModel *source_menu;
 
 	GSimpleActionGroup *static_shortcuts;
-	GSimpleActionGroup *source_actions;
+	GActionGroup *source_actions;
 	GActionMuxer *muxer;
 
 	gboolean draws_attention;
@@ -94,6 +90,19 @@ static void launch_action_change_state (GSimpleAction *action,
 					gpointer       user_data);
 static void app_section_set_app_info (AppSection *self,
 				      GDesktopAppInfo *appinfo);
+static gboolean any_action_draws_attention	(GActionGroup *group,
+						 const gchar *ignored_action);
+static void	action_added			(GActionGroup *group,
+						 const gchar *action_name,
+						 gpointer user_data);
+static void	action_state_changed		(GActionGroup *group,
+						 const gchar *action_name,
+						 GVariant *value,
+						 gpointer user_data);
+static void	action_removed			(GActionGroup *group,
+						 const gchar *action_name,
+						 gpointer user_data);
+static gboolean	action_draws_attention		(GVariant *state);
 static void	desktop_file_changed_cb		(GFileMonitor      *monitor,
 						 GFile             *file,
 						 GFile             *other_file,
@@ -161,7 +170,6 @@ static void
 app_section_init (AppSection *self)
 {
 	AppSectionPrivate *priv;
-	GMenuItem *item;
 
 	self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
 						  APP_SECTION_TYPE,
@@ -171,19 +179,10 @@ app_section_init (AppSection *self)
 	priv->appinfo = NULL;
 
 	priv->menu = g_menu_new ();
-
-	priv->source_menu = g_menu_new ();
-	item = g_menu_item_new_section (NULL, G_MENU_MODEL (priv->source_menu));
-	g_menu_item_set_attribute (item, "action-namespace", "s", "source");
-	g_menu_append_item (priv->menu, item);
-	g_object_unref (item);
-
 	priv->static_shortcuts = g_simple_action_group_new ();
-	priv->source_actions = g_simple_action_group_new ();
 
 	priv->muxer = g_action_muxer_new ();
 	g_action_muxer_insert (priv->muxer, NULL, G_ACTION_GROUP (priv->static_shortcuts));
-	g_action_muxer_insert (priv->muxer, "source", G_ACTION_GROUP (priv->source_actions));
 
 	priv->draws_attention = FALSE;
 
@@ -250,30 +249,32 @@ app_section_dispose (GObject *object)
 	AppSection * self = APP_SECTION(object);
 	AppSectionPrivate * priv = self->priv;
 
-	if (priv->app_proxy_cancellable) {
-		g_cancellable_cancel (priv->app_proxy_cancellable);
-		g_clear_object (&priv->app_proxy_cancellable);
-	}
-
 	if (priv->desktop_file_monitor) {
 		g_signal_handlers_disconnect_by_func (priv->desktop_file_monitor, desktop_file_changed_cb, self);
 		g_clear_object (&priv->desktop_file_monitor);
 	}
 
-	g_clear_object (&priv->app_proxy);
-
 	g_clear_object (&priv->menu);
-	g_clear_object (&priv->source_menu);
 	g_clear_object (&priv->static_shortcuts);
-	g_clear_object (&priv->source_actions);
 
 	if (priv->name_watch_id) {
 		g_bus_unwatch_name (priv->name_watch_id);
 		priv->name_watch_id = 0;
 	}
 
+	if (priv->source_actions) {
+		g_action_muxer_remove  (priv->muxer, "source");
+		g_object_disconnect (priv->source_actions,
+				     "any_signal::action-added", action_added, self,
+				     "any_signal::action-state-changed", action_state_changed, self,
+				     "any_signal::action-removed", action_removed, self,
+				     NULL);
+		g_clear_object (&priv->source_actions);
+	}
+
 	g_clear_object (&priv->muxer);
 
+	g_clear_object (&priv->source_menu);
 	g_clear_object (&priv->ids);
 	g_clear_object (&priv->appinfo);
 
@@ -313,12 +314,14 @@ nick_activate_cb (GSimpleAction *action,
 
 	g_return_if_fail(priv->ids != NULL);
 
-	if (!indicator_desktop_shortcuts_nick_exec_with_context(priv->ids, nick, NULL)) {
+	GAppLaunchContext *context = get_launch_context (g_variant_get_uint32 (param));
+
+	if (!indicator_desktop_shortcuts_nick_exec_with_context(priv->ids, nick, context)) {
 		g_warning("Unable to execute nick '%s' for desktop file '%s'",
 			  nick, g_desktop_app_info_get_filename (priv->appinfo));
 	}
 
-	return;
+	g_object_unref (context);
 }
 
 static void
@@ -411,9 +414,7 @@ app_section_update_menu (AppSection *self)
 	item = g_menu_item_new (g_app_info_get_name (G_APP_INFO (priv->appinfo)), "launch");
 	g_menu_item_set_attribute (item, "x-canonical-type", "s", "ImAppMenuItem");
 	iconstr = g_icon_to_string (g_app_info_get_icon (G_APP_INFO (priv->appinfo)));
-	if (iconstr != NULL) {
-		g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
-	}
+	g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
 	g_free (iconstr);
 
 	g_menu_append_item (priv->menu, item);
@@ -443,11 +444,6 @@ app_section_update_menu (AppSection *self)
 		g_object_unref (item);
 		g_free(name);
 	}
-
-	item = g_menu_item_new_section (NULL, G_MENU_MODEL (priv->source_menu));
-	g_menu_item_set_attribute (item, "action-namespace", "s", "source");
-	g_menu_append_item (priv->menu, item);
-	g_object_unref (item);
 
 	keyfile = g_file_new_for_path (g_desktop_app_info_get_filename (priv->appinfo));
 	g_file_load_contents_async (keyfile, NULL, keyfile_loaded, self);
@@ -587,8 +583,39 @@ app_section_get_draws_attention (AppSection *self)
 void
 app_section_clear_draws_attention (AppSection *self)
 {
-	self->priv->draws_attention = FALSE;
-	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
+	AppSectionPrivate * priv = self->priv;
+	gchar **action_names;
+	gchar **it;
+
+	if (priv->source_actions == NULL)
+		return;
+
+	action_names = g_action_group_list_actions (priv->source_actions);
+
+	for (it = action_names; *it; it++) {
+		GVariant *state;
+
+		state = g_action_group_get_action_state (priv->source_actions, *it);
+		if (!state)
+			continue;
+
+		/* clear draws-attention while preserving other state */
+		if (action_draws_attention (state)) {
+			guint32 count;
+			gint64 time;
+			const gchar *str;
+			GVariant *new_state;
+
+			g_variant_get (state, "(ux&sb)", &count, &time, &str, NULL);
+
+			new_state = g_variant_new ("(uxsb)", count, time, str, FALSE);
+			g_action_group_change_action_state (priv->source_actions, *it, new_state);
+		}
+
+		g_variant_unref (state);
+	}
+
+	g_strfreev (action_names);
 }
 
 static void
@@ -599,230 +626,6 @@ application_vanished (GDBusConnection *bus,
 	AppSection *self = user_data;
 
 	app_section_unset_object_path (self);
-}
-
-static void
-update_draws_attention (AppSection *self)
-{
-	AppSectionPrivate *priv = self->priv;
-	gchar **actions;
-	gchar **it;
-	gboolean draws_attention = FALSE;
-
-	actions = g_action_group_list_actions (G_ACTION_GROUP (priv->source_actions));
-
-	for (it = actions; *it; it++) {
-		GVariant *state;
-
-		state = g_action_group_get_action_state (G_ACTION_GROUP (priv->source_actions), *it);
-		if (state) {
-			gboolean b;
-			g_variant_get (state, "(uxsb)", NULL, NULL, NULL, &b);
-			draws_attention = b || draws_attention;
-			g_variant_unref (state);
-		}
-
-		if (draws_attention)
-			break;
-	}
-
-	if (draws_attention != priv->draws_attention) {
-		priv->draws_attention = draws_attention;
-		g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
-	}
-
-	g_strfreev (actions);
-}
-
-static void
-remove_source (AppSection  *self,
-	       const gchar *id)
-{
-	AppSectionPrivate *priv = self->priv;
-	guint n_items;
-	guint i;
-
-	n_items = g_menu_model_get_n_items (G_MENU_MODEL (priv->source_menu));
-	for (i = 0; i < n_items; i++) {
-		gchar *action;
-		gboolean found = FALSE;
-
-		if (g_menu_model_get_item_attribute (G_MENU_MODEL (priv->source_menu), i,
-						     G_MENU_ATTRIBUTE_ACTION, "s", &action)) {
-			found = g_str_equal (action, id);
-			g_free (action);
-		}
-
-		if (found) {
-			g_menu_remove (priv->source_menu, i);
-			break;
-		}
-	}
-
-	g_simple_action_group_remove (priv->source_actions, id);
-	update_draws_attention (self);
-}
-
-static void
-source_action_activated (GSimpleAction *action,
-			 GVariant      *parameter,
-			 gpointer       user_data)
-{
-	AppSection *self = APP_SECTION (user_data);
-	AppSectionPrivate *priv = APP_SECTION (user_data)->priv;
-
-	g_return_if_fail (priv->app_proxy != NULL);
-
-	indicator_messages_application_call_activate_source (priv->app_proxy,
-							     g_action_get_name (G_ACTION (action)),
-							     priv->app_proxy_cancellable,
-							     NULL, NULL);
-
-	remove_source (self, g_action_get_name (G_ACTION (action)));
-}
-
-static void
-sources_listed (GObject      *source_object,
-		GAsyncResult *result,
-		gpointer      user_data)
-{
-	AppSection *self = user_data;
-	AppSectionPrivate *priv = self->priv;
-	GVariant *sources = NULL;
-	GError *error = NULL;
-	GVariantIter iter;
-	const gchar *id;
-	const gchar *label;
-	const gchar *iconstr;
-	guint32 count;
-	gint64 time;
-	const gchar *string;
-	gboolean draws_attention;
-
-	if (!indicator_messages_application_call_list_sources_finish (INDICATOR_MESSAGES_APPLICATION (source_object),
-								      &sources, result, &error))
-	{
-		g_warning ("could not fetch the list of sources: %s", error->message);
-		g_error_free (error);
-		return;
-	}
-
-	g_menu_clear (priv->source_menu);
-	g_simple_action_group_clear (priv->source_actions);
-	priv->draws_attention = FALSE;
-
-	g_variant_iter_init (&iter, sources);
-	while (g_variant_iter_next (&iter, "(&s&s&sux&sb)", &id, &label, &iconstr,
-				    &count, &time, &string, &draws_attention))
-	{
-		GVariant *state;
-		GSimpleAction *action;
-		GMenuItem *item;
-
-		state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
-		action = g_simple_action_new_stateful (id, NULL, state);
-		g_signal_connect (action, "activate", G_CALLBACK (source_action_activated), self);
-		g_simple_action_group_insert (priv->source_actions, G_ACTION (action));
-
-		item = g_menu_item_new (label, id);
-		g_menu_item_set_attribute (item, "x-canonical-type", "s", "ImSourceMenuItem");
-		g_menu_append_item (priv->source_menu, item);
-
-		priv->draws_attention = priv->draws_attention || draws_attention;
-
-		g_object_unref (item);
-		g_object_unref (action);
-	}
-
-	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
-
-	g_variant_unref (sources);
-}
-
-static void
-source_added (IndicatorMessagesApplication  *app,
-	      const gchar		    *id,
-	      const gchar		    *label,
-	      const gchar		    *iconstr,
-	      guint			     count,
-	      gint64			     time,
-	      const gchar		    *string,
-	      gboolean			     draws_attention,
-	      gpointer			     user_data)
-{
-	AppSection *self = user_data;
-	AppSectionPrivate *priv = self->priv;
-	GVariant *state;
-	GSimpleAction *action;
-
-	/* TODO put label and icon into the action as well */
-
-	state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
-	action = g_simple_action_new_stateful (id, NULL, state);
-
-	g_simple_action_group_insert (priv->source_actions, G_ACTION (action));
-
-	if (draws_attention && !priv->draws_attention) {
-		priv->draws_attention = TRUE;
-		g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
-	}
-
-	g_object_unref (action);
-}
-static void
-source_changed (IndicatorMessagesApplication  *app,
-		const gchar		       *id,
-		const gchar		       *label,
-		const gchar		       *iconstr,
-		guint				count,
-		gint64				time,
-		const gchar		       *string,
-		gboolean			draws_attention,
-		gpointer			user_data)
-{
-	AppSection *self = user_data;
-	AppSectionPrivate *priv = self->priv;
-	GVariant *state;
-
-	/* TODO put label and icon into the action as well */
-
-	state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
-	g_action_group_change_action_state (G_ACTION_GROUP (priv->source_actions), id, state);
-
-	update_draws_attention (self);
-}
-
-static void
-source_removed (IndicatorMessagesApplication *app,
-		const gchar		     *id,
-		gpointer		      user_data)
-{
-	AppSection *self = user_data;
-
-	remove_source (self, id);
-}
-
-static void
-app_proxy_created (GObject      *source_object,
-		   GAsyncResult *result,
-		   gpointer      user_data)
-{
-	AppSectionPrivate *priv = APP_SECTION (user_data)->priv;
-	GError *error = NULL;
-
-	priv->app_proxy = indicator_messages_application_proxy_new_finish (result, &error);
-	if (!priv->app_proxy) {
-		g_warning ("could not create application proxy: %s", error->message);
-		g_error_free (error);
-		return;
-	}
-
-	indicator_messages_application_call_list_sources (priv->app_proxy, priv->app_proxy_cancellable,
-							  sources_listed, user_data);
-
-	g_signal_connect (priv->app_proxy, "source-added", G_CALLBACK (source_added), user_data);
-	g_signal_connect (priv->app_proxy, "source-changed", G_CALLBACK (source_changed), user_data);
-	g_signal_connect (priv->app_proxy, "source-removed", G_CALLBACK (source_removed), user_data);
 }
 
 /*
@@ -843,20 +646,27 @@ app_section_set_object_path (AppSection *self,
 			     const gchar *object_path)
 {
 	AppSectionPrivate *priv = self->priv;
+	GMenuItem *item;
 
 	g_object_freeze_notify (G_OBJECT (self));
 	app_section_unset_object_path (self);
 
-	priv->app_proxy_cancellable = g_cancellable_new ();
-	indicator_messages_application_proxy_new (bus,
-						  G_DBUS_PROXY_FLAGS_NONE,
-						  bus_name,
-						  object_path,
-						  priv->app_proxy_cancellable,
-						  app_proxy_created,
-						  self);
+	priv->source_actions = G_ACTION_GROUP (g_dbus_action_group_get (bus, bus_name, object_path));
+	g_action_muxer_insert (priv->muxer, "source", priv->source_actions);
 
-	priv->draws_attention = FALSE;
+	priv->draws_attention = any_action_draws_attention (priv->source_actions, NULL);
+	g_object_connect (priv->source_actions,
+			  "signal::action-added", action_added, self,
+			  "signal::action-state-changed", action_state_changed, self,
+			  "signal::action-removed", action_removed, self,
+			  NULL);
+
+	priv->source_menu = G_MENU_MODEL (g_dbus_menu_model_get (bus, bus_name, object_path));
+
+	item = g_menu_item_new_section (NULL, priv->source_menu);
+	g_menu_item_set_attribute (item, "action-namespace", "s", "source");
+	g_menu_append_item (priv->menu, item);
+	g_object_unref (item);
 
 	priv->name_watch_id = g_bus_watch_name_on_connection (bus, bus_name, 0,
 							      NULL, application_vanished,
@@ -884,19 +694,26 @@ app_section_unset_object_path (AppSection *self)
 {
 	AppSectionPrivate *priv = self->priv;
 
-	if (priv->app_proxy_cancellable) {
-		g_cancellable_cancel (priv->app_proxy_cancellable);
-		g_clear_object (&priv->app_proxy_cancellable);
-	}
-	g_clear_object (&priv->app_proxy);
-
 	if (priv->name_watch_id) {
 		g_bus_unwatch_name (priv->name_watch_id);
 		priv->name_watch_id = 0;
 	}
 
-	g_simple_action_group_clear (priv->source_actions);
-	g_menu_clear (priv->source_menu);
+	if (priv->source_actions) {
+		g_object_disconnect (priv->source_actions,
+				     "any_signal::action-added", action_added, self,
+				     "any_signal::action-state-changed", action_state_changed, self,
+				     "any_signal::action-removed", action_removed, self,
+				     NULL);
+		g_clear_object (&priv->source_actions);
+	}
+
+	if (priv->source_menu) {
+		/* the last menu item points is linked to the app's menumodel */
+		gint n_items = g_menu_model_get_n_items (G_MENU_MODEL (priv->menu));
+		g_menu_remove (priv->menu, n_items -1);
+		g_clear_object (&priv->source_menu);
+	}
 
 	priv->draws_attention = FALSE;
 	g_clear_pointer (&priv->chat_status, g_free);
@@ -908,6 +725,85 @@ app_section_unset_object_path (AppSection *self)
 
 	g_action_group_change_action_state (G_ACTION_GROUP (priv->static_shortcuts),
 					    "launch", g_variant_new_boolean (FALSE));
+}
+
+static gboolean
+action_draws_attention (GVariant *state)
+{
+	gboolean attention;
+
+	if (state && g_variant_is_of_type (state, G_VARIANT_TYPE ("(uxsb)")))
+		g_variant_get_child (state, 3, "b", &attention);
+	else
+		attention = FALSE;
+
+	return attention;
+}
+
+static gboolean
+any_action_draws_attention (GActionGroup *group,
+			    const gchar *ignored_action)
+{
+	gchar **actions;
+	gchar **it;
+	gboolean attention = FALSE;
+
+	actions = g_action_group_list_actions (group);
+
+	for (it = actions; *it && !attention; it++) {
+		GVariant *state;
+
+		if (ignored_action && g_str_equal (ignored_action, *it))
+			continue;
+
+		state = g_action_group_get_action_state (group, *it);
+		if (state) {
+			attention = action_draws_attention (state);
+			g_variant_unref (state);
+		}
+	}
+
+	g_strfreev (actions);
+	return attention;
+}
+
+static void
+action_added (GActionGroup *group,
+	      const gchar *action_name,
+	      gpointer user_data)
+{
+	AppSection *self = user_data;
+	GVariant *state;
+
+	state = g_action_group_get_action_state (group, action_name);
+	if (state) {
+		self->priv->draws_attention |= action_draws_attention (state);
+		g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
+		g_variant_unref (state);
+	}
+}
+
+static void
+action_state_changed (GActionGroup *group,
+		      const gchar *action_name,
+		      GVariant *value,
+		      gpointer user_data)
+{
+	AppSection *self = user_data;
+
+	self->priv->draws_attention = any_action_draws_attention (group, NULL);
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
+}
+
+static void
+action_removed (GActionGroup *group,
+		const gchar *action_name,
+		gpointer user_data)
+{
+	AppSection *self = user_data;
+
+	self->priv->draws_attention = any_action_draws_attention (group, action_name);
+	g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_DRAWS_ATTENTION]);
 }
 
 gboolean

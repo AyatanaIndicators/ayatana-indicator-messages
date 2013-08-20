@@ -483,11 +483,3 @@ g_action_muxer_remove (GActionMuxer *muxer,
     g_clear_object (&muxer->global_actions);
 }
 
-GActionGroup *
-g_action_muxer_get_group (GActionMuxer *muxer,
-                          const gchar  *prefix)
-{
-  g_return_val_if_fail (G_IS_ACTION_MUXER (muxer), NULL);
-
-  return prefix ? g_hash_table_lookup (muxer->groups, prefix) : muxer->global_actions;
-}

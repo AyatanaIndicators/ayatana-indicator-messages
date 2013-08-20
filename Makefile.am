@@ -1,6 +1,5 @@
 
 SUBDIRS = \
-	common \
 	src \
 	libmessaging-menu \
 	data \

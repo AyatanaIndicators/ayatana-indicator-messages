@@ -61,12 +61,6 @@ GTK_DOC_CHECK([1.18], [--flavour no-tmpl])
 
 GOBJECT_INTROSPECTION_CHECK([$INTROSPECTION_REQUIRED_VERSION])
 
-AC_ARG_WITH([indicator-dir],
-	    [AS_HELP_STRING([--with-indicator-dir=DIR], [Indicator directory [default=$datadir/unity/indicators]])],
-	    [],
-	    [with_indicator_dir=$datadir/unity/indicators])
-AC_SUBST([INDICATOR_DIR], [$with_indicator_dir])
-
 ###########################
 # gcov coverage reporting
 ###########################
@@ -106,20 +100,33 @@ fi
 AM_CONDITIONAL([BUILD_TESTS],[test "x$enable_tests" = "xyes"])
 
 ###########################
-# Vala API Generation
+# Check to see if we're local
 ###########################
 
-AC_ARG_ENABLE([vala],
-        AC_HELP_STRING([--disable-vala], [Disable vala]),
-        [enable_vala=$enableval], [enable_vala=yes])
+with_localinstall="no"
+AC_ARG_ENABLE(localinstall, AS_HELP_STRING([--enable-localinstall], [install all of the files localy instead of system directories (for distcheck)]), with_localinstall=$enableval, with_localinstall=no)
 
-AS_IF([test "x$enable_vala" != "xno"],[
-        AM_COND_IF([HAVE_INTROSPECTION],,[
-                AC_MSG_ERROR([Vala bindings require introspection support, please --enable-introspection])
-        ])
-AC_PATH_PROG([VALA_API_GEN], [vapigen])
-])
-AM_CONDITIONAL([HAVE_VALA], [test -n "$VALA_API_GEN"])
+###########################
+# Indicator Info
+###########################
+
+if test "x$with_localinstall" = "xyes"; then
+	INDICATORDIR="${libdir}/indicators/2/"
+else
+	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator3-0.4`
+fi
+AC_SUBST(INDICATORDIR)
+
+###########################
+# DBus Service Info
+###########################
+
+if test "x$with_localinstall" = "xyes"; then
+	DBUSSERVICEDIR="${datadir}/dbus-1/services/"
+else
+	DBUSSERVICEDIR=`$PKG_CONFIG --variable=session_bus_services_dir dbus-1`
+fi
+AC_SUBST(DBUSSERVICEDIR)
 
 ##############################
 # Custom Junk
@@ -155,7 +162,6 @@ AM_GLIB_GNU_GETTEXT
 AC_OUTPUT([
 Makefile
 src/Makefile
-common/Makefile
 data/Makefile
 data/icons/Makefile
 data/icons/16x16/Makefile
@@ -196,6 +202,5 @@ Messaging Indicator Configuration:
 	tests:         $enable_tests
 	gcov:          $use_gcov
 	introspecion:  $enable_introspection
-	Vala bindings: $enable_vala
 	documentation: $enable_gtk_doc
 ])
