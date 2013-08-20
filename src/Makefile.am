@@ -21,7 +21,9 @@ indicator_messages_service_SOURCES = \
 	im-desktop-menu.c \
 	im-desktop-menu.h \
 	im-application-list.c \
-	im-application-list.h
+	im-application-list.h \
+	indicator-desktop-shortcuts.c \
+	indicator-desktop-shortcuts.h
 
 indicator_messages_service_CFLAGS = \
 	$(APPLET_CFLAGS) \
