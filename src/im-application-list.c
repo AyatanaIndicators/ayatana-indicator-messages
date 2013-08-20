@@ -126,22 +126,45 @@ application_draws_attention (gpointer key,
 static void
 im_application_list_update_draws_attention (ImApplicationList *list)
 {
-  const gchar *icon_name;
+  const gchar *base_icon_name;
   const gchar *accessible_name;
+  const gchar *icon_name;
+  GIcon * icon;
+  GVariantBuilder builder;
   GVariant *state;
-  GActionGroup *main_actions;
 
   if (g_hash_table_find (list->applications, application_draws_attention, NULL)) {
-    icon_name = "indicator-messages-new";
+    base_icon_name = "indicator-messages-new-%s";
     accessible_name = _("New Messages");
   } else {
-    icon_name = "indicator-messages";
+    base_icon_name = "indicator-messages-%s";
     accessible_name = _("Messages");
   }
 
-  main_actions = g_action_muxer_get_group (list->muxer, NULL);
-  state = g_variant_new ("(sssb)", "", icon_name, accessible_name, TRUE);
-  g_action_group_change_action_state (main_actions, "messages", state);
+  state = g_action_group_get_action_state(G_ACTION_GROUP(list->globalactions), "status");
+  icon_name = g_strdup_printf(base_icon_name, g_variant_get_string(state, NULL));
+  g_variant_unref(state);
+
+  g_variant_builder_init(&builder, G_VARIANT_TYPE_DICTIONARY);
+
+  g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
+  g_variant_builder_add_value(&builder, g_variant_new_string("icon"));
+  icon = g_themed_icon_new_with_default_fallbacks(icon_name);
+  g_variant_builder_add_value(&builder, g_variant_new_variant(g_icon_serialize(icon)));
+  g_object_unref(icon);
+  g_variant_builder_close(&builder);
+
+  g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
+  g_variant_builder_add_value(&builder, g_variant_new_string("accessible-desc"));
+  g_variant_builder_add_value(&builder, g_variant_new_variant(g_variant_new_string(accessible_name)));
+  g_variant_builder_close(&builder);
+
+  g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
+  g_variant_builder_add_value(&builder, g_variant_new_string("visible"));
+  g_variant_builder_add_value(&builder, g_variant_new_variant(g_variant_new_boolean(TRUE)));
+  g_variant_builder_close(&builder);
+
+  g_action_group_change_action_state (G_ACTION_GROUP(list->globalactions), "messages", g_variant_builder_end(&builder));
 }
 
 /* Check a source action to see if it draws */
@@ -496,7 +519,6 @@ static void
 im_application_list_init (ImApplicationList *list)
 {
   const GActionEntry action_entries[] = {
-    { "messages", NULL, NULL, "('', 'indicator-messages', 'Messages', true)", NULL },
     { "remove-all", im_application_list_remove_all }
   };
 
@@ -504,6 +526,10 @@ im_application_list_init (ImApplicationList *list)
   list->app_status = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
   list->globalactions = g_simple_action_group_new ();
+  {
+    GSimpleAction * messages = g_simple_action_new_stateful("messages", G_VARIANT_TYPE("a{sv}"), g_variant_new_array(G_VARIANT_TYPE("{sv}"), NULL, 0));
+    g_simple_action_group_insert(list->globalactions, G_ACTION(messages));
+  }
   g_simple_action_group_add_entries (list->globalactions, action_entries, G_N_ELEMENTS (action_entries), list);
 
   list->statusaction = g_simple_action_new_stateful("status", G_VARIANT_TYPE_STRING, g_variant_new_string("offline"));
@@ -513,6 +539,7 @@ im_application_list_init (ImApplicationList *list)
   list->muxer = g_action_muxer_new ();
   g_action_muxer_insert (list->muxer, NULL, G_ACTION_GROUP (list->globalactions));
 
+  im_application_list_update_draws_attention (list);
 }
 
 ImApplicationList *
@@ -1101,6 +1128,8 @@ status_activated (GSimpleAction * action, GVariant * param, gpointer user_data)
 
   g_signal_emit (list, signals[STATUS_SET], 0, status);
 
+  im_application_list_update_draws_attention(list);
+
   return;
 }
 
@@ -1145,6 +1174,8 @@ im_application_list_set_status (ImApplicationList * list, const gchar * id, cons
 	g_list_free(statuses);
 
 	g_simple_action_set_state(list->statusaction, g_variant_new_string(status_ids[final_status]));
+
+	im_application_list_update_draws_attention(list);
 
 	return;
 }
