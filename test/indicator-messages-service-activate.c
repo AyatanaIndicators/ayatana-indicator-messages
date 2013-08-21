@@ -28,6 +28,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 int
 main (int argc, char ** argv)
 {
+#if G_ENCODE_VERSION(GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION) <= GLIB_VERSION_2_34
+	g_type_init();
+#endif
+
 	guint returnval = 0;
 	GError * error = NULL;
 
