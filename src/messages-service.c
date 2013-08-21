@@ -44,6 +44,12 @@ static IndicatorMessagesService *messages_service;
 static GHashTable *menus;
 static GSettings *settings;
 
+enum {
+	DBUS_ERROR_BAD_DESKTOP_FILE,
+};
+
+G_DEFINE_QUARK(indicator_messages_dbus_error, dbus_error);
+
 static void
 register_application (IndicatorMessagesService *service,
 		      GDBusMethodInvocation *invocation,
@@ -54,7 +60,10 @@ register_application (IndicatorMessagesService *service,
 	GDBusConnection *bus;
 	const gchar *sender;
 
-	im_application_list_add (applications, desktop_id);
+	if (!im_application_list_add (applications, desktop_id)) {
+		g_dbus_method_invocation_return_error(invocation, dbus_error_quark(), DBUS_ERROR_BAD_DESKTOP_FILE, "Unable to find or parse desktop file for application '%s'", desktop_id);
+		return;
+	}
 
 	bus = g_dbus_interface_skeleton_get_connection (G_DBUS_INTERFACE_SKELETON (service));
 	sender = g_dbus_method_invocation_get_sender (invocation);
@@ -125,6 +134,9 @@ on_bus_acquired (GDBusConnection *bus,
 	GHashTableIter it;
 	const gchar *profile;
 	ImMenu *menu;
+
+	/* Register some errors */
+	g_dbus_error_register_error (dbus_error_quark(), DBUS_ERROR_BAD_DESKTOP_FILE, "BadDesktopFile");
 
 	g_dbus_connection_export_action_group (bus, INDICATOR_MESSAGES_DBUS_OBJECT,
 					       im_application_list_get_action_group (applications),

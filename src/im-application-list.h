@@ -36,7 +36,7 @@ GType                   im_application_list_get_type            (void);
 
 ImApplicationList *     im_application_list_new                 (void);
 
-void                    im_application_list_add                 (ImApplicationList *list,
+gboolean                im_application_list_add                 (ImApplicationList *list,
                                                                  const gchar       *desktop_id);
 
 void                    im_application_list_remove              (ImApplicationList *list,
