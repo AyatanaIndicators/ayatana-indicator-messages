@@ -97,7 +97,7 @@ im_desktop_menu_app_added (ImApplicationList *applist,
   g_menu_append_section (section, NULL, G_MENU_MODEL (source_section));
 
   namespace = g_strconcat ("indicator.", app_id, NULL);
-  im_menu_insert_section (IM_MENU (menu), -1, namespace, G_MENU_MODEL (section));
+  im_menu_insert_section (IM_MENU (menu), g_app_info_get_name(G_APP_INFO(app_info)), namespace, G_MENU_MODEL (section));
   g_hash_table_insert (menu->source_sections, g_strdup (app_id), source_section);
 
   g_free (namespace);

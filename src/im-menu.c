@@ -164,10 +164,11 @@ im_menu_append_section (ImMenu     *menu,
 
 void
 im_menu_insert_section (ImMenu      *menu,
-                        gint         position,
+                        const gchar *sort_string,
                         const gchar *namespace,
                         GMenuModel  *section)
 {
+  int position;
   ImMenuPrivate *priv;
   GMenuItem *item;
 
@@ -176,11 +177,17 @@ im_menu_insert_section (ImMenu      *menu,
 
   priv = im_menu_get_instance_private (menu);
 
-  /* count from the back if position is < 0 */
-  if (position < 0)
-    position = g_menu_model_get_n_items (G_MENU_MODEL (priv->menu)) + position;
+  for (position = 1; position < g_menu_model_get_n_items(G_MENU_MODEL (priv->menu)) - 1; position++)
+    {
+      gchar * item_sort = NULL;
+      if (g_menu_model_get_item_attribute(G_MENU_MODEL(priv->menu), position, "x-messaging-menu-sort-string", "s", &item_sort))
+        if (g_utf8_collate(sort_string, item_sort) < 0)
+          break;
+      g_free(item_sort);
+    }
 
   item = g_menu_item_new_section (NULL, section);
+  g_menu_item_set_attribute (item, "x-messaging-menu-sort-string", "s", sort_string);
 
   if (namespace)
     g_menu_item_set_attribute (item, "action-namespace", "s", namespace);
