@@ -190,7 +190,7 @@ TEST(GActionMuxerTest, ActionAttributes) {
 
 	group = g_simple_action_group_new ();
 	action = g_simple_action_new ("one", G_VARIANT_TYPE_STRING);
-	g_simple_action_group_insert (group, G_ACTION (action));
+	g_action_map_add_action (G_ACTION_MAP(group), G_ACTION (action));
 
 	muxer = g_action_muxer_new ();
 	g_action_muxer_insert (muxer, "first", G_ACTION_GROUP (group));
@@ -275,7 +275,7 @@ TEST(GActionMuxerTest, Signals) {
 	group = g_simple_action_group_new ();
 
 	action = g_simple_action_new ("one", G_VARIANT_TYPE_STRING);
-	g_simple_action_group_insert (group, G_ACTION (action));
+	g_action_map_add_action (G_ACTION_MAP(group), G_ACTION (action));
 	g_object_unref (action);
 
 	muxer = g_action_muxer_new ();
@@ -300,7 +300,7 @@ TEST(GActionMuxerTest, Signals) {
 	closure.name = "first.two";
 	action = g_simple_action_new_stateful ("two", G_VARIANT_TYPE_STRING,
 					       g_variant_new_string ("on"));
-	g_simple_action_group_insert (group, G_ACTION (action));
+	g_action_map_add_action (G_ACTION_MAP(group), G_ACTION (action));
 	EXPECT_TRUE (closure.signal_ran);
 
 	/* disable the action */
@@ -361,14 +361,14 @@ TEST(GActionMuxerTest, ActivateAction) {
 	group = g_simple_action_group_new ();
 
 	action = g_simple_action_new ("one", G_VARIANT_TYPE_STRING);
-	g_simple_action_group_insert (group, G_ACTION (action));
+	g_action_map_add_action (G_ACTION_MAP(group), G_ACTION (action));
 	g_signal_connect (action, "activate",
 			  G_CALLBACK (action_activated), (gpointer) &signal_ran);
 	g_object_unref (action);
 
 	action = g_simple_action_new_stateful ("two", NULL,
 					       g_variant_new_string ("on"));
-	g_simple_action_group_insert (group, G_ACTION (action));
+	g_action_map_add_action (G_ACTION_MAP(group), G_ACTION (action));
 	g_signal_connect (action, "change-state",
 			  G_CALLBACK (action_change_state), (gpointer) &signal_ran);
 	g_object_unref (action);

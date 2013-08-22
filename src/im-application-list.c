@@ -575,13 +575,13 @@ im_application_list_init (ImApplicationList *list)
   list->globalactions = g_simple_action_group_new ();
   {
     GSimpleAction * messages = g_simple_action_new_stateful("messages", G_VARIANT_TYPE("a{sv}"), g_variant_new_array(G_VARIANT_TYPE("{sv}"), NULL, 0));
-    g_simple_action_group_insert(list->globalactions, G_ACTION(messages));
+    g_action_map_add_action(G_ACTION_MAP(list->globalactions), G_ACTION(messages));
   }
   g_simple_action_group_add_entries (list->globalactions, action_entries, G_N_ELEMENTS (action_entries), list);
 
   list->statusaction = g_simple_action_new_stateful("status", G_VARIANT_TYPE_STRING, g_variant_new_string("offline"));
   g_signal_connect(list->statusaction, "activate", G_CALLBACK(status_activated), list);
-  g_simple_action_group_insert(list->globalactions, G_ACTION(list->statusaction));
+  g_action_map_add_action(G_ACTION_MAP(list->globalactions), G_ACTION(list->statusaction));
 
   list->muxer = g_action_muxer_new ();
   g_action_muxer_insert (list->muxer, NULL, G_ACTION_GROUP (list->globalactions));
@@ -780,7 +780,7 @@ im_application_list_source_added (Application *app,
   action = g_simple_action_new_stateful (id, G_VARIANT_TYPE_BOOLEAN, state);
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_source_activated), app);
 
-  g_simple_action_group_insert (app->source_actions, G_ACTION (action));
+  g_action_map_add_action (G_ACTION_MAP(app->source_actions), G_ACTION (action));
 
   g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, iconstr);
 
@@ -906,7 +906,7 @@ im_application_list_message_added (Application *app,
   action = g_simple_action_new (id, G_VARIANT_TYPE_BOOLEAN);
   g_object_set_qdata(G_OBJECT(action), message_action_draws_attention_quark(), GINT_TO_POINTER(draws_attention));
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_message_activated), app);
-  g_simple_action_group_insert (app->message_actions, G_ACTION (action));
+  g_action_map_add_action (G_ACTION_MAP(app->message_actions), G_ACTION (action));
 
   {
     GVariant *entry;
@@ -939,7 +939,7 @@ im_application_list_message_added (Application *app,
         action = g_simple_action_new (name, type ? G_VARIANT_TYPE (type) : NULL);
         g_object_set_data_full (G_OBJECT (action), "message", g_strdup (id), g_free);
         g_signal_connect (action, "activate", G_CALLBACK (im_application_list_sub_message_activated), app);
-        g_simple_action_group_insert (action_group, G_ACTION (action));
+        g_action_map_add_action (G_ACTION_MAP(action_group), G_ACTION (action));
 
         g_variant_builder_init (&dict_builder, G_VARIANT_TYPE ("a{sv}"));
 
