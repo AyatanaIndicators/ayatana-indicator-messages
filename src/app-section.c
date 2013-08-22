@@ -384,7 +384,7 @@ g_simple_action_group_clear (GSimpleActionGroup *group)
 
 	actions = g_action_group_list_actions (G_ACTION_GROUP (group));
 	for (it = actions; *it; it++)
-		g_simple_action_group_remove (group, *it);
+		g_action_map_remove_action (G_ACTION_MAP(group), *it);
 
 	g_strfreev (actions);
 }
@@ -406,7 +406,7 @@ app_section_update_menu (AppSection *self)
 	launch = g_simple_action_new_stateful ("launch", G_VARIANT_TYPE_UINT32, g_variant_new_boolean (is_running));
 	g_signal_connect (launch, "activate", G_CALLBACK (activate_cb), self);
 	g_signal_connect (launch, "change-state", G_CALLBACK (launch_action_change_state), self);
-	g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (launch));
+	g_action_map_add_action (G_ACTION_MAP(priv->static_shortcuts), G_ACTION (launch));
 
 	item = g_menu_item_new (g_app_info_get_name (G_APP_INFO (priv->appinfo)), "launch");
 	g_menu_item_set_attribute (item, "x-canonical-type", "s", "ImAppMenuItem");
@@ -432,7 +432,7 @@ app_section_update_menu (AppSection *self)
 
 		action = g_simple_action_new (nicks[i], G_VARIANT_TYPE_UINT32);
 		g_signal_connect(action, "activate", G_CALLBACK (nick_activate_cb), self);
-		g_simple_action_group_insert (priv->static_shortcuts, G_ACTION (action));
+		g_action_map_add_action (G_ACTION_MAP(priv->static_shortcuts), G_ACTION (action));
 		g_object_unref (action);
 
 		item = g_menu_item_new (name, nicks[i]);
@@ -659,7 +659,7 @@ remove_source (AppSection  *self,
 		}
 	}
 
-	g_simple_action_group_remove (priv->source_actions, id);
+	g_action_map_remove_action (G_ACTION_MAP(priv->source_actions), id);
 	update_draws_attention (self);
 }
 
@@ -722,7 +722,7 @@ sources_listed (GObject      *source_object,
 		state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
 		action = g_simple_action_new_stateful (id, NULL, state);
 		g_signal_connect (action, "activate", G_CALLBACK (source_action_activated), self);
-		g_simple_action_group_insert (priv->source_actions, G_ACTION (action));
+		g_action_map_add_action (G_ACTION_MAP(priv->source_actions), G_ACTION (action));
 
 		item = g_menu_item_new (label, id);
 		g_menu_item_set_attribute (item, "x-canonical-type", "s", "ImSourceMenuItem");
@@ -760,7 +760,7 @@ source_added (IndicatorMessagesApplication  *app,
 	state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
 	action = g_simple_action_new_stateful (id, NULL, state);
 
-	g_simple_action_group_insert (priv->source_actions, G_ACTION (action));
+	g_action_map_add_action (G_ACTION_MAP(priv->source_actions), G_ACTION (action));
 
 	if (draws_attention && !priv->draws_attention) {
 		priv->draws_attention = TRUE;
