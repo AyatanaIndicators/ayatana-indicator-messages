@@ -33,7 +33,7 @@ indicator_messages_service_CFLAGS = \
 	-Wl,-Bsymbolic-functions \
 	-Wl,-z,defs \
 	-Wl,--as-needed \
-	-Werror \
+	-Werror -Wno-error=deprecated-declarations \
 	-DG_LOG_DOMAIN=\"Indicator-Messages\"
 
 indicator_messages_service_LDADD = \
