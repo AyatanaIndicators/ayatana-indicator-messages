@@ -1,3 +1,25 @@
+indicator-messages (13.10.1+13.10.20130822.5-0ubuntu1) saucy; urgency=low
+
+  [ Pete Woods ]
+  * Re-merge the consolidate branch, but with additional bugfix.
+
+  [ Ted Gould ]
+  * Re-merge the consolidate branch, but with additional bugfix.
+  * Add a DBus error for list_add().
+  * Migrate away from deprecated function. (LP: #1215180)
+
+  [ Sebastien Bacher ]
+  * don't error out on deprecated declarations.
+
+  [ Lars Uebernickel ]
+  * Don't use deprecated g_simple_action_group_{lookup,insert}. (LP:
+    #1215180)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 360
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 22 Aug 2013 20:29:12 +0000
+
 indicator-messages (13.10.1+13.10.20130820.2-0ubuntu1) saucy; urgency=low
 
   * Automatic snapshot from revision 354
