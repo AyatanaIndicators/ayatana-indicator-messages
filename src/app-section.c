@@ -384,7 +384,7 @@ g_simple_action_group_clear (GSimpleActionGroup *group)
 
 	actions = g_action_group_list_actions (G_ACTION_GROUP (group));
 	for (it = actions; *it; it++)
-		g_simple_action_group_remove (group, *it);
+		g_action_map_remove_action (G_ACTION_MAP(group), *it);
 
 	g_strfreev (actions);
 }
@@ -659,7 +659,7 @@ remove_source (AppSection  *self,
 		}
 	}
 
-	g_simple_action_group_remove (priv->source_actions, id);
+	g_action_map_remove_action (G_ACTION_MAP(priv->source_actions), id);
 	update_draws_attention (self);
 }
 

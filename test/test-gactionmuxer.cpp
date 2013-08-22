@@ -317,7 +317,7 @@ TEST(GActionMuxerTest, Signals) {
 	/* remove the first action */
 	closure.signal_ran = FALSE;
 	closure.name = "first.one";
-	g_simple_action_group_remove (group, "one");
+	g_action_map_remove_action (G_ACTION_MAP(group), "one");
 	EXPECT_TRUE (closure.signal_ran);
 
 	/* remove the whole group, should be notified about "first.two" */

@@ -272,7 +272,7 @@ static void
 im_application_list_source_removed (Application *app,
                                     const gchar *id)
 {
-  g_simple_action_group_remove (app->source_actions, id);
+  g_action_map_remove_action (G_ACTION_MAP(app->source_actions), id);
 
   g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
 
@@ -317,7 +317,7 @@ static void
 im_application_list_message_removed (Application *app,
                                      const gchar *id)
 {
-  g_simple_action_group_remove (app->message_actions, id);
+  g_action_map_remove_action (G_ACTION_MAP(app->message_actions), id);
   g_action_muxer_remove (app->message_sub_actions, id);
 
   im_application_list_update_draws_attention (app->list);
