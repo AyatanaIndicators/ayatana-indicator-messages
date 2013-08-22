@@ -94,22 +94,22 @@ TEST(GActionMuxerTest, AddAndRemove) {
 #endif
 
 	group1 = g_simple_action_group_new ();
-	g_simple_action_group_add_entries (group1,
-					   entries1,
-					   G_N_ELEMENTS (entries1),
-					   NULL);
+	g_action_map_add_action_entries (G_ACTION_MAP (group1),
+					 entries1,
+					 G_N_ELEMENTS (entries1),
+					 NULL);
 
 	group2 = g_simple_action_group_new ();
-	g_simple_action_group_add_entries (group2,
-					   entries2,
-					   G_N_ELEMENTS (entries2),
-					   NULL);
+	g_action_map_add_action_entries (G_ACTION_MAP (group2),
+					 entries2,
+					 G_N_ELEMENTS (entries2),
+					 NULL);
 
 	group3 = g_simple_action_group_new ();
-	g_simple_action_group_add_entries (group3,
-					   entries3,
-					   G_N_ELEMENTS (entries3),
-					   NULL);
+	g_action_map_add_action_entries (G_ACTION_MAP (group3),
+					 entries3,
+					 G_N_ELEMENTS (entries3),
+					 NULL);
 
 	muxer = g_action_muxer_new ();
 	g_action_muxer_insert (muxer, "first", G_ACTION_GROUP (group1));
