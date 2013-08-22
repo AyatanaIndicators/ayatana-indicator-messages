@@ -204,7 +204,7 @@ im_application_list_update_draws_attention (ImApplicationList *list)
   /* Set the state */
   g_action_group_change_action_state (G_ACTION_GROUP(list->globalactions), "messages", g_variant_builder_end(&builder));
 
-  GAction * remove_action = g_simple_action_group_lookup(list->globalactions, "remove-all");
+  GAction * remove_action = g_action_map_lookup_action (G_ACTION_MAP (list->globalactions), "remove-all");
   if (g_hash_table_find (list->applications, application_has_items, NULL)) {
     g_debug("Enabling remove-all");
     g_simple_action_set_enabled(G_SIMPLE_ACTION(remove_action), TRUE);
@@ -239,7 +239,7 @@ static gboolean
 app_message_action_check_draw (Application * app, const gchar * action_name)
 {
   GAction * action = NULL;
-  action = g_simple_action_group_lookup (app->message_actions, action_name);
+  action = g_action_map_lookup_action (G_ACTION_MAP (app->message_actions), action_name);
   return GPOINTER_TO_INT(g_object_get_qdata(G_OBJECT(action), message_action_draws_attention_quark()));
 }
 
@@ -577,7 +577,7 @@ im_application_list_init (ImApplicationList *list)
     GSimpleAction * messages = g_simple_action_new_stateful("messages", G_VARIANT_TYPE("a{sv}"), g_variant_new_array(G_VARIANT_TYPE("{sv}"), NULL, 0));
     g_action_map_add_action(G_ACTION_MAP(list->globalactions), G_ACTION(messages));
   }
-  g_simple_action_group_add_entries (list->globalactions, action_entries, G_N_ELEMENTS (action_entries), list);
+  g_action_map_add_action_entries (G_ACTION_MAP (list->globalactions), action_entries, G_N_ELEMENTS (action_entries), list);
 
   list->statusaction = g_simple_action_new_stateful("status", G_VARIANT_TYPE_STRING, g_variant_new_string("offline"));
   g_signal_connect(list->statusaction, "activate", G_CALLBACK(status_activated), list);
