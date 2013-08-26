@@ -223,6 +223,8 @@ app_source_action_check_draw (Application * app, const gchar * action_name)
   GVariant * draw;
 
   state = g_action_group_get_action_state (G_ACTION_GROUP(app->source_actions), action_name);
+  if (state == NULL)
+    return FALSE;
 
   /* uxsb */
   draw = g_variant_get_child_value(state, 3);
