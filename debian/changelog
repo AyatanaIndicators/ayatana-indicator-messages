@@ -1,3 +1,20 @@
+indicator-messages (13.10.1+13.10.20130827.4-0ubuntu1) saucy; urgency=low
+
+  [ Ted Gould ]
+  * Protect against invalid actions. (LP: #1216758)
+  * Remove unused and slightly used dependencies.
+
+  [ Lars Uebernickel ]
+  * Fix bug #1216843 Remove all sources when an applications quits and
+    don't show sources with a count of 0. (LP: #1216843)
+  * test-client.py: flush GDBusConnection before (potentially) freeing
+    it. (LP: #1217131)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 365
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 27 Aug 2013 15:53:01 +0000
+
 indicator-messages (13.10.1+13.10.20130822.5-0ubuntu1) saucy; urgency=low
 
   [ Pete Woods ]
