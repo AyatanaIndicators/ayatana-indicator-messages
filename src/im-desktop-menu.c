@@ -184,6 +184,21 @@ im_desktop_menu_remove_all (ImApplicationList *applist,
     }
 }
 
+static void
+im_desktop_menu_app_stopped (ImApplicationList *applist,
+                             const gchar       *app_id,
+                             gpointer           user_data)
+{
+  ImDesktopMenu *menu = user_data;
+  GMenu *section;
+
+  section = g_hash_table_lookup (menu->source_sections, app_id);
+  g_return_if_fail (section != NULL);
+
+  while (g_menu_model_get_n_items (G_MENU_MODEL (section)) > 0)
+    g_menu_remove (section, 0);
+}
+
 static GMenu *
 create_status_section (void)
 {
@@ -263,6 +278,7 @@ im_desktop_menu_constructed (GObject *object)
   g_signal_connect (applist, "source-added", G_CALLBACK (im_desktop_menu_source_added), menu);
   g_signal_connect (applist, "source-removed", G_CALLBACK (im_desktop_menu_source_removed), menu);
   g_signal_connect (applist, "remove-all", G_CALLBACK (im_desktop_menu_remove_all), menu);
+  g_signal_connect (applist, "app-stopped", G_CALLBACK (im_desktop_menu_app_stopped), menu);
 
   G_OBJECT_CLASS (im_desktop_menu_parent_class)->constructed (object);
 }
