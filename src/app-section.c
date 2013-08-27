@@ -28,7 +28,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
 #include <gio/gio.h>
-#include <libindicator/indicator-desktop-shortcuts.h>
+#include "indicator-desktop-shortcuts.h"
 #include "app-section.h"
 #include "dbus-data.h"
 #include "gmenuutils.h"
