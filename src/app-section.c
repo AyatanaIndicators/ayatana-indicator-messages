@@ -25,11 +25,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #endif
 
-#include <gdk/gdk.h>
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
 #include <gio/gio.h>
-#include <libindicator/indicator-desktop-shortcuts.h>
+#include "indicator-desktop-shortcuts.h"
 #include "app-section.h"
 #include "dbus-data.h"
 #include "gmenuutils.h"
@@ -290,17 +289,6 @@ app_section_finalize (GObject *object)
 	G_OBJECT_CLASS (app_section_parent_class)->dispose (object);
 }
 
-static GAppLaunchContext *
-get_launch_context (guint32 timestamp)
-{
-	GdkDisplay *display = gdk_display_get_default();
-	GdkAppLaunchContext *launch_context = gdk_display_get_app_launch_context (display);
-
-	gdk_app_launch_context_set_timestamp (launch_context, timestamp);
-
-	return G_APP_LAUNCH_CONTEXT (launch_context);
-}
-
 /* Respond to one of the shortcuts getting clicked on. */
 static void
 nick_activate_cb (GSimpleAction *action,
@@ -526,16 +514,13 @@ activate_cb (GSimpleAction *action,
 	AppSection * mi = APP_SECTION (userdata);
 	AppSectionPrivate * priv = mi->priv;
 	GError *error = NULL;
-	GAppLaunchContext *launch_context = get_launch_context (g_variant_get_uint32 (param));
 
-	if (!g_app_info_launch (G_APP_INFO (priv->appinfo), NULL, launch_context, &error)) {
+	if (!g_app_info_launch (G_APP_INFO (priv->appinfo), NULL, NULL, &error)) {
 		g_warning("Unable to execute application for desktop file '%s': %s",
 			  g_desktop_app_info_get_filename (priv->appinfo),
 			  error->message);
 		g_error_free (error);
 	}
-
-	g_object_unref (launch_context);
 }
 
 static void

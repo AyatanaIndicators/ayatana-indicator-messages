@@ -38,17 +38,12 @@ AC_PROG_CXX
 # Dependencies 
 ###########################
 
-GTK_REQUIRED_VERSION=3.5.18
 GIO_UNIX_REQUIRED_VERSION=2.33.10
-INDICATOR_REQUIRED_VERSION=0.3.19
 GLIB_REQUIRED_VERSION=2.35.4
 INTROSPECTION_REQUIRED_VERSION=1.32.0
 
-PKG_CHECK_MODULES(APPLET, gtk+-3.0 >= $GTK_REQUIRED_VERSION
-                          gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
-                          indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
-                          glib-2.0 >= $GLIB_REQUIRED_VERSION
-                          gmodule-2.0 >= $GLIB_REQUIRED_VERSION)
+PKG_CHECK_MODULES(APPLET, gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
+                          glib-2.0 >= $GLIB_REQUIRED_VERSION)
 
 PKG_CHECK_MODULES(GIO, gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION)
 
