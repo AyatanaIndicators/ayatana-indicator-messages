@@ -805,21 +805,16 @@ im_application_list_source_changed (Application *app,
   gint64 time;
   const gchar *string;
   gboolean draws_attention;
-  gboolean old_draw;
 
   g_variant_get (source, "(&s&s&sux&sb)",
                  &id, &label, &iconstr, &count, &time, &string, &draws_attention);
-
-  old_draw = app_source_action_check_draw(app, id);
 
   g_action_group_change_action_state (G_ACTION_GROUP (app->source_actions), id,
                                       g_variant_new ("(uxsb)", count, time, string, draws_attention));
 
   g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, id, label, iconstr);
 
-  if (!old_draw && draws_attention)
-    app->draws_attention = TRUE;
-
+  app->draws_attention = draws_attention;
   im_application_list_update_draws_attention (app->list);
 }
 
