@@ -63,6 +63,11 @@ class MessagingMenuTest(dbusmock.DBusTestCase):
         self.assertMethodCalled('UnregisterApplication', 'test.desktop')
 
         # ApplicationStoppedRunning is called when the last ref on mmapp is dropped
+        # Since mmapp is the only thing holding on to a GDBusConnection, the
+        # connection might get freed before it sends the StoppedRunning
+        # message. Flush the connection to make sure it is sent.
+        bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+        bus.flush_sync(None)
         del mmapp
         self.assertMethodCalled('ApplicationStoppedRunning', 'test.desktop')
 
