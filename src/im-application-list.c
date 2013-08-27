@@ -539,7 +539,7 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                        G_SIGNAL_RUN_FIRST,
                                        0,
                                        NULL, NULL,
-                                       g_cclosure_marshal_VOID__OBJECT,
+                                       g_cclosure_marshal_VOID__STRING,
                                        G_TYPE_NONE,
                                        1,
                                        G_TYPE_STRING);
