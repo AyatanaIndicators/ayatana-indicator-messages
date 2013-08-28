@@ -22,7 +22,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gtest/gtest.h>
 
 extern "C" {
-#include "app-section.h"
 #include "gactionmuxer.h"
 }
 

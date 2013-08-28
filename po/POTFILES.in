@@ -3,7 +3,6 @@ common/indicator-messages-service.c
 common/indicator-messages-application.c
 test/indicator-messages-service-activate.c
 src/im-phone-menu.c
-src/app-section.c
 src/messages-service.c
 src/im-desktop-menu.c
 src/im-menu.c
