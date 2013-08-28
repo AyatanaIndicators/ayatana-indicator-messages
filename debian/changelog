@@ -1,3 +1,13 @@
+indicator-messages (13.10.1+13.10.20130828.2-0ubuntu1) saucy; urgency=low
+
+  [ Lars Uebernickel ]
+  * Remove extraneous variable 'old_draw'.
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 367
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 28 Aug 2013 10:08:42 +0000
+
 indicator-messages (13.10.1+13.10.20130827.4-0ubuntu1) saucy; urgency=low
 
   [ Ted Gould ]
