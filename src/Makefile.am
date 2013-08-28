@@ -5,8 +5,6 @@ libexec_PROGRAMS = indicator-messages-service
 
 indicator_messages_service_SOURCES = \
 	messages-service.c \
-	app-section.c \
-	app-section.h \
 	dbus-data.h \
 	gactionmuxer.c \
 	gactionmuxer.h \
