@@ -241,7 +241,7 @@ messaging_menu_message_class_init (MessagingMenuMessageClass *klass)
 
   properties[PROP_DRAWS_ATTENTION] = g_param_spec_boolean ("draws-attention", "Draws attention",
                                                            "Whether the message should draw attention",
-                                                           FALSE,
+                                                           TRUE,
                                                            G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (klass, NUM_PROPERTIES, properties);
@@ -270,6 +270,7 @@ messaging_menu_message_class_init (MessagingMenuMessageClass *klass)
 static void
 messaging_menu_message_init (MessagingMenuMessage *self)
 {
+  self->draws_attention = TRUE;
 }
 
 /**
