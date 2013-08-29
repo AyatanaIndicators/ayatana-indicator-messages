@@ -1,3 +1,15 @@
+indicator-messages (13.10.1+13.10.20130829-0ubuntu1) saucy; urgency=low
+
+  [ Lars Uebernickel ]
+  * Don't pass source and message ids into parameters that expect
+    detailed action names.
+  * Remove app-section.[ch], it's not used anymore.
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 370
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 29 Aug 2013 02:07:50 +0000
+
 indicator-messages (13.10.1+13.10.20130828.2-0ubuntu1) saucy; urgency=low
 
   [ Lars Uebernickel ]
