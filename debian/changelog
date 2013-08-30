@@ -1,3 +1,15 @@
+indicator-messages (13.10.1+13.10.20130830.2-0ubuntu1) saucy; urgency=low
+
+  [ Lars Uebernickel ]
+  * libmessaging-menu: default MessagingMenuMessage::draws-attention to
+    TRUE In most cases, apps will want to draw the user's attention when
+    they add a message to the menu. (LP: #1215644)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 372
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 30 Aug 2013 10:07:39 +0000
+
 indicator-messages (13.10.1+13.10.20130829-0ubuntu1) saucy; urgency=low
 
   [ Lars Uebernickel ]
