@@ -577,7 +577,7 @@ im_application_list_init (ImApplicationList *list)
 
   list->globalactions = g_simple_action_group_new ();
   {
-    GSimpleAction * messages = g_simple_action_new_stateful("messages", G_VARIANT_TYPE("a{sv}"), g_variant_new_array(G_VARIANT_TYPE("{sv}"), NULL, 0));
+    GSimpleAction * messages = g_simple_action_new_stateful("messages", NULL, g_variant_new_array(G_VARIANT_TYPE("{sv}"), NULL, 0));
     g_action_map_add_action(G_ACTION_MAP(list->globalactions), G_ACTION(messages));
   }
   g_action_map_add_action_entries (G_ACTION_MAP (list->globalactions), action_entries, G_N_ELEMENTS (action_entries), list);
