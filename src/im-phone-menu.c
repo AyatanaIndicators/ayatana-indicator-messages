@@ -153,7 +153,7 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
                            const gchar     *app_id,
                            const gchar     *app_icon,
                            const gchar     *id,
-                           const gchar     *iconstr,
+                           GVariant        *serialized_icon,
                            const gchar     *title,
                            const gchar     *subtitle,
                            const gchar     *body,
@@ -179,8 +179,8 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   g_menu_item_set_attribute (item, "x-canonical-text", "s", body);
   g_menu_item_set_attribute (item, "x-canonical-time", "x", time);
 
-  if (iconstr)
-    g_menu_item_set_attribute (item, "icon", "s", iconstr);
+  if (serialized_icon)
+    g_menu_item_set_attribute_value (item, "icon", serialized_icon);
 
   if (app_icon)
     g_menu_item_set_attribute (item, "x-canonical-app-icon", "s", app_icon);

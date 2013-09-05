@@ -39,7 +39,7 @@ void                im_phone_menu_add_message           (ImPhoneMenu        *men
                                                          const gchar        *app_id,
                                                          const gchar        *app_icon,
                                                          const gchar        *id,
-                                                         const gchar        *iconstr,
+                                                         GVariant           *serialized_icon,
                                                          const gchar        *title,
                                                          const gchar        *subtitle,
                                                          const gchar        *body,

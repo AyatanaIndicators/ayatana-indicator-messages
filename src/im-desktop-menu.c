@@ -109,7 +109,7 @@ static void
 im_desktop_menu_source_section_insert_source (GMenu       *source_section,
                                               const gchar *source_id,
                                               const gchar *label,
-                                              const gchar *icon,
+                                              GVariant    *serialized_icon,
                                               gint         pos)
 {
   GMenuItem *item;
@@ -119,8 +119,8 @@ im_desktop_menu_source_section_insert_source (GMenu       *source_section,
   item = g_menu_item_new (label, NULL);
   g_menu_item_set_action_and_target_value (item, action, NULL);
   g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.source");
-  if (icon && *icon)
-    g_menu_item_set_attribute (item, "icon", "s", icon);
+  if (serialized_icon)
+    g_menu_item_set_attribute_value (item, "icon", serialized_icon);
 
   if (pos >= 0)
     g_menu_insert_item (source_section, pos, item);
@@ -169,7 +169,7 @@ im_desktop_menu_source_added (ImApplicationList *applist,
                               const gchar       *app_id,
                               const gchar       *source_id,
                               const gchar       *label,
-                              const gchar       *icon,
+                              GVariant          *serialized_icon,
                               gpointer           user_data)
 {
   ImDesktopMenu *menu = user_data;
@@ -178,7 +178,7 @@ im_desktop_menu_source_added (ImApplicationList *applist,
   source_section = g_hash_table_lookup (menu->source_sections, app_id);
   g_return_if_fail (source_section != NULL);
 
-  im_desktop_menu_source_section_insert_source (source_section, source_id, label, icon, -1);
+  im_desktop_menu_source_section_insert_source (source_section, source_id, label, serialized_icon, -1);
 }
 
 static void
@@ -204,7 +204,7 @@ im_desktop_menu_source_changed (ImApplicationList *applist,
                                 const gchar       *app_id,
                                 const gchar       *source_id,
                                 const gchar       *label,
-                                const gchar       *icon,
+                                GVariant          *serialized_icon,
                                 gboolean           visible,
                                 gpointer           user_data)
 {
@@ -221,7 +221,7 @@ im_desktop_menu_source_changed (ImApplicationList *applist,
     g_menu_remove (section, pos);
 
   if (visible)
-    im_desktop_menu_source_section_insert_source (section, source_id, label, icon, pos);
+    im_desktop_menu_source_section_insert_source (section, source_id, label, serialized_icon, pos);
 }
 
 static void

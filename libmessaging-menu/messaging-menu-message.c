@@ -495,10 +495,10 @@ action_to_variant (Action *action)
  * _messaging_menu_message_to_variant:
  * @msg: a #MessagingMenuMessage
  *
- * Serializes @msg to a #GVariant of the form (sssssxaa{sv}b):
+ * Serializes @msg to a #GVariant of the form (savsssxaa{sv}b):
  *
  *   id
- *   icon
+ *   icon (fake-maybe)
  *   title
  *   subtitle
  *   body
@@ -513,25 +513,22 @@ _messaging_menu_message_to_variant (MessagingMenuMessage *msg)
 {
   GVariantBuilder builder;
   GSList *it;
+  GVariant *serialized_icon;
+  GVariantBuilder icon_builder;
 
   g_return_val_if_fail (MESSAGING_MENU_IS_MESSAGE (msg), NULL);
 
-  g_variant_builder_init (&builder, G_VARIANT_TYPE ("(sssssxaa{sv}b)"));
-
-  g_variant_builder_add (&builder, "s", msg->id);
-
-  if (msg->icon)
+  serialized_icon = msg->icon ? g_icon_serialize (msg->icon) : NULL;
+  g_variant_builder_init (&icon_builder, G_VARIANT_TYPE ("av"));
+  if (serialized_icon)
     {
-      gchar *iconstr;
-
-      iconstr = g_icon_to_string (msg->icon);
-      g_variant_builder_add (&builder, "s", iconstr);
-
-      g_free (iconstr);
+      g_variant_builder_add (&icon_builder, "v", serialized_icon);
+      g_variant_unref (serialized_icon);
     }
-  else
-    g_variant_builder_add (&builder, "s", "");
 
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("(savsssxaa{sv}b)"));
+  g_variant_builder_add (&builder, "s", msg->id);
+  g_variant_builder_add (&builder, "av", &icon_builder);
   g_variant_builder_add (&builder, "s", msg->title ? msg->title : "");
   g_variant_builder_add (&builder, "s", msg->subtitle ? msg->subtitle : "");
   g_variant_builder_add (&builder, "s", msg->body ? msg->body : "");
