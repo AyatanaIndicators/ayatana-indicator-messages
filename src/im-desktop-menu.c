@@ -278,10 +278,17 @@ create_status_section (void)
 	item = g_menu_item_new (NULL, NULL);
 
 	for (i = 0; i < G_N_ELEMENTS (status_items); i++) {
+		GIcon *icon;
+
 		g_menu_item_set_label (item, status_items[i].label);
 		g_menu_item_set_detailed_action (item, status_items[i].action);
-		g_menu_item_set_attribute (item, "icon", "s", status_items[i].icon_name);
+
+		icon = g_themed_icon_new (status_items[i].icon_name);
+		g_menu_item_set_icon (item, icon);
+
 		g_menu_append_item (menu, item);
+
+		g_object_unref (icon);
 	}
 
 	g_object_unref (item);
