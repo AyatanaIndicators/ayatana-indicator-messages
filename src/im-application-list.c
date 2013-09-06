@@ -503,7 +503,7 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                          G_TYPE_NONE,
                                          10,
                                          G_TYPE_STRING,
-                                         G_TYPE_STRING,
+                                         G_TYPE_ICON,
                                          G_TYPE_STRING,
                                          G_TYPE_VARIANT,
                                          G_TYPE_STRING,
@@ -868,31 +868,33 @@ im_application_list_sources_listed (GObject      *source_object,
     }
 }
 
-static gchar *
-get_symbolic_app_icon_string (GIcon *icon)
+static GIcon *
+get_symbolic_app_icon (GAppInfo *info)
 {
+  GIcon *icon;
   const gchar * const *names;
   gchar *symbolic_name;
   GIcon *symbolic_icon;
-  gchar *str;
+
+  icon = g_app_info_get_icon (info);
+  if (icon == NULL)
+    return NULL;
 
   if (!G_IS_THEMED_ICON (icon))
-    return NULL;
+    return g_object_ref (icon);
 
   names = g_themed_icon_get_names (G_THEMED_ICON (icon));
   if (!names || !names[0])
-    return NULL;
-
-  symbolic_icon = g_themed_icon_new_from_names ((gchar **) names, -1);
+    return g_object_ref (icon);
 
   symbolic_name = g_strconcat (names[0], "-symbolic", NULL);
+
+  symbolic_icon = g_themed_icon_new_from_names ((gchar **) names, -1);
   g_themed_icon_prepend_name (G_THEMED_ICON (symbolic_icon), symbolic_name);
 
-  str = g_icon_to_string (symbolic_icon);
-
   g_free (symbolic_name);
-  g_object_unref (symbolic_icon);
-  return str;
+
+  return symbolic_icon;
 }
 
 static void
@@ -910,7 +912,6 @@ im_application_list_message_added (Application *app,
   GVariant *serialized_icon = NULL;
   GSimpleAction *action;
   GIcon *app_icon;
-  gchar *app_iconstr = NULL;
   GVariant *actions = NULL;
 
   g_variant_get (message, "(&s@av&s&s&sxaa{sv}b)",
@@ -918,10 +919,6 @@ im_application_list_message_added (Application *app,
 
   if (g_variant_n_children (maybe_serialized_icon) == 1)
     serialized_icon = g_variant_get_child_value (maybe_serialized_icon, 0);
-
-  app_icon = g_app_info_get_icon (G_APP_INFO (app->info));
-  if (app_icon)
-    app_iconstr = get_symbolic_app_icon_string (app_icon);
 
   action = g_simple_action_new (id, G_VARIANT_TYPE_BOOLEAN);
   g_object_set_qdata(G_OBJECT(action), message_action_draws_attention_quark(), GINT_TO_POINTER(draws_attention));
@@ -999,16 +996,18 @@ im_application_list_message_added (Application *app,
 
   im_application_list_update_draws_attention (app->list);
 
+  app_icon = get_symbolic_app_icon (G_APP_INFO (app->info));
+
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
-                 app->id, app_iconstr, id, serialized_icon, title,
+                 app->id, app_icon, id, serialized_icon, title,
                  subtitle, body, actions, time, draws_attention);
 
   g_variant_iter_free (action_iter);
-  g_free (app_iconstr);
   g_object_unref (action);
   if (serialized_icon)
     g_object_unref (serialized_icon);
   g_variant_unref (maybe_serialized_icon);
+  g_object_unref (app_icon);
 }
 
 static void

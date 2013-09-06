@@ -37,7 +37,7 @@ ImPhoneMenu *       im_phone_menu_new                   (ImApplicationList  *app
 
 void                im_phone_menu_add_message           (ImPhoneMenu        *menu,
                                                          const gchar        *app_id,
-                                                         const gchar        *app_icon,
+                                                         GIcon              *app_icon,
                                                          const gchar        *id,
                                                          GVariant           *serialized_icon,
                                                          const gchar        *title,
