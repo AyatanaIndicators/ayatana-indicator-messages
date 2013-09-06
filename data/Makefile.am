@@ -4,7 +4,7 @@ dbus_servicesdir = $(datadir)/dbus-1/services
 dbus_services_DATA = indicator-messages.service
 
 %.service: %.service.in
-	sed -e "s|\@libexecdir\@|$(libexecdir)|" $< > $@
+	sed -e "s|\@pkglibexecdir\@|$(pkglibexecdir)|" $< > $@
 
 gsettings_SCHEMAS = com.canonical.indicator.messages.gschema.xml
 @GSETTINGS_RULES@

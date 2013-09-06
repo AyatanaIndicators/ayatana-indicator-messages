@@ -1,7 +1,7 @@
 
 EXTRA_DIST =
 
-libexec_PROGRAMS = indicator-messages-service
+pkglibexec_PROGRAMS = indicator-messages-service
 
 indicator_messages_service_SOURCES = \
 	messages-service.c \
