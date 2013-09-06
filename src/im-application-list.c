@@ -1007,7 +1007,7 @@ im_application_list_message_added (Application *app,
   g_variant_iter_free (action_iter);
   g_object_unref (action);
   if (serialized_icon)
-    g_object_unref (serialized_icon);
+    g_variant_unref (serialized_icon);
   g_variant_unref (maybe_serialized_icon);
   g_object_unref (app_icon);
 }
