@@ -10,8 +10,6 @@ indicator_messages_service_SOURCES = \
 	gactionmuxer.h \
 	gsettingsstrv.c \
 	gsettingsstrv.h \
-	gmenuutils.c \
-	gmenuutils.h \
 	im-menu.c \
 	im-menu.h \
 	im-phone-menu.c \

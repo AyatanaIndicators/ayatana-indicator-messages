@@ -29,7 +29,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "dbus-data.h"
 #include "gsettingsstrv.h"
-#include "gmenuutils.h"
 #include "indicator-messages-service.h"
 #include "indicator-messages-application.h"
 #include "im-phone-menu.h"
