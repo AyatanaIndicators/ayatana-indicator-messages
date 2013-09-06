@@ -161,6 +161,7 @@ im_application_list_update_draws_attention (ImApplicationList *list)
   const gchar *accessible_name;
   const gchar *icon_name;
   GIcon * icon;
+  GVariant *serialized_icon;
   GVariantBuilder builder;
   GVariant *state;
 
@@ -182,12 +183,13 @@ im_application_list_update_draws_attention (ImApplicationList *list)
   g_variant_builder_init(&builder, G_VARIANT_TYPE_DICTIONARY);
 
   /* icon */
-  g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
-  g_variant_builder_add_value(&builder, g_variant_new_string("icon"));
   icon = g_themed_icon_new_with_default_fallbacks(icon_name);
-  g_variant_builder_add_value(&builder, g_variant_new_variant(g_icon_serialize(icon)));
+  if ((serialized_icon = g_icon_serialize(icon)))
+    {
+      g_variant_builder_add (&builder, "{sv}", "icon", serialized_icon);
+      g_variant_unref (serialized_icon);
+    }
   g_object_unref(icon);
-  g_variant_builder_close(&builder);
 
   /* accessible description */
   g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
