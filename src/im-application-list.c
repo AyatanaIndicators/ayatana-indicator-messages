@@ -161,6 +161,7 @@ im_application_list_update_draws_attention (ImApplicationList *list)
   const gchar *accessible_name;
   const gchar *icon_name;
   GIcon * icon;
+  GVariant *serialized_icon;
   GVariantBuilder builder;
   GVariant *state;
 
@@ -182,12 +183,13 @@ im_application_list_update_draws_attention (ImApplicationList *list)
   g_variant_builder_init(&builder, G_VARIANT_TYPE_DICTIONARY);
 
   /* icon */
-  g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
-  g_variant_builder_add_value(&builder, g_variant_new_string("icon"));
   icon = g_themed_icon_new_with_default_fallbacks(icon_name);
-  g_variant_builder_add_value(&builder, g_variant_new_variant(g_icon_serialize(icon)));
+  if ((serialized_icon = g_icon_serialize(icon)))
+    {
+      g_variant_builder_add (&builder, "{sv}", "icon", serialized_icon);
+      g_variant_unref (serialized_icon);
+    }
   g_object_unref(icon);
-  g_variant_builder_close(&builder);
 
   /* accessible description */
   g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
@@ -467,7 +469,7 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                         G_TYPE_STRING,
                                         G_TYPE_STRING,
                                         G_TYPE_STRING,
-                                        G_TYPE_STRING);
+                                        G_TYPE_VARIANT);
 
   signals[SOURCE_CHANGED] = g_signal_new ("source-changed",
                                           IM_TYPE_APPLICATION_LIST,
@@ -503,9 +505,9 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                          G_TYPE_NONE,
                                          10,
                                          G_TYPE_STRING,
+                                         G_TYPE_ICON,
                                          G_TYPE_STRING,
-                                         G_TYPE_STRING,
-                                         G_TYPE_STRING,
+                                         G_TYPE_VARIANT,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
                                          G_TYPE_STRING,
@@ -768,16 +770,20 @@ im_application_list_source_added (Application *app,
 {
   const gchar *id;
   const gchar *label;
-  const gchar *iconstr;
+  GVariant *maybe_serialized_icon;
   guint32 count;
   gint64 time;
   const gchar *string;
   gboolean draws_attention;
+  GVariant *serialized_icon = NULL;
   GVariant *state;
   GSimpleAction *action;
 
-  g_variant_get (source, "(&s&s&sux&sb)",
-                 &id, &label, &iconstr, &count, &time, &string, &draws_attention);
+  g_variant_get (source, "(&s&s@avux&sb)",
+                 &id, &label, &maybe_serialized_icon, &count, &time, &string, &draws_attention);
+
+  if (g_variant_n_children (maybe_serialized_icon) == 1)
+    g_variant_get_child (maybe_serialized_icon, 0, "v", &serialized_icon);
 
   state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
   action = g_simple_action_new_stateful (id, G_VARIANT_TYPE_BOOLEAN, state);
@@ -785,7 +791,7 @@ im_application_list_source_added (Application *app,
 
   g_action_map_add_action (G_ACTION_MAP(app->source_actions), G_ACTION (action));
 
-  g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, iconstr);
+  g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, serialized_icon);
 
   if (draws_attention)
     app->draws_attention = TRUE;
@@ -793,6 +799,9 @@ im_application_list_source_added (Application *app,
   im_application_list_update_draws_attention (app->list);
 
   g_object_unref (action);
+  if (serialized_icon)
+    g_variant_unref (serialized_icon);
+  g_variant_unref (maybe_serialized_icon);
 }
 
 static void
@@ -801,25 +810,33 @@ im_application_list_source_changed (Application *app,
 {
   const gchar *id;
   const gchar *label;
-  const gchar *iconstr;
+  GVariant *maybe_serialized_icon;
   guint32 count;
   gint64 time;
   const gchar *string;
   gboolean draws_attention;
+  GVariant *serialized_icon = NULL;
   gboolean visible;
 
-  g_variant_get (source, "(&s&s&sux&sb)",
-                 &id, &label, &iconstr, &count, &time, &string, &draws_attention);
+  g_variant_get (source, "(&s&s@avux&sb)",
+                 &id, &label, &maybe_serialized_icon, &count, &time, &string, &draws_attention);
+
+  if (g_variant_n_children (maybe_serialized_icon) == 1)
+    g_variant_get_child (maybe_serialized_icon, 0, "v", &serialized_icon);
 
   g_action_group_change_action_state (G_ACTION_GROUP (app->source_actions), id,
                                       g_variant_new ("(uxsb)", count, time, string, draws_attention));
 
   visible = count > 0;
 
-  g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, id, label, iconstr, visible);
+  g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, id, label, serialized_icon, visible);
 
   app->draws_attention = visible && draws_attention;
   im_application_list_update_draws_attention (app->list);
+
+  if (serialized_icon)
+    g_variant_unref (serialized_icon);
+  g_variant_unref (maybe_serialized_icon);
 }
 
 static void
@@ -853,31 +870,33 @@ im_application_list_sources_listed (GObject      *source_object,
     }
 }
 
-static gchar *
-get_symbolic_app_icon_string (GIcon *icon)
+static GIcon *
+get_symbolic_app_icon (GAppInfo *info)
 {
+  GIcon *icon;
   const gchar * const *names;
   gchar *symbolic_name;
   GIcon *symbolic_icon;
-  gchar *str;
+
+  icon = g_app_info_get_icon (info);
+  if (icon == NULL)
+    return NULL;
 
   if (!G_IS_THEMED_ICON (icon))
-    return NULL;
+    return g_object_ref (icon);
 
   names = g_themed_icon_get_names (G_THEMED_ICON (icon));
   if (!names || !names[0])
-    return NULL;
-
-  symbolic_icon = g_themed_icon_new_from_names ((gchar **) names, -1);
+    return g_object_ref (icon);
 
   symbolic_name = g_strconcat (names[0], "-symbolic", NULL);
+
+  symbolic_icon = g_themed_icon_new_from_names ((gchar **) names, -1);
   g_themed_icon_prepend_name (G_THEMED_ICON (symbolic_icon), symbolic_name);
 
-  str = g_icon_to_string (symbolic_icon);
-
   g_free (symbolic_name);
-  g_object_unref (symbolic_icon);
-  return str;
+
+  return symbolic_icon;
 }
 
 static void
@@ -885,24 +904,23 @@ im_application_list_message_added (Application *app,
                                    GVariant    *message)
 {
   const gchar *id;
-  const gchar *iconstr;
+  GVariant *maybe_serialized_icon;
   const gchar *title;
   const gchar *subtitle;
   const gchar *body;
   gint64 time;
   GVariantIter *action_iter;
   gboolean draws_attention;
+  GVariant *serialized_icon = NULL;
   GSimpleAction *action;
   GIcon *app_icon;
-  gchar *app_iconstr = NULL;
   GVariant *actions = NULL;
 
-  g_variant_get (message, "(&s&s&s&s&sxaa{sv}b)",
-                 &id, &iconstr, &title, &subtitle, &body, &time, &action_iter, &draws_attention);
+  g_variant_get (message, "(&s@av&s&s&sxaa{sv}b)",
+                 &id, &maybe_serialized_icon, &title, &subtitle, &body, &time, &action_iter, &draws_attention);
 
-  app_icon = g_app_info_get_icon (G_APP_INFO (app->info));
-  if (app_icon)
-    app_iconstr = get_symbolic_app_icon_string (app_icon);
+  if (g_variant_n_children (maybe_serialized_icon) == 1)
+    serialized_icon = g_variant_get_child_value (maybe_serialized_icon, 0);
 
   action = g_simple_action_new (id, G_VARIANT_TYPE_BOOLEAN);
   g_object_set_qdata(G_OBJECT(action), message_action_draws_attention_quark(), GINT_TO_POINTER(draws_attention));
@@ -980,13 +998,18 @@ im_application_list_message_added (Application *app,
 
   im_application_list_update_draws_attention (app->list);
 
+  app_icon = get_symbolic_app_icon (G_APP_INFO (app->info));
+
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
-                 app->id, app_iconstr, id, iconstr, title,
+                 app->id, app_icon, id, serialized_icon, title,
                  subtitle, body, actions, time, draws_attention);
 
   g_variant_iter_free (action_iter);
-  g_free (app_iconstr);
   g_object_unref (action);
+  if (serialized_icon)
+    g_variant_unref (serialized_icon);
+  g_variant_unref (maybe_serialized_icon);
+  g_object_unref (app_icon);
 }
 
 static void

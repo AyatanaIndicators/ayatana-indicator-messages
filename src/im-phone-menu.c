@@ -151,9 +151,9 @@ im_phone_menu_get_message_time (GMenuModel *model,
 void
 im_phone_menu_add_message (ImPhoneMenu     *menu,
                            const gchar     *app_id,
-                           const gchar     *app_icon,
+                           GIcon           *app_icon,
                            const gchar     *id,
-                           const gchar     *iconstr,
+                           GVariant        *serialized_icon,
                            const gchar     *title,
                            const gchar     *subtitle,
                            const gchar     *body,
@@ -164,6 +164,7 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   gchar *action_name;
   gint n_messages;
   gint pos;
+  GVariant *serialized_app_icon;
 
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
   g_return_if_fail (app_id);
@@ -179,11 +180,14 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   g_menu_item_set_attribute (item, "x-canonical-text", "s", body);
   g_menu_item_set_attribute (item, "x-canonical-time", "x", time);
 
-  if (iconstr)
-    g_menu_item_set_attribute (item, "icon", "s", iconstr);
+  if (serialized_icon)
+    g_menu_item_set_attribute_value (item, "icon", serialized_icon);
 
-  if (app_icon)
-    g_menu_item_set_attribute (item, "x-canonical-app-icon", "s", app_icon);
+  if (app_icon && (serialized_app_icon = g_icon_serialize (app_icon)))
+    {
+      g_menu_item_set_attribute_value (item, "x-canonical-app-icon", serialized_app_icon);
+      g_variant_unref (serialized_app_icon);
+    }
 
   if (actions)
     g_menu_item_set_attribute (item, "x-canonical-message-actions", "v", actions);

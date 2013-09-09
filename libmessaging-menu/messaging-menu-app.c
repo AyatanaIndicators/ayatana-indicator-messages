@@ -173,19 +173,24 @@ static GVariant *
 source_to_variant (Source *source)
 {
   GVariant *v;
-  gchar *iconstr;
+  GVariant *serialized_icon;
+  GVariantBuilder builder;
 
-  iconstr = source->icon ? g_icon_to_string (source->icon) : NULL;
+  serialized_icon = source->icon ? g_icon_serialize (source->icon) : NULL;
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("av"));
+  if (serialized_icon)
+    {
+      g_variant_builder_add (&builder, "v", serialized_icon);
+      g_variant_unref (serialized_icon);
+    }
 
-  v = g_variant_new ("(sssuxsb)", source->id,
-                                  source->label,
-                                  iconstr ? iconstr : "",
-                                  source->count,
-                                  source->time,
-                                  source->string ? source->string : "",
-                                  source->draws_attention);
-
-  g_free (iconstr);
+  v = g_variant_new ("(ssavuxsb)", source->id,
+                                   source->label,
+                                   &builder,
+                                   source->count,
+                                   source->time,
+                                   source->string ? source->string : "",
+                                   source->draws_attention);
 
   return v;
 }
@@ -459,7 +464,7 @@ messaging_menu_app_list_sources (IndicatorMessagesApplication *app_interface,
   GVariantBuilder builder;
   GList *it;
 
-  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sssuxsb)"));
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(ssavuxsb)"));
 
   for (it = app->sources; it; it = it->next)
     g_variant_builder_add_value (&builder, source_to_variant (it->data));
@@ -533,7 +538,7 @@ messaging_menu_app_list_messages (IndicatorMessagesApplication *app_interface,
   GHashTableIter iter;
   MessagingMenuMessage *message;
 
-  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sssssxaa{sv}b)"));
+  g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(savsssxaa{sv}b)"));
 
   g_hash_table_iter_init (&iter, app->messages);
   while (g_hash_table_iter_next (&iter, NULL, (gpointer *) &message))
