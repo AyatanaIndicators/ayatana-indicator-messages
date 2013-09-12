@@ -191,6 +191,9 @@ im_application_list_update_draws_attention (ImApplicationList *list)
     }
   g_object_unref(icon);
 
+  /* title */
+  g_variant_builder_add (&builder, "{sv}", "title", g_variant_new_string (_("Messages")));
+
   /* accessible description */
   g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
   g_variant_builder_add_value(&builder, g_variant_new_string("accessible-desc"));
