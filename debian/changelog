@@ -1,3 +1,16 @@
+indicator-messages (13.10.1+13.10.20130913-0ubuntu1) saucy; urgency=low
+
+  [ Lars Uebernickel ]
+  * Install into /usr/lib/$arch, to be consistent with the other
+    indicators.
+  * Use g_icon_serialize() instead of g_icon_to_string().
+  * Add "title" to the root action state dictionary. (LP: #1223635)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 378
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 13 Sep 2013 15:15:38 +0000
+
 indicator-messages (13.10.1+13.10.20130903-0ubuntu1) saucy; urgency=low
 
   [ Nick Dedekind ]
