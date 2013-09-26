@@ -830,7 +830,7 @@ im_application_list_source_changed (Application *app,
   g_action_group_change_action_state (G_ACTION_GROUP (app->source_actions), id,
                                       g_variant_new ("(uxsb)", count, time, string, draws_attention));
 
-  visible = count > 0;
+  visible = count > 0 || time != 0 || (string != NULL && string[0] != '\0');
 
   g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, id, label, serialized_icon, visible);
 
