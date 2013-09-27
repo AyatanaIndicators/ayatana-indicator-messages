@@ -49,7 +49,7 @@ enum {
 
 G_DEFINE_QUARK(indicator_messages_dbus_error, dbus_error);
 
-static void
+static gboolean
 register_application (IndicatorMessagesService *service,
 		      GDBusMethodInvocation *invocation,
 		      const gchar *desktop_id,
@@ -61,7 +61,7 @@ register_application (IndicatorMessagesService *service,
 
 	if (!im_application_list_add (applications, desktop_id)) {
 		g_dbus_method_invocation_return_error(invocation, dbus_error_quark(), DBUS_ERROR_BAD_DESKTOP_FILE, "Unable to find or parse desktop file for application '%s'", desktop_id);
-		return;
+		return TRUE;
 	}
 
 	bus = g_dbus_interface_skeleton_get_connection (G_DBUS_INTERFACE_SKELETON (service));
@@ -71,9 +71,11 @@ register_application (IndicatorMessagesService *service,
 	g_settings_strv_append_unique (settings, "applications", desktop_id);
 
 	indicator_messages_service_complete_register_application (service, invocation);
+
+	return TRUE;
 }
 
-static void
+static gboolean
 unregister_application (IndicatorMessagesService *service,
 			GDBusMethodInvocation *invocation,
 			const gchar *desktop_id,
@@ -83,9 +85,11 @@ unregister_application (IndicatorMessagesService *service,
 	g_settings_strv_remove (settings, "applications", desktop_id);
 
 	indicator_messages_service_complete_unregister_application (service, invocation);
+
+	return TRUE;
 }
 
-static void
+static gboolean
 set_status (IndicatorMessagesService *service,
 	    GDBusMethodInvocation *invocation,
 	    const gchar *desktop_id,
@@ -104,7 +108,7 @@ set_status (IndicatorMessagesService *service,
 	appinfo = g_desktop_app_info_new (desktop_id);
 	if (!appinfo) {
 		g_warning ("could not set status for '%s', there's no desktop file with that id", desktop_id);
-		return;
+		return TRUE;
 	}
 
 	id = g_app_info_get_id (G_APP_INFO (appinfo));
@@ -114,6 +118,8 @@ set_status (IndicatorMessagesService *service,
 	indicator_messages_service_complete_set_status (service, invocation);
 
 	g_object_unref (appinfo);
+
+	return TRUE;
 }
 
 /* The status has been set by the user, let's tell the world! */
