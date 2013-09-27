@@ -485,7 +485,7 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                           G_TYPE_STRING,
                                           G_TYPE_STRING,
                                           G_TYPE_STRING,
-                                          G_TYPE_STRING,
+                                          G_TYPE_VARIANT,
                                           G_TYPE_BOOLEAN);
 
   signals[SOURCE_REMOVED] = g_signal_new ("source-removed",
