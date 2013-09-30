@@ -1,3 +1,16 @@
+indicator-messages (13.10.1+13.10.20130930-0ubuntu1) saucy; urgency=low
+
+  [ Lars Uebernickel ]
+  * phone menu: don't show "Clear All" when there are no messages. (LP:
+    #1229422)
+  * im-application-list: show all sources that have a count, time, or
+    non-empty string. (LP: #1231435)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 381
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 30 Sep 2013 06:32:28 +0000
+
 indicator-messages (13.10.1+13.10.20130913-0ubuntu1) saucy; urgency=low
 
   [ Lars Uebernickel ]
