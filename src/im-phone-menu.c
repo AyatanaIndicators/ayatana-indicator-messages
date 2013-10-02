@@ -73,7 +73,7 @@ im_phone_menu_update_clear_section (ImPhoneMenu *menu)
     {
       GMenuItem *item;
 
-      item = g_menu_item_new (_("Clear All"), "indicator.remove-all");
+      item = g_menu_item_new (_("Clear All"), "remove-all");
       g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.button");
       g_menu_append_item (menu->clear_section, item);
 
