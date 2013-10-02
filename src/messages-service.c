@@ -99,11 +99,12 @@ set_status (IndicatorMessagesService *service,
 	GDesktopAppInfo *appinfo;
 	const gchar *id;
 
-	g_return_if_fail (g_str_equal (status_str, "available") ||
-			  g_str_equal (status_str, "away")||
-			  g_str_equal (status_str, "busy") ||
-			  g_str_equal (status_str, "invisible") ||
-			  g_str_equal (status_str, "offline"));
+	g_return_val_if_fail (g_str_equal (status_str, "available") ||
+			      g_str_equal (status_str, "away")||
+			      g_str_equal (status_str, "busy") ||
+			      g_str_equal (status_str, "invisible") ||
+			      g_str_equal (status_str, "offline"),
+			      FALSE);
 
 	appinfo = g_desktop_app_info_new (desktop_id);
 	if (!appinfo) {
