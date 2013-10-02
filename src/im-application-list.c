@@ -675,8 +675,8 @@ im_application_list_add (ImApplicationList  *list,
   GSimpleAction *launch_action;
   IndicatorDesktopShortcuts * shortcuts = NULL;
 
-  g_return_if_fail (IM_IS_APPLICATION_LIST (list));
-  g_return_if_fail (desktop_id != NULL);
+  g_return_val_if_fail (IM_IS_APPLICATION_LIST (list), FALSE);
+  g_return_val_if_fail (desktop_id != NULL, FALSE);
 
   if (im_application_list_lookup (list, desktop_id))
     return TRUE;
@@ -689,7 +689,7 @@ im_application_list_add (ImApplicationList  *list,
     }
 
   id = g_app_info_get_id (G_APP_INFO (info));
-  g_return_if_fail (id != NULL);
+  g_return_val_if_fail (id != NULL, FALSE);
 
   {
     const char * filename = g_desktop_app_info_get_filename(info);
