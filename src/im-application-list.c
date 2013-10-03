@@ -159,7 +159,7 @@ im_application_list_update_draws_attention (ImApplicationList *list)
 {
   const gchar *base_icon_name;
   const gchar *accessible_name;
-  const gchar *icon_name;
+  gchar *icon_name;
   GIcon * icon;
   GVariant *serialized_icon;
   GVariantBuilder builder;
@@ -184,6 +184,7 @@ im_application_list_update_draws_attention (ImApplicationList *list)
 
   /* icon */
   icon = g_themed_icon_new_with_default_fallbacks(icon_name);
+  g_free(icon_name);
   if ((serialized_icon = g_icon_serialize(icon)))
     {
       g_variant_builder_add (&builder, "{sv}", "icon", serialized_icon);
