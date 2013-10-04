@@ -174,8 +174,6 @@ on_bus_acquired (GDBusConnection *bus,
 		g_error_free (error);
 		return;
 	}
-
-	g_object_unref (bus);
 }
 
 static void
