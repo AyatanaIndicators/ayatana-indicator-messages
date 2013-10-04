@@ -224,22 +224,25 @@ im_application_list_update_draws_attention (ImApplicationList *list)
 static gboolean
 app_source_action_check_draw (Application * app, const gchar * action_name)
 {
-  gboolean retval = FALSE;
-  GVariant * state;
-  GVariant * draw;
+  GVariant *state;
+  guint32 count;
+  gint64 time;
+  const gchar *string;
+  gboolean draws_attention;
 
   state = g_action_group_get_action_state (G_ACTION_GROUP(app->source_actions), action_name);
   if (state == NULL)
     return FALSE;
 
-  /* uxsb */
-  draw = g_variant_get_child_value(state, 3);
-  retval = g_variant_get_boolean(draw);
+  g_variant_get (state, "(ux&sb)", &count, &time, &string, &draws_attention);
 
-  g_variant_unref(draw);
+  /* invisible sources do not draw attention */
+  if (count == 0 && time == 0 && (string == NULL || string[0] != '\0'))
+    draws_attention = FALSE;
+
   g_variant_unref(state);
 
-  return retval;
+  return draws_attention;
 }
 
 /* Check a message action to see if it draws */
