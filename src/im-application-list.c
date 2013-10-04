@@ -332,7 +332,8 @@ im_application_list_message_removed (Application *app,
   g_action_map_remove_action (G_ACTION_MAP(app->message_actions), id);
   g_action_muxer_remove (app->message_sub_actions, id);
 
-  im_application_list_update_draws_attention (app->list);
+  if (application_update_draws_attention(app))
+    im_application_list_update_draws_attention (app->list);
 
   g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, id);
 }
@@ -801,10 +802,11 @@ im_application_list_source_added (Application *app,
 
   g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, serialized_icon);
 
-  if (draws_attention)
-    app->draws_attention = TRUE;
-
-  im_application_list_update_draws_attention (app->list);
+  if (draws_attention && app->draws_attention == FALSE)
+    {
+      app->draws_attention = TRUE;
+      im_application_list_update_draws_attention (app->list);
+    }
 
   g_object_unref (action);
   if (serialized_icon)
@@ -839,8 +841,8 @@ im_application_list_source_changed (Application *app,
 
   g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, id, label, serialized_icon, visible);
 
-  app->draws_attention = visible && draws_attention;
-  im_application_list_update_draws_attention (app->list);
+  if (application_update_draws_attention (app))
+    im_application_list_update_draws_attention (app->list);
 
   if (serialized_icon)
     g_variant_unref (serialized_icon);
@@ -1001,10 +1003,11 @@ im_application_list_message_added (Application *app,
     g_object_unref (action_group);
   }
 
-  if (draws_attention)
-    app->draws_attention = TRUE;
-
-  im_application_list_update_draws_attention (app->list);
+  if (draws_attention && !app->draws_attention)
+    {
+      app->draws_attention = TRUE;
+      im_application_list_update_draws_attention (app->list);
+    }
 
   app_icon = get_symbolic_app_icon (G_APP_INFO (app->info));
 
@@ -1076,7 +1079,9 @@ im_application_list_unset_remote (Application *app)
   g_action_muxer_insert (app->muxer, "msg", G_ACTION_GROUP (app->message_actions));
   g_action_muxer_insert (app->muxer, "msg-actions", G_ACTION_GROUP (app->message_sub_actions));
 
+  app->draws_attention = FALSE;
   im_application_list_update_draws_attention (app->list);
+
   g_action_group_change_action_state (G_ACTION_GROUP (app->muxer), "launch", g_variant_new_boolean (FALSE));
 
   if (was_running)
