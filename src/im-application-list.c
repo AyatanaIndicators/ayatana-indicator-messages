@@ -237,7 +237,7 @@ app_source_action_check_draw (Application * app, const gchar * action_name)
   g_variant_get (state, "(ux&sb)", &count, &time, &string, &draws_attention);
 
   /* invisible sources do not draw attention */
-  if (count == 0 && time == 0 && (string == NULL || string[0] != '\0'))
+  if (count == 0 && time == 0 && (string == NULL || string[0] == '\0'))
     draws_attention = FALSE;
 
   g_variant_unref(state);
