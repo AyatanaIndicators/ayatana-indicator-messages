@@ -474,11 +474,12 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                         NULL, NULL,
                                         g_cclosure_marshal_generic,
                                         G_TYPE_NONE,
-                                        4,
+                                        5,
                                         G_TYPE_STRING,
                                         G_TYPE_STRING,
                                         G_TYPE_STRING,
-                                        G_TYPE_VARIANT);
+                                        G_TYPE_VARIANT,
+                                        G_TYPE_BOOLEAN);
 
   signals[SOURCE_CHANGED] = g_signal_new ("source-changed",
                                           IM_TYPE_APPLICATION_LIST,
@@ -784,6 +785,7 @@ im_application_list_source_added (Application *app,
   gint64 time;
   const gchar *string;
   gboolean draws_attention;
+  gboolean visible;
   GVariant *serialized_icon = NULL;
   GVariant *state;
   GSimpleAction *action;
@@ -794,15 +796,17 @@ im_application_list_source_added (Application *app,
   if (g_variant_n_children (maybe_serialized_icon) == 1)
     g_variant_get_child (maybe_serialized_icon, 0, "v", &serialized_icon);
 
+  visible = count > 0 || time != 0 || (string != NULL && string[0] != '\0');
+
   state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
   action = g_simple_action_new_stateful (id, G_VARIANT_TYPE_BOOLEAN, state);
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_source_activated), app);
 
   g_action_map_add_action (G_ACTION_MAP(app->source_actions), G_ACTION (action));
 
-  g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, serialized_icon);
+  g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, serialized_icon, visible);
 
-  if (draws_attention && app->draws_attention == FALSE)
+  if (visible && draws_attention && app->draws_attention == FALSE)
     {
       app->draws_attention = TRUE;
       im_application_list_update_draws_attention (app->list);

@@ -170,6 +170,7 @@ im_desktop_menu_source_added (ImApplicationList *applist,
                               const gchar       *source_id,
                               const gchar       *label,
                               GVariant          *serialized_icon,
+                              gboolean           visible,
                               gpointer           user_data)
 {
   ImDesktopMenu *menu = user_data;
@@ -178,7 +179,8 @@ im_desktop_menu_source_added (ImApplicationList *applist,
   source_section = g_hash_table_lookup (menu->source_sections, app_id);
   g_return_if_fail (source_section != NULL);
 
-  im_desktop_menu_source_section_insert_source (source_section, source_id, label, serialized_icon, -1);
+  if (visible)
+    im_desktop_menu_source_section_insert_source (source_section, source_id, label, serialized_icon, -1);
 }
 
 static void
