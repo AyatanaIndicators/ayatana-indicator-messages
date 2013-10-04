@@ -267,6 +267,8 @@ application_update_draws_attention (Application * app)
   gchar **it;
   gboolean was_drawing_attention = app->draws_attention;
 
+  app->draws_attention = FALSE;
+
   source_actions = g_action_group_list_actions (G_ACTION_GROUP (app->source_actions));
   for (it = source_actions; *it && !app->draws_attention; it++)
     app->draws_attention = app_source_action_check_draw (app, *it);
