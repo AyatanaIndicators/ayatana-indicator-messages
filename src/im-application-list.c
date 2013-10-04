@@ -252,13 +252,17 @@ app_message_action_check_draw (Application * app, const gchar * action_name)
 }
 
 /* Regenerate the draw attention flag based on the sources and messages
-   that we have in the action groups */
-static void
-app_check_draw_attention (Application * app)
+ * that we have in the action groups.
+ *
+ * Returns TRUE if app->draws_attention has changed
+ */
+static gboolean
+application_update_draws_attention (Application * app)
 {
   gchar **source_actions = NULL;
   gchar **message_actions = NULL;
   gchar **it;
+  gboolean was_drawing_attention = app->draws_attention;
 
   source_actions = g_action_group_list_actions (G_ACTION_GROUP (app->source_actions));
   for (it = source_actions; *it && !app->draws_attention; it++)
@@ -271,7 +275,7 @@ app_check_draw_attention (Application * app)
   g_strfreev (source_actions);
   g_strfreev (message_actions);
 
-  return;
+  return was_drawing_attention != app->draws_attention;
 }
 
 /* Remove a source from an application, signal up and update the status
@@ -284,13 +288,8 @@ im_application_list_source_removed (Application *app,
 
   g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
 
-  if (app->draws_attention)
-    {
-      app->draws_attention = FALSE;
-      app_check_draw_attention(app);
-    }
-
-  im_application_list_update_draws_attention (app->list);
+  if (application_update_draws_attention(app))
+    im_application_list_update_draws_attention (app->list);
 }
 
 static void
