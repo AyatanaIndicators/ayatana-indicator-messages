@@ -224,22 +224,25 @@ im_application_list_update_draws_attention (ImApplicationList *list)
 static gboolean
 app_source_action_check_draw (Application * app, const gchar * action_name)
 {
-  gboolean retval = FALSE;
-  GVariant * state;
-  GVariant * draw;
+  GVariant *state;
+  guint32 count;
+  gint64 time;
+  const gchar *string;
+  gboolean draws_attention;
 
   state = g_action_group_get_action_state (G_ACTION_GROUP(app->source_actions), action_name);
   if (state == NULL)
     return FALSE;
 
-  /* uxsb */
-  draw = g_variant_get_child_value(state, 3);
-  retval = g_variant_get_boolean(draw);
+  g_variant_get (state, "(ux&sb)", &count, &time, &string, &draws_attention);
 
-  g_variant_unref(draw);
+  /* invisible sources do not draw attention */
+  if (count == 0 && time == 0 && (string == NULL || string[0] == '\0'))
+    draws_attention = FALSE;
+
   g_variant_unref(state);
 
-  return retval;
+  return draws_attention;
 }
 
 /* Check a message action to see if it draws */
@@ -252,26 +255,32 @@ app_message_action_check_draw (Application * app, const gchar * action_name)
 }
 
 /* Regenerate the draw attention flag based on the sources and messages
-   that we have in the action groups */
-static void
-app_check_draw_attention (Application * app)
+ * that we have in the action groups.
+ *
+ * Returns TRUE if app->draws_attention has changed
+ */
+static gboolean
+application_update_draws_attention (Application * app)
 {
   gchar **source_actions = NULL;
   gchar **message_actions = NULL;
   gchar **it;
+  gboolean was_drawing_attention = app->draws_attention;
+
+  app->draws_attention = FALSE;
 
   source_actions = g_action_group_list_actions (G_ACTION_GROUP (app->source_actions));
   for (it = source_actions; *it && !app->draws_attention; it++)
     app->draws_attention = app_source_action_check_draw (app, *it);
 
   message_actions = g_action_group_list_actions (G_ACTION_GROUP (app->message_actions));
-  for (it = message_actions; *it; it++)
+  for (it = message_actions; *it && !app->draws_attention; it++)
     app->draws_attention = app_message_action_check_draw (app, *it);
 
   g_strfreev (source_actions);
   g_strfreev (message_actions);
 
-  return;
+  return was_drawing_attention != app->draws_attention;
 }
 
 /* Remove a source from an application, signal up and update the status
@@ -284,13 +293,8 @@ im_application_list_source_removed (Application *app,
 
   g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
 
-  if (app->draws_attention)
-    {
-      app->draws_attention = FALSE;
-      app_check_draw_attention(app);
-    }
-
-  im_application_list_update_draws_attention (app->list);
+  if (application_update_draws_attention(app))
+    im_application_list_update_draws_attention (app->list);
 }
 
 static void
@@ -328,7 +332,8 @@ im_application_list_message_removed (Application *app,
   g_action_map_remove_action (G_ACTION_MAP(app->message_actions), id);
   g_action_muxer_remove (app->message_sub_actions, id);
 
-  im_application_list_update_draws_attention (app->list);
+  if (application_update_draws_attention(app))
+    im_application_list_update_draws_attention (app->list);
 
   g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, id);
 }
@@ -469,11 +474,12 @@ im_application_list_class_init (ImApplicationListClass *klass)
                                         NULL, NULL,
                                         g_cclosure_marshal_generic,
                                         G_TYPE_NONE,
-                                        4,
+                                        5,
                                         G_TYPE_STRING,
                                         G_TYPE_STRING,
                                         G_TYPE_STRING,
-                                        G_TYPE_VARIANT);
+                                        G_TYPE_VARIANT,
+                                        G_TYPE_BOOLEAN);
 
   signals[SOURCE_CHANGED] = g_signal_new ("source-changed",
                                           IM_TYPE_APPLICATION_LIST,
@@ -779,6 +785,7 @@ im_application_list_source_added (Application *app,
   gint64 time;
   const gchar *string;
   gboolean draws_attention;
+  gboolean visible;
   GVariant *serialized_icon = NULL;
   GVariant *state;
   GSimpleAction *action;
@@ -789,18 +796,21 @@ im_application_list_source_added (Application *app,
   if (g_variant_n_children (maybe_serialized_icon) == 1)
     g_variant_get_child (maybe_serialized_icon, 0, "v", &serialized_icon);
 
+  visible = count > 0 || time != 0 || (string != NULL && string[0] != '\0');
+
   state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
   action = g_simple_action_new_stateful (id, G_VARIANT_TYPE_BOOLEAN, state);
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_source_activated), app);
 
   g_action_map_add_action (G_ACTION_MAP(app->source_actions), G_ACTION (action));
 
-  g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, serialized_icon);
+  g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, serialized_icon, visible);
 
-  if (draws_attention)
-    app->draws_attention = TRUE;
-
-  im_application_list_update_draws_attention (app->list);
+  if (visible && draws_attention && app->draws_attention == FALSE)
+    {
+      app->draws_attention = TRUE;
+      im_application_list_update_draws_attention (app->list);
+    }
 
   g_object_unref (action);
   if (serialized_icon)
@@ -835,8 +845,8 @@ im_application_list_source_changed (Application *app,
 
   g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, id, label, serialized_icon, visible);
 
-  app->draws_attention = visible && draws_attention;
-  im_application_list_update_draws_attention (app->list);
+  if (application_update_draws_attention (app))
+    im_application_list_update_draws_attention (app->list);
 
   if (serialized_icon)
     g_variant_unref (serialized_icon);
@@ -997,10 +1007,11 @@ im_application_list_message_added (Application *app,
     g_object_unref (action_group);
   }
 
-  if (draws_attention)
-    app->draws_attention = TRUE;
-
-  im_application_list_update_draws_attention (app->list);
+  if (draws_attention && !app->draws_attention)
+    {
+      app->draws_attention = TRUE;
+      im_application_list_update_draws_attention (app->list);
+    }
 
   app_icon = get_symbolic_app_icon (G_APP_INFO (app->info));
 
@@ -1072,7 +1083,9 @@ im_application_list_unset_remote (Application *app)
   g_action_muxer_insert (app->muxer, "msg", G_ACTION_GROUP (app->message_actions));
   g_action_muxer_insert (app->muxer, "msg-actions", G_ACTION_GROUP (app->message_sub_actions));
 
+  app->draws_attention = FALSE;
   im_application_list_update_draws_attention (app->list);
+
   g_action_group_change_action_state (G_ACTION_GROUP (app->muxer), "launch", g_variant_new_boolean (FALSE));
 
   if (was_running)
