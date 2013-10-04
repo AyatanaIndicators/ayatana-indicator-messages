@@ -265,7 +265,7 @@ app_check_draw_attention (Application * app)
     app->draws_attention = app_source_action_check_draw (app, *it);
 
   message_actions = g_action_group_list_actions (G_ACTION_GROUP (app->message_actions));
-  for (it = message_actions; *it; it++)
+  for (it = message_actions; *it && !app->draws_attention; it++)
     app->draws_attention = app_message_action_check_draw (app, *it);
 
   g_strfreev (source_actions);
