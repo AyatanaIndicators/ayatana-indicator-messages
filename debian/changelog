@@ -1,3 +1,14 @@
+indicator-messages (13.10.1+13.10.20131011-0ubuntu1) saucy; urgency=low
+
+  [ Lars Uebernickel ]
+  * messages-service.c: remove superfluous unref.
+  * Fix the logic for turning the indicator icon blue.
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 391
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 11 Oct 2013 04:27:10 +0000
+
 indicator-messages (13.10.1+13.10.20131004-0ubuntu1) saucy; urgency=low
 
   [ Charles Kerr ]
