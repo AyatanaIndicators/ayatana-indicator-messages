@@ -934,7 +934,7 @@ im_application_list_message_added (Application *app,
                  &id, &maybe_serialized_icon, &title, &subtitle, &body, &time, &action_iter, &draws_attention);
 
   if (g_variant_n_children (maybe_serialized_icon) == 1)
-    serialized_icon = g_variant_get_child_value (maybe_serialized_icon, 0);
+    g_variant_get_child (maybe_serialized_icon, 0, "v", &serialized_icon);
 
   action = g_simple_action_new (id, G_VARIANT_TYPE_BOOLEAN);
   g_object_set_qdata(G_OBJECT(action), message_action_draws_attention_quark(), GINT_TO_POINTER(draws_attention));
