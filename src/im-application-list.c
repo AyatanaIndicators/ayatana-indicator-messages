@@ -1163,9 +1163,12 @@ im_application_list_set_remote (ImApplicationList *list,
 
       if (app->proxy)
         name_owner = g_dbus_proxy_get_name_owner (G_DBUS_PROXY (app->proxy));
-      g_warning ("replacing '%s' at %s with %s", id, name_owner, unique_bus_name);
 
-      im_application_list_unset_remote (app);
+      if (g_strcmp0 (name_owner, unique_bus_name) != 0)
+        {
+          g_warning ("replacing '%s' at %s with %s", id, name_owner, unique_bus_name);
+          im_application_list_unset_remote (app);
+        }
 
       g_free (name_owner);
     }
