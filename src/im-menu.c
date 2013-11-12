@@ -180,9 +180,16 @@ im_menu_insert_section (ImMenu      *menu,
   for (position = 1; position < g_menu_model_get_n_items(G_MENU_MODEL (priv->menu)) - 1; position++)
     {
       gchar * item_sort = NULL;
+
       if (g_menu_model_get_item_attribute(G_MENU_MODEL(priv->menu), position, "x-messaging-menu-sort-string", "s", &item_sort))
-        if (g_utf8_collate(sort_string, item_sort) < 0)
-          break;
+        {
+          if (g_utf8_collate(sort_string, item_sort) < 0)
+            {
+              g_free (item_sort);
+              break;
+            }
+        }
+
       g_free(item_sort);
     }
 
