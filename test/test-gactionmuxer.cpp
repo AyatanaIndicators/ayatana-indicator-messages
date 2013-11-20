@@ -46,17 +46,34 @@ TEST(GActionMuxerTest, Sanity) {
 	g_type_init ();
 #endif
 
+	g_test_expect_message ("Indicator-Messages", G_LOG_LEVEL_CRITICAL, "*G_IS_ACTION_MUXER*");
 	g_action_muxer_insert (NULL, NULL, NULL);
+	g_test_assert_expected_messages ();
+
+	g_test_expect_message ("Indicator-Messages", G_LOG_LEVEL_CRITICAL, "*G_IS_ACTION_MUXER*");
 	g_action_muxer_remove (NULL, NULL);
+	g_test_assert_expected_messages ();
 
 	muxer = g_action_muxer_new ();
 
 	g_action_muxer_insert (muxer, NULL, NULL);
 	g_action_muxer_remove (muxer, NULL);
+
+	g_test_expect_message ("Indicator-Messages", G_LOG_LEVEL_CRITICAL, "*NULL*");
 	EXPECT_FALSE (g_action_group_has_action (G_ACTION_GROUP (muxer), NULL));
+	g_test_assert_expected_messages ();
+
+	g_test_expect_message ("Indicator-Messages", G_LOG_LEVEL_CRITICAL, "*NULL*");
 	EXPECT_FALSE (g_action_group_get_action_enabled (G_ACTION_GROUP (muxer), NULL));
+	g_test_assert_expected_messages ();
+
+	g_test_expect_message ("Indicator-Messages", G_LOG_LEVEL_CRITICAL, "*NULL*");
 	EXPECT_FALSE (g_action_group_query_action (G_ACTION_GROUP (muxer), NULL, NULL, NULL, NULL, NULL, NULL));
+	g_test_assert_expected_messages ();
+
+	g_test_expect_message ("GLib-GIO", G_LOG_LEVEL_CRITICAL, "*NULL*");
 	g_action_group_activate_action (G_ACTION_GROUP (muxer), NULL, NULL);
+	g_test_assert_expected_messages ();
 
 	g_object_unref (muxer);
 }
