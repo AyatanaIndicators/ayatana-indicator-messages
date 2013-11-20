@@ -429,9 +429,12 @@ g_action_muxer_insert (GActionMuxer *muxer,
   gchar **action;
 
   g_return_if_fail (G_IS_ACTION_MUXER (muxer));
-  g_return_if_fail (G_IS_ACTION_GROUP (group));
+  g_return_if_fail (group == NULL || G_IS_ACTION_GROUP (group));
 
   g_action_muxer_remove (muxer, prefix);
+
+  if (group == NULL)
+    return;
 
   if (prefix)
     {
