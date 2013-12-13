@@ -186,7 +186,7 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   action_name = g_strconcat (app_id, ".msg.", id, NULL);
 
   item = g_menu_item_new (title, NULL);
-  g_menu_item_set_action_and_target_value (item, action_name, NULL);
+  g_menu_item_set_action_and_target_value (item, action_name, g_variant_new_boolean (TRUE));
 
   g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.messageitem");
   g_menu_item_set_attribute (item, "x-canonical-message-id", "s", id);
@@ -256,7 +256,7 @@ im_phone_menu_add_source (ImPhoneMenu     *menu,
   action_name = g_strconcat (app_id, ".src.", id, NULL);
 
   item = g_menu_item_new (label, NULL);
-  g_menu_item_set_action_and_target_value (item, action_name, NULL);
+  g_menu_item_set_action_and_target_value (item, action_name, g_variant_new_boolean (TRUE));
   g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.sourceitem");
 
   if (iconstr)
