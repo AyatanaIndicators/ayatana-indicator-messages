@@ -1,3 +1,13 @@
+indicator-messages (13.10.1+14.04.20140116-0ubuntu1) trusty; urgency=low
+
+  [ Lars Uebernickel ]
+  * phone menu: set action targets on source and message menu items.
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 400
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 16 Jan 2014 10:03:41 +0000
+
 indicator-messages (13.10.1+14.04.20131125-0ubuntu1) trusty; urgency=low
 
   [ Lars Uebernickel ]
