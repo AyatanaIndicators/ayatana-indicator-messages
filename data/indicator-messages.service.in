@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=com.canonical.indicator.messages
-Exec=@pkglibexecdir@/indicator-messages-service
