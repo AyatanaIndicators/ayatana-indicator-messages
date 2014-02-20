@@ -1,4 +1,4 @@
-SUBDIRS = icons
+SUBDIRS = icons upstart
 
 xdg_autostartdir = /etc/xdg/autostart
 xdg_autostart_DATA = indicator-messages.desktop

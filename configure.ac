@@ -169,6 +169,7 @@ data/icons/48x48/status/Makefile
 data/icons/scalable/Makefile
 data/icons/scalable/status/Makefile
 data/icons/scalable/categories/Makefile
+data/upstart/Makefile
 po/Makefile.in
 test/Makefile
 libmessaging-menu/Makefile
