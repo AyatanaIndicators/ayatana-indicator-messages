@@ -4,4 +4,5 @@ Name=Indicator Messages
 Exec=@pkglibexecdir@/indicator-messages-service
 StartupNotify=false
 Terminal=false
-OnlyShowIn=Unity;
+OnlyShowIn=Unity;GNOME;
+AutostartCondition=GNOME3 unless-session gnome
