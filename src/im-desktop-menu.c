@@ -79,12 +79,16 @@ im_desktop_menu_app_added (ImApplicationList *applist,
     if (shortcuts != NULL)
       for (nicks = indicator_desktop_shortcuts_get_nicks(shortcuts); *nicks; nicks++)
         {
+          GMenuItem *item;
           gchar *label;
 
           label = indicator_desktop_shortcuts_nick_get_name (shortcuts, *nicks);
-          g_menu_append (app_section, label, *nicks);
+          item = g_menu_item_new (label, *nicks);
+          g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.application");
+          g_menu_append_item (app_section, item);
 
           g_free (label);
+          g_object_unref (item);
         }
 
     g_clear_object(&shortcuts);
