@@ -27,10 +27,52 @@ struct _ImDesktopMenu
 {
   ImMenu parent;
 
+  gboolean status_section_visible;
   GHashTable *source_sections;
 };
 
 G_DEFINE_TYPE (ImDesktopMenu, im_desktop_menu, IM_TYPE_MENU);
+
+static void
+menu_append_status (GMenu       *menu,
+                    const gchar *label,
+                    const gchar *detailed_action,
+                    const gchar *icon_name)
+{
+  GMenuItem *item;
+  GIcon *icon;
+
+  icon = g_themed_icon_new (icon_name);
+
+  item = g_menu_item_new (label, detailed_action);
+  g_menu_item_set_icon (item, icon);
+  g_menu_append_item (menu, item);
+
+  g_object_unref (icon);
+  g_object_unref (item);
+}
+
+static void
+im_desktop_menu_show_chat_section (ImDesktopMenu *menu)
+{
+  GMenu *status_section;
+
+  if (menu->status_section_visible)
+    return;
+
+  status_section = g_menu_new ();
+
+  menu_append_status (status_section, _("Available"), "indicator.status::available", "user-available");
+  menu_append_status (status_section, _("Away"),      "indicator.status::away",      "user-away");
+  menu_append_status (status_section, _("Busy"),      "indicator.status::busy",      "user-busy");
+  menu_append_status (status_section, _("Invisible"), "indicator.status::invisible", "user-invisible");
+  menu_append_status (status_section, _("Offline"),   "indicator.status::offline",   "user-offline");
+
+  im_menu_prepend_section (IM_MENU (menu), G_MENU_MODEL (status_section));
+  menu->status_section_visible = TRUE;
+
+  g_object_unref (status_section);
+}
 
 static void
 im_desktop_menu_app_added (ImApplicationList *applist,
@@ -93,6 +135,9 @@ im_desktop_menu_app_added (ImApplicationList *applist,
 
     g_clear_object(&shortcuts);
   }
+
+  if (g_desktop_app_info_get_boolean (app_info, "X-MessagingMenu-UsesChatSection"))
+    im_desktop_menu_show_chat_section (menu);
 
   source_section = g_menu_new ();
 
@@ -261,60 +306,11 @@ im_desktop_menu_app_stopped (ImApplicationList *applist,
     g_menu_remove (section, 0);
 }
 
-static GMenu *
-create_status_section (void)
-{
-	GMenu *menu;
-	GMenuItem *item;
-	struct status_item {
-		gchar *label;
-		gchar *action;
-		gchar *icon_name;
-	} status_items[] = {
-		{ _("Available"), "indicator.status::available", "user-available" },
-		{ _("Away"),      "indicator.status::away",      "user-away" },
-		{ _("Busy"),      "indicator.status::busy",      "user-busy" },
-		{ _("Invisible"), "indicator.status::invisible", "user-invisible" },
-		{ _("Offline"),   "indicator.status::offline",   "user-offline" }
-	};
-	int i;
-
-	menu = g_menu_new ();
-
-	item = g_menu_item_new (NULL, NULL);
-
-	for (i = 0; i < G_N_ELEMENTS (status_items); i++) {
-		GIcon *icon;
-
-		g_menu_item_set_label (item, status_items[i].label);
-		g_menu_item_set_detailed_action (item, status_items[i].action);
-
-		icon = g_themed_icon_new (status_items[i].icon_name);
-		g_menu_item_set_icon (item, icon);
-
-		g_menu_append_item (menu, item);
-
-		g_object_unref (icon);
-	}
-
-	g_object_unref (item);
-	return menu;
-}
-
 static void
 im_desktop_menu_constructed (GObject *object)
 {
   ImDesktopMenu *menu = IM_DESKTOP_MENU (object);
   ImApplicationList *applist;
-
-  {
-    GMenu *status_section;
-
-    status_section = create_status_section();
-    im_menu_append_section (IM_MENU (menu), G_MENU_MODEL (status_section));
-
-    g_object_unref (status_section);
-  }
 
   {
     GMenu *clear_section;
