@@ -28,6 +28,8 @@ struct _ImDesktopMenu
   ImMenu parent;
 
   gboolean status_section_visible;
+  GMenu *default_chat_client_section;
+  GMenu *default_mail_client_section;
   GHashTable *source_sections;
 };
 
@@ -74,6 +76,20 @@ im_desktop_menu_show_chat_section (ImDesktopMenu *menu)
   g_object_unref (status_section);
 }
 
+static gboolean
+g_app_info_is_default_for_uri_scheme (GAppInfo    *info,
+                                      const gchar *uri_scheme)
+{
+  GAppInfo *default_info;
+  gboolean is_default;
+
+  default_info = g_app_info_get_default_for_uri_scheme (uri_scheme);
+  is_default = g_app_info_equal (info, default_info);
+
+  g_object_unref (default_info);
+  return is_default;
+}
+
 static void
 im_desktop_menu_app_added (ImApplicationList *applist,
                            const gchar       *app_id,
@@ -85,6 +101,7 @@ im_desktop_menu_app_added (ImApplicationList *applist,
   GMenu *app_section;
   GMenu *source_section;
   gchar *namespace;
+  GMenuItem *item;
 
   app_section = g_menu_new ();
 
@@ -145,11 +162,33 @@ im_desktop_menu_app_added (ImApplicationList *applist,
   g_menu_append_section (section, NULL, G_MENU_MODEL (app_section));
   g_menu_append_section (section, NULL, G_MENU_MODEL (source_section));
 
+  item = g_menu_item_new_section (NULL, G_MENU_MODEL (section));
+
   namespace = g_strconcat ("indicator.", app_id, NULL);
-  im_menu_insert_section (IM_MENU (menu), g_app_info_get_name(G_APP_INFO(app_info)), namespace, G_MENU_MODEL (section));
+  g_menu_item_set_attribute (item, "action-namespace", "s", namespace);
+
+  /* The default chat client is not stored anywhere, so let's hardcode empathy. */
+  if (g_str_equal (app_id, "empathy"))
+    {
+      g_menu_remove_all (menu->default_chat_client_section);
+      g_menu_append_item (menu->default_chat_client_section, item);
+    }
+  else if (g_app_info_is_default_for_uri_scheme (G_APP_INFO (app_info), "mailto"))
+    {
+      g_menu_remove_all (menu->default_mail_client_section);
+      g_menu_append_item (menu->default_mail_client_section, item);
+    }
+  else
+    {
+      g_menu_item_set_attribute (item, "x-messaging-menu-sort-string", "s",
+                                 g_app_info_get_name(G_APP_INFO(app_info)));
+      im_menu_insert_item_sorted (IM_MENU (menu), item, menu->status_section_visible ? 3 : 2, -1);
+    }
+
   g_hash_table_insert (menu->source_sections, g_strdup (app_id), source_section);
 
   g_free (namespace);
+  g_object_unref (item);
   g_object_unref (section);
   g_object_unref (app_section);
 }
@@ -311,6 +350,12 @@ im_desktop_menu_constructed (GObject *object)
 {
   ImDesktopMenu *menu = IM_DESKTOP_MENU (object);
   ImApplicationList *applist;
+
+  menu->default_chat_client_section = g_menu_new ();
+  im_menu_append_section (IM_MENU (menu), G_MENU_MODEL (menu->default_chat_client_section));
+
+  menu->default_mail_client_section = g_menu_new ();
+  im_menu_append_section (IM_MENU (menu), G_MENU_MODEL (menu->default_mail_client_section));
 
   {
     GMenu *clear_section;
