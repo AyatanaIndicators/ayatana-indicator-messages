@@ -149,6 +149,20 @@ im_menu_export (ImMenu           *menu,
 }
 
 void
+im_menu_prepend_section (ImMenu     *menu,
+                         GMenuModel *section)
+{
+  ImMenuPrivate *priv;
+
+  g_return_if_fail (IM_IS_MENU (menu));
+  g_return_if_fail (G_IS_MENU_MODEL (section));
+
+  priv = im_menu_get_instance_private (menu);
+
+  g_menu_prepend_section (priv->menu, NULL, section);
+}
+
+void
 im_menu_append_section (ImMenu     *menu,
                         GMenuModel *section)
 {

@@ -155,7 +155,7 @@ application_draws_attention (gpointer key,
 }
 
 static void
-im_application_list_update_draws_attention (ImApplicationList *list)
+im_application_list_update_root_action (ImApplicationList *list)
 {
   const gchar *base_icon_name;
   const gchar *accessible_name;
@@ -164,6 +164,7 @@ im_application_list_update_draws_attention (ImApplicationList *list)
   GVariant *serialized_icon;
   GVariantBuilder builder;
   GVariant *state;
+  guint n_applications;
 
   /* Figure out what type of icon we should be drawing */
   if (g_hash_table_find (list->applications, application_draws_attention, NULL)) {
@@ -202,10 +203,8 @@ im_application_list_update_draws_attention (ImApplicationList *list)
   g_variant_builder_close(&builder);
 
   /* visibility */
-  g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
-  g_variant_builder_add_value(&builder, g_variant_new_string("visible"));
-  g_variant_builder_add_value(&builder, g_variant_new_variant(g_variant_new_boolean(TRUE)));
-  g_variant_builder_close(&builder);
+  n_applications = g_hash_table_size (list->applications);
+  g_variant_builder_add (&builder, "{sv}", "visible", g_variant_new_boolean (n_applications > 0));
 
   /* Set the state */
   g_action_group_change_action_state (G_ACTION_GROUP(list->globalactions), "messages", g_variant_builder_end(&builder));
@@ -294,7 +293,7 @@ im_application_list_source_removed (Application *app,
   g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
 
   if (application_update_draws_attention(app))
-    im_application_list_update_draws_attention (app->list);
+    im_application_list_update_root_action (app->list);
 }
 
 static void
@@ -333,7 +332,7 @@ im_application_list_message_removed (Application *app,
   g_action_muxer_remove (app->message_sub_actions, id);
 
   if (application_update_draws_attention(app))
-    im_application_list_update_draws_attention (app->list);
+    im_application_list_update_root_action (app->list);
 
   g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, id);
 }
@@ -435,7 +434,7 @@ im_application_list_remove_all (GSimpleAction *action,
       g_strfreev (message_actions);
     }
 
-  im_application_list_update_draws_attention (list);
+  im_application_list_update_root_action (list);
 }
 
 static void
@@ -601,7 +600,7 @@ im_application_list_init (ImApplicationList *list)
   list->muxer = g_action_muxer_new ();
   g_action_muxer_insert (list->muxer, NULL, G_ACTION_GROUP (list->globalactions));
 
-  im_application_list_update_draws_attention (list);
+  im_application_list_update_root_action (list);
 }
 
 ImApplicationList *
@@ -744,6 +743,8 @@ im_application_list_add (ImApplicationList  *list,
   g_hash_table_insert (list->applications, (gpointer) app->id, app);
   g_action_muxer_insert (list->muxer, app->id, G_ACTION_GROUP (app->muxer));
 
+  im_application_list_update_root_action (list);
+
   g_signal_emit (app->list, signals[APP_ADDED], 0, app->id, app->info);
 
   g_object_unref (launch_action);
@@ -769,7 +770,7 @@ im_application_list_remove (ImApplicationList *list,
       g_hash_table_remove (list->applications, id);
       g_action_muxer_remove (list->muxer, id);
 
-      im_application_list_update_draws_attention (list);
+      im_application_list_update_root_action (list);
     }
 }
 
@@ -809,7 +810,7 @@ im_application_list_source_added (Application *app,
   if (visible && draws_attention && app->draws_attention == FALSE)
     {
       app->draws_attention = TRUE;
-      im_application_list_update_draws_attention (app->list);
+      im_application_list_update_root_action (app->list);
     }
 
   g_object_unref (action);
@@ -846,7 +847,7 @@ im_application_list_source_changed (Application *app,
   g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, id, label, serialized_icon, visible);
 
   if (application_update_draws_attention (app))
-    im_application_list_update_draws_attention (app->list);
+    im_application_list_update_root_action (app->list);
 
   if (serialized_icon)
     g_variant_unref (serialized_icon);
@@ -1010,7 +1011,7 @@ im_application_list_message_added (Application *app,
   if (draws_attention && !app->draws_attention)
     {
       app->draws_attention = TRUE;
-      im_application_list_update_draws_attention (app->list);
+      im_application_list_update_root_action (app->list);
     }
 
   app_icon = get_symbolic_app_icon (G_APP_INFO (app->info));
@@ -1084,7 +1085,7 @@ im_application_list_unset_remote (Application *app)
   g_action_muxer_insert (app->muxer, "msg-actions", G_ACTION_GROUP (app->message_sub_actions));
 
   app->draws_attention = FALSE;
-  im_application_list_update_draws_attention (app->list);
+  im_application_list_update_root_action (app->list);
 
   g_action_group_change_action_state (G_ACTION_GROUP (app->muxer), "launch", g_variant_new_boolean (FALSE));
 
@@ -1229,7 +1230,7 @@ status_activated (GSimpleAction * action, GVariant * param, gpointer user_data)
 
   g_signal_emit (list, signals[STATUS_SET], 0, status);
 
-  im_application_list_update_draws_attention(list);
+  im_application_list_update_root_action(list);
 
   return;
 }
@@ -1276,7 +1277,7 @@ im_application_list_set_status (ImApplicationList * list, const gchar * id, cons
 
 	g_simple_action_set_state(list->statusaction, g_variant_new_string(status_ids[final_status]));
 
-	im_application_list_update_draws_attention(list);
+	im_application_list_update_root_action(list);
 
 	return;
 }
