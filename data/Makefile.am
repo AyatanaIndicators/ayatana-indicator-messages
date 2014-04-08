@@ -1,10 +1,16 @@
-SUBDIRS = icons
+SUBDIRS = icons upstart
 
-dbus_servicesdir = $(datadir)/dbus-1/services
-dbus_services_DATA = indicator-messages.service
+xdg_autostartdir = /etc/xdg/autostart
+xdg_autostart_DATA = indicator-messages.desktop
 
-%.service: %.service.in
-	sed -e "s|\@pkglibexecdir\@|$(pkglibexecdir)|" $< > $@
+%.desktop: %.desktop.in
+	$(AM_V_GEN) sed -e "s|\@pkglibexecdir\@|$(pkglibexecdir)|" $< > $@
+
+upstart_jobsdir = $(datadir)/upstart/sessions/
+upstart_jobs_DATA = indicator-messages.conf
+
+%.conf: %.conf.in
+	$(AM_V_GEN) sed -e "s|\@pkglibexecdir\@|$(pkglibexecdir)|" $< > $@
 
 gsettings_SCHEMAS = com.canonical.indicator.messages.gschema.xml
 @GSETTINGS_RULES@
@@ -13,7 +19,10 @@ indicatordir = $(INDICATOR_DIR)
 dist_indicator_DATA = com.canonical.indicator.messages
 
 EXTRA_DIST = \
-	$(gsettings_SCHEMAS) \
-	indicator-messages.service.in
+	indicator-messages.desktop.in \
+	indicator-messages.conf.in \
+	$(gsettings_SCHEMAS)
 
-CLEANFILES = indicator-messages.service
+CLEANFILES = \
+	$(xdg_autostart_DATA) \
+	$(upstart_jobs_DATA)
