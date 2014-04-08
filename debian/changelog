@@ -1,3 +1,17 @@
+indicator-messages (13.10.1+14.04.20140408-0ubuntu1) trusty; urgency=low
+
+  [ Ted Gould ]
+  * Synchronize process management across indicators
+
+  [ Lars Uebernickel ]
+  * Don't show the messaging menu and the status section when no app is
+    registered for them (LP: #1225063)
+  * desktop menu: sort applications like specified Default chat client,
+    default email client, and the other applications sorted by alphabet.
+    (LP: #1216833)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 08 Apr 2014 16:25:00 +0000
+
 indicator-messages (13.10.1+14.04.20140321-0ubuntu1) trusty; urgency=low
 
   [ Lars Uebernickel ]
