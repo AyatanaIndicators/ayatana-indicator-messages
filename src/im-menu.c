@@ -176,43 +176,52 @@ im_menu_append_section (ImMenu     *menu,
   g_menu_append_section (priv->menu, NULL, section);
 }
 
+/*
+ * Inserts @item into @menu by comparing its
+ * "x-messaging-menu-sort-string" with those found in existing menu
+ * items between positions @first and @last.
+ *
+ * If @last is negative, it is counted from the end of @menu.
+ */
 void
-im_menu_insert_section (ImMenu      *menu,
-                        const gchar *sort_string,
-                        const gchar *namespace,
-                        GMenuModel  *section)
+im_menu_insert_item_sorted (ImMenu    *menu,
+                            GMenuItem *item,
+                            gint       first,
+                            gint       last)
 {
-  int position;
   ImMenuPrivate *priv;
-  GMenuItem *item;
+  gint position = first;
+  gchar *sort_string;
 
   g_return_if_fail (IM_IS_MENU (menu));
-  g_return_if_fail (G_IS_MENU_MODEL (section));
+  g_return_if_fail (G_IS_MENU_ITEM (item));
 
   priv = im_menu_get_instance_private (menu);
 
-  for (position = 1; position < g_menu_model_get_n_items(G_MENU_MODEL (priv->menu)) - 1; position++)
+  if (last < 0)
+    last = g_menu_model_get_n_items (G_MENU_MODEL (priv->menu)) + last;
+
+  g_return_if_fail (first <= last);
+
+  if (g_menu_item_get_attribute (item, "x-messaging-menu-sort-string", "s", &sort_string))
     {
-      gchar *item_sort;
-
-      if (g_menu_model_get_item_attribute(G_MENU_MODEL(priv->menu), position, "x-messaging-menu-sort-string", "s", &item_sort))
+      while (position < last)
         {
-          gint cmp;
+          gchar *item_sort;
 
-          cmp = g_utf8_collate(sort_string, item_sort);
-          g_free (item_sort);
-          if (cmp < 0)
-            break;
+          if (g_menu_model_get_item_attribute(G_MENU_MODEL(priv->menu), position, "x-messaging-menu-sort-string", "s", &item_sort))
+            {
+              gint cmp;
+
+              cmp = g_utf8_collate(sort_string, item_sort);
+              g_free (item_sort);
+              if (cmp < 0)
+                break;
+            }
+
+          position++;
         }
     }
 
-  item = g_menu_item_new_section (NULL, section);
-  g_menu_item_set_attribute (item, "x-messaging-menu-sort-string", "s", sort_string);
-
-  if (namespace)
-    g_menu_item_set_attribute (item, "action-namespace", "s", namespace);
-
   g_menu_insert_item (priv->menu, position, item);
-
-  g_object_unref (item);
 }

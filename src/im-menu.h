@@ -59,9 +59,9 @@ void                    im_menu_prepend_section                         (ImMenu 
 void                    im_menu_append_section                          (ImMenu     *menu,
                                                                          GMenuModel *section);
 
-void                    im_menu_insert_section                          (ImMenu      *menu,
-                                                                         const gchar *sort_string,
-                                                                         const gchar *namespace,
-                                                                         GMenuModel  *section);
+void                    im_menu_insert_item_sorted                      (ImMenu    *menu,
+                                                                         GMenuItem *item,
+                                                                         gint       first,
+                                                                         gint       last);
 
 #endif
