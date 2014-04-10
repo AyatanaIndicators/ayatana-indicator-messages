@@ -1158,6 +1158,12 @@ im_application_list_set_remote (ImApplicationList *list,
       return;
     }
 
+  if (!connection && !unique_bus_name && !object_path)
+    {
+      im_application_list_unset_remote (app);
+      return;
+    }
+
   if (app->cancellable)
     {
       gchar *name_owner = NULL;

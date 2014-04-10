@@ -123,6 +123,28 @@ set_status (IndicatorMessagesService *service,
 	return TRUE;
 }
 
+static gboolean
+app_stopped (IndicatorMessagesService *service,
+	     GDBusMethodInvocation *invocation,
+	     const gchar *desktop_id,
+	     gpointer user_data)
+{
+	GDesktopAppInfo *appinfo;
+	const gchar *id;
+
+	appinfo = g_desktop_app_info_new (desktop_id);
+	if (!appinfo)
+		return TRUE;
+
+	id = g_app_info_get_id (G_APP_INFO (appinfo));
+	im_application_list_set_remote (applications, id, NULL, NULL, NULL);
+	indicator_messages_service_complete_application_stopped_running (service, invocation);
+
+	g_object_unref (appinfo);
+
+	return TRUE;
+}
+
 /* The status has been set by the user, let's tell the world! */
 static void
 status_set_by_user (ImApplicationList * list, const gchar * status, gpointer user_data)
@@ -231,6 +253,8 @@ main (int argc, char ** argv)
 			  G_CALLBACK (unregister_application), NULL);
 	g_signal_connect (messages_service, "handle-set-status",
 			  G_CALLBACK (set_status), NULL);
+	g_signal_connect (messages_service, "handle-application-stopped-running",
+			  G_CALLBACK (app_stopped), NULL);
 
 	applications = im_application_list_new ();
 	g_signal_connect (applications, "status-set",
