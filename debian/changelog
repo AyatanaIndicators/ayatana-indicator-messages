@@ -1,3 +1,16 @@
+indicator-messages (13.10.1+14.04.20140410-0ubuntu1) trusty; urgency=low
+
+  [ Lars Uebernickel ]
+  * messages-service: listen to the ApplicationStoppedRunning call Prior
+    to this patch, only applications that exit were marked as "not
+    running". However, this must also happen when an application unrefs
+    it's MessagingMenuApp instance. This is a problem for applications
+    which implement messaging menu integration as a plugin (when
+    unloading the plugin). Specifically, this causes bug #1302930, as
+    telepathy-indicator doesn't exit when empathy exits. (LP: #1302930)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 10 Apr 2014 12:07:10 +0000
+
 indicator-messages (13.10.1+14.04.20140408-0ubuntu1) trusty; urgency=low
 
   [ Ted Gould ]
