@@ -25,7 +25,7 @@
 #include <string.h>
 
 /**
- * SECTION:messaging-menu
+ * SECTION:messaging-menu-app
  * @title: MessagingMenuApp
  * @short_description: An application section in the messaging menu
  * @include: messaging-menu.h
