@@ -1,3 +1,11 @@
+indicator-messages (13.10.1+14.10.20140611-0ubuntu1) utopic; urgency=low
+
+  [ Charles Kerr ]
+  * Add example of using libmessaging-menu from a python client (LP:
+    #1315384)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 11 Jun 2014 17:23:06 +0000
+
 indicator-messages (13.10.1+14.04.20140410-0ubuntu1) trusty; urgency=low
 
   [ Lars Uebernickel ]
