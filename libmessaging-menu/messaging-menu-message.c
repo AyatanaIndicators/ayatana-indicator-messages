@@ -132,6 +132,7 @@ messaging_menu_message_get_property (GObject    *object,
 
     case PROP_BODY:
       g_value_set_string (value, msg->body);
+      break;
 
     case PROP_TIME:
       g_value_set_int64 (value, msg->time);
@@ -174,6 +175,7 @@ messaging_menu_message_set_property (GObject      *object,
 
     case PROP_BODY:
       msg->body = g_value_dup_string (value);
+      break;
 
     case PROP_TIME:
       msg->time = g_value_get_int64 (value);
