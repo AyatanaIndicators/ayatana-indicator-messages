@@ -6,9 +6,12 @@ Position=50
 [desktop]
 ObjectPath=/com/canonical/indicator/messages/desktop
 
+[desktop_greeter]
+ObjectPath=/com/canonical/indicator/messages/desktop_greeter
+
 [phone]
 ObjectPath=/com/canonical/indicator/messages/phone
 
 [phone_greeter]
-ObjectPath=/com/canonical/indicator/messages/phone
+ObjectPath=/com/canonical/indicator/messages/phone_greeter
 
