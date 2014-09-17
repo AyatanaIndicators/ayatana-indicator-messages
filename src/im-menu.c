@@ -246,5 +246,11 @@ im_menu_insert_item_sorted (ImMenu    *menu,
 gboolean
 im_menu_show_data (ImMenu *menu)
 {
-  return TRUE;
+  g_return_val_if_fail (IM_IS_MENU (menu), FALSE);
+  ImMenuPrivate *priv = im_menu_get_instance_private (IM_MENU (menu));
+
+  if (!priv->on_greeter)
+    return TRUE;
+
+  return FALSE;
 }
