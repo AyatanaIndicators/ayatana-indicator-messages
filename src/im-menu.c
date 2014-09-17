@@ -18,6 +18,7 @@
  */
 
 #include "im-menu.h"
+#include "accounts-service.h"
 
 struct _ImMenuPrivate
 {
@@ -25,6 +26,7 @@ struct _ImMenuPrivate
   GMenu *menu;
   ImApplicationList *applist;
   gboolean on_greeter;
+  AccountsService *as;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (ImMenu, im_menu, G_TYPE_OBJECT)
@@ -45,6 +47,7 @@ im_menu_finalize (GObject *object)
   g_object_unref (priv->toplevel_menu);
   g_object_unref (priv->menu);
   g_object_unref (priv->applist);
+  g_object_unref (priv->as);
 
   G_OBJECT_CLASS (im_menu_parent_class)->finalize (object);
 }
@@ -125,6 +128,7 @@ im_menu_init (ImMenu *menu)
   priv->toplevel_menu = g_menu_new ();
   priv->menu = g_menu_new ();
   priv->on_greeter = FALSE;
+  priv->as = accounts_service_ref_default();
 
   root = g_menu_item_new (NULL, "indicator.messages");
   g_menu_item_set_attribute (root, "x-canonical-type", "s", "com.canonical.indicator.root");
