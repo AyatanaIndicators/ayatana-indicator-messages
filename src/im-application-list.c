@@ -173,9 +173,11 @@ im_application_list_update_root_action (ImApplicationList *list)
   if (g_hash_table_find (list->applications, application_draws_attention, NULL)) {
     base_icon_name = "indicator-messages-new-%s";
     accessible_name = _("New Messages");
+    im_accounts_service_set_draws_attention(list->as, TRUE);
   } else {
     base_icon_name = "indicator-messages-%s";
     accessible_name = _("Messages");
+    im_accounts_service_set_draws_attention(list->as, FALSE);
   }
 
   /* Include the IM state in the icon */

@@ -45,6 +45,7 @@ struct _ImAccountsService {
 
 GType im_accounts_service_get_type (void);
 ImAccountsService * im_accounts_service_ref_default (void);
+void im_accounts_service_set_draws_attention (ImAccountsService * service, gboolean draws_attention);
 
 G_END_DECLS
 

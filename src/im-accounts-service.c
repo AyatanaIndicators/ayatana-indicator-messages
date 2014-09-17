@@ -91,3 +91,10 @@ im_accounts_service_ref_default (void)
 
 	return g_object_ref(as);
 }
+
+void
+im_accounts_service_set_draws_attention (ImAccountsService * service, gboolean draws_attention)
+{
+
+
+}
