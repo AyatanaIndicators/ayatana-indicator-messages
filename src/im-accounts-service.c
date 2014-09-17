@@ -21,12 +21,14 @@
 #include "config.h"
 #endif
 
+#include <act/act.h>
+
 #include "im-accounts-service.h"
 
 typedef struct _ImAccountsServicePrivate ImAccountsServicePrivate;
 
 struct _ImAccountsServicePrivate {
-	int dummy;
+	ActUserManager * user_manager;
 };
 
 #define IM_ACCOUNTS_SERVICE_GET_PRIVATE(o) \
@@ -53,11 +55,18 @@ im_accounts_service_class_init (ImAccountsServiceClass *klass)
 static void
 im_accounts_service_init (ImAccountsService *self)
 {
+	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(self);
+
+	priv->user_manager = act_user_manager_get_default();
 }
 
 static void
 im_accounts_service_dispose (GObject *object)
 {
+	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(object);
+
+	g_clear_object(&priv->user_manager);
+	
 	G_OBJECT_CLASS (im_accounts_service_parent_class)->dispose (object);
 }
 

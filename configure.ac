@@ -43,7 +43,8 @@ GLIB_REQUIRED_VERSION=2.35.4
 INTROSPECTION_REQUIRED_VERSION=1.32.0
 
 PKG_CHECK_MODULES(APPLET, gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
-                          glib-2.0 >= $GLIB_REQUIRED_VERSION)
+                          glib-2.0 >= $GLIB_REQUIRED_VERSION
+                          accountsservice)
 
 PKG_CHECK_MODULES(GIO, gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION)
 
