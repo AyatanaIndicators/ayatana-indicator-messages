@@ -64,4 +64,6 @@ void                    im_menu_insert_item_sorted                      (ImMenu 
                                                                          gint       first,
                                                                          gint       last);
 
+gboolean                im_menu_show_data                               (ImMenu *menu);
+
 #endif

@@ -240,3 +240,11 @@ im_menu_insert_item_sorted (ImMenu    *menu,
 
   g_menu_insert_item (priv->menu, position, item);
 }
+
+/* Whether the menu should show extra data on it. Depends on the greeter
+   status and user settings */
+gboolean
+im_menu_show_data (ImMenu *menu)
+{
+  return TRUE;
+}
