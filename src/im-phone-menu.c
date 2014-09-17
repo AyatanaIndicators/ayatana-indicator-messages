@@ -142,12 +142,13 @@ im_phone_menu_init (ImPhoneMenu *menu)
 }
 
 ImPhoneMenu *
-im_phone_menu_new (ImApplicationList  *applist)
+im_phone_menu_new (ImApplicationList  *applist, gboolean greeter)
 {
   g_return_val_if_fail (IM_IS_APPLICATION_LIST (applist), NULL);
 
   return g_object_new (IM_TYPE_PHONE_MENU,
                        "application-list", applist,
+                       "on-greeter", greeter,
                        NULL);
 }
 
