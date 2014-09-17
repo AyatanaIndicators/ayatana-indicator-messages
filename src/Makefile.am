@@ -5,6 +5,8 @@ pkglibexec_PROGRAMS = indicator-messages-service
 
 indicator_messages_service_SOURCES = \
 	messages-service.c \
+	accounts-service.c \
+	accounts-service.h \
 	dbus-data.h \
 	gactionmuxer.c \
 	gactionmuxer.h \
