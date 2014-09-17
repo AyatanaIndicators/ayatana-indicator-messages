@@ -76,9 +76,18 @@ im_accounts_service_finalize (GObject *object)
 	G_OBJECT_CLASS (im_accounts_service_parent_class)->finalize (object);
 }
 
+/* Not the most testable way to do this but, it is a less invasive one, and we'll
+   probably restructure this codebase soonish */
+/* Gets an account service wrapper reference, so then it can be free'd */
 ImAccountsService *
 im_accounts_service_ref_default (void)
 {
+	static ImAccountsService * as = NULL;
+	if (as == NULL) {
+		as = IM_ACCOUNTS_SERVICE(g_object_new(IM_ACCOUNTS_SERVICE_TYPE, NULL));
+		g_object_add_weak_pointer(G_OBJECT(as), (gpointer *)&as);
+		return as;
+	}
 
-	return NULL;
+	return g_object_ref(as);
 }
