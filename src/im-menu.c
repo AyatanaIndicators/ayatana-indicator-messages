@@ -24,6 +24,7 @@ struct _ImMenuPrivate
   GMenu *toplevel_menu;
   GMenu *menu;
   ImApplicationList *applist;
+  gboolean on_greeter;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (ImMenu, im_menu, G_TYPE_OBJECT)
@@ -32,6 +33,7 @@ enum
 {
   PROP_0,
   PROP_APPLICATION_LIST,
+  PROP_ON_GREETER,
   NUM_PROPERTIES
 };
 
@@ -60,6 +62,9 @@ im_menu_get_property (GObject    *object,
     case PROP_APPLICATION_LIST:
       g_value_set_object (value, priv->applist);
       break;
+    case PROP_ON_GREETER:
+      g_value_set_boolean (value, priv->on_greeter);
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -78,6 +83,9 @@ im_menu_set_property (GObject      *object,
     {
     case PROP_APPLICATION_LIST: /* construct only */
       priv->applist = g_value_dup_object (value);
+      break;
+    case PROP_ON_GREETER:
+      priv->on_greeter = g_value_get_boolean (value);
       break;
 
     default:
@@ -100,6 +108,12 @@ im_menu_class_init (ImMenuClass *class)
                                                         G_PARAM_CONSTRUCT_ONLY |
                                                         G_PARAM_READWRITE |
                                                         G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (object_class, PROP_ON_GREETER,
+                                   g_param_spec_boolean ("on-greeter", "", "",
+                                                         FALSE,
+                                                         G_PARAM_CONSTRUCT_ONLY |
+                                                         G_PARAM_READWRITE |
+                                                         G_PARAM_STATIC_STRINGS));
 }
 
 static void
@@ -110,6 +124,7 @@ im_menu_init (ImMenu *menu)
 
   priv->toplevel_menu = g_menu_new ();
   priv->menu = g_menu_new ();
+  priv->on_greeter = FALSE;
 
   root = g_menu_item_new (NULL, "indicator.messages");
   g_menu_item_set_attribute (root, "x-canonical-type", "s", "com.canonical.indicator.root");
