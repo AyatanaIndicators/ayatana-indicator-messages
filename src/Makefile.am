@@ -5,13 +5,13 @@ pkglibexec_PROGRAMS = indicator-messages-service
 
 indicator_messages_service_SOURCES = \
 	messages-service.c \
-	accounts-service.c \
-	accounts-service.h \
 	dbus-data.h \
 	gactionmuxer.c \
 	gactionmuxer.h \
 	gsettingsstrv.c \
 	gsettingsstrv.h \
+	im-accounts-service.c \
+	im-accounts-service.h \
 	im-menu.c \
 	im-menu.h \
 	im-phone-menu.c \
