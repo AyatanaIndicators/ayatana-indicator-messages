@@ -98,3 +98,10 @@ im_accounts_service_set_draws_attention (ImAccountsService * service, gboolean d
 
 
 }
+
+gboolean
+im_accounts_service_get_show_on_greeter (ImAccountsService * service)
+{
+
+	return FALSE;
+}

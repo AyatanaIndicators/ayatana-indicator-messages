@@ -256,5 +256,5 @@ im_menu_show_data (ImMenu *menu)
   if (!priv->on_greeter)
     return TRUE;
 
-  return FALSE;
+  return im_accounts_service_get_show_on_greeter(priv->as);
 }
