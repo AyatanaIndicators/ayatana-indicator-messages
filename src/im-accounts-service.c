@@ -38,6 +38,8 @@ static void im_accounts_service_class_init (ImAccountsServiceClass *klass);
 static void im_accounts_service_init       (ImAccountsService *self);
 static void im_accounts_service_dispose    (GObject *object);
 static void im_accounts_service_finalize   (GObject *object);
+static void user_changed (ActUserManager * manager, ActUser * user, gpointer user_data);
+static void is_loaded (ActUserManager * manager, GParamSpec * pspect, gpointer user_data);
 
 G_DEFINE_TYPE (ImAccountsService, im_accounts_service, G_TYPE_OBJECT);
 
@@ -58,6 +60,8 @@ im_accounts_service_init (ImAccountsService *self)
 	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(self);
 
 	priv->user_manager = act_user_manager_get_default();
+	g_signal_connect(priv->user_manager, "user-changed", G_CALLBACK(user_changed), self);
+	g_signal_connect(priv->user_manager, "notify::is-loaded", G_CALLBACK(is_loaded), self);
 }
 
 static void
@@ -74,6 +78,32 @@ static void
 im_accounts_service_finalize (GObject *object)
 {
 	G_OBJECT_CLASS (im_accounts_service_parent_class)->finalize (object);
+}
+
+/* Handles a User getting updated */
+static void
+user_changed (ActUserManager * manager, ActUser * user, gpointer user_data)
+{
+	if (g_strcmp0(act_user_get_user_name(user), g_get_user_name()) != 0) {
+		return;
+	}
+
+	g_debug("User Updated");
+}
+
+static void
+is_loaded (ActUserManager * manager, GParamSpec * pspect, gpointer user_data)
+{
+	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(user_data);
+	ActUser * user = NULL;
+
+	g_debug("Accounts Manager Loaded");
+
+	user = act_user_manager_get_user(priv->user_manager, g_get_user_name());
+	if (user != NULL) {
+		user_changed(priv->user_manager, user, user_data);
+		g_object_unref(user);
+	}
 }
 
 /* Not the most testable way to do this but, it is a less invasive one, and we'll
