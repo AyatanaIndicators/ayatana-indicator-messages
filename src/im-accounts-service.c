@@ -165,6 +165,20 @@ im_accounts_service_set_draws_attention (ImAccountsService * service, gboolean d
 gboolean
 im_accounts_service_get_show_on_greeter (ImAccountsService * service)
 {
+	g_return_val_if_fail(IM_IS_ACCOUNTS_SERVICE(service), FALSE);
 
-	return FALSE;
+	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(service);
+
+	if (priv->touch_settings == NULL) {
+		return FALSE;
+	}
+
+	GVariant * val = g_dbus_proxy_get_cached_property(priv->touch_settings, "MessagesWelcomeScreen");
+	if (val == NULL) {
+		return FALSE;
+	}
+
+	gboolean retval = g_variant_get_boolean(val);
+	g_variant_unref(val);
+	return retval;
 }
