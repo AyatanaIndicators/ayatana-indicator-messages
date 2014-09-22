@@ -155,13 +155,33 @@ im_accounts_service_ref_default (void)
 	return g_object_ref(as);
 }
 
+/* The draws attention setting is very legacy right now, we've patched and not changed
+   things much. We're gonna do better in the future, this function abstracts out the ugly */
 void
 im_accounts_service_set_draws_attention (ImAccountsService * service, gboolean draws_attention)
 {
+	g_return_if_fail(IM_IS_ACCOUNTS_SERVICE(service));
+	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(service);
 
+	if (priv->touch_settings == NULL) {
+		return;
+	}
 
+	g_dbus_connection_call(g_dbus_proxy_get_connection(priv->touch_settings),
+		g_dbus_proxy_get_name(priv->touch_settings),
+		g_dbus_proxy_get_object_path(priv->touch_settings),
+		"org.freedesktop.Accounts.User",
+		"SetXHasMessages",
+		g_variant_new("(b)", draws_attention),
+		NULL, /* reply */
+		G_DBUS_CALL_FLAGS_NONE,
+		-1, /* timeout */
+		NULL, /* cancellable */
+		NULL, NULL); /* cb */
 }
 
+/* Looks at the property that is set by settings. We default to off in any case
+   that we can or we don't know what the state is. */
 gboolean
 im_accounts_service_get_show_on_greeter (ImAccountsService * service)
 {
