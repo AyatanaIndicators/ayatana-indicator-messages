@@ -29,6 +29,7 @@ typedef struct _ImAccountsServicePrivate ImAccountsServicePrivate;
 
 struct _ImAccountsServicePrivate {
 	ActUserManager * user_manager;
+	GDBusProxy * touch_settings;
 };
 
 #define IM_ACCOUNTS_SERVICE_GET_PRIVATE(o) \
@@ -40,6 +41,7 @@ static void im_accounts_service_dispose    (GObject *object);
 static void im_accounts_service_finalize   (GObject *object);
 static void user_changed (ActUserManager * manager, ActUser * user, gpointer user_data);
 static void is_loaded (ActUserManager * manager, GParamSpec * pspect, gpointer user_data);
+static void security_privacy_ready (GObject * obj, GAsyncResult * res, gpointer user_data);
 
 G_DEFINE_TYPE (ImAccountsService, im_accounts_service, G_TYPE_OBJECT);
 
@@ -88,7 +90,38 @@ user_changed (ActUserManager * manager, ActUser * user, gpointer user_data)
 		return;
 	}
 
+	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(user_data);
 	g_debug("User Updated");
+
+	/* Clear old proxies */
+	g_clear_object(&priv->touch_settings);
+
+	/* Start getting a new proxy */
+	g_dbus_proxy_new_for_bus(G_BUS_TYPE_SYSTEM,
+		G_DBUS_PROXY_FLAGS_NONE,
+		NULL,
+		"org.freedesktop.Accounts",
+		act_user_get_object_path(user),
+		"com.ubuntu.touch.AccountsService.SecurityPrivacy",
+		NULL,
+		security_privacy_ready,
+		user_data);
+}
+
+/* Respond to the async of setting up the proxy. Mostly we get it or we error. */
+static void
+security_privacy_ready (GObject * obj, GAsyncResult * res, gpointer user_data)
+{
+	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(user_data);
+	GError * error = NULL;
+
+	priv->touch_settings = g_dbus_proxy_new_for_bus_finish(res, &error);
+
+	if (error != NULL) {
+		g_warning("Unable to get a proxy on accounts service for touch settings");
+		g_error_free(error);
+		return;
+	}
 }
 
 static void
