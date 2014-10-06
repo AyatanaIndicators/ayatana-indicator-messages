@@ -1,7 +1,7 @@
 [Indicator Service]
 Name=indicator-messages
 ObjectPath=/com/canonical/indicator/messages
-Position=50
+Position=100
 
 [desktop]
 ObjectPath=/com/canonical/indicator/messages/desktop
