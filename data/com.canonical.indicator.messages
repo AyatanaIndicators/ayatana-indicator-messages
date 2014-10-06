@@ -8,7 +8,9 @@ ObjectPath=/com/canonical/indicator/messages/desktop
 
 [phone]
 ObjectPath=/com/canonical/indicator/messages/phone
+Position=100
 
 [phone_greeter]
 ObjectPath=/com/canonical/indicator/messages/phone
+Position=100
 
