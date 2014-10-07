@@ -64,6 +64,12 @@ im_accounts_service_init (ImAccountsService *self)
 	priv->user_manager = act_user_manager_get_default();
 	g_signal_connect(priv->user_manager, "user-changed", G_CALLBACK(user_changed), self);
 	g_signal_connect(priv->user_manager, "notify::is-loaded", G_CALLBACK(is_loaded), self);
+
+	gboolean isLoaded = FALSE;
+	g_object_get(G_OBJECT(priv->user_manager), "is-loaded", &isLoaded, NULL);
+	if (isLoaded) {
+		is_loaded(priv->user_manager, NULL, NULL);
+	}
 }
 
 static void
