@@ -41,7 +41,7 @@ static void im_accounts_service_init       (ImAccountsService *self);
 static void im_accounts_service_dispose    (GObject *object);
 static void im_accounts_service_finalize   (GObject *object);
 static void user_changed (ActUserManager * manager, ActUser * user, gpointer user_data);
-static void is_loaded (ActUserManager * manager, GParamSpec * pspect, gpointer user_data);
+static void on_user_manager_loaded (ActUserManager * manager, GParamSpec * pspect, gpointer user_data);
 static void security_privacy_ready (GObject * obj, GAsyncResult * res, gpointer user_data);
 
 G_DEFINE_TYPE (ImAccountsService, im_accounts_service, G_TYPE_OBJECT);
@@ -66,12 +66,12 @@ im_accounts_service_init (ImAccountsService *self)
 
 	priv->user_manager = act_user_manager_get_default();
 	g_signal_connect(priv->user_manager, "user-changed", G_CALLBACK(user_changed), self);
-	g_signal_connect(priv->user_manager, "notify::is-loaded", G_CALLBACK(is_loaded), self);
+	g_signal_connect(priv->user_manager, "notify::is-loaded", G_CALLBACK(on_user_manager_loaded), self);
 
 	gboolean isLoaded = FALSE;
 	g_object_get(G_OBJECT(priv->user_manager), "is-loaded", &isLoaded, NULL);
 	if (isLoaded) {
-		is_loaded(priv->user_manager, NULL, NULL);
+		on_user_manager_loaded(priv->user_manager, NULL, NULL);
 	}
 }
 
@@ -141,8 +141,10 @@ security_privacy_ready (GObject * obj, GAsyncResult * res, gpointer user_data)
 	priv->touch_settings = proxy;
 }
 
+/* When the user manager is loaded see if we have a user already loaded
+   along with. */
 static void
-is_loaded (ActUserManager * manager, GParamSpec * pspect, gpointer user_data)
+on_user_manager_loaded (ActUserManager * manager, GParamSpec * pspect, gpointer user_data)
 {
 	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(user_data);
 	ActUser * user = NULL;
