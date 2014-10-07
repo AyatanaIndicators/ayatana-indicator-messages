@@ -136,6 +136,8 @@ security_privacy_ready (GObject * obj, GAsyncResult * res, gpointer user_data)
 	}
 
 	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(user_data);
+	/* Ensure we didn't get a proxy while we weren't looking */
+	g_clear_object(&priv->touch_settings);
 	priv->touch_settings = proxy;
 }
 
