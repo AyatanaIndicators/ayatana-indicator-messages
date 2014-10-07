@@ -30,6 +30,7 @@ typedef struct _ImAccountsServicePrivate ImAccountsServicePrivate;
 struct _ImAccountsServicePrivate {
 	ActUserManager * user_manager;
 	GDBusProxy * touch_settings;
+	GCancellable * cancel;
 };
 
 #define IM_ACCOUNTS_SERVICE_GET_PRIVATE(o) \
@@ -61,6 +62,8 @@ im_accounts_service_init (ImAccountsService *self)
 {
 	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(self);
 
+	priv->cancel = g_cancellable_new();
+
 	priv->user_manager = act_user_manager_get_default();
 	g_signal_connect(priv->user_manager, "user-changed", G_CALLBACK(user_changed), self);
 	g_signal_connect(priv->user_manager, "notify::is-loaded", G_CALLBACK(is_loaded), self);
@@ -76,6 +79,11 @@ static void
 im_accounts_service_dispose (GObject *object)
 {
 	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(object);
+
+	if (priv->cancel != NULL) {
+		g_cancellable_cancel(priv->cancel);
+		g_clear_object(&priv->cancel);
+	}
 
 	g_clear_object(&priv->user_manager);
 	
@@ -109,7 +117,7 @@ user_changed (ActUserManager * manager, ActUser * user, gpointer user_data)
 		"org.freedesktop.Accounts",
 		act_user_get_object_path(user),
 		"com.ubuntu.touch.AccountsService.SecurityPrivacy",
-		NULL,
+		priv->cancel,
 		security_privacy_ready,
 		user_data);
 }
@@ -118,16 +126,17 @@ user_changed (ActUserManager * manager, ActUser * user, gpointer user_data)
 static void
 security_privacy_ready (GObject * obj, GAsyncResult * res, gpointer user_data)
 {
-	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(user_data);
 	GError * error = NULL;
-
-	priv->touch_settings = g_dbus_proxy_new_for_bus_finish(res, &error);
+	GDBusProxy * proxy = g_dbus_proxy_new_for_bus_finish(res, &error);
 
 	if (error != NULL) {
-		g_warning("Unable to get a proxy on accounts service for touch settings");
+		g_warning("Unable to get a proxy on accounts service for touch settings: %s", error->message);
 		g_error_free(error);
 		return;
 	}
+
+	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(user_data);
+	priv->touch_settings = proxy;
 }
 
 static void
@@ -182,7 +191,7 @@ im_accounts_service_set_draws_attention (ImAccountsService * service, gboolean d
 		NULL, /* reply */
 		G_DBUS_CALL_FLAGS_NONE,
 		-1, /* timeout */
-		NULL, /* cancellable */
+		priv->cancel, /* cancellable */
 		NULL, NULL); /* cb */
 }
 
