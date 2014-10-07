@@ -1,3 +1,10 @@
+indicator-messages (13.10.1+14.10.20141007-0ubuntu1) utopic; urgency=low
+
+  [ Charles Kerr ]
+  * Make title string match updated designs. (LP: #1377286)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 07 Oct 2014 19:41:05 +0000
+
 indicator-messages (13.10.1+14.10.20141006-0ubuntu1) utopic; urgency=low
 
   [ Charles Kerr ]
