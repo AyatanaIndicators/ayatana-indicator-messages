@@ -895,14 +895,40 @@ im_application_list_sources_listed (GObject      *source_object,
 }
 
 static GIcon *
-get_symbolic_app_icon (GAppInfo *info)
+get_symbolic_app_icon (GDesktopAppInfo *info)
 {
+  gchar *x_symbolic_icon;
   GIcon *icon;
   const gchar * const *names;
   gchar *symbolic_name;
   GIcon *symbolic_icon;
 
-  icon = g_app_info_get_icon (info);
+  /* If X-Ubuntu-SymbolicIcon exists, use that. It is always interpreted
+   * as a filename.
+   *
+   * Simply appending -symbolic to the normal icon doesn't work for
+   * icons specified by file name, because the symbolic icon might be in
+   * a different format (symbolic icons tend to be svg and normal icons
+   * png). Also, icons specified by file names don't allow for fallbacks
+   * (without stating the file from this process), and we'd want to fall
+   * back to the normal app icon.
+   *
+   * See lp: #1365408
+   */
+  if ((x_symbolic_icon = g_desktop_app_info_get_string (info, "X-Ubuntu-SymbolicIcon")))
+    {
+      GFile *file;
+
+      file = g_file_new_for_path (x_symbolic_icon);
+      symbolic_icon = g_file_icon_new (file);
+
+      g_object_unref (file);
+      g_free (x_symbolic_icon);
+
+      return symbolic_icon;
+    }
+
+  icon = g_app_info_get_icon (G_APP_INFO (info));
   if (icon == NULL)
     return NULL;
 
@@ -1023,7 +1049,7 @@ im_application_list_message_added (Application *app,
       im_application_list_update_root_action (app->list);
     }
 
-  app_icon = get_symbolic_app_icon (G_APP_INFO (app->info));
+  app_icon = get_symbolic_app_icon (app->info);
 
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
                  app->id, app_icon, id, serialized_icon, title,
