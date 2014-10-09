@@ -22,3 +22,12 @@ Test-case indicator-messages/unity8-items-check
 		<dd>The menu is populated with items</dd>
 </dl>
 
+Test-case indicator-messages/unity8-phone-symbolic-icon
+<dl>
+	<dt>NOTE: Requires Unity8 and Telephony hardware</dt>
+	<dt>Login to a user session running Unity 8</dt>
+	<dt>Send an SMS to the device</dt>
+		<dd>Icon on the panel should change color signifying a new message</dd>
+	<dt>Verify the application icon in the menu item is monochromatic</dt>
+		<dd>On the right side of the item the application icon should have no color</dd>
+</dl>
