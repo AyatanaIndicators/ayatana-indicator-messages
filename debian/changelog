@@ -1,3 +1,10 @@
+indicator-messages (13.10.1+14.10.20141009-0ubuntu1) utopic; urgency=low
+
+  [ Ted Gould ]
+  * Symbolic icon test on Unity8 phone
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 09 Oct 2014 13:30:07 +0000
+
 indicator-messages (13.10.1+14.10.20141007-0ubuntu1) utopic; urgency=low
 
   [ Charles Kerr ]
