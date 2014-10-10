@@ -17,9 +17,19 @@ Test-case indicator-messages/unity8-items-check
 <dl>
 	<dt>Login to a user session running Unity 8</dt>
 	<dt>Pull down the top panel until it sticks open</dt>
-	<dt>Navigate through the tabs until "Notification center" is shown</dt>
+	<dt>Navigate through the tabs until "Notifications" is shown</dt>
 		<dd>Incoming is at the top of the menu</dd>
 		<dd>The menu is populated with items</dd>
+</dl>
+
+Test-case indicator-messages/unity8-phone-symbolic-icon
+<dl>
+	<dt>NOTE: Requires Unity8 and Telephony hardware</dt>
+	<dt>Login to a user session running Unity 8</dt>
+	<dt>Send an SMS to the device</dt>
+		<dd>Icon on the panel should change color signifying a new message</dd>
+	<dt>Verify the application icon in the menu item is monochromatic</dt>
+		<dd>On the right side of the item the application icon should have no color</dd>
 </dl>
 
 Test-case indicator-messages/unity8-embedded-greeter
@@ -51,4 +61,3 @@ Test-case indicator-messages/unity8-embedded-greeter
 	<dt>Clear the message in the greeter</dt>
 		<dd>The message should no longer be in the messaging menu</dd>
 </dl>
-
