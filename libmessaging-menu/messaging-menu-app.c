@@ -207,7 +207,7 @@ messaging_menu_app_get_dbus_object_path (MessagingMenuApp *app)
                       g_app_info_get_id (G_APP_INFO (app->appinfo)),
                       NULL);
 
-  g_strcanon (path, "/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", '_');
+  g_strcanon (path, "/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", '_');
 
   return path;
 }
