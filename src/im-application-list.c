@@ -22,6 +22,7 @@
 #include "indicator-messages-application.h"
 #include "gactionmuxer.h"
 #include "indicator-desktop-shortcuts.h"
+#include "im-accounts-service.h"
 
 #include <gio/gdesktopappinfo.h>
 #include <string.h>
@@ -41,6 +42,8 @@ struct _ImApplicationList
   GSimpleAction * statusaction;
 
   GHashTable *app_status;
+
+  ImAccountsService * as;
 };
 
 G_DEFINE_TYPE (ImApplicationList, im_application_list, G_TYPE_OBJECT);
@@ -170,9 +173,11 @@ im_application_list_update_root_action (ImApplicationList *list)
   if (g_hash_table_find (list->applications, application_draws_attention, NULL)) {
     base_icon_name = "indicator-messages-new-%s";
     accessible_name = _("New Messages");
+    im_accounts_service_set_draws_attention(list->as, TRUE);
   } else {
     base_icon_name = "indicator-messages-%s";
     accessible_name = _("Messages");
+    im_accounts_service_set_draws_attention(list->as, FALSE);
   }
 
   /* Include the IM state in the icon */
@@ -449,6 +454,8 @@ im_application_list_dispose (GObject *object)
   g_clear_pointer (&list->applications, g_hash_table_unref);
   g_clear_object (&list->muxer);
 
+  g_clear_object (&list->as);
+
   G_OBJECT_CLASS (im_application_list_parent_class)->dispose (object);
 }
 
@@ -599,6 +606,8 @@ im_application_list_init (ImApplicationList *list)
 
   list->muxer = g_action_muxer_new ();
   g_action_muxer_insert (list->muxer, NULL, G_ACTION_GROUP (list->globalactions));
+
+  list->as = im_accounts_service_ref_default();
 
   im_application_list_update_root_action (list);
 }

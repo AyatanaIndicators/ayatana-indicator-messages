@@ -18,12 +18,15 @@
  */
 
 #include "im-menu.h"
+#include "im-accounts-service.h"
 
 struct _ImMenuPrivate
 {
   GMenu *toplevel_menu;
   GMenu *menu;
   ImApplicationList *applist;
+  gboolean on_greeter;
+  ImAccountsService *as;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (ImMenu, im_menu, G_TYPE_OBJECT)
@@ -32,6 +35,7 @@ enum
 {
   PROP_0,
   PROP_APPLICATION_LIST,
+  PROP_ON_GREETER,
   NUM_PROPERTIES
 };
 
@@ -43,6 +47,7 @@ im_menu_finalize (GObject *object)
   g_object_unref (priv->toplevel_menu);
   g_object_unref (priv->menu);
   g_object_unref (priv->applist);
+  g_object_unref (priv->as);
 
   G_OBJECT_CLASS (im_menu_parent_class)->finalize (object);
 }
@@ -59,6 +64,9 @@ im_menu_get_property (GObject    *object,
     {
     case PROP_APPLICATION_LIST:
       g_value_set_object (value, priv->applist);
+      break;
+    case PROP_ON_GREETER:
+      g_value_set_boolean (value, priv->on_greeter);
       break;
 
     default:
@@ -78,6 +86,9 @@ im_menu_set_property (GObject      *object,
     {
     case PROP_APPLICATION_LIST: /* construct only */
       priv->applist = g_value_dup_object (value);
+      break;
+    case PROP_ON_GREETER:
+      priv->on_greeter = g_value_get_boolean (value);
       break;
 
     default:
@@ -100,6 +111,12 @@ im_menu_class_init (ImMenuClass *class)
                                                         G_PARAM_CONSTRUCT_ONLY |
                                                         G_PARAM_READWRITE |
                                                         G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (object_class, PROP_ON_GREETER,
+                                   g_param_spec_boolean ("on-greeter", "", "",
+                                                         FALSE,
+                                                         G_PARAM_CONSTRUCT_ONLY |
+                                                         G_PARAM_READWRITE |
+                                                         G_PARAM_STATIC_STRINGS));
 }
 
 static void
@@ -110,6 +127,8 @@ im_menu_init (ImMenu *menu)
 
   priv->toplevel_menu = g_menu_new ();
   priv->menu = g_menu_new ();
+  priv->on_greeter = FALSE;
+  priv->as = im_accounts_service_ref_default();
 
   root = g_menu_item_new (NULL, "indicator.messages");
   g_menu_item_set_attribute (root, "x-canonical-type", "s", "com.canonical.indicator.root");
@@ -224,4 +243,18 @@ im_menu_insert_item_sorted (ImMenu    *menu,
     }
 
   g_menu_insert_item (priv->menu, position, item);
+}
+
+/* Whether the menu should show extra data on it. Depends on the greeter
+   status and user settings */
+gboolean
+im_menu_show_data (ImMenu *menu)
+{
+  g_return_val_if_fail (IM_IS_MENU (menu), FALSE);
+  ImMenuPrivate *priv = im_menu_get_instance_private (IM_MENU (menu));
+
+  if (!priv->on_greeter)
+    return TRUE;
+
+  return im_accounts_service_get_show_on_greeter(priv->as);
 }

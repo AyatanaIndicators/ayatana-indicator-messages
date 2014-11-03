@@ -142,12 +142,13 @@ im_phone_menu_init (ImPhoneMenu *menu)
 }
 
 ImPhoneMenu *
-im_phone_menu_new (ImApplicationList  *applist)
+im_phone_menu_new (ImApplicationList  *applist, gboolean greeter)
 {
   g_return_val_if_fail (IM_IS_APPLICATION_LIST (applist), NULL);
 
   return g_object_new (IM_TYPE_PHONE_MENU,
                        "application-list", applist,
+                       "on-greeter", greeter,
                        NULL);
 }
 
@@ -179,10 +180,12 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   gint n_messages;
   gint pos;
   GVariant *serialized_app_icon;
+  gboolean show_data;
 
   g_return_if_fail (IM_IS_PHONE_MENU (menu));
   g_return_if_fail (app_id);
 
+  show_data = im_menu_show_data(IM_MENU (menu));
   action_name = g_strconcat (app_id, ".msg.", id, NULL);
 
   item = g_menu_item_new (title, NULL);
@@ -190,8 +193,10 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
 
   g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.messageitem");
   g_menu_item_set_attribute (item, "x-canonical-message-id", "s", id);
-  g_menu_item_set_attribute (item, "x-canonical-subtitle", "s", subtitle);
-  g_menu_item_set_attribute (item, "x-canonical-text", "s", body);
+  if (show_data)
+    g_menu_item_set_attribute (item, "x-canonical-subtitle", "s", subtitle);
+  if (show_data)
+    g_menu_item_set_attribute (item, "x-canonical-text", "s", body);
   g_menu_item_set_attribute (item, "x-canonical-time", "x", time);
 
   if (serialized_icon)
@@ -203,7 +208,7 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
       g_variant_unref (serialized_app_icon);
     }
 
-  if (actions)
+  if (actions && show_data)
     g_menu_item_set_attribute (item, "x-canonical-message-actions", "v", actions);
 
   n_messages = g_menu_model_get_n_items (G_MENU_MODEL (menu->message_section));

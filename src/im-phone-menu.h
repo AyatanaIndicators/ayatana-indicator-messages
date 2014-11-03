@@ -33,7 +33,8 @@ typedef struct _ImPhoneMenu ImPhoneMenu;
 
 GType               im_phone_menu_get_type              (void);
 
-ImPhoneMenu *       im_phone_menu_new                   (ImApplicationList  *applist);
+ImPhoneMenu *       im_phone_menu_new                   (ImApplicationList  *applist,
+                                                         gboolean           greeter);
 
 void                im_phone_menu_add_message           (ImPhoneMenu        *menu,
                                                          const gchar        *app_id,
