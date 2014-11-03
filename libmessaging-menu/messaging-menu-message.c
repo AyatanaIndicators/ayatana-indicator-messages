@@ -19,6 +19,13 @@
 
 #include "messaging-menu-message.h"
 
+/**
+ * SECTION:messaging-menu-message
+ * @title: MessagingMenuMessage
+ * @short_description: A single message in the messaging menu
+ * @include: messaging-menu.h
+ */
+
 typedef GObjectClass MessagingMenuMessageClass;
 
 struct _MessagingMenuMessage
