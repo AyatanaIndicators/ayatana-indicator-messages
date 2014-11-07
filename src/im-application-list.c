@@ -344,12 +344,17 @@ static void
 im_application_list_source_removed (Application *app,
                                     const gchar *id)
 {
-  g_action_map_remove_action (G_ACTION_MAP(app->source_actions), id);
+  gchar *action_name;
 
-  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
+  action_name = escape_action_name (id);
+
+  g_action_map_remove_action (G_ACTION_MAP(app->source_actions), action_name);
+  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, action_name);
 
   if (application_update_draws_attention(app))
     im_application_list_update_root_action (app->list);
+
+  g_free (action_name);
 }
 
 static void
@@ -388,13 +393,19 @@ static void
 im_application_list_message_removed (Application *app,
                                      const gchar *id)
 {
-  g_action_map_remove_action (G_ACTION_MAP(app->message_actions), id);
-  g_action_muxer_remove (app->message_sub_actions, id);
+  gchar *action_name;
+
+  action_name = escape_action_name (id);
+
+  g_action_map_remove_action (G_ACTION_MAP(app->message_actions), action_name);
+  g_action_muxer_remove (app->message_sub_actions, action_name);
 
   if (application_update_draws_attention(app))
     im_application_list_update_root_action (app->list);
 
-  g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, id);
+  g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, action_name);
+
+  g_free (action_name);
 }
 
 static void
