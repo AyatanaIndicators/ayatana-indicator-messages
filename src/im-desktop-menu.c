@@ -81,12 +81,15 @@ g_app_info_is_default_for_uri_scheme (GAppInfo    *info,
                                       const gchar *uri_scheme)
 {
   GAppInfo *default_info;
-  gboolean is_default;
+  gboolean is_default = FALSE;
 
   default_info = g_app_info_get_default_for_uri_scheme (uri_scheme);
-  is_default = g_app_info_equal (info, default_info);
+  if (default_info)
+    {
+      is_default = g_app_info_equal (info, default_info);
+      g_object_unref (default_info);
+    }
 
-  g_object_unref (default_info);
   return is_default;
 }
 
