@@ -134,6 +134,62 @@ _g_action_group_has_actions (GActionGroup * ag)
   return retval;
 }
 
+static gchar *
+escape_action_name (const gchar *name)
+{
+  static const gchar *xdigits = "0123456789abcdef";
+  GString *escaped;
+  gchar c;
+
+  g_return_val_if_fail (name != NULL, NULL);
+
+  escaped = g_string_new (NULL);
+  while ((c = *name++))
+    {
+      if (g_ascii_isalnum (c) || c == '.')
+        {
+          g_string_append_c (escaped, c);
+        }
+      else
+        {
+          g_string_append_c (escaped, '-');
+          g_string_append_c (escaped, xdigits[c >> 4]);
+          g_string_append_c (escaped, xdigits[c & 0xf]);
+        }
+    }
+
+  return g_string_free (escaped, FALSE);
+}
+
+static gchar *
+unescape_action_name (const gchar *name)
+{
+  GString *unescaped;
+  gint i;
+
+  g_return_val_if_fail (name != NULL, NULL);
+
+  unescaped = g_string_new (NULL);
+  for (i = 0; name[i]; i++)
+    {
+      gint one, two;
+
+      if (name[i] == '-' &&
+          (one = g_ascii_xdigit_value (name[i + 1])) >= 0 &&
+          (two = g_ascii_xdigit_value (name[i + 2])) >= 0)
+        {
+          g_string_append_c (unescaped, (one << 4) & two);
+          i += 2;
+        }
+      else
+        {
+          g_string_append_c (unescaped, name[i]);
+        }
+    }
+
+  return g_string_free (unescaped, FALSE);
+}
+
 /* Check to see if either of our action groups has any actions, if
    so return TRUE so we get chosen! */
 static gboolean
@@ -293,12 +349,17 @@ static void
 im_application_list_source_removed (Application *app,
                                     const gchar *id)
 {
-  g_action_map_remove_action (G_ACTION_MAP(app->source_actions), id);
+  gchar *action_name;
 
-  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, id);
+  action_name = escape_action_name (id);
+
+  g_action_map_remove_action (G_ACTION_MAP(app->source_actions), action_name);
+  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, action_name);
 
   if (application_update_draws_attention(app))
     im_application_list_update_root_action (app->list);
+
+  g_free (action_name);
 }
 
 static void
@@ -307,9 +368,11 @@ im_application_list_source_activated (GSimpleAction *action,
                                       gpointer       user_data)
 {
   Application *app = user_data;
-  const gchar *source_id;
+  const gchar *action_name;
+  gchar *source_id;
 
-  source_id = g_action_get_name (G_ACTION (action));
+  action_name = g_action_get_name (G_ACTION (action));
+  source_id = unescape_action_name (action_name);
 
   if (g_variant_get_boolean (parameter))
     {
@@ -326,20 +389,28 @@ im_application_list_source_activated (GSimpleAction *action,
                                                    app->cancellable, NULL, NULL);
     }
 
-  im_application_list_source_removed (app, source_id);
+  im_application_list_source_removed (app, action_name);
+
+  g_free (source_id);
 }
 
 static void
 im_application_list_message_removed (Application *app,
                                      const gchar *id)
 {
-  g_action_map_remove_action (G_ACTION_MAP(app->message_actions), id);
-  g_action_muxer_remove (app->message_sub_actions, id);
+  gchar *action_name;
+
+  action_name = escape_action_name (id);
+
+  g_action_map_remove_action (G_ACTION_MAP(app->message_actions), action_name);
+  g_action_muxer_remove (app->message_sub_actions, action_name);
 
   if (application_update_draws_attention(app))
     im_application_list_update_root_action (app->list);
 
-  g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, id);
+  g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, action_name);
+
+  g_free (action_name);
 }
 
 static void
@@ -348,9 +419,11 @@ im_application_list_message_activated (GSimpleAction *action,
                                        gpointer       user_data)
 {
   Application *app = user_data;
-  const gchar *message_id;
+  const gchar *action_name;
+  gchar *message_id;
 
-  message_id = g_action_get_name (G_ACTION (action));
+  action_name = g_action_get_name (G_ACTION (action));
+  message_id = unescape_action_name (action_name);
 
   if (g_variant_get_boolean (parameter))
     {
@@ -369,7 +442,9 @@ im_application_list_message_activated (GSimpleAction *action,
                                                    app->cancellable, NULL, NULL);
     }
 
-  im_application_list_message_removed (app, message_id);
+  im_application_list_message_removed (app, action_name);
+
+  g_free (message_id);
 }
 
 static void
@@ -379,11 +454,11 @@ im_application_list_sub_message_activated (GSimpleAction *action,
 {
   Application *app = user_data;
   const gchar *message_id;
-  const gchar *action_id;
+  gchar *action_id;
   GVariantBuilder builder;
 
   message_id = g_object_get_data (G_OBJECT (action), "message");
-  action_id = g_action_get_name (G_ACTION (action));
+  action_id = unescape_action_name (g_action_get_name (G_ACTION (action)));
 
   g_variant_builder_init (&builder, G_VARIANT_TYPE ("av"));
   if (parameter)
@@ -397,6 +472,8 @@ im_application_list_sub_message_activated (GSimpleAction *action,
                                                         NULL, NULL);
 
   im_application_list_message_removed (app, message_id);
+
+  g_free (action_id);
 }
 
 static void
@@ -799,6 +876,7 @@ im_application_list_source_added (Application *app,
   GVariant *serialized_icon = NULL;
   GVariant *state;
   GSimpleAction *action;
+  gchar *action_name;
 
   g_variant_get (source, "(&s&s@avux&sb)",
                  &id, &label, &maybe_serialized_icon, &count, &time, &string, &draws_attention);
@@ -809,12 +887,13 @@ im_application_list_source_added (Application *app,
   visible = count > 0 || time != 0 || (string != NULL && string[0] != '\0');
 
   state = g_variant_new ("(uxsb)", count, time, string, draws_attention);
-  action = g_simple_action_new_stateful (id, G_VARIANT_TYPE_BOOLEAN, state);
+  action_name = escape_action_name (id);
+  action = g_simple_action_new_stateful (action_name, G_VARIANT_TYPE_BOOLEAN, state);
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_source_activated), app);
 
   g_action_map_add_action (G_ACTION_MAP(app->source_actions), G_ACTION (action));
 
-  g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, id, label, serialized_icon, visible);
+  g_signal_emit (app->list, signals[SOURCE_ADDED], 0, app->id, action_name, label, serialized_icon, visible);
 
   if (visible && draws_attention && app->draws_attention == FALSE)
     {
@@ -822,6 +901,7 @@ im_application_list_source_added (Application *app,
       im_application_list_update_root_action (app->list);
     }
 
+  g_free (action_name);
   g_object_unref (action);
   if (serialized_icon)
     g_variant_unref (serialized_icon);
@@ -841,6 +921,7 @@ im_application_list_source_changed (Application *app,
   gboolean draws_attention;
   GVariant *serialized_icon = NULL;
   gboolean visible;
+  gchar *action_name;
 
   g_variant_get (source, "(&s&s@avux&sb)",
                  &id, &label, &maybe_serialized_icon, &count, &time, &string, &draws_attention);
@@ -848,12 +929,14 @@ im_application_list_source_changed (Application *app,
   if (g_variant_n_children (maybe_serialized_icon) == 1)
     g_variant_get_child (maybe_serialized_icon, 0, "v", &serialized_icon);
 
-  g_action_group_change_action_state (G_ACTION_GROUP (app->source_actions), id,
+  action_name = escape_action_name (id);
+
+  g_action_group_change_action_state (G_ACTION_GROUP (app->source_actions), action_name,
                                       g_variant_new ("(uxsb)", count, time, string, draws_attention));
 
   visible = count > 0 || time != 0 || (string != NULL && string[0] != '\0');
 
-  g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, id, label, serialized_icon, visible);
+  g_signal_emit (app->list, signals[SOURCE_CHANGED], 0, app->id, action_name, label, serialized_icon, visible);
 
   if (application_update_draws_attention (app))
     im_application_list_update_root_action (app->list);
@@ -861,6 +944,7 @@ im_application_list_source_changed (Application *app,
   if (serialized_icon)
     g_variant_unref (serialized_icon);
   g_variant_unref (maybe_serialized_icon);
+  g_free (action_name);
 }
 
 static void
@@ -965,6 +1049,7 @@ im_application_list_message_added (Application *app,
   GSimpleAction *action;
   GIcon *app_icon;
   GVariant *actions = NULL;
+  gchar *action_name;
 
   g_variant_get (message, "(&s@av&s&s&sxaa{sv}b)",
                  &id, &maybe_serialized_icon, &title, &subtitle, &body, &time, &action_iter, &draws_attention);
@@ -972,7 +1057,8 @@ im_application_list_message_added (Application *app,
   if (g_variant_n_children (maybe_serialized_icon) == 1)
     g_variant_get_child (maybe_serialized_icon, 0, "v", &serialized_icon);
 
-  action = g_simple_action_new (id, G_VARIANT_TYPE_BOOLEAN);
+  action_name = escape_action_name (id);
+  action = g_simple_action_new (action_name, G_VARIANT_TYPE_BOOLEAN);
   g_object_set_qdata(G_OBJECT(action), message_action_draws_attention_quark(), GINT_TO_POINTER(draws_attention));
   g_signal_connect (action, "activate", G_CALLBACK (im_application_list_message_activated), app);
   g_action_map_add_action (G_ACTION_MAP(app->message_actions), G_ACTION (action));
@@ -994,6 +1080,7 @@ im_application_list_message_added (Application *app,
         GVariant *hint;
         GVariantBuilder dict_builder;
         gchar *prefixed_name;
+        gchar *escaped_name;
 
         if (!g_variant_lookup (entry, "name", "&s", &name))
           {
@@ -1005,14 +1092,15 @@ im_application_list_message_added (Application *app,
         g_variant_lookup (entry, "parameter-type", "&g", &type);
         hint = g_variant_lookup_value (entry, "parameter-hint", NULL);
 
-        action = g_simple_action_new (name, type ? G_VARIANT_TYPE (type) : NULL);
+        escaped_name = escape_action_name (name);
+        action = g_simple_action_new (escaped_name, type ? G_VARIANT_TYPE (type) : NULL);
         g_object_set_data_full (G_OBJECT (action), "message", g_strdup (id), g_free);
         g_signal_connect (action, "activate", G_CALLBACK (im_application_list_sub_message_activated), app);
         g_action_map_add_action (G_ACTION_MAP(action_group), G_ACTION (action));
 
         g_variant_builder_init (&dict_builder, G_VARIANT_TYPE ("a{sv}"));
 
-        prefixed_name = g_strjoin (".", app->id, "msg-actions", id, name, NULL);
+        prefixed_name = g_strjoin (".", app->id, "msg-actions", escaped_name, escaped_name, NULL);
         g_variant_builder_add (&dict_builder, "{sv}", "name", g_variant_new_string (prefixed_name));
 
         if (label)
@@ -1035,9 +1123,10 @@ im_application_list_message_added (Application *app,
         g_object_unref (action);
         g_variant_unref (entry);
         g_free (prefixed_name);
+        g_free (escaped_name);
       }
 
-    g_action_muxer_insert (app->message_sub_actions, id, G_ACTION_GROUP (action_group));
+    g_action_muxer_insert (app->message_sub_actions, action_name, G_ACTION_GROUP (action_group));
     actions = g_variant_builder_end (&actions_builder);
 
     g_object_unref (action_group);
@@ -1052,9 +1141,10 @@ im_application_list_message_added (Application *app,
   app_icon = get_symbolic_app_icon (app->info);
 
   g_signal_emit (app->list, signals[MESSAGE_ADDED], 0,
-                 app->id, app_icon, id, serialized_icon, title,
+                 app->id, app_icon, action_name, serialized_icon, title,
                  subtitle, body, actions, time, draws_attention);
 
+  g_free (action_name);
   g_variant_iter_free (action_iter);
   g_object_unref (action);
   if (serialized_icon)
