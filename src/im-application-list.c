@@ -178,7 +178,7 @@ unescape_action_name (const gchar *name)
           (one = g_ascii_xdigit_value (name[i + 1])) >= 0 &&
           (two = g_ascii_xdigit_value (name[i + 2])) >= 0)
         {
-          g_string_append_c (unescaped, (one << 4) & two);
+          g_string_append_c (unescaped, (one << 4) | two);
           i += 2;
         }
       else
