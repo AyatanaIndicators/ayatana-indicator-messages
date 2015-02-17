@@ -232,6 +232,8 @@ app_source_action_check_draw (Application * app, const gchar * action_name)
   state = g_action_group_get_action_state (G_ACTION_GROUP(app->source_actions), action_name);
   if (state == NULL)
     return FALSE;
+  if (!g_variant_is_of_type(state, G_VARIANT_TYPE("(uxsb)")))
+    return FALSE;
 
   g_variant_get (state, "(ux&sb)", &count, &time, &string, &draws_attention);
 
