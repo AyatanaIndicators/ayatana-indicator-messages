@@ -343,6 +343,17 @@ application_update_draws_attention (Application * app)
   return was_drawing_attention != app->draws_attention;
 }
 
+static void
+im_application_list_source_removed_action (Application *app,
+                                           const gchar *action_name)
+{
+  g_action_map_remove_action (G_ACTION_MAP(app->source_actions), action_name);
+  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, action_name);
+
+  if (application_update_draws_attention(app))
+    im_application_list_update_root_action (app->list);
+}
+
 /* Remove a source from an application, signal up and update the status
    of the draws attention flag. */
 static void
@@ -353,11 +364,7 @@ im_application_list_source_removed (Application *app,
 
   action_name = escape_action_name (id);
 
-  g_action_map_remove_action (G_ACTION_MAP(app->source_actions), action_name);
-  g_signal_emit (app->list, signals[SOURCE_REMOVED], 0, app->id, action_name);
-
-  if (application_update_draws_attention(app))
-    im_application_list_update_root_action (app->list);
+  im_application_list_source_removed_action (app, action_name);
 
   g_free (action_name);
 }
@@ -389,9 +396,22 @@ im_application_list_source_activated (GSimpleAction *action,
                                                    app->cancellable, NULL, NULL);
     }
 
-  im_application_list_source_removed (app, action_name);
+  im_application_list_source_removed_action (app, action_name);
 
   g_free (source_id);
+}
+
+static void
+im_application_list_message_removed_action (Application *app,
+                                            const gchar *action_name)
+{
+  g_action_map_remove_action (G_ACTION_MAP(app->message_actions), action_name);
+  g_action_muxer_remove (app->message_sub_actions, action_name);
+
+  if (application_update_draws_attention(app))
+    im_application_list_update_root_action (app->list);
+
+  g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, action_name);
 }
 
 static void
@@ -402,13 +422,7 @@ im_application_list_message_removed (Application *app,
 
   action_name = escape_action_name (id);
 
-  g_action_map_remove_action (G_ACTION_MAP(app->message_actions), action_name);
-  g_action_muxer_remove (app->message_sub_actions, action_name);
-
-  if (application_update_draws_attention(app))
-    im_application_list_update_root_action (app->list);
-
-  g_signal_emit (app->list, signals[MESSAGE_REMOVED], 0, app->id, action_name);
+  im_application_list_message_removed_action(app, action_name);
 
   g_free (action_name);
 }
@@ -442,7 +456,7 @@ im_application_list_message_activated (GSimpleAction *action,
                                                    app->cancellable, NULL, NULL);
     }
 
-  im_application_list_message_removed (app, action_name);
+  im_application_list_message_removed_action (app, action_name);
 
   g_free (message_id);
 }
@@ -498,11 +512,11 @@ im_application_list_remove_all (GSimpleAction *action,
 
       source_actions = g_action_group_list_actions (G_ACTION_GROUP (app->source_actions));
       for (it = source_actions; *it; it++)
-        im_application_list_source_removed (app, *it);
+        im_application_list_source_removed_action (app, *it);
 
       message_actions = g_action_group_list_actions (G_ACTION_GROUP (app->message_actions));
       for (it = message_actions; *it; it++)
-        im_application_list_message_removed (app, *it);
+        im_application_list_message_removed_action (app, *it);
 
       if (app->proxy != NULL) /* If it is remote, we tell the app we've cleared */
         {

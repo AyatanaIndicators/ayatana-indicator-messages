@@ -61,3 +61,20 @@ Test-case indicator-messages/unity8-embedded-greeter
 	<dt>Clear the message in the greeter</dt>
 		<dd>The message should no longer be in the messaging menu</dd>
 </dl>
+
+Test-case indicator-messages/push-message-twitter
+<dl>
+	<dt>From a shell prompt send a simultated Twitter push notification</dt>
+		<dd>gdbus call --session --dest com.ubuntu.Postal --object-path /com/ubuntu/Postal/com_2eubuntu_2edeveloper_2ewebapps_2ewebapp_2dtwitter --method com.ubuntu.Postal.Post com.ubuntu.developer.webapps.webapp-twitter_webapp-twitter '"{\"message\": \"foobar\", \"notification\":{\"card\": {\"summary\": \"yes\", \"body\": \"hello\", \"popup\": true, \"persist\": true}}}"'</dd>
+		<dd>The messaging envelope on the panel should change to highlight a message</dd>
+	<dt>Open the messaging menu</dt>
+		<dd>The menu should contain an entry with the Twitter icon for the application</dd>
+		<dd>The title of the message should be 'yes'</dd>
+		<dd>The body of the message should be 'hello'</dd>
+		<dd>At the bottom of them menu there should be a 'Clear All' menu item</dd>
+	<dt>Clear the message using the 'Clear All' command</dt>
+		<dd>The Twitter message should disappear</dd>
+		<dd>The 'Clear All' item should disappear</dd>
+		<dd>The icon in the panel should return to its original state</dd>
+</dl>
+
