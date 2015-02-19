@@ -1,3 +1,11 @@
+indicator-messages (13.10.1+15.04.20150219-0ubuntu1) vivid; urgency=medium
+
+  [ Ted Gould ]
+  * Provide functions that allow for action names directly (LP:
+    #1385331)
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Thu, 19 Feb 2015 15:55:54 +0000
+
 indicator-messages (13.10.1+15.04.20150126-0ubuntu1) vivid; urgency=low
 
   [ Lars Uebernickel ]
