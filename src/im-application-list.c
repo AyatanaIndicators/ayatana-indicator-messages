@@ -1114,7 +1114,7 @@ im_application_list_message_added (Application *app,
 
         g_variant_builder_init (&dict_builder, G_VARIANT_TYPE ("a{sv}"));
 
-        prefixed_name = g_strjoin (".", app->id, "msg-actions", escaped_name, escaped_name, NULL);
+        prefixed_name = g_strjoin (".", app->id, "msg-actions", action_name, escaped_name, NULL);
         g_variant_builder_add (&dict_builder, "{sv}", "name", g_variant_new_string (prefixed_name));
 
         if (label)
