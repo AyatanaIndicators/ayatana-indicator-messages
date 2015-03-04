@@ -1,3 +1,11 @@
+indicator-messages (13.10.1+15.04.20150304-0ubuntu1) vivid; urgency=medium
+
+  [ Ted Gould ]
+  * Make the message actions have the message ID in their names like the
+    muxer
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Wed, 04 Mar 2015 23:59:37 +0000
+
 indicator-messages (13.10.1+15.04.20150219-0ubuntu1) vivid; urgency=medium
 
   [ Ted Gould ]
