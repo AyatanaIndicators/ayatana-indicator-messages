@@ -272,9 +272,9 @@ class IndicatorFixture : public ::testing::Test
 			return result;
 		}
 
-		template <typename... Args> testing::AssertionResult expectEventuallyActionStateExists (Args&& ... args) {
+		template <typename... Args> testing::AssertionResult expectEventuallyActionExists (Args&& ... args) {
 			std::function<testing::AssertionResult(void)> func = [&]() {
-				return expectActionStateExists(std::forward<Args>(args)...);
+				return expectActionExists(std::forward<Args>(args)...);
 			};
 			return expectEventually(func);
 		}
