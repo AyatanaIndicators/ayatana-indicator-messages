@@ -7,6 +7,10 @@ TESTS = $(check_PROGRAMS)
 AM_CPPFLAGS = $(GTEST_CPPFLAGS) \
 	-I${top_srcdir}/src
 
+######################################
+# Google Test
+######################################
+
 nodist_libgtest_a_SOURCES = \
 	$(GTEST_SOURCE)/src/gtest-all.cc \
 	$(GTEST_SOURCE)/src/gtest_main.cc
@@ -16,6 +20,9 @@ libgtest_a_CPPFLAGS = \
 libgtest_a_CXXFLAGS = \
 	$(AM_CXXFLAGS)
 
+######################################
+# GActionMixer
+######################################
 
 test_gactionmuxer_SOURCES = \
 	test-gactionmuxer.cpp
@@ -29,6 +36,25 @@ test_gactionmuxer_LDADD = \
 	libindicator-messages-service.la \
 	libgtest.a
 
+######################################
+# Indicator Test
+######################################
+
+indicator_test_SOURCES = \
+	indicator-test.cpp
+
+indicator_test_CPPFLAGS = \
+	-DINDICATOR_MESSAGES_SERVICE_BINARY="\"$(top_bindir)/service/indicator-messages-service\"" \
+	-std=c++11 \
+	$(APPLET_CFLAGS) \
+	$(AM_CPPFLAGS)
+
+indicator_test_LDADD = \
+	$(APPLET_LIBS) \
+	libgtest.a
+
+TESTS += indicator-test
+check_PROGRAMS += indicator-test
 
 ######################################
 # Lib containing code under test
