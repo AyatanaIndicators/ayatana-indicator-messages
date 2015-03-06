@@ -172,7 +172,7 @@ data/icons/scalable/status/Makefile
 data/icons/scalable/categories/Makefile
 data/upstart/Makefile
 po/Makefile.in
-test/Makefile
+tests/Makefile
 libmessaging-menu/Makefile
 libmessaging-menu/messaging-menu.pc
 doc/Makefile
