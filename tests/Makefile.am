@@ -1,4 +1,5 @@
 
+CLEANFILES=
 check_LTLIBRARIES = libgtest.la
 check_PROGRAMS = test-gactionmuxer
 
@@ -34,7 +35,7 @@ test_gactionmuxer_CPPFLAGS = \
 test_gactionmuxer_LDADD = \
 	$(APPLET_LIBS) \
 	libindicator-messages-service.la \
-	libgtest.a
+	libgtest.la
 
 ######################################
 # Indicator Test
@@ -44,8 +45,8 @@ indicator_test_SOURCES = \
 	indicator-test.cpp
 
 indicator_test_CPPFLAGS = \
-	-DINDICATOR_MESSAGES_SERVICE_BINARY="\"$(top_bindir)/service/indicator-messages-service\"" \
-	-DSCHEMA_DIR="\"$(bindir)/gsettings-schemas-compiled/\"" \
+	-DINDICATOR_MESSAGES_SERVICE_BINARY="\"$(top_builddir)/service/indicator-messages-service\"" \
+	-DSCHEMA_DIR="\"$(builddir)/gsettings-schemas-compiled/\"" \
 	-std=c++11 \
 	$(APPLET_CFLAGS) \
 	$(DBUSTEST_CFLAGS) \
@@ -57,6 +58,16 @@ indicator_test_LDADD = \
 	libgtest.la \
 	-lc -lpthread
 
+indicator-test.cpp: schemas-compiled.stamp
+
+schemas-compiled.stamp: $(top_srcdir)/data/*gschema.xml
+	rm -rf $(builddir)/gsettings-schemas-compiled
+	mkdir -p $(builddir)/gsettings-schemas-compiled 
+	cp -f $(top_srcdir)/data/*gschema.xml $(builddir)/gsettings-schemas-compiled
+	`pkg-config gio-2.0 --variable glib_compile_schemas` $(builddir)/gsettings-schemas-compiled
+	touch schemas-compiled.stamp
+
+CLEANFILES += schemas-compiled.stamp
 TESTS += indicator-test
 check_PROGRAMS += indicator-test
 
@@ -71,7 +82,7 @@ libindicator_messages_service_la_SOURCES = \
 	$(top_builddir)/common/indicator-messages-service.c \
 	$(top_builddir)/common/indicator-messages-service.h \
 	$(top_srcdir)/src/gactionmuxer.c \
-	$(top_srcdir)/src/gactionmuxer.h
+	$(top_srcdir)/src/gactionmuxer.h \
 	$(top_srcdir)/src/dbus-data.h
 
 libindicator_messages_service_ladir = \
