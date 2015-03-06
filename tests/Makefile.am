@@ -1,5 +1,5 @@
 
-check_LIBRARIES = libgtest.a
+check_LTLIBRARIES = libgtest.la
 check_PROGRAMS = test-gactionmuxer
 
 TESTS = $(check_PROGRAMS)
@@ -11,13 +11,13 @@ AM_CPPFLAGS = $(GTEST_CPPFLAGS) \
 # Google Test
 ######################################
 
-nodist_libgtest_a_SOURCES = \
+nodist_libgtest_la_SOURCES = \
 	$(GTEST_SOURCE)/src/gtest-all.cc \
 	$(GTEST_SOURCE)/src/gtest_main.cc
-libgtest_a_CPPFLAGS = \
+libgtest_la_CPPFLAGS = \
 	$(GTEST_CPPFLAGS) -w \
 	$(AM_CPPFLAGS)
-libgtest_a_CXXFLAGS = \
+libgtest_la_CXXFLAGS = \
 	$(AM_CXXFLAGS)
 
 ######################################
@@ -45,6 +45,7 @@ indicator_test_SOURCES = \
 
 indicator_test_CPPFLAGS = \
 	-DINDICATOR_MESSAGES_SERVICE_BINARY="\"$(top_bindir)/service/indicator-messages-service\"" \
+	-DSCHEMA_DIR="\"$(bindir)/gsettings-schemas-compiled/\"" \
 	-std=c++11 \
 	$(APPLET_CFLAGS) \
 	$(DBUSTEST_CFLAGS) \
@@ -53,7 +54,8 @@ indicator_test_CPPFLAGS = \
 indicator_test_LDADD = \
 	$(APPLET_LIBS) \
 	$(DBUSTEST_LIBS) \
-	libgtest.a
+	libgtest.la \
+	-lc -lpthread
 
 TESTS += indicator-test
 check_PROGRAMS += indicator-test
