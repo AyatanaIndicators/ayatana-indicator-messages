@@ -26,6 +26,7 @@ class AccountsServiceMock
 		DbusTestDbusMockObject * soundobj = nullptr;
 		DbusTestDbusMockObject * userobj = nullptr;
 		DbusTestDbusMockObject * syssoundobj = nullptr;
+		DbusTestDbusMockObject * privacyobj = nullptr;
 
 	public:
 		AccountsServiceMock () {
@@ -55,6 +56,9 @@ class AccountsServiceMock
 			dbus_test_dbus_mock_object_add_property(mock, userobj,
 				"UserName", G_VARIANT_TYPE_STRING,
 				g_variant_new_string(g_get_user_name()), NULL);
+			dbus_test_dbus_mock_object_add_method(mock, baseobj,
+				"SetXHasMessages", G_VARIANT_TYPE_BOOLEAN, nullptr,
+				"", NULL);
 
 			soundobj = dbus_test_dbus_mock_get_object(mock, "/user", "com.canonical.indicator.sound.AccountsService", NULL);
 			dbus_test_dbus_mock_object_add_property(mock, soundobj,
@@ -89,6 +93,14 @@ class AccountsServiceMock
 			dbus_test_dbus_mock_object_add_property(mock, syssoundobj,
 				"SilentMode", G_VARIANT_TYPE_BOOLEAN,
 				g_variant_new_boolean(FALSE), NULL);
+
+			privacyobj = dbus_test_dbus_mock_get_object(mock, "/user", "com.ubuntu.touch.AccountsService.SecurityPrivacy", NULL);
+			dbus_test_dbus_mock_object_add_property(mock, privacyobj,
+				"MessagesWelcomeScreen", G_VARIANT_TYPE_BOOLEAN,
+				g_variant_new_boolean(true), NULL);
+			dbus_test_dbus_mock_object_add_property(mock, privacyobj,
+				"StatsWelcomeScreen", G_VARIANT_TYPE_BOOLEAN,
+				g_variant_new_boolean(true), NULL);
 		}
 
 		~AccountsServiceMock () {
