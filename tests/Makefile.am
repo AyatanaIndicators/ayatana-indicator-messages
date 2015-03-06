@@ -47,10 +47,12 @@ indicator_test_CPPFLAGS = \
 	-DINDICATOR_MESSAGES_SERVICE_BINARY="\"$(top_bindir)/service/indicator-messages-service\"" \
 	-std=c++11 \
 	$(APPLET_CFLAGS) \
+	$(DBUSTEST_CFLAGS) \
 	$(AM_CPPFLAGS)
 
 indicator_test_LDADD = \
 	$(APPLET_LIBS) \
+	$(DBUSTEST_LIBS) \
 	libgtest.a
 
 TESTS += indicator-test
