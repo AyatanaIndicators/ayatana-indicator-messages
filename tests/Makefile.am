@@ -45,8 +45,8 @@ indicator_test_SOURCES = \
 	indicator-test.cpp
 
 indicator_test_CPPFLAGS = \
-	-DINDICATOR_MESSAGES_SERVICE_BINARY="\"$(top_builddir)/service/indicator-messages-service\"" \
-	-DSCHEMA_DIR="\"$(builddir)/gsettings-schemas-compiled/\"" \
+	-DINDICATOR_MESSAGES_SERVICE_BINARY="\"$(abs_top_builddir)/src/indicator-messages-service\"" \
+	-DSCHEMA_DIR="\"$(abs_builddir)/gsettings-schemas-compiled/\"" \
 	-std=c++11 \
 	$(APPLET_CFLAGS) \
 	$(DBUSTEST_CFLAGS) \
