@@ -23,6 +23,9 @@
 #include "indicator-fixture.h"
 #include "accounts-service-mock.h"
 
+#include "messaging-menu-app.h"
+#include "messaging-menu-message.h"
+
 class IndicatorTest : public IndicatorFixture
 {
 protected:
@@ -37,6 +40,8 @@ protected:
 	{
 		g_setenv("GSETTINGS_SCHEMA_DIR", SCHEMA_DIR, TRUE);
 		g_setenv("GSETTINGS_BACKEND", "memory", TRUE);
+
+		g_setenv("XDG_DATA_DIRS", XDG_DATA_DIRS, TRUE);
 
 		as = std::make_shared<AccountsServiceMock>();
 		addMock(*as);
@@ -60,6 +65,24 @@ TEST_F(IndicatorTest, RootAction) {
 	EXPECT_EVENTUALLY_ACTION_EXISTS("messages");
 	EXPECT_ACTION_STATE_TYPE("messages", G_VARIANT_TYPE("a{sv}"));
 	EXPECT_ACTION_STATE("messages", g_variant_new_parsed("{'icon': <('themed', <['indicator-messages-offline', 'indicator-messages', 'indicator']>)>, 'title': <'Notifications'>, 'accessible-desc': <'Messages'>, 'visible': <false>}"));
-
 }
 
+TEST_F(IndicatorTest, SingleMessage) {
+	setActions("/com/canonical/indicator/messages");
+
+	auto app = std::shared_ptr<MessagingMenuApp>(messaging_menu_app_new("test.desktop"), [](MessagingMenuApp * app) { g_clear_object(&app); });
+	ASSERT_NE(nullptr, app);
+	messaging_menu_app_register(app.get());
+
+	auto msg = std::shared_ptr<MessagingMenuMessage>(messaging_menu_message_new(
+		"test-id",
+		nullptr, /* no icon */
+		"Test Title",
+		"A subtitle too",
+		"You only like me for my body",
+		0), [](MessagingMenuMessage * msg) { g_clear_object(&msg); });
+	messaging_menu_app_append_message(app.get(), msg.get(), nullptr, FALSE);
+
+	EXPECT_EVENTUALLY_ACTION_EXISTS("test.launch");
+
+}

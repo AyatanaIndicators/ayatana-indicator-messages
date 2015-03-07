@@ -1,2 +1,5 @@
 [Desktop Entry]
 Type=Application
+Name=Test
+Exec=test
+Icon=test-app

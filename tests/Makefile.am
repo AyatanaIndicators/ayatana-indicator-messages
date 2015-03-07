@@ -47,6 +47,8 @@ indicator_test_SOURCES = \
 indicator_test_CPPFLAGS = \
 	-DINDICATOR_MESSAGES_SERVICE_BINARY="\"$(abs_top_builddir)/src/indicator-messages-service\"" \
 	-DSCHEMA_DIR="\"$(abs_builddir)/gsettings-schemas-compiled/\"" \
+	-DXDG_DATA_DIRS="\"$(abs_srcdir)/\"" \
+	-I$(top_srcdir)/libmessaging-menu \
 	-std=c++11 \
 	$(APPLET_CFLAGS) \
 	$(DBUSTEST_CFLAGS) \
@@ -55,6 +57,7 @@ indicator_test_CPPFLAGS = \
 indicator_test_LDADD = \
 	$(APPLET_LIBS) \
 	$(DBUSTEST_LIBS) \
+	$(top_builddir)/libmessaging-menu/libmessaging-menu.la \
 	libgtest.la \
 	-lc -lpthread
 

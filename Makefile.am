@@ -15,7 +15,7 @@ SUBDIRS += \
 	tests
 
 # build src first
-tests: src
+tests: src libmessaging-menu
 
 endif
 
