@@ -74,8 +74,10 @@ TEST_F(IndicatorTest, SingleMessage) {
 	ASSERT_NE(nullptr, app);
 	messaging_menu_app_register(app.get());
 
+	EXPECT_EVENTUALLY_ACTION_EXISTS("test.launch");
+
 	auto msg = std::shared_ptr<MessagingMenuMessage>(messaging_menu_message_new(
-		"test-id",
+		"testid",
 		nullptr, /* no icon */
 		"Test Title",
 		"A subtitle too",
@@ -83,6 +85,12 @@ TEST_F(IndicatorTest, SingleMessage) {
 		0), [](MessagingMenuMessage * msg) { g_clear_object(&msg); });
 	messaging_menu_app_append_message(app.get(), msg.get(), nullptr, FALSE);
 
-	EXPECT_EVENTUALLY_ACTION_EXISTS("test.launch");
+	EXPECT_EVENTUALLY_ACTION_EXISTS("test.msg.testid");
 
+	setMenu("/com/canonical/indicator/messages/phone");
+
+	EXPECT_EVENTUALLY_MENU_ATTRIB(std::vector<int>({0, 0, 0}), "x-canonical-type", "com.canonical.indicator.messages.messageitem");
+	EXPECT_MENU_ATTRIB(std::vector<int>({0, 0, 0}), "x-canonical-message-id", "testid");
+	EXPECT_MENU_ATTRIB(std::vector<int>({0, 0, 0}), "x-canonical-subtitle", "A subtitle too");
+	EXPECT_MENU_ATTRIB(std::vector<int>({0, 0, 0}), "x-canonical-text", "You only like me for my body");
 }
