@@ -376,11 +376,7 @@ class IndicatorFixture : public ::testing::Test
 			return expectEventually(func);
 		}
 
-		testing::AssertionResult expectActionStateIs (const char * nameStr, const char * valueStr, const std::string& name, GVariant * value) {
-			auto varref = std::shared_ptr<GVariant>(g_variant_ref_sink(value), [](GVariant * varptr) {
-				if (varptr != nullptr)
-					g_variant_unref(varptr);
-			});
+		testing::AssertionResult expectActionStateIs (const char * nameStr, const char * valueStr, const std::string& name, std::shared_ptr<GVariant> varref) {
 			auto aval = std::shared_ptr<GVariant>(g_action_group_get_action_state(run->_actions.get(), name.c_str()), [] (GVariant * varptr) {
 				if (varptr != nullptr)
 					g_variant_unref(varptr);
@@ -413,6 +409,14 @@ class IndicatorFixture : public ::testing::Test
 				auto result = testing::AssertionSuccess();
 				return result;
 			}
+		}
+
+		testing::AssertionResult expectActionStateIs (const char * nameStr, const char * valueStr, const std::string& name, GVariant * value) {
+			auto varref = std::shared_ptr<GVariant>(g_variant_ref_sink(value), [](GVariant * varptr) {
+				if (varptr != nullptr)
+					g_variant_unref(varptr);
+			});
+			return expectActionStateIs(nameStr, valueStr, name, varref);
 		}
 
 		testing::AssertionResult expectActionStateIs (const char * nameStr, const char * valueStr, const std::string& name, bool value) {
