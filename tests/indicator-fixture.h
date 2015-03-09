@@ -294,6 +294,30 @@ class IndicatorFixture : public ::testing::Test
 			return expectEventually(func);
 		}
 
+		testing::AssertionResult expectActionDoesNotExist (const gchar * nameStr, const std::string& name) {
+			bool hasit = g_action_group_has_action(run->_actions.get(), name.c_str());
+
+			if (hasit) {
+				auto result = testing::AssertionFailure();
+				result <<
+					"    Action: " << nameStr << std::endl <<
+					"  Expected: " << "No action found" << std::endl <<
+					"    Actual: " << "Exists" << std::endl;
+
+				return result;
+			}
+
+			auto result = testing::AssertionSuccess();
+			return result;
+		}
+
+		template <typename... Args> testing::AssertionResult expectEventuallyActionDoesNotExist (Args&& ... args) {
+			std::function<testing::AssertionResult(void)> func = [&]() {
+				return expectActionDoesNotExist(std::forward<Args>(args)...);
+			};
+			return expectEventually(func);
+		}
+
 		testing::AssertionResult expectActionEnabled (const char * nameStr, const char * typeStr, const std::string& name, bool enabled) {
 			auto aenabled = g_action_group_get_action_enabled(run->_actions.get(), name.c_str());
 
@@ -592,6 +616,16 @@ class IndicatorFixture : public ::testing::Test
 
 #define EXPECT_EVENTUALLY_ACTION_EXISTS(action) \
 	EXPECT_PRED_FORMAT1(IndicatorFixture::expectEventuallyActionExists, action)
+
+/* Action Does Not Exist */
+#define ASSERT_ACTION_DOES_NOT_EXIST(action) \
+	ASSERT_PRED_FORMAT1(IndicatorFixture::expectActionDoesNotExist, action)
+
+#define EXPECT_ACTION_DOES_NOT_EXIST(action) \
+	EXPECT_PRED_FORMAT1(IndicatorFixture::expectActionDoesNotExist, action)
+
+#define EXPECT_EVENTUALLY_ACTION_DOES_NOT_EXIST(action) \
+	EXPECT_PRED_FORMAT1(IndicatorFixture::expectEventuallyActionDoesNotExist, action)
 
 /* Action Enabled */
 #define ASSERT_ACTION_ENABLED(action, state) \
