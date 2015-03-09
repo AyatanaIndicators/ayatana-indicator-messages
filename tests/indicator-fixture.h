@@ -294,6 +294,30 @@ class IndicatorFixture : public ::testing::Test
 			return expectEventually(func);
 		}
 
+		testing::AssertionResult expectActionEnabled (const char * nameStr, const char * typeStr, const std::string& name, bool enabled) {
+			auto aenabled = g_action_group_get_action_enabled(run->_actions.get(), name.c_str());
+
+			if (enabled != aenabled) {
+				auto result = testing::AssertionFailure();
+				result <<
+					"    Action: " << nameStr << std::endl <<
+					"  Expected: " << enabled << std::endl <<
+					"    Actual: " << aenabled << std::endl;
+
+				return result;
+			}
+
+			auto result = testing::AssertionSuccess();
+			return result;
+		}
+
+		template <typename... Args> testing::AssertionResult expectEventuallyActionEnabled (Args&& ... args) {
+			std::function<testing::AssertionResult(void)> func = [&]() {
+				return expectActionEnabled(std::forward<Args>(args)...);
+			};
+			return expectEventually(func);
+		}
+
 		testing::AssertionResult expectActionStateType (const char * nameStr, const char * typeStr, const std::string& name, const GVariantType * type) {
 			auto atype = g_action_group_get_action_state_type(run->_actions.get(), name.c_str());
 			bool same = false;
@@ -564,6 +588,16 @@ class IndicatorFixture : public ::testing::Test
 
 #define EXPECT_EVENTUALLY_ACTION_EXISTS(action) \
 	EXPECT_PRED_FORMAT1(IndicatorFixture::expectEventuallyActionExists, action)
+
+/* Action Enabled */
+#define ASSERT_ACTION_ENABLED(action, state) \
+	ASSERT_PRED_FORMAT2(IndicatorFixture::expectActionEnabled, action, state)
+
+#define EXPECT_ACTION_ENABLED(action, state) \
+	EXPECT_PRED_FORMAT2(IndicatorFixture::expectActionEnabled, action, state)
+
+#define EXPECT_EVENTUALLY_ACTION_ENABLED(action, state) \
+	EXPECT_PRED_FORMAT2(IndicatorFixture::expectEventuallyActionEnabled, action, state)
 
 /* Action State */
 #define ASSERT_ACTION_STATE(action, value) \
