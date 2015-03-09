@@ -144,3 +144,66 @@ TEST_F(IndicatorTest, MessageReply) {
 
 	EXPECT_EVENTUALLY_ACTION_ENABLED("remove-all", false);
 }
+
+TEST_F(IndicatorTest, IconNotification) {
+	auto normalicon = std::shared_ptr<GVariant>(g_variant_ref_sink(g_variant_new_parsed("{'icon': <('themed', <['indicator-messages-offline', 'indicator-messages', 'indicator']>)>, 'title': <'Notifications'>, 'accessible-desc': <'Messages'>, 'visible': <true>}")), [](GVariant *var) {if (var != nullptr) g_variant_unref(var); });
+	auto blueicon = std::shared_ptr<GVariant>(g_variant_ref_sink(g_variant_new_parsed("{'icon': <('themed', <['indicator-messages-new-offline', 'indicator-messages-new', 'indicator-messages', 'indicator']>)>, 'title': <'Notifications'>, 'accessible-desc': <'New Messages'>, 'visible': <true>}")), [](GVariant *var) {if (var != nullptr) g_variant_unref(var); });
+
+	setActions("/com/canonical/indicator/messages");
+
+	auto app = std::shared_ptr<MessagingMenuApp>(messaging_menu_app_new("test.desktop"), [](MessagingMenuApp * app) { g_clear_object(&app); });
+	ASSERT_NE(nullptr, app);
+	messaging_menu_app_register(app.get());
+
+	EXPECT_EVENTUALLY_ACTION_EXISTS("test.launch");
+
+	EXPECT_ACTION_STATE("messages", normalicon);
+
+	auto app2 = std::shared_ptr<MessagingMenuApp>(messaging_menu_app_new("test2.desktop"), [](MessagingMenuApp * app) { g_clear_object(&app); });
+	ASSERT_NE(nullptr, app2);
+	messaging_menu_app_register(app2.get());
+
+	EXPECT_EVENTUALLY_ACTION_EXISTS("test2.launch");
+
+	messaging_menu_app_append_source_with_count(app2.get(),
+		"countsource",
+		nullptr,
+		"Count Source",
+		500);
+	messaging_menu_app_draw_attention(app2.get(), "countsource");
+
+	EXPECT_EVENTUALLY_ACTION_STATE("messages", blueicon);
+
+	auto msg = std::shared_ptr<MessagingMenuMessage>(messaging_menu_message_new(
+		"messageid",
+		nullptr, /* no icon */
+		"Message",
+		"A secret message",
+		"asdfa;lkweraoweprijas;dvlknasvdoiewur;aslkd",
+		0), [](MessagingMenuMessage * msg) { g_clear_object(&msg); });
+	messaging_menu_message_set_draws_attention(msg.get(), true);
+	messaging_menu_app_append_message(app.get(), msg.get(), nullptr, FALSE);
+
+	EXPECT_EVENTUALLY_ACTION_EXISTS("test.msg.messageid");
+	EXPECT_ACTION_STATE("messages", blueicon);
+
+	messaging_menu_app_unregister(app2.get());
+	app2.reset();
+
+	EXPECT_EVENTUALLY_ACTION_DOES_NOT_EXIST("test2.msg.countsource");
+	EXPECT_ACTION_STATE("messages", blueicon);
+
+	messaging_menu_app_remove_message(app.get(), msg.get());
+
+	EXPECT_EVENTUALLY_ACTION_STATE("messages", normalicon);
+	EXPECT_ACTION_ENABLED("remove-all", false);
+
+	messaging_menu_app_append_message(app.get(), msg.get(), nullptr, FALSE);
+
+	EXPECT_EVENTUALLY_ACTION_STATE("messages", blueicon);
+	EXPECT_ACTION_ENABLED("remove-all", true);
+
+	activateAction("remove-all");
+
+	EXPECT_EVENTUALLY_ACTION_STATE("messages", normalicon);
+}
