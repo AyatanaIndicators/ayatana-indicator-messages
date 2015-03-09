@@ -292,7 +292,7 @@ class IndicatorFixture : public ::testing::Test
 				result <<
 					"    Action: " << nameStr << std::endl <<
 					"  Expected: " << typeStr << std::endl <<
-					"    Actual: " << g_variant_type_peek_string(atype) << std::endl;
+					"    Actual: " << (atype == nullptr ? "(null)" : g_variant_type_peek_string(atype)) << std::endl;
 
 				return result;
 			}
@@ -304,6 +304,35 @@ class IndicatorFixture : public ::testing::Test
 		template <typename... Args> testing::AssertionResult expectEventuallyActionStateType (Args&& ... args) {
 			std::function<testing::AssertionResult(void)> func = [&]() {
 				return expectActionStateType(std::forward<Args>(args)...);
+			};
+			return expectEventually(func);
+		}
+
+		testing::AssertionResult expectActionActivationType (const char * nameStr, const char * typeStr, const std::string& name, const GVariantType * type) {
+			auto atype = g_action_group_get_action_parameter_type(run->_actions.get(), name.c_str());
+			bool same = false;
+
+			if (atype != nullptr) {
+				same = g_variant_type_equal(atype, type);
+			}
+
+			if (!same) {
+				auto result = testing::AssertionFailure();
+				result <<
+					"    Action: " << nameStr << std::endl <<
+					"  Expected: " << typeStr << std::endl <<
+					"    Actual: " << (atype == nullptr ? "(null)" : g_variant_type_peek_string(atype)) << std::endl;
+
+				return result;
+			}
+
+			auto result = testing::AssertionSuccess();
+			return result;
+		}
+
+		template <typename... Args> testing::AssertionResult expectEventuallyActionActivationType (Args&& ... args) {
+			std::function<testing::AssertionResult(void)> func = [&]() {
+				return expectActionActivationType(std::forward<Args>(args)...);
 			};
 			return expectEventually(func);
 		}
@@ -522,3 +551,14 @@ class IndicatorFixture : public ::testing::Test
 
 #define EXPECT_EVENTUALLY_ACTION_STATE_TYPE(action, type) \
 	EXPECT_PRED_FORMAT2(IndicatorFixture::expectEventuallyActionStateType, action, type)
+
+/* Action Activation Type */
+#define ASSERT_ACTION_ACTIVATION_TYPE(action, type) \
+	ASSERT_PRED_FORMAT2(IndicatorFixture::expectActionActivationType, action, type)
+
+#define EXPECT_ACTION_ACTIVATION_TYPE(action, type) \
+	EXPECT_PRED_FORMAT2(IndicatorFixture::expectActionActivationType, action, type)
+
+#define EXPECT_EVENTUALLY_ACTION_ACTIVATION_TYPE(action, type) \
+	EXPECT_PRED_FORMAT2(IndicatorFixture::expectEventuallyActionActivationType, action, type)
+
