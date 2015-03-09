@@ -255,6 +255,21 @@ class IndicatorFixture : public ::testing::Test
 			agWaitForActions(run->_actions);
 		}
 
+		void activateAction (const std::string &name, std::shared_ptr<GVariant> &parameter) {
+			g_action_group_activate_action(run->_actions.get(), name.c_str(), parameter.get());
+		}
+
+		void activateAction (const std::string &name, GVariant * parameter = nullptr) {
+			std::shared_ptr<GVariant> param;
+
+			if (parameter != nullptr)
+				param = std::shared_ptr<GVariant>(g_variant_ref_sink(parameter), [](GVariant * var) {
+					g_variant_unref(var);
+				});
+
+			return activateAction(name, param);
+		}
+
 		testing::AssertionResult expectActionExists (const gchar * nameStr, const std::string& name) {
 			bool hasit = g_action_group_has_action(run->_actions.get(), name.c_str());
 
@@ -526,6 +541,8 @@ class IndicatorFixture : public ::testing::Test
 		_EVENTUALLY_HELPER(GT);
 		_EVENTUALLY_HELPER(STREQ);
 		_EVENTUALLY_HELPER(STRNE);
+
+		#undef _EVENTUALLY_HELPER
 };
 
 /* Menu Attrib */
