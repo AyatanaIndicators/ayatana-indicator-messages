@@ -510,6 +510,22 @@ class IndicatorFixture : public ::testing::Test
 			};
 			return expectEventually(func);
 		}
+
+		/* Eventually Helpers */
+		#define _EVENTUALLY_HELPER(oper) \
+		template <typename... Args> testing::AssertionResult expectEventually##oper (Args&& ... args) { \
+			std::function<testing::AssertionResult(void)> func = [&]() { \
+				return testing::internal::CmpHelper##oper(std::forward<Args>(args)...); \
+			}; \
+			return expectEventually(func); \
+		}
+
+		_EVENTUALLY_HELPER(EQ);
+		_EVENTUALLY_HELPER(NE);
+		_EVENTUALLY_HELPER(LT);
+		_EVENTUALLY_HELPER(GT);
+		_EVENTUALLY_HELPER(STREQ);
+		_EVENTUALLY_HELPER(STRNE);
 };
 
 /* Menu Attrib */
@@ -562,3 +578,22 @@ class IndicatorFixture : public ::testing::Test
 #define EXPECT_EVENTUALLY_ACTION_ACTIVATION_TYPE(action, type) \
 	EXPECT_PRED_FORMAT2(IndicatorFixture::expectEventuallyActionActivationType, action, type)
 
+/* Helpers */
+
+#define EXPECT_EVENTUALLY_EQ(expected, actual) \
+	EXPECT_PRED_FORMAT2(IndicatorFixture::expectEventuallyEQ, expected, actual)
+
+#define EXPECT_EVENTUALLY_NE(expected, actual) \
+	EXPECT_PRED_FORMAT2(IndicatorFixture::expectEventuallyNE, expected, actual)
+
+#define EXPECT_EVENTUALLY_LT(expected, actual) \
+	EXPECT_PRED_FORMAT2(IndicatorFixture::expectEventuallyLT, expected, actual)
+
+#define EXPECT_EVENTUALLY_GT(expected, actual) \
+	EXPECT_PRED_FORMAT2(IndicatorFixture::expectEventuallyGT, expected, actual)
+
+#define EXPECT_EVENTUALLY_STREQ(expected, actual) \
+	EXPECT_PRED_FORMAT2(IndicatorFixture::expectEventuallySTREQ, expected, actual)
+
+#define EXPECT_EVENTUALLY_STRNE(expected, actual) \
+	EXPECT_PRED_FORMAT2(IndicatorFixture::expectEventuallySTRNE, expected, actual)
