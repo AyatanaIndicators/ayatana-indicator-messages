@@ -41,12 +41,14 @@ test_gactionmuxer_LDADD = \
 # Indicator Test
 ######################################
 
+SCHEMA_COMPILED_DIR="$(abs_builddir)/gsettings-schemas-compiled/"
+
 indicator_test_SOURCES = \
 	indicator-test.cpp
 
 indicator_test_CPPFLAGS = \
 	-DINDICATOR_MESSAGES_SERVICE_BINARY="\"$(abs_top_builddir)/src/indicator-messages-service\"" \
-	-DSCHEMA_DIR="\"$(abs_builddir)/gsettings-schemas-compiled/\"" \
+	-DSCHEMA_DIR="\"$(SCHEMA_COMPILED_DIR)\"" \
 	-DXDG_DATA_DIRS="\"$(abs_srcdir)/\"" \
 	-I$(top_srcdir)/libmessaging-menu \
 	-std=c++11 \
@@ -64,11 +66,11 @@ indicator_test_LDADD = \
 indicator-test.cpp: schemas-compiled.stamp
 
 schemas-compiled.stamp: $(top_srcdir)/data/*gschema.xml
-	rm -rf $(builddir)/gsettings-schemas-compiled
-	mkdir -p $(builddir)/gsettings-schemas-compiled 
-	cp -f $(top_srcdir)/data/*gschema.xml $(builddir)/gsettings-schemas-compiled
-	`pkg-config gio-2.0 --variable glib_compile_schemas` $(builddir)/gsettings-schemas-compiled
-	touch schemas-compiled.stamp
+	@rm -rf $(SCHEMA_COMPILED_DIR)
+	@mkdir -p $(SCHEMA_COMPILED_DIR)
+	@cp -f $(top_srcdir)/data/*gschema.xml $(SCHEMA_COMPILED_DIR)
+	@`pkg-config gio-2.0 --variable glib_compile_schemas` $(SCHEMA_COMPILED_DIR)
+	@touch schemas-compiled.stamp
 
 CLEANFILES += schemas-compiled.stamp
 TESTS += indicator-test
