@@ -70,13 +70,13 @@ class IndicatorFixture : public ::testing::Test
 				dbus_test_task_set_name(_test_dummy, "Dummy");
 				dbus_test_service_add_task(_session_service, _test_dummy);
 
-				std::for_each(mocks.begin(), mocks.end(), [this](std::shared_ptr<DbusTestTask> task) {
+				for(auto task : mocks) {
 					if (dbus_test_task_get_bus(task.get()) == DBUS_TEST_SERVICE_BUS_SYSTEM) {
 						dbus_test_service_add_task(_system_service, task.get());
 					} else {
 						dbus_test_service_add_task(_session_service, task.get());
 					}
-				});
+				}
 
 				g_debug("Starting System Bus");
 				dbus_test_service_start_tasks(_system_service);
