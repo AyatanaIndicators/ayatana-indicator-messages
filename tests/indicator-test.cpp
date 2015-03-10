@@ -98,7 +98,7 @@ TEST_F(IndicatorTest, SingleMessage) {
 
 static void
 messageReplyActivate (GObject * obj, gchar * name, GVariant * value, gpointer user_data) {
-	std::string * res = reinterpret_cast<std::string *>(user_data);
+	auto res = reinterpret_cast<std::string *>(user_data);
 	*res = g_variant_get_string(value, nullptr);
 }
 
