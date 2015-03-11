@@ -1,3 +1,10 @@
+indicator-messages (13.10.1+15.04.20150311-0ubuntu1) vivid; urgency=medium
+
+  [ Ted Gould ]
+  * Sanity tests to test basic features of the messaging menu
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Wed, 11 Mar 2015 16:21:18 +0000
+
 indicator-messages (13.10.1+15.04.20150304-0ubuntu1) vivid; urgency=medium
 
   [ Ted Gould ]
