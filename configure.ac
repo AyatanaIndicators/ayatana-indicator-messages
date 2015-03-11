@@ -48,6 +48,8 @@ PKG_CHECK_MODULES(APPLET, gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
 
 PKG_CHECK_MODULES(GIO, gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION)
 
+PKG_CHECK_MODULES(DBUSTEST, dbustest-1)
+
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
@@ -172,7 +174,7 @@ data/icons/scalable/status/Makefile
 data/icons/scalable/categories/Makefile
 data/upstart/Makefile
 po/Makefile.in
-test/Makefile
+tests/Makefile
 libmessaging-menu/Makefile
 libmessaging-menu/messaging-menu.pc
 doc/Makefile

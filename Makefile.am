@@ -12,10 +12,10 @@ endif
 
 if BUILD_TESTS
 SUBDIRS += \
-	test
+	tests
 
 # build src first
-test: src
+tests: src libmessaging-menu
 
 endif
 
