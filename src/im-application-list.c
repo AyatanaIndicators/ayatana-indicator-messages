@@ -534,7 +534,7 @@ im_application_list_remove_all (GSimpleAction *action,
           unescaped_message_actions = g_new0 (gchar *, g_strv_length (message_actions) + 1);
           for (i = 0; message_actions[i]; i++)
             unescaped_message_actions[i] = unescape_action_name (message_actions[i]);
-          
+
           indicator_messages_application_call_dismiss (app->proxy, 
                                                        (const gchar * const *) unescaped_source_actions,
                                                        (const gchar * const *) unescaped_message_actions,
