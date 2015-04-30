@@ -522,6 +522,7 @@ im_application_list_remove_all (GSimpleAction *action,
 
       if (app->proxy != NULL) /* If it is remote, we tell the app we've cleared */
         {
+          int i;
           gchar **unescaped_source_actions;
           gchar **unescaped_message_actions;
 
