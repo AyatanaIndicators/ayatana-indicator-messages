@@ -522,10 +522,26 @@ im_application_list_remove_all (GSimpleAction *action,
 
       if (app->proxy != NULL) /* If it is remote, we tell the app we've cleared */
         {
+          guint i;
+          gchar **unescaped_source_actions;
+          gchar **unescaped_message_actions;
+
+          /* Unescape action names */
+          unescaped_source_actions = g_new0 (gchar *, g_strv_length (source_actions) + 1);
+          for (i = 0; source_actions[i]; i++)
+            unescaped_source_actions[i] = unescape_action_name (source_actions[i]);
+
+          unescaped_message_actions = g_new0 (gchar *, g_strv_length (message_actions) + 1);
+          for (i = 0; message_actions[i]; i++)
+            unescaped_message_actions[i] = unescape_action_name (message_actions[i]);
+
           indicator_messages_application_call_dismiss (app->proxy, 
-                                                       (const gchar * const *) source_actions,
-                                                       (const gchar * const *) message_actions,
+                                                       (const gchar * const *) unescaped_source_actions,
+                                                       (const gchar * const *) unescaped_message_actions,
                                                        app->cancellable, NULL, NULL);
+
+          g_strfreev (unescaped_source_actions);
+          g_strfreev (unescaped_message_actions);
         }
 
       g_strfreev (source_actions);
