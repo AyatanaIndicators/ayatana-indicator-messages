@@ -1,3 +1,14 @@
+indicator-messages (13.10.1+15.10.20150505-0ubuntu1) wily; urgency=medium
+
+  [ Lars Uebernickel ]
+  * application list: update root action unconditionally
+
+  [ Niklas Wenzel ]
+  * Unescape action names when passing them to the proxy in
+    im_application_list_remove_all() (LP: #1434521)
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Tue, 05 May 2015 16:47:43 +0000
+
 indicator-messages (13.10.1+15.04.20150403-0ubuntu1) vivid; urgency=medium
 
   [ Ted Gould ]
