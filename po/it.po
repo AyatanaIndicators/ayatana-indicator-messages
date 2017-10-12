@@ -7,63 +7,67 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-29 12:32+0100\n"
-"PO-Revision-Date: 2017-10-12 07:58+0200\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"POT-Creation-Date: 2017-10-12 07:58+0200\n"
+"PO-Revision-Date: 2017-10-12 08:21+0000\n"
+"Last-Translator: Matteo F. Vescovi <mfvescovi+github@gmail.com>\n"
+"Language-Team: Italian <https://hosted.weblate.org/projects/ayatana-"
+"indicators/messages-applet/it/>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 2.17-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
-msgstr ""
+msgstr "Lista delle applicazioni che sono visualizzate nel menu dei messaggi"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
 "Applications corresponding to the desktop file ids in this list are shown in "
 "the messaging menu."
 msgstr ""
+"Applicazioni corrispondenti a file ID in questa lista che sono mostrate nel "
+"menu dei messaggi."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
-msgstr ""
+msgstr "Nuovi Messaggi"
 
 #: ../src/im-application-list.c:235
 msgid "Messages"
-msgstr ""
+msgstr "Messaggi"
 
 #. title
 #: ../src/im-application-list.c:258
 msgid "Notifications"
-msgstr ""
+msgstr "Notifiche"
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"
-msgstr ""
+msgstr "Disponibile"
 
 #: ../src/im-desktop-menu.c:68
 msgid "Away"
-msgstr ""
+msgstr "Assente"
 
 #: ../src/im-desktop-menu.c:69
 msgid "Busy"
-msgstr ""
+msgstr "Occupato"
 
 #: ../src/im-desktop-menu.c:70
 msgid "Invisible"
-msgstr ""
+msgstr "Invisibile"
 
 #: ../src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr ""
+msgstr "Non in linea"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
-msgstr ""
+msgstr "Cancella"
 
 #: ../src/im-phone-menu.c:76
 msgid "Clear All"
-msgstr ""
+msgstr "Cancella tutto"
