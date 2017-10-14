@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-10-12 07:58+0200\n"
-"PO-Revision-Date: 2017-10-13 16:46+0000\n"
-"Last-Translator: Efstathios Iosifidis <iefstathios@gmail.com>\n"
+"PO-Revision-Date: 2017-10-14 16:07+0000\n"
+"Last-Translator: Vangelis Mouhtsis <vmouhtsis@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/ayatana-indicators"
 "/messages-applet/el/>\n"
 "Language: el\n"
@@ -21,13 +21,15 @@ msgstr ""
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
-msgstr ""
+msgstr "Λίστα εφαρμογών που εμφανίζονται εις το κατάλογο μηνυμάτων"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
 "Applications corresponding to the desktop file ids in this list are shown in "
 "the messaging menu."
 msgstr ""
+"Εφαρμογές με την αντίστοιχη ονομασία τους, λίστα η οποία εμφανίζεται εις το "
+"κατάλογο μηνυμάτων"
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
@@ -48,15 +50,15 @@ msgstr "Διαθέσιμος"
 
 #: ../src/im-desktop-menu.c:68
 msgid "Away"
-msgstr ""
+msgstr "Μακριά"
 
 #: ../src/im-desktop-menu.c:69
 msgid "Busy"
-msgstr ""
+msgstr "Απασχολημένο"
 
 #: ../src/im-desktop-menu.c:70
 msgid "Invisible"
-msgstr ""
+msgstr "Εμφανές"
 
 #: ../src/im-desktop-menu.c:71
 msgid "Offline"
@@ -64,8 +66,8 @@ msgstr "Εκτός σύνδεσης"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
-msgstr ""
+msgstr "Σαφές"
 
 #: ../src/im-phone-menu.c:76
 msgid "Clear All"
-msgstr ""
+msgstr "Όλα σαφή"
