@@ -1,0 +1,18 @@
+[Indicator Service]
+Name=indicator-messages
+ObjectPath=/org/ayatana/indicator/messages
+Position=50
+
+[desktop]
+ObjectPath=/org/ayatana/indicator/messages/desktop
+
+[desktop_greeter]
+ObjectPath=/org/ayatana/indicator/messages/desktop_greeter
+
+[phone]
+ObjectPath=/org/ayatana/indicator/messages/phone
+Position=100
+
+[phone_greeter]
+ObjectPath=/org/ayatana/indicator/messages/phone_greeter
+Position=100

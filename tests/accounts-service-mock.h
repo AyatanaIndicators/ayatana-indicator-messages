@@ -60,7 +60,7 @@ class AccountsServiceMock
 				"SetXHasMessages", G_VARIANT_TYPE_BOOLEAN, nullptr,
 				"", NULL);
 
-			soundobj = dbus_test_dbus_mock_get_object(mock, "/user", "com.canonical.indicator.sound.AccountsService", NULL);
+			soundobj = dbus_test_dbus_mock_get_object(mock, "/user", "org.ayatana.indicator.sound.AccountsService", NULL);
 			dbus_test_dbus_mock_object_add_property(mock, soundobj,
 				"Timestamp", G_VARIANT_TYPE_UINT64,
 				g_variant_new_uint64(0), NULL);

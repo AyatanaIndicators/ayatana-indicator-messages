@@ -1,11 +1,11 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
-includedir=@includedir@/messaging-menu
+includedir=@includedir@/ayatana-messaging-menu
 
-Name: Messaging Menu Library
-Description: Messaging Menu client library
+Name: Ayatana Messaging Menu Library
+Description: Ayatana Messaging Menu client library
 Version: @VERSION@
 Requires: gio-unix-2.0
-Libs: -L${libdir} -lmessaging-menu
+Libs: -L${libdir} -layatana-messaging-menu
 Cflags: -I${includedir}

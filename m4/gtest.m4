@@ -1,63 +1,74 @@
-# Copyright (C) 2012 Canonical, Ltd.
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice (including the next
-# paragraph) shall be included in all copies or substantial portions of the
-# Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Checks whether the gtest source is available on the system. Allows for
-# adjusting the include and source path. Sets have_gtest=yes if the source is
-# present. Sets GTEST_CPPFLAGS and GTEST_SOURCE to the preprocessor flags and
-# source location respectively.
-AC_DEFUN([CHECK_GTEST],
+dnl GTEST_LIB_CHECK([minimum version [,
+dnl                  action if found [,action if not found]]])
+dnl
+dnl Check for the presence of the Google Test library, optionally at a minimum
+dnl version, and indicate a viable version with the HAVE_GTEST flag. It defines
+dnl standard variables for substitution including GTEST_CPPFLAGS,
+dnl GTEST_CXXFLAGS, GTEST_LDFLAGS, and GTEST_LIBS. It also defines
+dnl GTEST_VERSION as the version of Google Test found. Finally, it provides
+dnl optional custom action slots in the event GTEST is found or not.
+AC_DEFUN([GTEST_LIB_CHECK],
 [
-  AC_ARG_WITH([gtest-include-path],
-              [AS_HELP_STRING([--with-gtest-include-path],
-                              [location of the Google test headers])],
-              [GTEST_CPPFLAGS="-I$withval"])
-
-  AC_ARG_WITH([gtest-source-path],
-              [AS_HELP_STRING([--with-gtest-source-path],
-                              [location of the Google test sources, defaults to /usr/src/gtest])],
-              [GTEST_SOURCE="$withval"],
-              [GTEST_SOURCE="/usr/src/gtest"])
-
-  GTEST_CPPFLAGS="$GTEST_CPPFLAGS -I$GTEST_SOURCE"
-
-  AC_LANG_PUSH([C++])
-
-  tmp_CPPFLAGS="$CPPFLAGS"
-  CPPFLAGS="$CPPFLAGS $GTEST_CPPFLAGS"
-
-  AC_CHECK_HEADER([gtest/gtest.h])
-
-  CPPFLAGS="$tmp_CPPFLAGS"
-
-  AC_LANG_POP
-
-  AC_CHECK_FILES([$GTEST_SOURCE/src/gtest-all.cc]
-                 [$GTEST_SOURCE/src/gtest_main.cc],
-                 [have_gtest_source=yes],
-                 [have_gtest_source=no])
-
-  AS_IF([test "x$ac_cv_header_gtest_gtest_h" = xyes -a \
-              "x$have_gtest_source" = xyes],
-        [have_gtest=yes]
-        [AC_SUBST(GTEST_CPPFLAGS)]
-        [AC_SUBST(GTEST_SOURCE)],
-        [have_gtest=no])
-]) # CHECK_GTEST
+dnl Provide a flag to enable or disable Google Test usage.
+AC_ARG_ENABLE([gtest],
+  [AS_HELP_STRING([--enable-gtest],
+                  [Enable tests using the Google C++ Testing Framework.
+                  (Default is enabled.)])],
+  [],
+  [enable_gtest=])
+AC_ARG_VAR([GTEST_CONFIG],
+           [The exact path of Google Test's 'gtest-config' script.])
+AC_ARG_VAR([GTEST_CPPFLAGS],
+           [C-like preprocessor flags for Google Test.])
+AC_ARG_VAR([GTEST_CXXFLAGS],
+           [C++ compile flags for Google Test.])
+AC_ARG_VAR([GTEST_LDFLAGS],
+           [Linker path and option flags for Google Test.])
+AC_ARG_VAR([GTEST_LIBS],
+           [Library linking flags for Google Test.])
+AC_ARG_VAR([GTEST_VERSION],
+           [The version of Google Test available.])
+HAVE_GTEST="no"
+AS_IF([test "x${enable_gtest}" != "xno"],
+  [AC_MSG_CHECKING([for 'gtest-config'])
+   AS_IF([test "x${enable_gtest}" != "xyes"],
+     [AS_IF([test -x "${enable_gtest}/scripts/gtest-config"],
+        [GTEST_CONFIG="${enable_gtest}/scripts/gtest-config"],
+        [GTEST_CONFIG="${enable_gtest}/bin/gtest-config"])
+      AS_IF([test -x "${GTEST_CONFIG}"], [],
+        [AC_MSG_RESULT([no])
+         AC_MSG_ERROR([dnl
+Unable to locate either a built or installed Google Test.
+The specific location '${enable_gtest}' was provided for a built or installed
+Google Test, but no 'gtest-config' script could be found at this location.])
+         ])],
+     [AC_PATH_PROG([GTEST_CONFIG], [gtest-config])])
+   AS_IF([test -x "${GTEST_CONFIG}"],
+     [AC_MSG_RESULT([${GTEST_CONFIG}])
+      m4_ifval([$1],
+        [_gtest_min_version="--min-version=$1"
+         AC_MSG_CHECKING([for Google Test at least version >= $1])],
+        [_gtest_min_version="--min-version=0"
+         AC_MSG_CHECKING([for Google Test])])
+      AS_IF([${GTEST_CONFIG} ${_gtest_min_version}],
+        [AC_MSG_RESULT([yes])
+         HAVE_GTEST='yes'],
+        [AC_MSG_RESULT([no])])],
+     [AC_MSG_RESULT([no])])
+   AS_IF([test "x${HAVE_GTEST}" = "xyes"],
+     [GTEST_CPPFLAGS=`${GTEST_CONFIG} --cppflags`
+      GTEST_CXXFLAGS=`${GTEST_CONFIG} --cxxflags`
+      GTEST_LDFLAGS=`${GTEST_CONFIG} --ldflags`
+      GTEST_LIBS=`${GTEST_CONFIG} --libs`
+      GTEST_VERSION=`${GTEST_CONFIG} --version`
+      AC_DEFINE([HAVE_GTEST],[1],[Defined when Google Test is available.])],
+     [AS_IF([test "x${enable_gtest}" = "xyes"],
+        [AC_MSG_ERROR([dnl
+Google Test was enabled, but no viable version could be found.])
+         ])])])
+AC_SUBST([HAVE_GTEST])
+AM_CONDITIONAL([HAVE_GTEST],[test "x$HAVE_GTEST" = "xyes"])
+AS_IF([test "x$HAVE_GTEST" = "xyes"],
+  [m4_ifval([$2], [$2])],
+  [m4_ifval([$3], [$3])])
+])

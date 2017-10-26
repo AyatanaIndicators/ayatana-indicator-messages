@@ -9,5 +9,5 @@ src/im-menu.c
 src/im-phone-menu.c
 src/indicator-desktop-shortcuts.c
 src/messages-service.c
-libayatana-messaging-menu/messaging-menu-message.c
-libayatana-messaging-menu/messaging-menu-app.c
+libmessaging-menu/messaging-menu-message.c
+libmessaging-menu/messaging-menu-app.c

@@ -13,7 +13,7 @@ CFILE_GLOB = $(top_srcdir)/libmessaging-menu/*.c
 IGNORE_HFILES= \
 	indicator-messages-service.h
 
-INCLUDES=-I$(top_srcdir)/libmessaging-menu $(GIO_CFLAGS)
+AM_CPPFLAGS=-I$(top_srcdir)/libmessaging-menu $(GIO_CFLAGS)
 GTKDOC_LIBS=$(top_builddir)/libmessaging-menu/libmessaging-menu.la
 
 include $(top_srcdir)/gtk-doc.make

@@ -203,7 +203,7 @@ messaging_menu_app_get_dbus_object_path (MessagingMenuApp *app)
   if (!app->appinfo)
     return NULL;
 
-  path = g_strconcat ("/com/canonical/indicator/messages/",
+  path = g_strconcat ("/org/ayatana/indicator/messages/",
                       g_app_info_get_id (G_APP_INFO (app->appinfo)),
                       NULL);
 
@@ -432,8 +432,8 @@ indicator_messages_appeared (GDBusConnection *bus,
 
   indicator_messages_service_proxy_new (bus,
                                         G_DBUS_PROXY_FLAGS_NONE,
-                                        "com.canonical.indicator.messages",
-                                        "/com/canonical/indicator/messages/service",
+                                        "org.ayatana.indicator.messages",
+                                        "/org/ayatana/indicator/messages/service",
                                         app->cancellable,
                                         created_messages_service,
                                         app);
@@ -641,7 +641,7 @@ messaging_menu_app_init (MessagingMenuApp *app)
   app->messages = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 
   app->watch_id = g_bus_watch_name (G_BUS_TYPE_SESSION,
-                                    "com.canonical.indicator.messages",
+                                    "org.ayatana.indicator.messages",
                                     G_BUS_NAME_WATCHER_FLAGS_NONE,
                                     indicator_messages_appeared,
                                     indicator_messages_vanished,

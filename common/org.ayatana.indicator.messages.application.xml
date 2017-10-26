@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <node name="/">
-  <interface name="com.canonical.indicator.messages.application">
+  <interface name="org.ayatana.indicator.messages.application">
     <method name="ListSources">
       <arg type="a(ssavuxsb)" name="sources" direction="out" />
     </method>

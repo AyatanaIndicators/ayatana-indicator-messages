@@ -1,12 +1,9 @@
-Source: indicator-messages
+Source: ayatana-indicator-messages
 Section: gnome
 Priority: optional
-Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
-XSBC-Original-Maintainer: The Ayatana Packagers <pkg-ayatana-devel@lists.alioth.debian.org>
-Uploaders: Evgeni Golov <evgeni@debian.org>
+Maintainer: Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
 Build-Depends: debhelper (>= 9),
                dh-autoreconf,
-               dh-translations,
                gobject-introspection (>= 0.9.12-4~),
                gtk-doc-tools,
                intltool,
@@ -14,39 +11,22 @@ Build-Depends: debhelper (>= 9),
                libdbustest1-dev,
                libgirepository1.0-dev (>= 0.9.12),
                libgtest-dev,
+               mate-common,
                python3-dbusmock,
                valac,
-Standards-Version: 3.9.3
-Homepage: https://launchpad.net/indicator-messages
-# If you aren't a member of ~indicator-applet-developers but need to upload
-# packaging changes, just go ahead.  ~indicator-applet-developers will notice
-# and sync up the code again.
-Vcs-Bzr: https://code.launchpad.net/~indicator-applet-developers/indicator-messages/trunk.13.04
-Vcs-Browser: https://bazaar.launchpad.net/~indicator-applet-developers/indicator-messages/trunk.13.04/files
+Standards-Version: 4.0.0
+Homepage: https://github.com/AyatanaIndicators/ayatana-indicator-messages
+Vcs-Git: https://github.com/AyatanaIndicators/ayatana-indicator-messages
+Vcs-Browser: https://github.com/AyatanaIndicators/ayatana-indicator-messages
 
-Package: indicator-messages
+Package: ayatana-indicator-messages
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: indicator-applet | indicator-renderer
-Replaces: libindicator-messages-status-provider1,
-          libindicator-messages-status-provider-dev,
-          indicator-status-provider-mc5,
-          indicator-status-provider-pidgin,
-          indicator-status-provider-telepathy,
-          indicator-status-provider-emesene,
-Conflicts: libindicator-messages-status-provider1,
-           libindicator-messages-status-provider-dev,
-           indicator-status-provider-mc5,
-           indicator-status-provider-pidgin,
-           indicator-status-provider-telepathy,
-           indicator-status-provider-emesene,
-Breaks: gwibber-services (<< 3.5.4-0ubuntu1~),
-        telepathy-indicator (<< 0.3.0-0ubuntu1~),
-        thunderbird (<< 15.0+build1-0ubuntu1~),
-        xchat-indicator (<< 0.3.11-0ubuntu2~),
-        xchat-gnome-indicator (<< 0.3.11-0ubuntu2~),
-Description: indicator that collects messages that need a response
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+Recommends: indicator-applet | indicator-renderer | mate-applet-indicator
+Description: Ayatana Indicator that collects messages that need a response
  A place on the user's desktop that collects messages that need a response.
+ .
  This menu provides a condensed and collected view of all of those messages
  for quick access, but without making them annoying in times that you want
  to ignore them.
@@ -58,6 +38,12 @@ Section: libs
 Depends: ${shlibs:Depends},
          ${misc:Depends},
 Description: Messaging Menu - shared library
+ A place on the user's desktop that collects messages that need a response.
+ .
+ This menu provides a condensed and collected view of all of those messages
+ for quick access, but without making them annoying in times that you want
+ to ignore them.
+ .
  This library contains information to build status providers to go into
  the messaging menu.
 
@@ -70,8 +56,14 @@ Depends: ${shlibs:Depends},
          libmessaging-menu0 (=${binary:Version}),
          libglib2.0-dev,
 Description: Messaging Menu - library development files
- This library contains information to build status providers to go into
- the messaging menu.
+ A place on the user's desktop that collects messages that need a response.
+ .
+ This menu provides a condensed and collected view of all of those messages
+ for quick access, but without making them annoying in times that you want
+ to ignore them.
+ .
+ This package provides development files for the Messaging Menu shared
+ library.
 
 Package: gir1.2-messagingmenu-1.0
 Section: introspection
@@ -79,6 +71,11 @@ Architecture: any
 Depends: ${misc:Depends},
          ${gir:Depends},
 Description: Messaging Menu - gir bindings
+ A place on the user's desktop that collects messages that need a response.
+ .
+ This menu provides a condensed and collected view of all of those messages
+ for quick access, but without making them annoying in times that you want
+ to ignore them.
  .
  This package can be used by other packages using the GIRepository format
  to generate dynamic bindings.

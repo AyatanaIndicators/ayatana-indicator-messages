@@ -1,11 +1,10 @@
 #!/bin/sh
 
-PKG_NAME="indicator-messages"
+PKG_NAME="ayatana-indicator-messages"
 
-which gnome-autogen.sh || {
-	echo "You need gnome-common from GNOME SVN"
+which mate-autogen || {
+	echo "You need mate-common from the MATE Desktop Environment"
 	exit 1
 }
 
-USE_GNOME2_MACROS=1 \
-. gnome-autogen.sh
+. mate-autogen

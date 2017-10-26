@@ -1,17 +1,16 @@
-
 noinst_LTLIBRARIES = libmessaging-common.la
 
-indicator-messages-service.c: com.canonical.indicator.messages.service.xml
+indicator-messages-service.c: org.ayatana.indicator.messages.service.xml
 	$(AM_V_GEN) gdbus-codegen \
-	    --interface-prefix com.canonical.indicator.messages. \
+	    --interface-prefix org.ayatana.indicator.messages. \
 	    --generate-c-code indicator-messages-service \
 	    --c-namespace IndicatorMessages \
 	    $^
 indicator-messages-service.h: indicator-messages-service.c
 
-indicator-messages-application.c: com.canonical.indicator.messages.application.xml
+indicator-messages-application.c: org.ayatana.indicator.messages.application.xml
 	$(AM_V_GEN) gdbus-codegen \
-	    --interface-prefix com.canonical.indicator.messages. \
+	    --interface-prefix org.ayatana.indicator.messages. \
 	    --generate-c-code indicator-messages-application \
 	    --c-namespace IndicatorMessages \
 	    $^

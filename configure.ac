@@ -1,10 +1,10 @@
 
-AC_INIT(indicator-messages, 12.10.5)
+AC_INIT(ayatana-indicator-messages, 12.10.5)
 
 AC_PREREQ(2.62)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE([check-news])
+AM_INIT_AUTOMAKE(subdir-objects)
 
 AM_MAINTAINER_MODE
 
@@ -60,9 +60,9 @@ GTK_DOC_CHECK([1.18], [--flavour no-tmpl])
 GOBJECT_INTROSPECTION_CHECK([$INTROSPECTION_REQUIRED_VERSION])
 
 AC_ARG_WITH([indicator-dir],
-	    [AS_HELP_STRING([--with-indicator-dir=DIR], [Indicator directory [default=$datadir/unity/indicators]])],
+	    [AS_HELP_STRING([--with-indicator-dir=DIR], [Ayatana Indicator directory [default=$datadir/ayatana/indicators]])],
 	    [],
-	    [with_indicator_dir=$datadir/unity/indicators])
+	    [with_indicator_dir=$datadir/ayatana/indicators])
 AC_SUBST([INDICATOR_DIR], [$with_indicator_dir])
 
 ###########################
@@ -139,7 +139,7 @@ AC_DEFUN([AC_DEFINE_PATH], [
 # Internationalization
 ###########################
 
-GETTEXT_PACKAGE=indicator-messages
+GETTEXT_PACKAGE=ayatana-indicator-messages
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Name of the default get text domain])
 AC_DEFINE_PATH(GNOMELOCALEDIR, "${datadir}/locale", [locale directory])
@@ -172,7 +172,6 @@ data/icons/48x48/status/Makefile
 data/icons/scalable/Makefile
 data/icons/scalable/status/Makefile
 data/icons/scalable/categories/Makefile
-data/upstart/Makefile
 po/Makefile.in
 tests/Makefile
 libmessaging-menu/Makefile

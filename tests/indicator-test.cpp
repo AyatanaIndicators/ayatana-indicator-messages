@@ -30,7 +30,7 @@ class IndicatorTest : public IndicatorFixture
 {
 protected:
 	IndicatorTest (void) :
-		IndicatorFixture(INDICATOR_MESSAGES_SERVICE_BINARY, "com.canonical.indicator.messages")
+		IndicatorFixture(INDICATOR_MESSAGES_SERVICE_BINARY, "org.ayatana.indicator.messages")
 	{
 	}
 
@@ -60,7 +60,7 @@ protected:
 
 
 TEST_F(IndicatorTest, RootAction) {
-	setActions("/com/canonical/indicator/messages");
+	setActions("/org/ayatana/indicator/messages");
 
 	EXPECT_EVENTUALLY_ACTION_EXISTS("messages");
 	EXPECT_ACTION_STATE_TYPE("messages", G_VARIANT_TYPE("a{sv}"));
@@ -68,7 +68,7 @@ TEST_F(IndicatorTest, RootAction) {
 }
 
 TEST_F(IndicatorTest, SingleMessage) {
-	setActions("/com/canonical/indicator/messages");
+	setActions("/org/ayatana/indicator/messages");
 
 	auto app = std::shared_ptr<MessagingMenuApp>(messaging_menu_app_new("test.desktop"), [](MessagingMenuApp * app) { g_clear_object(&app); });
 	ASSERT_NE(nullptr, app);
@@ -87,9 +87,9 @@ TEST_F(IndicatorTest, SingleMessage) {
 
 	EXPECT_EVENTUALLY_ACTION_EXISTS("test.msg.testid");
 
-	setMenu("/com/canonical/indicator/messages/phone");
+	setMenu("/org/ayatana/indicator/messages/phone");
 
-	EXPECT_EVENTUALLY_MENU_ATTRIB(std::vector<int>({0, 0, 0}), "x-canonical-type", "com.canonical.indicator.messages.messageitem");
+	EXPECT_EVENTUALLY_MENU_ATTRIB(std::vector<int>({0, 0, 0}), "x-canonical-type", "org.ayatana.indicator.messages.messageitem");
 	EXPECT_MENU_ATTRIB(std::vector<int>({0, 0, 0}), "label", "Test Title");
 	EXPECT_MENU_ATTRIB(std::vector<int>({0, 0, 0}), "x-canonical-message-id", "testid");
 	EXPECT_MENU_ATTRIB(std::vector<int>({0, 0, 0}), "x-canonical-subtitle", "A subtitle too");
@@ -103,7 +103,7 @@ messageReplyActivate (GObject * obj, gchar * name, GVariant * value, gpointer us
 }
 
 TEST_F(IndicatorTest, MessageReply) {
-	setActions("/com/canonical/indicator/messages");
+	setActions("/org/ayatana/indicator/messages");
 
 	auto app = std::shared_ptr<MessagingMenuApp>(messaging_menu_app_new("test.desktop"), [](MessagingMenuApp * app) { g_clear_object(&app); });
 	ASSERT_NE(nullptr, app);
@@ -131,9 +131,9 @@ TEST_F(IndicatorTest, MessageReply) {
 
 	EXPECT_ACTION_ENABLED("remove-all", true);
 
-	setMenu("/com/canonical/indicator/messages/phone");
+	setMenu("/org/ayatana/indicator/messages/phone");
 
-	EXPECT_EVENTUALLY_MENU_ATTRIB(std::vector<int>({0, 0, 0}), "x-canonical-type", "com.canonical.indicator.messages.messageitem");
+	EXPECT_EVENTUALLY_MENU_ATTRIB(std::vector<int>({0, 0, 0}), "x-canonical-type", "org.ayatana.indicator.messages.messageitem");
 
 	std::string activateResponse;
 	g_signal_connect(msg.get(), "activate", G_CALLBACK(messageReplyActivate), &activateResponse);
@@ -149,7 +149,7 @@ TEST_F(IndicatorTest, IconNotification) {
 	auto normalicon = std::shared_ptr<GVariant>(g_variant_ref_sink(g_variant_new_parsed("{'icon': <('themed', <['indicator-messages-offline', 'indicator-messages', 'indicator']>)>, 'title': <'Notifications'>, 'accessible-desc': <'Messages'>, 'visible': <true>}")), [](GVariant *var) {if (var != nullptr) g_variant_unref(var); });
 	auto blueicon = std::shared_ptr<GVariant>(g_variant_ref_sink(g_variant_new_parsed("{'icon': <('themed', <['indicator-messages-new-offline', 'indicator-messages-new', 'indicator-messages', 'indicator']>)>, 'title': <'Notifications'>, 'accessible-desc': <'New Messages'>, 'visible': <true>}")), [](GVariant *var) {if (var != nullptr) g_variant_unref(var); });
 
-	setActions("/com/canonical/indicator/messages");
+	setActions("/org/ayatana/indicator/messages");
 
 	auto app = std::shared_ptr<MessagingMenuApp>(messaging_menu_app_new("test.desktop"), [](MessagingMenuApp * app) { g_clear_object(&app); });
 	ASSERT_NE(nullptr, app);

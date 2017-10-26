@@ -1,4 +1,3 @@
-
 CLEANFILES=
 check_LTLIBRARIES = libgtest.la
 check_PROGRAMS = test-gactionmuxer
@@ -47,7 +46,7 @@ indicator_test_SOURCES = \
 	indicator-test.cpp
 
 indicator_test_CPPFLAGS = \
-	-DINDICATOR_MESSAGES_SERVICE_BINARY="\"$(abs_top_builddir)/src/indicator-messages-service\"" \
+	-DINDICATOR_MESSAGES_SERVICE_BINARY="\"$(abs_top_builddir)/src/ayatana-indicator-messages-service\"" \
 	-DSCHEMA_DIR="\"$(SCHEMA_COMPILED_DIR)\"" \
 	-DXDG_DATA_DIRS="\"$(abs_srcdir)/\"" \
 	-I$(top_srcdir)/libmessaging-menu \
@@ -91,7 +90,7 @@ libindicator_messages_service_la_SOURCES = \
 	$(top_srcdir)/src/dbus-data.h
 
 libindicator_messages_service_ladir = \
-	$(includedir)/libindicator-messages-service/
+	$(includedir)/libayatana-indicator-messages-service/
 
 libindicator_messages_service_la_CFLAGS = \
 	$(APPLET_CFLAGS) \
@@ -103,7 +102,7 @@ libindicator_messages_service_la_CFLAGS = \
 	-Wl,-z,defs \
 	-Wl,--as-needed \
 	-Werror -Wno-error=deprecated-declarations \
-	-DG_LOG_DOMAIN=\"Indicator-Messages\"
+	-DG_LOG_DOMAIN=\"Ayatana-Indicator-Messages\"
 
 libindicator_messages_service_la_LIBADD = \
 	$(APPLET_LIBS)

@@ -1,3 +1,9 @@
+ayatana-indicator-messages (1:0.6.0-0) UNRELEASED; urgency=medium
+
+  * Fork from Ubuntu's indicator-messages applet.
+
+ -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Mon, 16 Nov 2015 16:13:12 +0100
+
 indicator-messages (13.10.1+15.10.20150505-0ubuntu1) wily; urgency=medium
 
   [ Lars Uebernickel ]

@@ -74,7 +74,7 @@ im_phone_menu_update_clear_section (ImPhoneMenu *menu)
       GMenuItem *item;
 
       item = g_menu_item_new (_("Clear All"), "remove-all");
-      g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.button");
+      g_menu_item_set_attribute (item, "x-canonical-type", "s", "org.ayatana.indicator.button");
       g_menu_append_item (menu->clear_section, item);
 
       g_object_unref (item);
@@ -191,7 +191,7 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   item = g_menu_item_new (title, NULL);
   g_menu_item_set_action_and_target_value (item, action_name, g_variant_new_boolean (TRUE));
 
-  g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.messageitem");
+  g_menu_item_set_attribute (item, "x-canonical-type", "s", "org.ayatana.indicator.messages.messageitem");
   g_menu_item_set_attribute (item, "x-canonical-message-id", "s", id);
   if (show_data)
     g_menu_item_set_attribute (item, "x-canonical-subtitle", "s", subtitle);
@@ -262,7 +262,7 @@ im_phone_menu_add_source (ImPhoneMenu     *menu,
 
   item = g_menu_item_new (label, NULL);
   g_menu_item_set_action_and_target_value (item, action_name, g_variant_new_boolean (TRUE));
-  g_menu_item_set_attribute (item, "x-canonical-type", "s", "com.canonical.indicator.messages.sourceitem");
+  g_menu_item_set_attribute (item, "x-canonical-type", "s", "org.ayatana.indicator.messages.sourceitem");
 
   if (iconstr)
     g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);

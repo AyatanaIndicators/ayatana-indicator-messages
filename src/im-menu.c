@@ -131,7 +131,7 @@ im_menu_init (ImMenu *menu)
   priv->as = im_accounts_service_ref_default();
 
   root = g_menu_item_new (NULL, "indicator.messages");
-  g_menu_item_set_attribute (root, "x-canonical-type", "s", "com.canonical.indicator.root");
+  g_menu_item_set_attribute (root, "x-canonical-type", "s", "org.ayatana.indicator.root");
   g_menu_item_set_attribute (root, "action-namespace", "s", "indicator");
   g_menu_item_set_submenu (root, G_MENU_MODEL (priv->menu));
   g_menu_append_item (priv->toplevel_menu, root);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <node name="/">
-	<interface name="com.canonical.indicator.messages.service">
+	<interface name="org.ayatana.indicator.messages.service">
 
 		<method name="RegisterApplication">
 		    <arg type="s" name="desktop_id" direction="in" />

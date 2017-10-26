@@ -16,9 +16,9 @@ class MessagingMenuTest(dbusmock.DBusTestCase):
         klass.bus = klass.get_dbus(False)
 
     def setUp(self):
-        name = 'com.canonical.indicator.messages'
-        obj_path = '/com/canonical/indicator/messages/service'
-        iface = 'com.canonical.indicator.messages.service'
+        name = 'org.ayatana.indicator.messages'
+        obj_path = '/org/ayatana/indicator/messages/service'
+        iface = 'org.ayatana.indicator.messages.service'
 
         self.messaging_service = self.spawn_server(name, obj_path, iface, stdout=subprocess.PIPE)
         self.mock = dbus.Interface(self.bus.get_object(name, obj_path), dbusmock.MOCK_IFACE)

@@ -244,7 +244,7 @@ main (int argc, char ** argv)
 	if (argc >= 2 && g_str_equal (argv[1], "--replace"))
 		flags |= G_BUS_NAME_OWNER_FLAGS_REPLACE;
 
-	g_bus_own_name (G_BUS_TYPE_SESSION, "com.canonical.indicator.messages", flags,
+	g_bus_own_name (G_BUS_TYPE_SESSION, "org.ayatana.indicator.messages", flags,
 			on_bus_acquired, NULL, on_name_lost, mainloop, NULL);
 
 	g_signal_connect (messages_service, "handle-register-application",
@@ -260,7 +260,7 @@ main (int argc, char ** argv)
 	g_signal_connect (applications, "status-set",
 			  G_CALLBACK (status_set_by_user), NULL);
 
-	settings = g_settings_new ("com.canonical.indicator.messages");
+	settings = g_settings_new ("org.ayatana.indicator.messages");
 	{
 		gchar **app_ids;
 		gchar **id;

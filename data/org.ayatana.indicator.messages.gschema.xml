@@ -1,5 +1,5 @@
 <schemalist>
-  <schema id="com.canonical.indicator.messages" path="/com/canonical/indicator/messages/" gettext-domain="indicator-messages">
+  <schema id="org.ayatana.indicator.messages" path="/org/ayatana/indicator/messages/" gettext-domain="ayatana-indicator-messages">
     <key name="applications" type="as">
       <summary>List of applications that are shown in the messaging menu</summary>
       <description>

@@ -13,9 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>
-#
-# On Debian systems, the complete text of the GNU General
-# Public License version 3 can be found in "/usr/share/common-licenses/GPL-3".
 
 GETTEXT_DOMAIN=$(cat configure.ac | grep -E "^GETTEXT_PACKAGE=" | sed -e 's/GETTEXT_PACKAGE=//')
 

@@ -1,26 +1,26 @@
-SUBDIRS = icons upstart
+SUBDIRS = icons
 
 xdg_autostartdir = /etc/xdg/autostart
-xdg_autostart_DATA = indicator-messages.desktop
+xdg_autostart_DATA = ayatana-indicator-messages.desktop
 
 %.desktop: %.desktop.in
 	$(AM_V_GEN) sed -e "s|\@pkglibexecdir\@|$(pkglibexecdir)|" $< > $@
 
 upstart_jobsdir = $(datadir)/upstart/sessions/
-upstart_jobs_DATA = indicator-messages.conf
+upstart_jobs_DATA = ayatana-indicator-messages.conf
 
 %.conf: %.conf.in
 	$(AM_V_GEN) sed -e "s|\@pkglibexecdir\@|$(pkglibexecdir)|" $< > $@
 
-gsettings_SCHEMAS = com.canonical.indicator.messages.gschema.xml
+gsettings_SCHEMAS = org.ayatana.indicator.messages.gschema.xml
 @GSETTINGS_RULES@
 
 indicatordir = $(INDICATOR_DIR)
-dist_indicator_DATA = com.canonical.indicator.messages
+dist_indicator_DATA = org.ayatana.indicator.messages
 
 EXTRA_DIST = \
-	indicator-messages.desktop.in \
-	indicator-messages.conf.in \
+	ayatana-indicator-messages.desktop.in \
+	ayatana-indicator-messages.conf.in \
 	$(gsettings_SCHEMAS)
 
 CLEANFILES = \

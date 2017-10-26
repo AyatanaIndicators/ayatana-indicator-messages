@@ -1,9 +1,8 @@
-
 EXTRA_DIST =
 
-pkglibexec_PROGRAMS = indicator-messages-service
+pkglibexec_PROGRAMS = ayatana-indicator-messages-service
 
-indicator_messages_service_SOURCES = \
+ayatana_indicator_messages_service_SOURCES = \
 	messages-service.c \
 	dbus-data.h \
 	gactionmuxer.c \
@@ -23,7 +22,7 @@ indicator_messages_service_SOURCES = \
 	indicator-desktop-shortcuts.c \
 	indicator-desktop-shortcuts.h
 
-indicator_messages_service_CFLAGS = \
+ayatana_indicator_messages_service_CFLAGS = \
 	$(APPLET_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-I$(top_builddir)/common \
@@ -32,14 +31,14 @@ indicator_messages_service_CFLAGS = \
 	-Wl,-z,defs \
 	-Wl,--as-needed \
 	-Werror -Wno-error=deprecated-declarations \
-	-DG_LOG_DOMAIN=\"Indicator-Messages\"
+	-DG_LOG_DOMAIN=\"Ayatana-Indicator-Messages\"
 
-indicator_messages_service_LDADD = \
+ayatana_indicator_messages_service_LDADD = \
 	$(top_builddir)/common/libmessaging-common.la \
 	$(APPLET_LIBS)
 
-indicator_messages_service_LDFLAGS = \
+ayatana_indicator_messages_service_LDFLAGS = \
 	$(COVERAGE_LDFLAGS)
 
 EXTRA_DIST += \
-	messages-service.xml
+	ayatana-messages-service.xml

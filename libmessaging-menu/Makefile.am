@@ -1,4 +1,3 @@
-
 lib_LTLIBRARIES = libmessaging-menu.la
 
 libmessaging_menu_ladir = $(includedir)/messaging-menu
