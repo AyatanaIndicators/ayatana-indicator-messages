@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-10-12 07:58+0200\n"
-"PO-Revision-Date: 2017-11-06 10:46+0000\n"
+"PO-Revision-Date: 2017-11-25 08:49+0000\n"
 "Last-Translator: Kristjan Räts <kristjanrats@gmail.com>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/ayatana-"
 "indicators/messages-applet/et/>\n"
@@ -28,44 +28,46 @@ msgid ""
 "Applications corresponding to the desktop file ids in this list are shown in "
 "the messaging menu."
 msgstr ""
+"Rakendused, mis vastavad desktop-faili identifikaatoritele, kuvatakse "
+"sõnumivahetuse menüüs."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
-msgstr ""
+msgstr "Uued sõnumid"
 
 #: ../src/im-application-list.c:235
 msgid "Messages"
-msgstr ""
+msgstr "Sõnumid"
 
 #. title
 #: ../src/im-application-list.c:258
 msgid "Notifications"
-msgstr ""
+msgstr "Teated"
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"
-msgstr ""
+msgstr "Saadaval"
 
 #: ../src/im-desktop-menu.c:68
 msgid "Away"
-msgstr ""
+msgstr "Eemal"
 
 #: ../src/im-desktop-menu.c:69
 msgid "Busy"
-msgstr ""
+msgstr "Hõivatud"
 
 #: ../src/im-desktop-menu.c:70
 msgid "Invisible"
-msgstr ""
+msgstr "Nähtamatu"
 
 #: ../src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr ""
+msgstr "Võrgust väljas"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
-msgstr ""
+msgstr "Puhasta"
 
 #: ../src/im-phone-menu.c:76
 msgid "Clear All"
-msgstr ""
+msgstr "Puhasta kõik"
