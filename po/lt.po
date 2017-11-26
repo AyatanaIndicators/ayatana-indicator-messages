@@ -7,20 +7,22 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-29 12:32+0100\n"
-"PO-Revision-Date: 2017-10-12 07:58+0200\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"POT-Creation-Date: 2017-10-12 07:58+0200\n"
+"PO-Revision-Date: 2017-11-27 02:48+0000\n"
+"Last-Translator: Kornelijus <kornelijus.github@gmail.com>\n"
+"Language-Team: Lithuanian <https://hosted.weblate.org/projects/ayatana-"
+"indicators/messages-applet/lt/>\n"
 "Language: lt\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n"
-"%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=4; plural=n==1 ? 0 : n%10>=2 && (n%100<10 || "
+"n%100>=20) ? 1 : n%10==0 || (n%100>10 && n%100<20) ? 2 : 3;\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
-msgstr ""
+msgstr "Sąrašas aplikacijų, kurios yra rodomos susirašinėjimo meniu"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
@@ -30,16 +32,16 @@ msgstr ""
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
-msgstr ""
+msgstr "Nauji Pranešimai"
 
 #: ../src/im-application-list.c:235
 msgid "Messages"
-msgstr ""
+msgstr "Žinutės"
 
 #. title
 #: ../src/im-application-list.c:258
 msgid "Notifications"
-msgstr ""
+msgstr "Pranešimai"
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"
@@ -51,20 +53,20 @@ msgstr ""
 
 #: ../src/im-desktop-menu.c:69
 msgid "Busy"
-msgstr ""
+msgstr "Užsiemęs(-usi)"
 
 #: ../src/im-desktop-menu.c:70
 msgid "Invisible"
-msgstr ""
+msgstr "Nematomas(-a)"
 
 #: ../src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr ""
+msgstr "Atsijungęs(-usi)"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
-msgstr ""
+msgstr "Išvalyti"
 
 #: ../src/im-phone-menu.c:76
 msgid "Clear All"
-msgstr ""
+msgstr "išvalyti Viską"
