@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Indicator Messages
+Name=Ayatana Indicator Messages
 Exec=@pkglibexecdir@/ayatana-indicator-messages-service
 NoDisplay=true
 StartupNotify=false
