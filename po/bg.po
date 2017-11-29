@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-12 07:58+0200\n"
+"POT-Creation-Date: 2017-11-29 12:31+0100\n"
 "PO-Revision-Date: 2017-10-12 07:58+0200\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../data/org.ayatana.indicator.messages.gschema.xml.h:1
+#: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
 msgstr ""
 
-#: ../data/org.ayatana.indicator.messages.gschema.xml.h:2
+#: ../data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
 "Applications corresponding to the desktop file ids in this list are shown in "
 "the messaging menu."
