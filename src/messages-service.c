@@ -234,7 +234,7 @@ main (int argc, char ** argv)
 	/* Setting up i18n and gettext.  Apparently, we need
 	   all of these. */
 	setlocale (LC_ALL, "");
-	bindtextdomain (GETTEXT_PACKAGE, GNOMELOCALEDIR);
+	bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
 	textdomain (GETTEXT_PACKAGE);
 
 	/* Bring up the service DBus interface */
