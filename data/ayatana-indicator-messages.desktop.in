@@ -5,4 +5,4 @@ Exec=@pkglibexecdir@/ayatana-indicator-messages-service
 NoDisplay=true
 StartupNotify=false
 Terminal=false
-OnlyShowIn=Unity;MATE;
+OnlyShowIn=Unity;MATE;XFCE;
