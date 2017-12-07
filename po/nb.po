@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-10-12 07:58+0200\n"
-"PO-Revision-Date: 2017-10-13 20:47+0000\n"
-"Last-Translator: klausade <klaus@linuxavdelingen.no>\n"
+"PO-Revision-Date: 2017-12-08 03:49+0000\n"
+"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/ayatana-"
 "indicators/messages-applet/nb/>\n"
 "Language: nb\n"
@@ -17,17 +17,20 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.17\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
 msgstr "Liste over program som vises i meldingsmenyen"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
+#, fuzzy
 msgid ""
 "Applications corresponding to the desktop file ids in this list are shown in "
 "the messaging menu."
 msgstr ""
+"Programmer i denne listen som svarer med ID-er tilhørende skrivebordsfiler "
+"vises i meldingsmenyen."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
@@ -60,12 +63,12 @@ msgstr "Usynlig"
 
 #: ../src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr ""
+msgstr "Frakoblet"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
-msgstr ""
+msgstr "Tøm"
 
 #: ../src/im-phone-menu.c:76
 msgid "Clear All"
-msgstr ""
+msgstr "Tøm alle"
