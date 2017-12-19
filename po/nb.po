@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-10-12 07:58+0200\n"
-"PO-Revision-Date: 2017-12-08 03:49+0000\n"
+"PO-Revision-Date: 2018-01-24 12:23+0000\n"
 "Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/ayatana-"
 "indicators/messages-applet/nb/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
@@ -43,7 +43,7 @@ msgstr "Meldinger"
 #. title
 #: ../src/im-application-list.c:258
 msgid "Notifications"
-msgstr "tittel"
+msgstr "Merknader"
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"
