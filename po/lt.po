@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-10-12 07:58+0200\n"
-"PO-Revision-Date: 2018-03-01 10:22+0000\n"
+"PO-Revision-Date: 2018-03-02 10:39+0000\n"
 "Last-Translator: Moo <hazap@hotmail.com>\n"
 "Language-Team: Lithuanian <https://hosted.weblate.org/projects/ayatana-"
 "indicators/messages-applet/lt/>\n"
@@ -56,15 +56,15 @@ msgstr "Pasišalinęs"
 
 #: ../src/im-desktop-menu.c:69
 msgid "Busy"
-msgstr "Užsiemęs(-usi)"
+msgstr "Užsiėmęs"
 
 #: ../src/im-desktop-menu.c:70
 msgid "Invisible"
-msgstr "Nematomas(-a)"
+msgstr "Nematomas"
 
 #: ../src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr "Atsijungęs(-usi)"
+msgstr "Atsijungęs"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
@@ -72,4 +72,4 @@ msgstr "Išvalyti"
 
 #: ../src/im-phone-menu.c:76
 msgid "Clear All"
-msgstr "išvalyti Viską"
+msgstr "Išvalyti viską"
