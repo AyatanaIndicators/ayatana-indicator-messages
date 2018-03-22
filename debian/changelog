@@ -490,7 +490,7 @@ indicator-messages (12.10.6daily12.11.21.1-0ubuntu1) raring; urgency=low
     - Drop the override for dh_makeshlibs.
     - Add DPKG_GENSYMBOLS_CHECK_LEVEL=4.
   * debian/control:
-    - Fix styling: add trailing commas at the end of lists. 
+    - Fix styling: add trailing commas at the end of lists.
     - Update Vcs-Bzr, Vcs-Browser fields and add a notice for developers.
     - Add libgtest-dev to Build-Depends.
   * Automatic snapshot from revision 329 (bootstrap):
@@ -512,7 +512,7 @@ indicator-messages (12.10.5-0ubuntu1) quantal-proposed; urgency=low
 
   * New upstream release:
     - fix crash caused by GError not being cleared (lp #1064314)
-    - fix crash when registering an app that was previously unregistered 
+    - fix crash when registering an app that was previously unregistered
       (lp #1065169)
     - remove the icon if NULL is passed to source_set_icon (lp #1070421)
 
@@ -538,7 +538,7 @@ indicator-messages (12.10.2-0ubuntu1) quantal; urgency=low
   * debian/rules:
     - build the documentation
     - updated shlibs version
-    - use --with gir so gir:Depends work as it should 
+    - use --with gir so gir:Depends work as it should
       (lp: #1044125)
 
  -- Sebastien Bacher <seb128@ubuntu.com>  Sat, 01 Sep 2012 12:36:35 +0200
@@ -556,7 +556,7 @@ indicator-messages (12.10.1-0ubuntu1) quantal-proposed; urgency=low
   * debian/libmessaging-menu0.symbols:
     - symbol file for the new library
   * Updated packaging to dh9, current standards
-  * Drop gtk2 build from the packaging since support for it was 
+  * Drop gtk2 build from the packaging since support for it was
     dropped in trunk, thanks Lars Uebernickel
 
  -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 27 Aug 2012 18:56:59 +0200
@@ -565,7 +565,7 @@ indicator-messages (0.6.0-0ubuntu1) precise; urgency=low
 
   * New upstream release.
     * Handle blank icons properly (LP: #956147)
-    * Fix telepathy offline/disconnected state bug 
+    * Fix telepathy offline/disconnected state bug
 
  -- Charles Kerr <charles.kerr@canonical.com>  Wed, 11 Apr 2012 11:09:46 -0500
 
@@ -577,8 +577,8 @@ indicator-messages (0.5.95-0ubuntu1) precise; urgency=low
 
   [ Ken VanDine ]
   * src/indicator-messages.c
-    * revert fix for the broken images in indicator-messages-service, it 
-      caused the service to build against gtk and we can't parallel install 
+    * revert fix for the broken images in indicator-messages-service, it
+      caused the service to build against gtk and we can't parallel install
       the service anyway
 
  -- Ken VanDine <ken.vandine@canonical.com>  Thu, 05 Apr 2012 16:47:19 -0400
@@ -607,7 +607,7 @@ indicator-messages (0.5.93-0ubuntu2) precise; urgency=low
  -- Ken VanDine <ken.vandine@canonical.com>  Tue, 20 Mar 2012 16:41:13 -0400
 
 indicator-messages (0.5.93-0ubuntu1) precise; urgency=low
-  
+
   * debian/control:
     - drop build-depends on gnome-doc-utils and scrollkeeper, not required
 
@@ -630,7 +630,7 @@ indicator-messages (0.5.92-0ubuntu1) precise; urgency=low
 
   [ Ken VanDine ]
   * debian/source/format
-    - dropped "3.0 (quilt), it doesn't play well with bzr maintained packages 
+    - dropped "3.0 (quilt), it doesn't play well with bzr maintained packages
 
  -- Ken VanDine <ken.vandine@canonical.com>  Thu, 23 Feb 2012 02:48:09 -0500
 
@@ -738,7 +738,7 @@ indicator-messages (0.4.93-0ubuntu1) oneiric; urgency=low
 
   [ Ken VanDine ]
   * debian/control
-    - Bumped build depends for libindicate to >= 0.5.90 
+    - Bumped build depends for libindicate to >= 0.5.90
   * debian/rules
     - Fixed configure arg for gtk version
 
@@ -748,10 +748,10 @@ indicator-messages (0.4.92-0ubuntu4) oneiric; urgency=low
 
   * debian/control
     - Dropped recommends for gwibber now that it is seeded
-  * cherry picked r220 from trunk 
+  * cherry picked r220 from trunk
     - Make sure to insert in the right locations
   * cherry picked r221 from trunk
-    - Making mail applications based on the default mail client not a 
+    - Making mail applications based on the default mail client not a
       hardcoded desktop file.
 
  -- Ken VanDine <ken.vandine@canonical.com>  Fri, 05 Aug 2011 14:33:39 -0400
@@ -815,8 +815,8 @@ indicator-messages (0.4.90-0ubuntu1) oneiric; urgency=low
   [ Ken VanDine ]
   * debian/control
     - Bumped standards version to 3.9.2
-    - Add new binary for indicator-messages-gtk2 
-    - Make indicator-messages recommend indicator-messages-gtk2 (until unity 
+    - Add new binary for indicator-messages-gtk2
+    - Make indicator-messages recommend indicator-messages-gtk2 (until unity
       can load gtk3 indicators)
     - indicator-messages-gtk2 replaces indicator-messages << 0.4.90
     - Added build depends for libdbusmenu-gtk3-dev and libindicator3-dev
@@ -920,7 +920,7 @@ indicator-messages (0.3.11-0ubuntu3) UNRELEASED; urgency=low
 indicator-messages (0.3.11-0ubuntu2) maverick; urgency=low
 
   * Rebuild for libindicator ABI change (LP: #637692)
-  * debian/control: depends on latest libindicator-dev 
+  * debian/control: depends on latest libindicator-dev
 
  -- Didier Roche <didrocks@ubuntu.com>  Wed, 22 Sep 2010 18:39:27 +0200
 
@@ -1004,7 +1004,7 @@ indicator-messages (0.3.6-0ubuntu1) lucid; urgency=low
 indicator-messages (0.3.5-0ubuntu2) lucid; urgency=low
 
   * debian/control:
-    - change the indicator-applet depends to a recommends to let other 
+    - change the indicator-applet depends to a recommends to let other
       desktops use other options rather than having to trigger GNOME
 
  -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 30 Mar 2010 10:35:59 +0200
@@ -1023,7 +1023,7 @@ indicator-messages (0.3.5-0ubuntu1) lucid; urgency=low
     * Fix translation of non-running applications (LP: #540148)
     * Handling bools for requesting attention from apps
     * Changing microblogging to broadcast to match Me Menu (LP: #534952)
-  * debian/control: 
+  * debian/control:
     - Updating requirement to libindicator 0.3.5
     - Increasing dbusmenu-glib dep to 0.2.8
 
@@ -1044,7 +1044,7 @@ indicator-messages (0.3.4-0ubuntu1~ppa1) lucid; urgency=low
 indicator-messages (0.3.3-0ubuntu2) lucid; urgency=low
 
   * src/default-applications.c
-    - string change for consistency (LP: #534952) 
+    - string change for consistency (LP: #534952)
 
  -- Ken VanDine <ken.vandine@canonical.com>  Fri, 12 Mar 2010 11:44:46 -0500
 
@@ -1110,7 +1110,7 @@ indicator-messages (0.3.0-0ubuntu1) lucid; urgency=low
 indicator-messages (0.2.6+r156-0ubuntu2) lucid; urgency=low
 
   * debian/control
-    - add a Breaks for indicator-applet (<< 0.3.0) 
+    - add a Breaks for indicator-applet (<< 0.3.0)
 
  -- Ken VanDine <ken.vandine@canonical.com>  Tue, 15 Dec 2009 11:57:42 -0500
 
@@ -1165,7 +1165,7 @@ indicator-messages (0.2.2-0ubuntu1) karmic; urgency=low
   * New release (LP: #427357)
     * Adds in separators between application groups
     * Merging in v2-api stuff which will become 0.2.1
-  * debian/control: 
+  * debian/control:
     - Requiring > 0.2.0 of libindicate-*
     - bump dbusmenu dependencies.
 
