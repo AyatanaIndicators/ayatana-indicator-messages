@@ -6,6 +6,9 @@ export DPKG_GENSYMBOLS_CHECK_LEVEL=4
 	dh $@ --with autoreconf,gir
 
 override_dh_autoreconf:
+	if [ ! -e po/ayatana-indicator-messages.pot.bak ]; then \
+	    cp po/ayatana-indicator-messages.pot po/ayatana-indicator-messages.pot.bak; \
+	fi
 	NOCONFIGURE=1 dh_autoreconf ./autogen.sh
 
 override_dh_auto_configure:
@@ -14,3 +17,9 @@ override_dh_auto_configure:
 override_dh_install:
 	find debian/tmp/usr/lib -name *.la -delete
 	dh_install --fail-missing
+
+override_dh_auto_clean:
+	dh_auto_clean
+	if [ -e po/ayatana-indicator-messages.pot.bak ]; then \
+	    mv -f po/ayatana-indicator-messages.pot.bak po/ayatana-indicator-messages.pot; \
+	fi
