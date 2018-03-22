@@ -38,6 +38,7 @@ Multi-Arch: same
 Section: libs
 Depends: ${shlibs:Depends},
          ${misc:Depends},
+Conflicts: libmessaging-menu0
 Description: Ayatana Messaging Menu - shared library
  A place on the user's desktop that collects messages that need a response.
  .
@@ -57,6 +58,7 @@ Depends: ${shlibs:Depends},
          gir1.2-ayatanamessagingmenu-1.0 (=${binary:Version}),
          libayatana-messaging-menu0 (=${binary:Version}),
          libglib2.0-dev,
+Conflicts: libmessaging-menu-dev
 Description: Ayatana Messaging Menu - library development files
  A place on the user's desktop that collects messages that need a response.
  .
@@ -73,6 +75,7 @@ Section: introspection
 Architecture: any
 Depends: ${misc:Depends},
          ${gir:Depends},
+Conflicts: gir1.2-messagingmenu-1.0
 Description: Ayatana Messaging Menu - gir bindings
  A place on the user's desktop that collects messages that need a response.
  .
