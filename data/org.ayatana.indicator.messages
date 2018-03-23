@@ -1,5 +1,5 @@
 [Indicator Service]
-Name=indicator-messages
+Name=ayatana-indicator-messages
 ObjectPath=/org/ayatana/indicator/messages
 Position=50
 
