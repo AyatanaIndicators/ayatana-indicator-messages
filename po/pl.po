@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-29 12:32+0100\n"
-"PO-Revision-Date: 2018-08-23 17:10+0000\n"
+"PO-Revision-Date: 2018-08-24 17:42+0000\n"
 "Last-Translator: WaldiS <admin@sto.ugu.pl>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/"
 "ayatana-indicators/messages-applet/pl/>\n"
@@ -67,7 +67,7 @@ msgstr "Offline"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
-msgstr "Jasny"
+msgstr "Wyczyść"
 
 #: ../src/im-phone-menu.c:76
 msgid "Clear All"
