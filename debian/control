@@ -24,7 +24,9 @@ Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          libglib2.0-bin,
-Recommends: indicator-applet | indicator-renderer | mate-applet-indicator
+Recommends: indicator-applet | indicator-renderer | mate-applet-indicator,
+Breaks: indicator-messages,
+Replaces: indicator-messages,
 Description: Ayatana Indicator that collects messages that need a response
  A place on the user's desktop that collects messages that need a response.
  .
