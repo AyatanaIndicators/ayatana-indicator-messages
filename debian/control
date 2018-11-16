@@ -14,7 +14,7 @@ Build-Depends: debhelper (>= 9),
                mate-common,
                python3-dbusmock,
                valac,
-Standards-Version: 4.0.0
+Standards-Version: 4.2.1
 Homepage: https://github.com/AyatanaIndicators/ayatana-indicator-messages
 Vcs-Git: https://github.com/AyatanaIndicators/ayatana-indicator-messages
 Vcs-Browser: https://github.com/AyatanaIndicators/ayatana-indicator-messages
@@ -32,13 +32,12 @@ Description: Ayatana Indicator that collects messages that need a response
  for quick access, but without making them annoying in times that you want
  to ignore them.
 
-Package: libayatana-messaging-menu0
+Package: libmessaging-menu0
 Architecture: any
 Multi-Arch: same
 Section: libs
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-Conflicts: libmessaging-menu0
 Description: Ayatana Messaging Menu - shared library
  A place on the user's desktop that collects messages that need a response.
  .
@@ -49,16 +48,14 @@ Description: Ayatana Messaging Menu - shared library
  This library contains information to build status providers to go into
  the messaging menu.
 
-Package: libayatana-messaging-menu-dev
-Provides: libmessaging-menu-dev
+Package: libmessaging-menu-dev
 Architecture: any
 Section: libdevel
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         gir1.2-ayatanamessagingmenu-1.0 (=${binary:Version}),
-         libayatana-messaging-menu0 (=${binary:Version}),
+         gir1.2-messagingmenu-1.0 (=${binary:Version}),
+         libmessaging-menu0 (=${binary:Version}),
          libglib2.0-dev,
-Conflicts: libmessaging-menu-dev
 Description: Ayatana Messaging Menu - library development files
  A place on the user's desktop that collects messages that need a response.
  .
@@ -69,13 +66,11 @@ Description: Ayatana Messaging Menu - library development files
  This package provides development files for the Messaging Menu shared
  library.
 
-Package: gir1.2-ayatanamessagingmenu-1.0
-Provides: gir1.2-messagingmenu-1.0
+Package: gir1.2-messagingmenu-1.0
 Section: introspection
 Architecture: any
 Depends: ${misc:Depends},
          ${gir:Depends},
-Conflicts: gir1.2-messagingmenu-1.0
 Description: Ayatana Messaging Menu - gir bindings
  A place on the user's desktop that collects messages that need a response.
  .

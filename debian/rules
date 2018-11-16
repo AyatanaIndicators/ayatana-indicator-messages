@@ -2,6 +2,10 @@
 
 export DPKG_GENSYMBOLS_CHECK_LEVEL=4
 
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
 %:
 	dh $@ --with autoreconf,gir
 
@@ -23,3 +27,6 @@ override_dh_auto_clean:
 	if [ -e po/ayatana-indicator-messages.pot.bak ]; then \
 	    mv -f po/ayatana-indicator-messages.pot.bak po/ayatana-indicator-messages.pot; \
 	fi
+
+get-orig-source:
+	uscan --noconf --force-download --rename --download-current-version --destdir=..

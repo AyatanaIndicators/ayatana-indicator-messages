@@ -3,9 +3,141 @@ Upstream-Name: ayatana-indicator-messages
 Upstream-Contact: Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
 Source: https://github.com/AyatanaIndicators/ayatana-indicator-messages
 
-Files: *
-Copyright: 2009-2010 Ted Gould <ted@canonical.com>, Canonical Ltd.
+Files: po/*.po
+ po/ayatana-indicator-messages.pot
+Copyright: 2017, THE PACKAGE'S COPYRIGHT HOLDER
+  YEAR, THE PACKAGE'S COPYRIGHT HOLDER
 License: GPL-3
+
+Files: AUTHORS
+ ChangeLog
+ Makefile.am
+ Makefile.am.coverage
+ README
+ NEWS
+ NEWS.Canonical
+ autogen.sh
+ common/Makefile.am
+ common/org.ayatana.indicator.messages.application.xml
+ common/org.ayatana.indicator.messages.service.xml
+ configure.ac
+ data/Makefile.am
+ data/ayatana-indicator-messages.conf.in
+ data/ayatana-indicator-messages.desktop.in
+ data/icons/16x16/Makefile.am
+ data/icons/16x16/categories/Makefile.am
+ data/icons/16x16/status/Makefile.am
+ data/icons/22x22/Makefile.am
+ data/icons/22x22/categories/Makefile.am
+ data/icons/22x22/status/Makefile.am
+ data/icons/24x24/Makefile.am
+ data/icons/24x24/status/Makefile.am
+ data/icons/32x32/Makefile.am
+ data/icons/32x32/categories/Makefile.am
+ data/icons/32x32/status/Makefile.am
+ data/icons/48x48/Makefile.am
+ data/icons/48x48/status/Makefile.am
+ data/icons/Makefile.am
+ data/icons/16x16/categories/applications-chat-panel.png
+ data/icons/16x16/categories/applications-email-panel.png
+ data/icons/16x16/categories/applications-microblogging-panel.png
+ data/icons/16x16/status/application-running.png
+ data/icons/16x16/status/indicator-messages-new.png
+ data/icons/16x16/status/indicator-messages.png
+ data/icons/22x22/categories/applications-email-panel.png
+ data/icons/22x22/status/indicator-messages-new.png
+ data/icons/22x22/status/indicator-messages.png
+ data/icons/24x24/status/application-running.png
+ data/icons/24x24/status/indicator-messages-new.png
+ data/icons/24x24/status/indicator-messages.png
+ data/icons/32x32/categories/applications-chat-panel.png
+ data/icons/32x32/categories/applications-email-panel.png
+ data/icons/32x32/status/application-running.png
+ data/icons/32x32/status/indicator-messages-new.png
+ data/icons/32x32/status/indicator-messages.png
+ data/icons/48x48/status/application-running.png
+ data/icons/48x48/status/indicator-messages-new.png
+ data/icons/48x48/status/indicator-messages.png
+ data/icons/scalable/Makefile.am
+ data/icons/scalable/categories/Makefile.am
+ data/icons/scalable/categories/applications-chat-panel.svg
+ data/icons/scalable/categories/applications-email-panel.svg
+ data/icons/scalable/status/Makefile.am
+ data/icons/scalable/status/application-running.svg
+ data/icons/scalable/status/indicator-messages-new.svg
+ data/icons/scalable/status/indicator-messages.svg
+ data/org.ayatana.indicator.messages
+ data/org.ayatana.indicator.messages.gschema.xml
+ doc/Makefile.am
+ doc/reference/Makefile.am
+ doc/reference/messaging-menu-docs.xml.in
+ doc/reference/messaging-menu-overrides.txt
+ doc/reference/messaging-menu-sections.txt
+ doc/reference/messaging-menu.types
+ libmessaging-menu/Makefile.am
+ libmessaging-menu/client-example.py
+ libmessaging-menu/messaging-menu.pc.in
+ m4/gcov.m4
+ m4/gtest.m4
+ po/LINGUAS
+ po/POTFILES.in
+ src/Makefile.am
+ tests/Makefile.am
+ tests/applications/test.desktop
+ tests/applications/test2.desktop
+ tests/indicator-messages-service-activate.build.sh
+ tests/manual
+ tests/test-client.py
+Copyright: 2009-2015, Canonical Ltd.
+License: GPL-3
+Comment:
+ Using same license and copyright as found in code file headers.
+
+Files: libmessaging-menu/messaging-menu-app.c
+ libmessaging-menu/messaging-menu-app.h
+ libmessaging-menu/messaging-menu-message.c
+ libmessaging-menu/messaging-menu-message.h
+ libmessaging-menu/messaging-menu.h
+ src/dbus-data.h
+ src/gactionmuxer.c
+ src/gactionmuxer.h
+ src/gsettingsstrv.c
+ src/gsettingsstrv.h
+ src/im-accounts-service.c
+ src/im-accounts-service.h
+ src/im-application-list.c
+ src/im-application-list.h
+ src/im-desktop-menu.c
+ src/im-desktop-menu.h
+ src/im-menu.c
+ src/im-menu.h
+ src/im-phone-menu.c
+ src/im-phone-menu.h
+ src/indicator-desktop-shortcuts.c
+ src/indicator-desktop-shortcuts.h
+ src/messages-service.c
+ tests/accounts-service-mock.h
+ tests/indicator-fixture.h
+ tests/indicator-messages-service-activate.c
+ tests/indicator-test.cpp
+ tests/test-gactionmuxer.cpp
+Copyright: 2009, Canonical Ltd.
+  2010, Canonical Ltd.
+  2012, Canonical Ltd.
+  2012-2013, Canonical Ltd.
+  2013, Canonical Ltd.
+  2014, Canonical Ltd.
+  2015, Canonical Ltd.
+License: GPL-3
+
+Files: update-po.sh
+ update-pot.sh
+Copyright: 2017, Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+License: GPL-3
+
+Files: m4/ax_python_module.m4
+Copyright: 2008, Andrew Collier <colliera@ukzn.ac.za>
+License: FSF~All-Permissive
 
 Files: debian/*
 Copyright: 2009-2010, Evgeni Golov <evgeni@debian.org>
@@ -30,3 +162,9 @@ License: GPL-3
  .
  On Debian systems, the complete text of the GNU General
  Public License version 3 can be found in "/usr/share/common-licenses/GPL-3".
+
+License: FSF~All-permissive
+ Copying and distribution of this file, with or without modification, are
+ permitted in any medium without royalty provided the copyright notice
+ and this notice are preserved. This file is offered as-is, without any
+ warranty.

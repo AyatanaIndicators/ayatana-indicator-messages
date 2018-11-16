@@ -1,4 +1,4 @@
-libmessaging-menu.so.0 libayatana-messaging-menu0 #MINVER#
+libmessaging-menu.so.0 libmessaging-menu0 #MINVER#
  messaging_menu_app_append_message@Base 0.6.0
  messaging_menu_app_append_source@Base 0.6.0
  messaging_menu_app_append_source_with_count@Base 0.6.0
