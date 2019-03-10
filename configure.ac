@@ -3,7 +3,7 @@ AC_INIT(ayatana-indicator-messages, 0.6.0)
 AC_PREREQ(2.62)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(subdir-objects)
+AM_INIT_AUTOMAKE()
 
 AM_MAINTAINER_MODE
 
@@ -47,8 +47,6 @@ PKG_CHECK_MODULES(APPLET, gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION
 
 PKG_CHECK_MODULES(GIO, gio-unix-2.0 >= $GIO_UNIX_REQUIRED_VERSION)
 
-PKG_CHECK_MODULES(DBUSTEST, dbustest-1)
-
 AC_SUBST(APPLET_CFLAGS)
 AC_SUBST(APPLET_LIBS)
 
@@ -86,6 +84,7 @@ AC_ARG_ENABLE([tests],
     [enable_tests=${enableval}],
     [enable_tests=auto])
 if test "x$enable_tests" != "xno"; then
+    PKG_CHECK_MODULES(DBUSTEST, dbustest-1)
     m4_include([m4/gtest.m4])
     CHECK_GTEST
     AM_PATH_PYTHON(3.0,, [:])
