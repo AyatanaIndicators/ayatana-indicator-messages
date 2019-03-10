@@ -3,7 +3,7 @@
     <key name="applications" type="as">
       <summary>List of applications that are shown in the messaging menu</summary>
       <description>
-        Applications corresponding to the desktop file ids in this list are shown in the messaging menu.
+        Applications corresponding to the desktop file IDs in this list are shown in the messaging menu.
       </description>
       <default>[]</default>
     </key>
