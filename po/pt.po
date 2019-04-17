@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-29 12:32+0100\n"
-"PO-Revision-Date: 2018-11-19 22:07+0000\n"
-"Last-Translator: ssantos <ssantos@web.de>\n"
+"PO-Revision-Date: 2019-04-18 15:03+0000\n"
+"Last-Translator: Rui Mendes <xz9@protonmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/"
 "ayatana-indicators/messages-applet/pt/>\n"
 "Language: pt\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.3-dev\n"
+"X-Generator: Weblate 3.6-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
@@ -28,10 +28,12 @@ msgid ""
 "Applications corresponding to the desktop file ids in this list are shown in "
 "the messaging menu."
 msgstr ""
+"As aplicações correspondentes aos identificadores (ids) do ficheiro desktop "
+"nesta lista são mostradas no menu de mensagens."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
-msgstr "Novas Mensagens"
+msgstr "Novas mensagens"
 
 #: ../src/im-application-list.c:235
 msgid "Messages"
@@ -48,7 +50,7 @@ msgstr "Disponível"
 
 #: ../src/im-desktop-menu.c:68
 msgid "Away"
-msgstr ""
+msgstr "Ausente"
 
 #: ../src/im-desktop-menu.c:69
 msgid "Busy"
@@ -60,12 +62,12 @@ msgstr "Invisível"
 
 #: ../src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr "Offline"
+msgstr "Desconectado"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
-msgstr "Remover"
+msgstr "Limpar"
 
 #: ../src/im-phone-menu.c:76
 msgid "Clear All"
-msgstr "Remover Tudo"
+msgstr "Limpar tudo"
