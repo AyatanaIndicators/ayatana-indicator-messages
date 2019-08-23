@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-29 12:32+0100\n"
-"PO-Revision-Date: 2019-08-01 05:12+0000\n"
-"Last-Translator: Simon Picot <simonpicot06@gmail.com>\n"
+"PO-Revision-Date: 2019-08-24 01:23+0000\n"
+"Last-Translator: Swann Martinet <swann.ranskassa@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/"
 "ayatana-indicators/messages-applet/fr/>\n"
 "Language: fr\n"
@@ -17,21 +17,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
-#, fuzzy
 msgid "List of applications that are shown in the messaging menu"
-msgstr "Liste des applications qui sont montrées dans la messagerie"
+msgstr "Liste des applications qui sont affichées dans le menu de la messagerie"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
-#, fuzzy
 msgid ""
 "Applications corresponding to the desktop file ids in this list are shown in "
 "the messaging menu."
 msgstr ""
 "Applications correspondant au fichier IDS du bureau dans la liste qui est "
-"montrée sur la messagerie."
+"affichée sur la messagerie."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
