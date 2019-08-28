@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-29 12:32+0100\n"
+"POT-Creation-Date: 2019-08-28 20:22+0200\n"
 "PO-Revision-Date: 2019-08-07 03:23+0000\n"
 "Last-Translator: Chang Xin <1796162147@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
@@ -24,8 +24,9 @@ msgid "List of applications that are shown in the messaging menu"
 msgstr "消息菜单中显示的应用程序列表"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
+#, fuzzy
 msgid ""
-"Applications corresponding to the desktop file ids in this list are shown in "
+"Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
 msgstr "消息菜单中已经显示了此列表中的桌面文件ID对应的应用程序。"
 
