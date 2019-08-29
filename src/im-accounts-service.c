@@ -25,16 +25,11 @@
 
 #include "im-accounts-service.h"
 
-typedef struct _ImAccountsServicePrivate ImAccountsServicePrivate;
-
-struct _ImAccountsServicePrivate {
+typedef struct {
 	ActUserManager * user_manager;
 	GDBusProxy * touch_settings;
 	GCancellable * cancel;
-};
-
-#define IM_ACCOUNTS_SERVICE_GET_PRIVATE(o) \
-(G_TYPE_INSTANCE_GET_PRIVATE ((o), IM_ACCOUNTS_SERVICE_TYPE, ImAccountsServicePrivate))
+} ImAccountsServicePrivate;
 
 static void im_accounts_service_class_init (ImAccountsServiceClass *klass);
 static void im_accounts_service_init       (ImAccountsService *self);
@@ -44,14 +39,12 @@ static void user_changed (ActUserManager * manager, ActUser * user, gpointer use
 static void on_user_manager_loaded (ActUserManager * manager, GParamSpec * pspect, gpointer user_data);
 static void security_privacy_ready (GObject * obj, GAsyncResult * res, gpointer user_data);
 
-G_DEFINE_TYPE (ImAccountsService, im_accounts_service, G_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE (ImAccountsService, im_accounts_service, G_TYPE_OBJECT);
 
 static void
 im_accounts_service_class_init (ImAccountsServiceClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-	g_type_class_add_private (klass, sizeof (ImAccountsServicePrivate));
 
 	object_class->dispose = im_accounts_service_dispose;
 	object_class->finalize = im_accounts_service_finalize;
@@ -60,7 +53,7 @@ im_accounts_service_class_init (ImAccountsServiceClass *klass)
 static void
 im_accounts_service_init (ImAccountsService *self)
 {
-	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(self);
+	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
 
 	priv->cancel = g_cancellable_new();
 
@@ -78,7 +71,8 @@ im_accounts_service_init (ImAccountsService *self)
 static void
 im_accounts_service_dispose (GObject *object)
 {
-	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(object);
+	ImAccountsService * self = IM_ACCOUNTS_SERVICE(object);
+	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
 
 	if (priv->cancel != NULL) {
 		g_cancellable_cancel(priv->cancel);
@@ -104,7 +98,8 @@ user_changed (ActUserManager * manager, ActUser * user, gpointer user_data)
 		return;
 	}
 
-	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(user_data);
+	ImAccountsService * self = IM_ACCOUNTS_SERVICE(user_data);
+	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
 	g_debug("User Updated");
 
 	/* Clear old proxies */
@@ -135,7 +130,8 @@ security_privacy_ready (GObject * obj, GAsyncResult * res, gpointer user_data)
 		return;
 	}
 
-	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(user_data);
+	ImAccountsService * self = IM_ACCOUNTS_SERVICE(user_data);
+	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
 	/* Ensure we didn't get a proxy while we weren't looking */
 	g_clear_object(&priv->touch_settings);
 	priv->touch_settings = proxy;
@@ -146,7 +142,8 @@ security_privacy_ready (GObject * obj, GAsyncResult * res, gpointer user_data)
 static void
 on_user_manager_loaded (ActUserManager * manager, GParamSpec * pspect, gpointer user_data)
 {
-	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(user_data);
+	ImAccountsService * self = IM_ACCOUNTS_SERVICE(user_data);
+	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
 	ActUser * user = NULL;
 
 	g_debug("Accounts Manager Loaded");
@@ -180,7 +177,8 @@ void
 im_accounts_service_set_draws_attention (ImAccountsService * service, gboolean draws_attention)
 {
 	g_return_if_fail(IM_IS_ACCOUNTS_SERVICE(service));
-	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(service);
+	ImAccountsService * self = IM_ACCOUNTS_SERVICE(service);
+	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
 
 	if (priv->touch_settings == NULL) {
 		return;
@@ -206,7 +204,8 @@ im_accounts_service_get_show_on_greeter (ImAccountsService * service)
 {
 	g_return_val_if_fail(IM_IS_ACCOUNTS_SERVICE(service), FALSE);
 
-	ImAccountsServicePrivate * priv = IM_ACCOUNTS_SERVICE_GET_PRIVATE(service);
+	ImAccountsService * self = IM_ACCOUNTS_SERVICE(service);
+	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
 
 	if (priv->touch_settings == NULL) {
 		return FALSE;
