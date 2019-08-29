@@ -3,7 +3,7 @@ AC_INIT(ayatana-indicator-messages, 0.6.0)
 AC_PREREQ(2.62)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE()
+AM_INIT_AUTOMAKE(subdir-objects)
 
 AM_MAINTAINER_MODE
 
