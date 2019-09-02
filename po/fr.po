@@ -8,10 +8,10 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-08-28 20:22+0200\n"
-"PO-Revision-Date: 2019-08-24 01:23+0000\n"
+"PO-Revision-Date: 2019-09-03 20:24+0000\n"
 "Last-Translator: Swann Martinet <swann.ranskassa@laposte.net>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/ayatana-"
-"indicators/messages-applet/fr/>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/"
+"ayatana-indicators/messages-applet/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -25,7 +25,6 @@ msgstr ""
 "Liste des applications qui sont affichées dans le menu de la messagerie"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
-#, fuzzy
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
@@ -64,7 +63,7 @@ msgstr "Invisible"
 
 #: ../src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr "Hors-Ligne"
+msgstr "Hors ligne"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
