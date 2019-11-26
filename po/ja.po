@@ -8,41 +8,43 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-08-28 20:22+0200\n"
-"PO-Revision-Date: 2017-10-12 07:58+0200\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2019-11-27 16:05+0000\n"
+"Last-Translator: Yuji Hon <yuji103h+hosted.weblate@gmail.com>\n"
+"Language-Team: Japanese <https://hosted.weblate.org/projects/"
+"ayatana-indicators/messages-applet/ja/>\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 3.10-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
-msgstr ""
+msgstr "メッセージングメニューに表示されるアプリケーションのリスト"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
-msgstr ""
+msgstr "このリストのデスクトップファイルIDに対応するアプリケーションは、メッセージングメニューに表示されます。"
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
-msgstr ""
+msgstr "新規メッセージ"
 
 #: ../src/im-application-list.c:235
 msgid "Messages"
-msgstr ""
+msgstr "メッセージ"
 
 #. title
 #: ../src/im-application-list.c:258
 msgid "Notifications"
-msgstr ""
+msgstr "通知"
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"
-msgstr ""
+msgstr "有効"
 
 #: ../src/im-desktop-menu.c:68
 msgid "Away"
@@ -50,20 +52,20 @@ msgstr ""
 
 #: ../src/im-desktop-menu.c:69
 msgid "Busy"
-msgstr ""
+msgstr "ビジー"
 
 #: ../src/im-desktop-menu.c:70
 msgid "Invisible"
-msgstr ""
+msgstr "非表示"
 
 #: ../src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr ""
+msgstr "オフライン"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
-msgstr ""
+msgstr "クリア"
 
 #: ../src/im-phone-menu.c:76
 msgid "Clear All"
-msgstr ""
+msgstr "すべてクリアする"
