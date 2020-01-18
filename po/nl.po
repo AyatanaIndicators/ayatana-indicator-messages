@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-08-28 20:22+0200\n"
-"PO-Revision-Date: 2019-08-30 10:24+0000\n"
+"PO-Revision-Date: 2020-01-19 14:21+0000\n"
 "Last-Translator: Heimen Stoffels <vistausss@outlook.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/ayatana-indicators/"
 "messages-applet/nl/>\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.9-dev\n"
+"X-Generator: Weblate 3.10.2\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
-msgstr "Lijst met applicaties die worden weergegeven in het berichtenmenu"
+msgstr "Lijst met toepassingen die worden getoond in het berichtmenu"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
@@ -29,7 +29,7 @@ msgid ""
 "the messaging menu."
 msgstr ""
 "Toepassingen die overeenkomen met de id's van desktopbestanden op deze lijst "
-"worden getoond in het berichtenmenu."
+"worden getoond in het berichtmenu."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
