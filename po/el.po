@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-08-28 20:22+0200\n"
-"PO-Revision-Date: 2017-10-14 16:07+0000\n"
-"Last-Translator: Vangelis Mouhtsis <vmouhtsis@gmail.com>\n"
+"PO-Revision-Date: 2020-02-10 13:50+0000\n"
+"Last-Translator: THANOS SIOURDAKIS <siourdakisthanos@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/ayatana-indicators/"
 "messages-applet/el/>\n"
 "Language: el\n"
@@ -17,20 +17,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.17\n"
+"X-Generator: Weblate 3.11-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
 msgstr "Λίστα εφαρμογών που εμφανίζονται εις το κατάλογο μηνυμάτων"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
-#, fuzzy
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
 msgstr ""
-"Εφαρμογές με την αντίστοιχη ονομασία τους, λίστα η οποία εμφανίζεται εις το "
-"κατάλογο μηνυμάτων"
+"Οι εφαρμογές που αντιστοιχούν στα αναγνωριστικά αρχείων της επιφάνειας "
+"εργασίας σε αυτήν τη λίστα εμφανίζονται στο μενού μηνυμάτων."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
