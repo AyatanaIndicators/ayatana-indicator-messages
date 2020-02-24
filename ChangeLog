@@ -1,6 +1,219 @@
-2018-03-23 14:29:40 +0100 Mike Gabriel (8b46ec5)
+2020-02-24 09:59:22 +0100 Mike Gabriel
 
-	* release 0.6.0 (HEAD -> master, tag: 0.6.0)
+	* release 0.6.1 (HEAD -> master, tag: 0.6.1)
+
+2020-02-13 06:04:37 +0000 Matheus Bastos (4833dc1)
+
+	* Translated using Weblate (Portuguese (Brazil))
+
+2020-02-09 13:47:23 +0000 THANOS SIOURDAKIS (ebfb46a)
+
+	* Translated using Weblate (Greek)
+
+2020-01-27 01:14:11 +0000 Ryan (d17c0b9)
+
+	* Translated using Weblate (Korean)
+
+2020-01-18 13:38:41 +0000 Heimen Stoffels (4738293)
+
+	* Translated using Weblate (Dutch)
+
+2020-01-02 22:21:52 +0000 Milo Ivir (e270408)
+
+	* Translated using Weblate (Croatian)
+
+2019-12-15 09:12:03 +0000 dmaxime (26e429c)
+
+	* Translated using Weblate (Italian)
+
+2019-12-03 20:58:51 +0000 SapuSeven (1974241)
+
+	* Translated using Weblate (German)
+
+2019-11-26 15:36:32 +0000 Yuji Hon (7261b6c)
+
+	* Translated using Weblate (Japanese)
+
+2019-11-23 16:58:08 +0000 Niara (3738cd2)
+
+	* Translated using Weblate (Russian)
+
+2019-11-22 16:16:56 +0000 Burak Balta (d0260e1)
+
+	* Translated using Weblate (Turkish)
+
+2019-10-30 13:57:59 +0000 Marcela Korreshi (6b5ddd7)
+
+	* Translated using Weblate (Albanian)
+
+2019-10-07 16:49:16 +0000 Mateusz Rumiński (3755ac4)
+
+	* Translated using Weblate (Polish)
+
+2019-10-01 02:21:53 +0000 Pedro Alexandre (2ec966f)
+
+	* Translated using Weblate (Portuguese)
+
+2019-09-02 19:42:38 +0000 Swann Martinet (a7b902e)
+
+	* Translated using Weblate (French)
+
+2019-09-02 08:32:20 +0000 Moo (1aac58f)
+
+	* Translated using Weblate (Lithuanian)
+
+2019-08-29 10:14:11 +0000 Anders Jonsson (3357a55)
+
+	* Translated using Weblate (Swedish)
+
+2019-08-28 19:04:03 +0000 Heimen Stoffels (b47026b)
+
+	* Translated using Weblate (Dutch)
+
+2019-08-29 21:03:45 +0200 Mike Gabriel (78e7d1d)
+
+	* configure.ac: AM_INIT_AUTOMAKE needs subdir-objects with this
+          project.
+
+2019-08-29 18:59:41 +0000 Mike Gabriel (1e7272a)
+
+	* Avoid deprecated g_type_class_add_private.
+
+2019-08-28 20:23:18 +0200 Mike Gabriel (d2cfa9f)
+
+	* update locale files
+
+2019-08-23 00:40:45 +0000 Swann Martinet (26baf98)
+
+	* Translated using Weblate (French)
+
+2019-08-10 10:43:57 +0000 Madhumitha Thanneeru (5d30d03)
+
+	* Translated using Weblate (Telugu)
+
+2019-08-06 03:04:39 +0000 Chang Xin (d4e3d21)
+
+	* Translated using Weblate (Chinese (Simplified))
+
+2019-07-23 21:59:33 +0000 Simon Picot (4abfb2f)
+
+	* Translated using Weblate (French)
+
+2019-07-01 19:50:42 +0000 Elizabeth Sherrock (d3d3415)
+
+	* Translated using Weblate (Chinese (Simplified))
+
+2019-04-17 14:34:49 +0000 Rui Mendes (edb6725)
+
+	* Translated using Weblate (Portuguese)
+
+2019-01-11 03:56:07 +0000 Louies (71423f1)
+
+	* Translated using Weblate (Chinese (Traditional))
+
+2018-11-18 21:09:17 +0000 ssantos (e000039)
+
+	* Translated using Weblate (Portuguese)
+
+2018-10-31 07:00:16 +0000 Petter Reinholdtsen (508bd22)
+
+	* Translated using Weblate (Norwegian Bokmål)
+
+2018-10-23 16:13:15 +0000 Iván Seoane (5b5dff8)
+
+	* Translated using Weblate (Galician)
+
+2018-09-27 14:19:39 +0000 Володимир Бриняк (47462f6)
+
+	* Translated using Weblate (Ukrainian)
+
+2018-08-23 17:10:53 +0000 WaldiS (c7cbdaa)
+
+	* Translated using Weblate (Polish)
+
+2018-08-23 17:07:35 +0000 WaldiS (1c0222a)
+
+	* Translated using Weblate (Polish)
+
+2018-08-06 14:31:29 +0000 Tiago A. Reul (bcbd765)
+
+	* Translated using Weblate (Portuguese (Brazil))
+
+2018-08-05 20:58:32 +0000 Yaron Shahrabani (5990ecc)
+
+	* Translated using Weblate (Hebrew)
+
+2018-07-29 01:52:39 +0000 chrismeurer (2c10cf4)
+
+	* Translated using Weblate (Portuguese (Brazil))
+
+2018-07-17 12:09:35 +0000 Danil Semenov (6f230d4)
+
+	* Translated using Weblate (Russian)
+
+2018-05-08 12:53:44 +0000 Heimen Stoffels (4323247)
+
+	* Translated using Weblate (Dutch)
+
+2018-05-02 18:46:26 +0000 Adolfo Jayme Barrientos (78f755b)
+
+	* Translated using Weblate (Spanish)
+
+2018-04-03 14:28:22 +0000 Pavel Borecki (e80bce5)
+
+	* Translated using Weblate (Czech)
+
+2019-03-10 14:14:02 +0100 Mike Gabriel (d5f1af4)
+
+	* Merge branch 'sunweaver-pr/disable-testing'
+
+2019-03-10 14:06:32 +0100 Robert Tari (90e4c01)
+
+	* AM_INIT_AUTOMAKE: subdir-projects flag not required. Fixes FTBFS on
+          recent Archlinux.
+
+2019-03-10 14:02:20 +0100 Robert Tari (4d0eae3)
+
+	* Check for dbustest-1 only with enabled tests.
+
+2019-03-10 12:48:12 +0100 Mike Gabriel (564690e)
+
+	* Merge branch 'bluca-pkgconfig'
+
+2019-03-09 18:39:20 +0000 Luca Boccassi (aba86c8)
+
+	* Fix pkg-config file library and path flags
+
+2019-03-10 12:44:22 +0100 Mike Gabriel (b08a911)
+
+	* Merge branch 'comradekingu-patch-1'
+
+2018-10-31 13:31:27 +0100 Allan Nordhøy (ecaaea8)
+
+	* Spelling: id → ID
+
+2018-11-16 10:22:41 +0100 Mike Gabriel (a1a989b)
+
+	* debian/control: Add B/R for indicator-messages. The a-i-messages
+          and i-messages bin:pkgs share the same artwork files.
+
+2018-11-16 09:53:53 +0100 Mike Gabriel (d9442d2)
+
+	* debian/*: Sync in changes from official Debian packaging. Drop
+          Ayatana namespace from libmessaging bin:pkgs.
+
+2018-03-27 08:12:39 +0200 Mike Gabriel (3974cfb)
+
+	* debian/libayatana-messaging-menu-dev.examples: Add
+          client-example.py as an example.
+
+2018-03-23 14:31:25 +0100 Mike Gabriel (c301f6d)
+
+	* debian/changelog: post-release-mark as released
+
+2018-03-23 14:29:40 +0100 Mike Gabriel (141e7b5)
+
+	* release 0.6.0 (tag: 0.6.0)
 
 2018-03-23 14:24:51 +0100 Michael Terry (a738856)
 
