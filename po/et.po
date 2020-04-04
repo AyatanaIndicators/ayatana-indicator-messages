@@ -8,29 +8,28 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-08-28 20:22+0200\n"
-"PO-Revision-Date: 2017-11-25 08:49+0000\n"
+"PO-Revision-Date: 2020-04-04 06:04+0000\n"
 "Last-Translator: Kristjan Räts <kristjanrats@gmail.com>\n"
-"Language-Team: Estonian <https://hosted.weblate.org/projects/ayatana-"
-"indicators/messages-applet/et/>\n"
+"Language-Team: Estonian <https://hosted.weblate.org/projects/"
+"ayatana-indicators/messages-applet/et/>\n"
 "Language: et\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
 msgstr "Loetelu programmidest, mida kuvatakse sõnumivahetuse menüüs"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
-#, fuzzy
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
 msgstr ""
-"Rakendused, mis vastavad desktop-faili identifikaatoritele, kuvatakse "
-"sõnumivahetuse menüüs."
+"Rakendused, millede desktop-failide identifikaatorid on siin loetletud, "
+"kuvatakse sõnumivahetuse menüüs."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
