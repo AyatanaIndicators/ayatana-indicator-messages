@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-08-28 20:22+0200\n"
-"PO-Revision-Date: 2020-01-28 01:50+0000\n"
-"Last-Translator: Ryan <twobox0@gmail.com>\n"
+"PO-Revision-Date: 2020-05-10 07:12+0000\n"
+"Last-Translator: gomkwcf4664233cad84b22 <gomkwc@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/"
 "ayatana-indicators/messages-applet/ko/>\n"
 "Language: ko\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
@@ -52,7 +52,7 @@ msgstr ""
 
 #: ../src/im-desktop-menu.c:69
 msgid "Busy"
-msgstr ""
+msgstr "바쁘다"
 
 #: ../src/im-desktop-menu.c:70
 msgid "Invisible"
