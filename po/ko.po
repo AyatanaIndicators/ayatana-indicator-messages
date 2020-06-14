@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-08-28 20:22+0200\n"
-"PO-Revision-Date: 2020-05-10 07:12+0000\n"
-"Last-Translator: gomkwcf4664233cad84b22 <gomkwc@gmail.com>\n"
+"PO-Revision-Date: 2020-06-15 04:41+0000\n"
+"Last-Translator: MarongHappy <daemul72@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/"
 "ayatana-indicators/messages-applet/ko/>\n"
 "Language: ko\n"
@@ -21,17 +21,17 @@ msgstr ""
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
-msgstr "메시지 메뉴에 보여지는 어플리케이션들의 목록"
+msgstr "메시징 메뉴에 표시되는 응용프로그램 목록"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
-msgstr "어플리케이션들은 여기 보이는 메시징 메뉴의 목록의데스크탑 아이디와 대응합니다."
+msgstr "이 목록의 데스크톱 파일 ID에 해당하는 응용프로그램이 메시징 메뉴에 표시됩니다."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
-msgstr "새로운 메시지"
+msgstr "새 메시지"
 
 #: ../src/im-application-list.c:235
 msgid "Messages"
@@ -40,32 +40,32 @@ msgstr "메시지"
 #. title
 #: ../src/im-application-list.c:258
 msgid "Notifications"
-msgstr "응답"
+msgstr "알림"
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"
-msgstr "가능함"
+msgstr "사용 가능함"
 
 #: ../src/im-desktop-menu.c:68
 msgid "Away"
-msgstr ""
+msgstr "자리비움"
 
 #: ../src/im-desktop-menu.c:69
 msgid "Busy"
-msgstr "바쁘다"
+msgstr "바쁨"
 
 #: ../src/im-desktop-menu.c:70
 msgid "Invisible"
-msgstr ""
+msgstr "숨김"
 
 #: ../src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr ""
+msgstr "오프라인"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
-msgstr ""
+msgstr "지우기"
 
 #: ../src/im-phone-menu.c:76
 msgid "Clear All"
-msgstr ""
+msgstr "모두 지우기"
