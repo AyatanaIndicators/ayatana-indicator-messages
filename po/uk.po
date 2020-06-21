@@ -8,29 +8,28 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-08-28 20:22+0200\n"
-"PO-Revision-Date: 2018-09-28 14:35+0000\n"
-"Last-Translator: Володимир Бриняк <bardvv@gmail.com>\n"
-"Language-Team: Ukrainian <https://hosted.weblate.org/projects/ayatana-"
-"indicators/messages-applet/uk/>\n"
+"PO-Revision-Date: 2020-06-22 11:41+0000\n"
+"Last-Translator: Kate Kaz <blackseafad@gmail.com>\n"
+"Language-Team: Ukrainian <https://hosted.weblate.org/projects/"
+"ayatana-indicators/messages-applet/uk/>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.2-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
 msgstr "Список програм, які відображаються в меню повідомлень"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
-#, fuzzy
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
 msgstr ""
-"Програми, що відповідають ідентифікаторам настільних файлів в цьому списку "
+"Програми, що відповідають ідентифікаторам настільних файлів в цьому списку, "
 "відображаються в меню повідомлень."
 
 #: ../src/im-application-list.c:231
