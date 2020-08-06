@@ -1,6 +1,6 @@
 ayatana-indicator-messages (0.6.1-0) unstable; urgency=medium
 
-  * Upstream-provided Debian package for ayatan-indicator-messages.
+  * Upstream-provided Debian package for ayatana-indicator-messages.
     See upstream ChangeLog for recent changes.
 
  -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Mon, 24 Feb 2020 09:55:20 +0100
