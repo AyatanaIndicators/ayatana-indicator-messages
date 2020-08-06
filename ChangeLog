@@ -1,6 +1,134 @@
-2020-02-24 09:59:22 +0100 Mike Gabriel
+2020-08-06 10:58:35 +0000 Mike Gabriel
 
-	* release 0.6.1 (HEAD -> master, tag: 0.6.1)
+	* release 0.6.2 (HEAD -> master, tag: 0.6.2)
+
+2020-08-06 12:54:43 +0200 Mike Gabriel (ca1d3fe)
+
+	* Merge branch 'tari01-master'
+
+2020-08-06 12:48:28 +0200 Mike Gabriel (1e5d180)
+
+	* debian/changelog: Typo fix in previous release stanza.
+
+2020-07-29 10:08:08 +0000 Ács Zoltán (d03752a)
+
+	* Translated using Weblate (Hungarian)
+
+2020-08-06 12:48:28 +0200 Mike Gabriel (8c76f83)
+
+	* debian/changelog: Typo fix in previous release stanza.
+
+2020-07-29 10:08:08 +0000 Ács Zoltán (ce2759c)
+
+	* Translated using Weblate (Hungarian)
+
+2020-07-25 13:17:15 +0200 Robert Tari (fb295b7)
+
+	* Fix failing build configuration
+
+2020-07-19 20:16:10 +0000 Tetra Homer (dd6c4ab)
+
+	* Translated using Weblate (Persian)
+
+2020-07-03 23:44:43 +0000 Tobias p (0172b72)
+
+	* Translated using Weblate (Danish)
+
+2020-06-27 05:29:29 +0000 Zsolt Pastorek (2a6310a)
+
+	* Translated using Weblate (Slovak)
+
+2020-06-21 11:26:41 +0000 Kate Kaz (2428928)
+
+	* Translated using Weblate (Ukrainian)
+
+2020-06-19 15:35:18 +0000 Ács Zoltán (a382536)
+
+	* Translated using Weblate (Hungarian)
+
+2020-06-14 03:59:16 +0000 MarongHappy (2888c2f)
+
+	* Translated using Weblate (Korean)
+
+2020-05-24 05:14:41 +0000 wdggg (8f0cf0f)
+
+	* Translated using Weblate (Chinese (Simplified))
+
+2020-05-08 05:49:07 +0000 Abdusalam (884e6d4)
+
+	* Translated using Weblate (Uyghur)
+
+2020-05-09 05:13:14 +0000 gomkwcf4664233cad84b22 (dd0fb5c)
+
+	* Translated using Weblate (Korean)
+
+2020-05-09 06:49:46 +0000 iNetRoos (19d6554)
+
+	* Translated using Weblate (Afrikaans)
+
+2020-04-27 10:11:31 +0000 Jeannette L (ff8fef9)
+
+	* Translated using Weblate (Italian)
+
+2020-04-27 10:09:55 +0000 Jeannette L (fe40e88)
+
+	* Translated using Weblate (French (Canada))
+
+2020-04-27 10:10:41 +0000 Jeannette L (a566156)
+
+	* Translated using Weblate (French)
+
+2020-04-27 09:26:54 +0000 Jeannette L (9426b64)
+
+	* Translated using Weblate (English (United Kingdom))
+
+2020-04-27 09:39:15 +0000 Jeannette L (72397cd)
+
+	* Translated using Weblate (English (Canada))
+
+2020-04-27 09:42:45 +0000 Jeannette L (54150dd)
+
+	* Translated using Weblate (English (Australia))
+
+2020-04-14 23:56:23 +0000 Jeannette L (13a2233)
+
+	* Translated using Weblate (French)
+
+2020-04-04 05:53:59 +0000 Kristjan Räts (d648057)
+
+	* Translated using Weblate (Estonian)
+
+2020-04-01 20:50:30 +0000 Davit Mayilyan (3adea8a)
+
+	* Translated using Weblate (Armenian)
+
+2020-04-01 01:13:19 +0000 Johntini (52321d7)
+
+	* Translated using Weblate (Spanish)
+
+2020-03-29 13:59:29 +0000 Alexie Brindusescu (08cfde8)
+
+	* Translated using Weblate (Romanian)
+
+2020-03-26 18:16:07 +0000 Adolfo Jayme Barrientos (0172615)
+
+	* Translated using Weblate (Catalan)
+
+2020-03-16 04:03:28 +0000 Grace Guo (1b51d80)
+
+	* Translated using Weblate (Japanese)
+
+2020-03-14 04:39:07 +0000 yagoub fadel (830d350)
+
+	* Translated using Weblate (Arabic)
+
+2020-02-25 16:29:05 +0000 Wellington Terumi Uemura (038a21e)
+
+	* Translated using Weblate (Portuguese (Brazil))
+
+2020-02-24 09:59:22 +0100 Mike Gabriel (ff3680f)
+
+	* release 0.6.1 (tag: 0.6.1)
 
 2020-02-13 06:04:37 +0000 Matheus Bastos (4833dc1)
 

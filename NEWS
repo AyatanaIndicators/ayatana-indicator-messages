@@ -1,3 +1,9 @@
+Overview of changes in ayatana-indicator-messages 0.6.2
+
+  - configure.ac: Drop "subdir-projects" from AM_INIT_AUTOMAKE.
+  - Translation updates (thanks to all translaters
+    contributing to hosted Weblate).
+
 Overview of changes in ayatana-indicator-messages 0.6.1
 
   - Stop using deprecated g_type_class_add_private().

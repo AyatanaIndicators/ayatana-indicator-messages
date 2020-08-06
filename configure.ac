@@ -1,4 +1,4 @@
-AC_INIT(ayatana-indicator-messages, 0.6.1)
+AC_INIT(ayatana-indicator-messages, 0.6.2)
 
 AC_PREREQ(2.62)
 
