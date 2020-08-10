@@ -1,6 +1,5 @@
 usr/lib/*/ayatana-indicator-messages/ayatana-indicator-messages-service
 usr/share/ayatana/indicators
-usr/share/upstart
 usr/share/glib-2.0
 usr/share/icons
 usr/share/locale
