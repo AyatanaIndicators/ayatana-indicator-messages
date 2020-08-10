@@ -1,4 +1,5 @@
 usr/lib/*/ayatana-indicator-messages/ayatana-indicator-messages-service
+usr/lib/systemd
 usr/share/ayatana/indicators
 usr/share/glib-2.0
 usr/share/icons
