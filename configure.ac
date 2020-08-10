@@ -62,6 +62,19 @@ AC_ARG_WITH([indicator-dir],
 	    [with_indicator_dir=$datadir/ayatana/indicators])
 AC_SUBST([INDICATOR_DIR], [$with_indicator_dir])
 
+#########################
+# Check for systemd
+#########################
+PKG_CHECK_MODULES(SYSTEMD,  systemd,
+    [has_systemd=yes],
+    []
+)
+if test "x$has_systemd" = "xyes"; then
+	SYSTEMD_USERDIR=`$PKG_CONFIG --variable=systemduserunitdir systemd`
+	AC_SUBST(SYSTEMD_USERDIR)
+	AC_DEFINE(HAVE_SYSTEMD, 1, [create ayatana-indicator-application.service for systemd])
+fi
+
 ###########################
 # gcov coverage reporting
 ###########################
