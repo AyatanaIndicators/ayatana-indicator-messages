@@ -74,7 +74,7 @@ im_phone_menu_update_clear_section (ImPhoneMenu *menu)
       GMenuItem *item;
 
       item = g_menu_item_new (_("Clear All"), "remove-all");
-      g_menu_item_set_attribute (item, "x-canonical-type", "s", "org.ayatana.indicator.button");
+      g_menu_item_set_attribute (item, "x-ayatana-type", "s", "org.ayatana.indicator.button");
       g_menu_append_item (menu->clear_section, item);
 
       g_object_unref (item);
@@ -158,7 +158,7 @@ im_phone_menu_get_message_time (GMenuModel *model,
 {
   gint64 time;
 
-  g_menu_model_get_item_attribute (model, i, "x-canonical-time", "x", &time);
+  g_menu_model_get_item_attribute (model, i, "x-ayatana-time", "x", &time);
 
   return time;
 }
@@ -191,25 +191,25 @@ im_phone_menu_add_message (ImPhoneMenu     *menu,
   item = g_menu_item_new (title, NULL);
   g_menu_item_set_action_and_target_value (item, action_name, g_variant_new_boolean (TRUE));
 
-  g_menu_item_set_attribute (item, "x-canonical-type", "s", "org.ayatana.indicator.messages.messageitem");
-  g_menu_item_set_attribute (item, "x-canonical-message-id", "s", id);
+  g_menu_item_set_attribute (item, "x-ayatana-type", "s", "org.ayatana.indicator.messages.messageitem");
+  g_menu_item_set_attribute (item, "x-ayatana-message-id", "s", id);
   if (show_data)
-    g_menu_item_set_attribute (item, "x-canonical-subtitle", "s", subtitle);
+    g_menu_item_set_attribute (item, "x-ayatana-subtitle", "s", subtitle);
   if (show_data)
-    g_menu_item_set_attribute (item, "x-canonical-text", "s", body);
-  g_menu_item_set_attribute (item, "x-canonical-time", "x", time);
+    g_menu_item_set_attribute (item, "x-ayatana-text", "s", body);
+  g_menu_item_set_attribute (item, "x-ayatana-time", "x", time);
 
   if (serialized_icon)
     g_menu_item_set_attribute_value (item, "icon", serialized_icon);
 
   if (app_icon && (serialized_app_icon = g_icon_serialize (app_icon)))
     {
-      g_menu_item_set_attribute_value (item, "x-canonical-app-icon", serialized_app_icon);
+      g_menu_item_set_attribute_value (item, "x-ayatana-app-icon", serialized_app_icon);
       g_variant_unref (serialized_app_icon);
     }
 
   if (actions && show_data)
-    g_menu_item_set_attribute (item, "x-canonical-message-actions", "v", actions);
+    g_menu_item_set_attribute (item, "x-ayatana-message-actions", "v", actions);
 
   n_messages = g_menu_model_get_n_items (G_MENU_MODEL (menu->message_section));
   pos = 0;
@@ -262,10 +262,10 @@ im_phone_menu_add_source (ImPhoneMenu     *menu,
 
   item = g_menu_item_new (label, NULL);
   g_menu_item_set_action_and_target_value (item, action_name, g_variant_new_boolean (TRUE));
-  g_menu_item_set_attribute (item, "x-canonical-type", "s", "org.ayatana.indicator.messages.sourceitem");
+  g_menu_item_set_attribute (item, "x-ayatana-type", "s", "org.ayatana.indicator.messages.sourceitem");
 
   if (iconstr)
-    g_menu_item_set_attribute (item, "x-canonical-icon", "s", iconstr);
+    g_menu_item_set_attribute (item, "x-ayatana-icon", "s", iconstr);
 
   g_menu_prepend_item (menu->source_section, item);
 
