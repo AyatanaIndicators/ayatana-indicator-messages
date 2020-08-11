@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
 Build-Depends: debhelper (>= 9),
                dh-autoreconf | debhelper (>= 9.20160403~),
+               dh-systemd | debhelper (>= 10.2~),
                gobject-introspection (>= 0.9.12-4~),
                gtk-doc-tools,
                intltool,
@@ -14,6 +15,7 @@ Build-Depends: debhelper (>= 9),
                mate-common,
                python3-dbusmock,
                valac,
+               systemd [linux-any],
 Standards-Version: 4.2.1
 Homepage: https://github.com/AyatanaIndicators/ayatana-indicator-messages
 Vcs-Git: https://github.com/AyatanaIndicators/ayatana-indicator-messages
