@@ -1,6 +1,46 @@
-2020-08-06 10:58:35 +0000 Mike Gabriel
+2020-08-17 23:04:18 +0200 Mike Gabriel
 
-	* release 0.6.2 (HEAD -> master, tag: 0.6.2)
+	* release 0.8.0 (HEAD -> master, tag: 0.8.0)
+
+2020-08-11 14:28:03 +0200 Mike Gabriel (dd45c28)
+
+	* Merge branch 'tari01-pr/replace-x-canonical-attributes'
+
+2020-08-11 12:43:54 +0200 Robert Tari (d447b27)
+
+	* Replace x-canonical attributes
+
+2020-08-11 08:58:52 +0200 Robert Tari (3fc4dab)
+
+	* Merge branch 'sunweaver-pr/systemd-service-file' Attributes GH PR
+          #11:
+          https://github.com/AyatanaIndicators/ayatana-indicator-messages/pull/11
+
+2020-08-10 13:15:50 +0200 Mike Gabriel (da02fa1)
+
+	* debian/*: Install systemd user service file into DEB package.
+
+2020-08-10 13:14:06 +0200 Mike Gabriel (cae7f2e)
+
+	* Start indicator in systemd when ayatana-indicators.target is
+          started.
+
+2020-08-10 13:22:27 +0200 Mike Gabriel (ae2dcd9)
+
+	* debian/ayatana-indicator-messages.install: Drop DATADIR/upstart,
+          files not provided anymore.
+
+2020-08-10 12:17:49 +0200 Mike Gabriel (7c5541f)
+
+	* Drop all references to upstart.
+
+2020-08-10 13:10:45 +0200 Mike Gabriel (474e1d6)
+
+	* debian/control: Improve dh-autoreconf build-dependency.
+
+2020-08-06 10:58:35 +0000 Mike Gabriel (f5cfb4f)
+
+	* release 0.6.2 (tag: 0.6.2)
 
 2020-08-06 12:54:43 +0200 Mike Gabriel (ca1d3fe)
 
