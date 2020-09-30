@@ -8,28 +8,28 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-08-28 20:22+0200\n"
-"PO-Revision-Date: 2018-08-06 21:38+0000\n"
+"PO-Revision-Date: 2020-10-01 21:40+0000\n"
 "Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
-"Language-Team: Hebrew <https://hosted.weblate.org/projects/ayatana-"
-"indicators/messages-applet/he/>\n"
+"Language-Team: Hebrew <https://hosted.weblate.org/projects/"
+"ayatana-indicators/messages-applet/he/>\n"
 "Language: he\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 3.1.1\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
 msgstr "רשימת היישומים שמופיעים בתפריט ההודעות"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
-#, fuzzy
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
-msgstr "יישומים שמתאימים למזהים בקובץ שולחן עבודה זה יופיעו בתפריט ההודעות."
+msgstr ""
+"יישומים שמתאימים למזהים קובצי שולחן העבודה ברשימה זו יופיעו בתפריט ההודעות."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
