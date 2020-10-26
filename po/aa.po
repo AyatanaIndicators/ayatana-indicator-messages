@@ -1,0 +1,68 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-08-28 20:22+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: aa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../data/org.ayatana.indicator.messages.gschema.xml:1
+msgid "List of applications that are shown in the messaging menu"
+msgstr ""
+
+#: ../data/org.ayatana.indicator.messages.gschema.xml:2
+msgid ""
+"Applications corresponding to the desktop file IDs in this list are shown in "
+"the messaging menu."
+msgstr ""
+
+#: ../src/im-application-list.c:231
+msgid "New Messages"
+msgstr ""
+
+#: ../src/im-application-list.c:235
+msgid "Messages"
+msgstr ""
+
+#. title
+#: ../src/im-application-list.c:258
+msgid "Notifications"
+msgstr ""
+
+#: ../src/im-desktop-menu.c:67
+msgid "Available"
+msgstr ""
+
+#: ../src/im-desktop-menu.c:68
+msgid "Away"
+msgstr ""
+
+#: ../src/im-desktop-menu.c:69
+msgid "Busy"
+msgstr ""
+
+#: ../src/im-desktop-menu.c:70
+msgid "Invisible"
+msgstr ""
+
+#: ../src/im-desktop-menu.c:71
+msgid "Offline"
+msgstr ""
+
+#: ../src/im-desktop-menu.c:367
+msgid "Clear"
+msgstr ""
+
+#: ../src/im-phone-menu.c:76
+msgid "Clear All"
+msgstr ""
