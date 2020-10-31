@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-08-28 20:22+0200\n"
-"PO-Revision-Date: 2020-09-30 12:46+0000\n"
-"Last-Translator: Adolfo Jayme Barrientos <fitojb@ubuntu.com>\n"
+"PO-Revision-Date: 2020-11-01 11:26+0000\n"
+"Last-Translator: Joan CiberSheep <cibersheep@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/"
 "ayatana-indicators/messages-applet/ca/>\n"
 "Language: ca\n"
@@ -17,25 +17,27 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.2-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
-msgstr ""
+msgstr "Llista d'aplicacions que es mostren al menú de missatgeria"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
 msgstr ""
+"Es mostraran al menú de missatgeria les aplicacions corresponents als "
+"identificadors de fitxers d'escriptori d'aquesta llista."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
-msgstr ""
+msgstr "Nous missatges"
 
 #: ../src/im-application-list.c:235
 msgid "Messages"
-msgstr ""
+msgstr "Missatges"
 
 #. title
 #: ../src/im-application-list.c:258
@@ -44,23 +46,23 @@ msgstr "Notificacions"
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"
-msgstr ""
+msgstr "Disponible"
 
 #: ../src/im-desktop-menu.c:68
 msgid "Away"
-msgstr ""
+msgstr "Absent/a"
 
 #: ../src/im-desktop-menu.c:69
 msgid "Busy"
-msgstr ""
+msgstr "Ocupat/da"
 
 #: ../src/im-desktop-menu.c:70
 msgid "Invisible"
-msgstr ""
+msgstr "Invisible"
 
 #: ../src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr ""
+msgstr "Fora de línia"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
@@ -68,4 +70,4 @@ msgstr "Neteja"
 
 #: ../src/im-phone-menu.c:76
 msgid "Clear All"
-msgstr ""
+msgstr "Neteja-ho tot"
