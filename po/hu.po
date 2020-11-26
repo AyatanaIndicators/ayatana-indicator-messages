@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-08-28 20:22+0200\n"
-"PO-Revision-Date: 2020-07-30 10:41+0000\n"
+"PO-Revision-Date: 2020-11-27 14:29+0000\n"
 "Last-Translator: Ács Zoltán <acszoltan111@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/"
 "ayatana-indicators/messages-applet/hu/>\n"
@@ -17,17 +17,20 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
 msgstr "Az üzenetek menüben megjelenő alkalmazások listája"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
+#, fuzzy
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
 msgstr ""
+"A listában szereplő asztali fájlazonosítóknak megfelelő alkalmazások az "
+"üzenetküldő menüben jelennek meg."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
@@ -48,7 +51,7 @@ msgstr "Elérhető"
 
 #: ../src/im-desktop-menu.c:68
 msgid "Away"
-msgstr ""
+msgstr "Távol"
 
 #: ../src/im-desktop-menu.c:69
 msgid "Busy"
@@ -60,7 +63,7 @@ msgstr "Láthatatlan"
 
 #: ../src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr ""
+msgstr "Offline"
 
 #: ../src/im-desktop-menu.c:367
 msgid "Clear"
