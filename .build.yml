@@ -95,7 +95,11 @@ build_scripts:
   -
   - if [ -e ./autogen.sh ]; then
   -     NOCONFIGURE=1 ./autogen.sh
-  -     scan-build $CHECKERS ./configure --prefix=/usr --enable-gtk-doc --enable-compile-warnings=maximum
+  -     if [ ${DISTRO_NAME} == "debian" ];then
+  -         scan-build $CHECKERS ./configure --prefix=/usr --enable-gtk-doc --enable-compile-warnings=maximum
+  -     else
+  -         scan-build $CHECKERS ./configure --prefix=/usr --disable-tests --enable-gtk-doc --enable-compile-warnings=maximum
+  -     fi
   - elif [ -e ./CMakeLists.txt ]; then
   -     if [ ${DISTRO_NAME} == "debian" ];then
   -         scan-build $CHECKERS cmake . -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_TESTS=ON
