@@ -30,7 +30,7 @@ ayatana_indicator_messages_service_CFLAGS = \
 	-Wl,-Bsymbolic-functions \
 	-Wl,-z,defs \
 	-Wl,--as-needed \
-	-Werror -Wno-error=deprecated-declarations \
+	-Wno-error=deprecated-declarations \
 	-DG_LOG_DOMAIN=\"Ayatana-Indicator-Messages\"
 
 ayatana_indicator_messages_service_LDADD = \

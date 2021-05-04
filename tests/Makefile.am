@@ -101,7 +101,7 @@ libindicator_messages_service_la_CFLAGS = \
 	-Wl,-Bsymbolic-functions \
 	-Wl,-z,defs \
 	-Wl,--as-needed \
-	-Werror -Wno-error=deprecated-declarations \
+	-Wno-error=deprecated-declarations \
 	-DG_LOG_DOMAIN=\"Ayatana-Indicator-Messages\"
 
 libindicator_messages_service_la_LIBADD = \
