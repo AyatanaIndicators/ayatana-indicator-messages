@@ -86,6 +86,7 @@ before_scripts:
   - cmake . -DCMAKE_INSTALL_PREFIX=/usr
   - make
   - make install
+  - rm -Rf libayatana-common-build/
 
 build_scripts:
   - if [ ${DISTRO_NAME} == "debian" ];then
