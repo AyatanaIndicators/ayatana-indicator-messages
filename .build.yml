@@ -106,7 +106,7 @@ build_scripts:
   -         scan-build $CHECKERS ./configure --prefix=/usr --disable-tests --enable-gtk-doc --enable-compile-warnings=maximum
   -     fi
   - elif [ -e ./CMakeLists.txt ]; then
-  -     if [ ${DISTRO_NAME} == "debian" ] || [ ${DISTRO_NAME} == "ubuntu" ];then
+  -     if [ ${DISTRO_NAME} == "debian" ] || [ ${DISTRO_NAME} == "ubuntu" ]; then
   -         scan-build $CHECKERS cmake . -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_TESTS=ON
   -     else
   -         scan-build $CHECKERS cmake . -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_VERBOSE_MAKEFILE=ON
