@@ -114,7 +114,7 @@ im_desktop_menu_app_added (ImApplicationList *applist,
     GVariant *icon;
 
     item = g_menu_item_new (g_app_info_get_name (G_APP_INFO (app_info)), "launch");
-    g_menu_item_set_attribute (item, "x-ayatana-type", "s", "org.ayatana.application");
+    g_menu_item_set_attribute (item, "x-ayatana-type", "s", "org.ayatana.indicator.application");
 
     icon = g_icon_serialize (g_app_info_get_icon (G_APP_INFO (app_info)));
     if (icon)
@@ -146,7 +146,7 @@ im_desktop_menu_app_added (ImApplicationList *applist,
 
           label = indicator_desktop_shortcuts_nick_get_name (shortcuts, *nicks);
           item = g_menu_item_new (label, *nicks);
-          g_menu_item_set_attribute (item, "x-ayatana-type", "s", "org.ayatana.application");
+          g_menu_item_set_attribute (item, "x-ayatana-type", "s", "org.ayatana.indicator.application");
           g_menu_append_item (app_section, item);
 
           g_free (label);
