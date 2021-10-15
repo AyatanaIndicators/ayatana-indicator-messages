@@ -1,5 +1,6 @@
 /*
  * Copyright © 2014 Canonical Ltd.
+ * Copyright © 2021 Robert Tari
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3, as published
@@ -15,11 +16,8 @@
  *
  * Authors:
  *     Ted Gould <ted@canonical.com>
+ *     Robert Tari <robert@tari.in>
  */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include <act/act.h>
 

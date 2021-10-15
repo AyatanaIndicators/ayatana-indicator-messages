@@ -36,7 +36,6 @@ set(
     messages-service.c
 )
 
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/config.h" "")# Dummy file - drop all includes once we've switched to CMake
 set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS ${COMPILE_FLAGS})
 add_executable("ayatana-indicator-messages-service" ${SOURCES} ${SOURCES_GEN})
 target_compile_definitions(
