@@ -1,10 +1,5 @@
 # messaging-menu.pc
 
-set(prefix "${CMAKE_INSTALL_PREFIX}")# Rewrite and drop once we've switched to CMake
-set(exec_prefix "\${prefix}")# Rewrite and drop once we've switched to CMake
-set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")# Rewrite and drop once we've switched to CMake
-set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")# Rewrite and drop once we've switched to CMake
-set(VERSION "${PROJECT_VERSION}")# Rewrite and drop once we've switched to CMake
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/messaging-menu.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/messaging-menu.pc" @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/messaging-menu.pc" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig")
 

@@ -1,6 +1,5 @@
 # messaging-menu-docs.xml
 
-set(PACKAGE_VERSION ${PROJECT_VERSION})# Rewrite and drop once we've switched to CMake
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/messaging-menu-docs.xml.in" "${CMAKE_CURRENT_BINARY_DIR}/messaging-menu-docs.xml" @ONLY)
 
 # messaging-menu-decl.txt
