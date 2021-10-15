@@ -67,7 +67,7 @@ target_compile_definitions(
     SCHEMA_DIR="${CMAKE_CURRENT_BINARY_DIR}"
     XDG_DATA_DIRS="${CMAKE_CURRENT_SOURCE_DIR}"
 )
-#add_test("indicator-test" "indicator-test")
+add_test("indicator-test" "indicator-test")
 add_dependencies("indicator-test" "messaging-menu" "gschemas-compiled")
 set(COVERAGE_TEST_TARGETS ${COVERAGE_TEST_TARGETS} "indicator-test" PARENT_SCOPE)
 
