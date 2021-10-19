@@ -2,9 +2,9 @@ Source: ayatana-indicator-messages
 Section: gnome
 Priority: optional
 Maintainer: Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
-Build-Depends: debhelper (>= 9),
-               dh-autoreconf | debhelper (>= 9.20160403~),
-               dh-systemd | debhelper (>= 10.2~),
+Build-Depends: cmake,
+               cmake-extras,
+               debhelper (>= 10),
                gobject-introspection (>= 0.9.12-4~),
                gtk-doc-tools,
                intltool,
@@ -12,7 +12,6 @@ Build-Depends: debhelper (>= 9),
                libdbustest1-dev,
                libgirepository1.0-dev (>= 0.9.12),
                libgtest-dev,
-               mate-common,
                python3-dbusmock,
                valac,
                systemd [linux-any],
