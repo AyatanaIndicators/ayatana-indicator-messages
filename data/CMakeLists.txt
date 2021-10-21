@@ -1,7 +1,6 @@
 # org.ayatana.indicator.session.gschema.xml
 
 find_package(GSettings)
-set(GSETTINGS_COMPILE ON)
 add_schema("org.ayatana.indicator.messages.gschema.xml")
 
 # ayatana-indicator-messages.service
