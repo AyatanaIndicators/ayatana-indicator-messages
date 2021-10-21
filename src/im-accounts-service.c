@@ -1,5 +1,6 @@
 /*
  * Copyright © 2014 Canonical Ltd.
+ * Copyright © 2021 Robert Tari
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3, as published
@@ -15,20 +16,17 @@
  *
  * Authors:
  *     Ted Gould <ted@canonical.com>
+ *     Robert Tari <robert@tari.in>
  */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include <act/act.h>
 
 #include "im-accounts-service.h"
 
 typedef struct {
-	ActUserManager * user_manager;
-	GDBusProxy * touch_settings;
-	GCancellable * cancel;
+    ActUserManager * user_manager;
+    GDBusProxy * touch_settings;
+    GCancellable * cancel;
 } ImAccountsServicePrivate;
 
 static void im_accounts_service_class_init (ImAccountsServiceClass *klass);
@@ -44,97 +42,97 @@ G_DEFINE_TYPE_WITH_PRIVATE (ImAccountsService, im_accounts_service, G_TYPE_OBJEC
 static void
 im_accounts_service_class_init (ImAccountsServiceClass *klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-	object_class->dispose = im_accounts_service_dispose;
-	object_class->finalize = im_accounts_service_finalize;
+    object_class->dispose = im_accounts_service_dispose;
+    object_class->finalize = im_accounts_service_finalize;
 }
 
 static void
 im_accounts_service_init (ImAccountsService *self)
 {
-	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
+    ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
 
-	priv->cancel = g_cancellable_new();
+    priv->cancel = g_cancellable_new();
 
-	priv->user_manager = act_user_manager_get_default();
-	g_signal_connect(priv->user_manager, "user-changed", G_CALLBACK(user_changed), self);
-	g_signal_connect(priv->user_manager, "notify::is-loaded", G_CALLBACK(on_user_manager_loaded), self);
+    priv->user_manager = act_user_manager_get_default();
+    g_signal_connect(priv->user_manager, "user-changed", G_CALLBACK(user_changed), self);
+    g_signal_connect(priv->user_manager, "notify::is-loaded", G_CALLBACK(on_user_manager_loaded), self);
 
-	gboolean isLoaded = FALSE;
-	g_object_get(G_OBJECT(priv->user_manager), "is-loaded", &isLoaded, NULL);
-	if (isLoaded) {
-		on_user_manager_loaded(priv->user_manager, NULL, NULL);
-	}
+    gboolean isLoaded = FALSE;
+    g_object_get(G_OBJECT(priv->user_manager), "is-loaded", &isLoaded, NULL);
+    if (isLoaded) {
+        on_user_manager_loaded(priv->user_manager, NULL, NULL);
+    }
 }
 
 static void
 im_accounts_service_dispose (GObject *object)
 {
-	ImAccountsService * self = IM_ACCOUNTS_SERVICE(object);
-	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
+    ImAccountsService * self = IM_ACCOUNTS_SERVICE(object);
+    ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
 
-	if (priv->cancel != NULL) {
-		g_cancellable_cancel(priv->cancel);
-		g_clear_object(&priv->cancel);
-	}
+    if (priv->cancel != NULL) {
+        g_cancellable_cancel(priv->cancel);
+        g_clear_object(&priv->cancel);
+    }
 
-	g_clear_object(&priv->user_manager);
-	
-	G_OBJECT_CLASS (im_accounts_service_parent_class)->dispose (object);
+    g_clear_object(&priv->user_manager);
+
+    G_OBJECT_CLASS (im_accounts_service_parent_class)->dispose (object);
 }
 
 static void
 im_accounts_service_finalize (GObject *object)
 {
-	G_OBJECT_CLASS (im_accounts_service_parent_class)->finalize (object);
+    G_OBJECT_CLASS (im_accounts_service_parent_class)->finalize (object);
 }
 
 /* Handles a User getting updated */
 static void
 user_changed (ActUserManager * manager, ActUser * user, gpointer user_data)
 {
-	if (g_strcmp0(act_user_get_user_name(user), g_get_user_name()) != 0) {
-		return;
-	}
+    if (g_strcmp0(act_user_get_user_name(user), g_get_user_name()) != 0) {
+        return;
+    }
 
-	ImAccountsService * self = IM_ACCOUNTS_SERVICE(user_data);
-	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
-	g_debug("User Updated");
+    ImAccountsService * self = IM_ACCOUNTS_SERVICE(user_data);
+    ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
+    g_debug("User Updated");
 
-	/* Clear old proxies */
-	g_clear_object(&priv->touch_settings);
+    /* Clear old proxies */
+    g_clear_object(&priv->touch_settings);
 
-	/* Start getting a new proxy */
-	g_dbus_proxy_new_for_bus(G_BUS_TYPE_SYSTEM,
-		G_DBUS_PROXY_FLAGS_NONE,
-		NULL,
-		"org.freedesktop.Accounts",
-		act_user_get_object_path(user),
-		"com.ubuntu.touch.AccountsService.SecurityPrivacy",
-		priv->cancel,
-		security_privacy_ready,
-		user_data);
+    /* Start getting a new proxy */
+    g_dbus_proxy_new_for_bus(G_BUS_TYPE_SYSTEM,
+        G_DBUS_PROXY_FLAGS_NONE,
+        NULL,
+        "org.freedesktop.Accounts",
+        act_user_get_object_path(user),
+        "com.ubuntu.touch.AccountsService.SecurityPrivacy",
+        priv->cancel,
+        security_privacy_ready,
+        user_data);
 }
 
 /* Respond to the async of setting up the proxy. Mostly we get it or we error. */
 static void
 security_privacy_ready (GObject * obj, GAsyncResult * res, gpointer user_data)
 {
-	GError * error = NULL;
-	GDBusProxy * proxy = g_dbus_proxy_new_for_bus_finish(res, &error);
+    GError * error = NULL;
+    GDBusProxy * proxy = g_dbus_proxy_new_for_bus_finish(res, &error);
 
-	if (error != NULL) {
-		g_warning("Unable to get a proxy on accounts service for touch settings: %s", error->message);
-		g_error_free(error);
-		return;
-	}
+    if (error != NULL) {
+        g_warning("Unable to get a proxy on accounts service for touch settings: %s", error->message);
+        g_error_free(error);
+        return;
+    }
 
-	ImAccountsService * self = IM_ACCOUNTS_SERVICE(user_data);
-	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
-	/* Ensure we didn't get a proxy while we weren't looking */
-	g_clear_object(&priv->touch_settings);
-	priv->touch_settings = proxy;
+    ImAccountsService * self = IM_ACCOUNTS_SERVICE(user_data);
+    ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
+    /* Ensure we didn't get a proxy while we weren't looking */
+    g_clear_object(&priv->touch_settings);
+    priv->touch_settings = proxy;
 }
 
 /* When the user manager is loaded see if we have a user already loaded
@@ -142,17 +140,17 @@ security_privacy_ready (GObject * obj, GAsyncResult * res, gpointer user_data)
 static void
 on_user_manager_loaded (ActUserManager * manager, GParamSpec * pspect, gpointer user_data)
 {
-	ImAccountsService * self = IM_ACCOUNTS_SERVICE(user_data);
-	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
-	ActUser * user = NULL;
+    ImAccountsService * self = IM_ACCOUNTS_SERVICE(user_data);
+    ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
+    ActUser * user = NULL;
 
-	g_debug("Accounts Manager Loaded");
+    g_debug("Accounts Manager Loaded");
 
-	user = act_user_manager_get_user(priv->user_manager, g_get_user_name());
-	if (user != NULL) {
-		user_changed(priv->user_manager, user, user_data);
-		g_object_unref(user);
-	}
+    user = act_user_manager_get_user(priv->user_manager, g_get_user_name());
+    if (user != NULL) {
+        user_changed(priv->user_manager, user, user_data);
+        g_object_unref(user);
+    }
 }
 
 /* Not the most testable way to do this but, it is a less invasive one, and we'll
@@ -161,14 +159,14 @@ on_user_manager_loaded (ActUserManager * manager, GParamSpec * pspect, gpointer 
 ImAccountsService *
 im_accounts_service_ref_default (void)
 {
-	static ImAccountsService * as = NULL;
-	if (as == NULL) {
-		as = IM_ACCOUNTS_SERVICE(g_object_new(IM_ACCOUNTS_SERVICE_TYPE, NULL));
-		g_object_add_weak_pointer(G_OBJECT(as), (gpointer *)&as);
-		return as;
-	}
+    static ImAccountsService * as = NULL;
+    if (as == NULL) {
+        as = IM_ACCOUNTS_SERVICE(g_object_new(IM_ACCOUNTS_SERVICE_TYPE, NULL));
+        g_object_add_weak_pointer(G_OBJECT(as), (gpointer *)&as);
+        return as;
+    }
 
-	return g_object_ref(as);
+    return g_object_ref(as);
 }
 
 /* The draws attention setting is very legacy right now, we've patched and not changed
@@ -176,25 +174,25 @@ im_accounts_service_ref_default (void)
 void
 im_accounts_service_set_draws_attention (ImAccountsService * service, gboolean draws_attention)
 {
-	g_return_if_fail(IM_IS_ACCOUNTS_SERVICE(service));
-	ImAccountsService * self = IM_ACCOUNTS_SERVICE(service);
-	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
+    g_return_if_fail(IM_IS_ACCOUNTS_SERVICE(service));
+    ImAccountsService * self = IM_ACCOUNTS_SERVICE(service);
+    ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
 
-	if (priv->touch_settings == NULL) {
-		return;
-	}
+    if (priv->touch_settings == NULL) {
+        return;
+    }
 
-	g_dbus_connection_call(g_dbus_proxy_get_connection(priv->touch_settings),
-		g_dbus_proxy_get_name(priv->touch_settings),
-		g_dbus_proxy_get_object_path(priv->touch_settings),
-		"org.freedesktop.Accounts.User",
-		"SetXHasMessages",
-		g_variant_new("(b)", draws_attention),
-		NULL, /* reply */
-		G_DBUS_CALL_FLAGS_NONE,
-		-1, /* timeout */
-		priv->cancel, /* cancellable */
-		NULL, NULL); /* cb */
+    g_dbus_connection_call(g_dbus_proxy_get_connection(priv->touch_settings),
+        g_dbus_proxy_get_name(priv->touch_settings),
+        g_dbus_proxy_get_object_path(priv->touch_settings),
+        "org.freedesktop.Accounts.User",
+        "SetXHasMessages",
+        g_variant_new("(b)", draws_attention),
+        NULL, /* reply */
+        G_DBUS_CALL_FLAGS_NONE,
+        -1, /* timeout */
+        priv->cancel, /* cancellable */
+        NULL, NULL); /* cb */
 }
 
 /* Looks at the property that is set by settings. We default to off in any case
@@ -202,21 +200,21 @@ im_accounts_service_set_draws_attention (ImAccountsService * service, gboolean d
 gboolean
 im_accounts_service_get_show_on_greeter (ImAccountsService * service)
 {
-	g_return_val_if_fail(IM_IS_ACCOUNTS_SERVICE(service), FALSE);
+    g_return_val_if_fail(IM_IS_ACCOUNTS_SERVICE(service), FALSE);
 
-	ImAccountsService * self = IM_ACCOUNTS_SERVICE(service);
-	ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
+    ImAccountsService * self = IM_ACCOUNTS_SERVICE(service);
+    ImAccountsServicePrivate * priv = im_accounts_service_get_instance_private(self);
 
-	if (priv->touch_settings == NULL) {
-		return FALSE;
-	}
+    if (priv->touch_settings == NULL) {
+        return FALSE;
+    }
 
-	GVariant * val = g_dbus_proxy_get_cached_property(priv->touch_settings, "MessagesWelcomeScreen");
-	if (val == NULL) {
-		return FALSE;
-	}
+    GVariant * val = g_dbus_proxy_get_cached_property(priv->touch_settings, "MessagesWelcomeScreen");
+    if (val == NULL) {
+        return FALSE;
+    }
 
-	gboolean retval = g_variant_get_boolean(val);
-	g_variant_unref(val);
-	return retval;
+    gboolean retval = g_variant_get_boolean(val);
+    g_variant_unref(val);
+    return retval;
 }

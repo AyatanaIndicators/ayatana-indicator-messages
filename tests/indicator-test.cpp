@@ -1,5 +1,6 @@
 /*
  * Copyright © 2015 Canonical Ltd.
+ * Copyright © 2021 Robert Tari
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@
  *
  * Authors:
  *      Ted Gould <ted@canonical.com>
+ *      Robert Tari <robert@tari.in>
  */
 
 #include <gtest/gtest.h>
@@ -64,7 +66,7 @@ TEST_F(IndicatorTest, RootAction) {
 
     EXPECT_EVENTUALLY_ACTION_EXISTS("messages");
     EXPECT_ACTION_STATE_TYPE("messages", G_VARIANT_TYPE("a{sv}"));
-    EXPECT_ACTION_STATE("messages", g_variant_new_parsed("{'icon': <('themed', <['indicator-messages-offline', 'indicator-messages', 'indicator']>)>, 'title': <'Notifications'>, 'accessible-desc': <'Messages'>, 'visible': <false>}"));
+    EXPECT_ACTION_STATE("messages", g_variant_new_parsed("{'icon': <('themed', <['indicator-messages-offline', 'indicator-messages', 'indicator', 'indicator-messages-offline-symbolic', 'indicator-messages-symbolic', 'indicator-symbolic']>)>, 'title': <'Notifications'>, 'accessible-desc': <'Messages'>, 'visible': <false>}"));
 }
 
 TEST_F(IndicatorTest, SingleMessage) {
@@ -146,8 +148,8 @@ TEST_F(IndicatorTest, MessageReply) {
 }
 
 TEST_F(IndicatorTest, IconNotification) {
-    auto normalicon = std::shared_ptr<GVariant>(g_variant_ref_sink(g_variant_new_parsed("{'icon': <('themed', <['indicator-messages-offline', 'indicator-messages', 'indicator']>)>, 'title': <'Notifications'>, 'accessible-desc': <'Messages'>, 'visible': <true>}")), [](GVariant *var) {if (var != nullptr) g_variant_unref(var); });
-    auto blueicon = std::shared_ptr<GVariant>(g_variant_ref_sink(g_variant_new_parsed("{'icon': <('themed', <['indicator-messages-new-offline', 'indicator-messages-new', 'indicator-messages', 'indicator']>)>, 'title': <'Notifications'>, 'accessible-desc': <'New Messages'>, 'visible': <true>}")), [](GVariant *var) {if (var != nullptr) g_variant_unref(var); });
+    auto normalicon = std::shared_ptr<GVariant>(g_variant_ref_sink(g_variant_new_parsed("{'icon': <('themed', <['indicator-messages-offline', 'indicator-messages', 'indicator', 'indicator-messages-offline-symbolic', 'indicator-messages-symbolic', 'indicator-symbolic']>)>, 'title': <'Notifications'>, 'accessible-desc': <'Messages'>, 'visible': <true>}")), [](GVariant *var) {if (var != nullptr) g_variant_unref(var); });
+    auto blueicon = std::shared_ptr<GVariant>(g_variant_ref_sink(g_variant_new_parsed("{'icon': <('themed', <['indicator-messages-new-offline', 'indicator-messages-new', 'indicator-messages', 'indicator', 'indicator-messages-new-offline-symbolic', 'indicator-messages-new-symbolic', 'indicator-messages-symbolic', 'indicator-symbolic']>)>, 'title': <'Notifications'>, 'accessible-desc': <'New Messages'>, 'visible': <true>}")), [](GVariant *var) {if (var != nullptr) g_variant_unref(var); });
 
     setActions("/org/ayatana/indicator/messages");
 

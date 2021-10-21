@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Ayatana Indicator Messages
-Exec=@pkglibexecdir@/ayatana-indicator-messages-service
+Exec=@CMAKE_INSTALL_FULL_LIBEXECDIR@/ayatana-indicator-messages/ayatana-indicator-messages-service
 NoDisplay=true
 StartupNotify=false
 Terminal=false

@@ -9,35 +9,26 @@ Copyright: 2017, THE PACKAGE'S COPYRIGHT HOLDER
   YEAR, THE PACKAGE'S COPYRIGHT HOLDER
 License: GPL-3
 
+Files: cmake/FindGObjectIntrospection.cmake
+ cmake/UseGObjectIntrospection.cmake
+Copyright: 2010, Pino Toscano, <pino@kde.org>
+License: BSD-3-clause
+
+Files:cmake/FindVala.cmake
+      cmake/UseVala.cmake
+Copyright: 2011, Přemysl Janouch
+License: BSD-2-clause
+
 Files: AUTHORS
  ChangeLog
- Makefile.am
- Makefile.am.coverage
  README
  NEWS
  NEWS.Canonical
- autogen.sh
- common/Makefile.am
+ cmake/GdbusCodegen.cmake
  common/org.ayatana.indicator.messages.application.xml
  common/org.ayatana.indicator.messages.service.xml
- configure.ac
- data/Makefile.am
  data/ayatana-indicator-messages.conf.in
  data/ayatana-indicator-messages.desktop.in
- data/icons/16x16/Makefile.am
- data/icons/16x16/categories/Makefile.am
- data/icons/16x16/status/Makefile.am
- data/icons/22x22/Makefile.am
- data/icons/22x22/categories/Makefile.am
- data/icons/22x22/status/Makefile.am
- data/icons/24x24/Makefile.am
- data/icons/24x24/status/Makefile.am
- data/icons/32x32/Makefile.am
- data/icons/32x32/categories/Makefile.am
- data/icons/32x32/status/Makefile.am
- data/icons/48x48/Makefile.am
- data/icons/48x48/status/Makefile.am
- data/icons/Makefile.am
  data/icons/16x16/categories/applications-chat-panel.png
  data/icons/16x16/categories/applications-email-panel.png
  data/icons/16x16/categories/applications-microblogging-panel.png
@@ -58,31 +49,21 @@ Files: AUTHORS
  data/icons/48x48/status/application-running.png
  data/icons/48x48/status/indicator-messages-new.png
  data/icons/48x48/status/indicator-messages.png
- data/icons/scalable/Makefile.am
- data/icons/scalable/categories/Makefile.am
  data/icons/scalable/categories/applications-chat-panel.svg
  data/icons/scalable/categories/applications-email-panel.svg
- data/icons/scalable/status/Makefile.am
  data/icons/scalable/status/application-running.svg
  data/icons/scalable/status/indicator-messages-new.svg
  data/icons/scalable/status/indicator-messages.svg
  data/org.ayatana.indicator.messages
  data/org.ayatana.indicator.messages.gschema.xml
- doc/Makefile.am
- doc/reference/Makefile.am
  doc/reference/messaging-menu-docs.xml.in
  doc/reference/messaging-menu-overrides.txt
  doc/reference/messaging-menu-sections.txt
  doc/reference/messaging-menu.types
- libmessaging-menu/Makefile.am
  libmessaging-menu/client-example.py
  libmessaging-menu/messaging-menu.pc.in
- m4/gcov.m4
- m4/gtest.m4
  po/LINGUAS
  po/POTFILES.in
- src/Makefile.am
- tests/Makefile.am
  tests/applications/test.desktop
  tests/applications/test2.desktop
  tests/indicator-messages-service-activate.build.sh
@@ -130,14 +111,19 @@ Copyright: 2009, Canonical Ltd.
   2015, Canonical Ltd.
 License: GPL-3
 
-Files: update-po.sh
+Files: CMakeLists.txt
+ data/CMakeLists.txt
+ doc/CMakeLists.txt
+ doc/reference/CMakeLists.txt
+ libmessaging-menu/CMakeLists.txt
+ po/CMakeLists.txt
+ src/CMakeLists.txt
+ tests/CMakeLists.txt
+ update-po.sh
  update-pot.sh
 Copyright: 2017, Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+  Copyright: 2021, Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
 License: GPL-3
-
-Files: m4/ax_python_module.m4
-Copyright: 2008, Andrew Collier <colliera@ukzn.ac.za>
-License: FSF~All-Permissive
 
 Files: debian/*
 Copyright: 2009-2010, Evgeni Golov <evgeni@debian.org>

@@ -6,27 +6,27 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
 
-%:
-	dh $@ --with autoreconf,gir,systemd
+DEB_CMAKE_EXTRA_FLAGS = \
+    -DENABLE_TESTS=ON \
+    -DENABLE_COVERAGE=OFF \
+    $(NULL)
 
-override_dh_autoreconf:
-	if [ ! -e po/ayatana-indicator-messages.pot.bak ]; then \
-	    cp po/ayatana-indicator-messages.pot po/ayatana-indicator-messages.pot.bak; \
-	fi
-	NOCONFIGURE=1 dh_autoreconf ./autogen.sh
+%:
+	dh $@ --with gir,systemd
 
 override_dh_auto_configure:
-	dh_auto_configure -- --enable-gtk-doc
+	dh_auto_configure -- $(DEB_CMAKE_EXTRA_FLAGS)
 
 override_dh_install:
 	find debian/tmp/usr/lib -name *.la -delete
-	dh_install --fail-missing
+	dh_install
 
-override_dh_auto_clean:
-	dh_auto_clean
-	if [ -e po/ayatana-indicator-messages.pot.bak ]; then \
-	    mv -f po/ayatana-indicator-messages.pot.bak po/ayatana-indicator-messages.pot; \
-	fi
+override_dh_missing:
+	dh_missing --fail-missing
+
+# Hack as it seems it's not possible to easy run that under dbus-test-runner
+override_dh_auto_test:
+	env -u LD_PRELOAD dh_auto_test
 
 get-orig-source:
 	uscan --noconf --force-download --rename --download-current-version --destdir=..
