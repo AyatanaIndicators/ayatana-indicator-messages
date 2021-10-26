@@ -1,0 +1,4 @@
+{
+    global: messaging_menu_*;
+    local: *indicator_messages_*;
+};

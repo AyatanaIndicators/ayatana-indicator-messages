@@ -30,6 +30,7 @@ set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS ${COMPILE_FLAGS}
 add_library("messaging-menu" SHARED ${SOURCES} ${SOURCES_GEN})
 set_target_properties("messaging-menu" PROPERTIES VERSION 0.0.0 SOVERSION 0)
 target_include_directories("messaging-menu" PUBLIC ${PROJECT_DEPS_INCLUDE_DIRS} "${CMAKE_BINARY_DIR}/src")
+target_link_options("messaging-menu" PRIVATE "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/messaging-menu.symbols")
 target_link_libraries("messaging-menu" ${PROJECT_DEPS_LIBRARIES})
 add_dependencies("messaging-menu" "ayatana-indicator-messages-service")
 install(TARGETS "messaging-menu" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}")
