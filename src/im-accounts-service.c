@@ -109,7 +109,7 @@ user_changed (ActUserManager * manager, ActUser * user, gpointer user_data)
         NULL,
         "org.freedesktop.Accounts",
         act_user_get_object_path(user),
-        "com.ubuntu.touch.AccountsService.SecurityPrivacy",
+        "com.lomiri.touch.AccountsService.SecurityPrivacy",
         priv->cancel,
         security_privacy_ready,
         user_data);

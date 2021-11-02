@@ -96,7 +96,7 @@ class AccountsServiceMock
                 "SilentMode", G_VARIANT_TYPE_BOOLEAN,
                 g_variant_new_boolean(FALSE), NULL);
 
-            privacyobj = dbus_test_dbus_mock_get_object(mock, "/user", "com.ubuntu.touch.AccountsService.SecurityPrivacy", NULL);
+            privacyobj = dbus_test_dbus_mock_get_object(mock, "/user", "com.lomiri.touch.AccountsService.SecurityPrivacy", NULL);
             dbus_test_dbus_mock_object_add_property(mock, privacyobj,
                 "MessagesWelcomeScreen", G_VARIANT_TYPE_BOOLEAN,
                 g_variant_new_boolean(true), NULL);
