@@ -1,4 +1,5 @@
 {
     global: messaging_menu_*;
-    local: *indicator_messages_*;
+    local:  *indicator_messages_*;
+            _messaging_menu_*;
 };
