@@ -1,3 +1,13 @@
+Overview of changes in ayatana-indicator-messages 0.9.0
+
+  - Rename com.ubuntu.* to com.lomiri.*.
+  - Allow autostart for Budgie Desktop.
+  - Update Ayatana IDO names.
+  - Update/add documentation.
+  - Port to CMake.
+  - Add Travis CI configuration.
+  - Translation updates.
+
 Overview of changes in ayatana-indicator-messages 0.8.2
 
   - Translation updates.
