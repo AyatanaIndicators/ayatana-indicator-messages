@@ -1,4 +1,11 @@
-ayatana-indicator-messages (0.9.0-0) UNRELEASED; urgency=medium
+ayatana-indicator-messages (21.12.0-0) unstable; urgency=medium
+
+  * Upstream-provided Debian package for ayatana-indicator-messages.
+    See upstream ChangeLog for recent changes.
+
+ -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Tue, 14 Dec 2021 22:44:29 +0100
+
+ayatana-indicator-messages (0.9.0-0) unstable; urgency=medium
 
   * Upstream-provided Debian package for ayatana-indicator-messages.
     See upstream ChangeLog for recent changes.

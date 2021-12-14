@@ -1,6 +1,37 @@
+2021-12-14 Mike Gabriel
+
+        * release 21.12.0 (HEAD -> main, tag: 21.12.0)
+        * Merge branch
+          'tari01-pr/build-libayatana-common-with-enable-lomiri-features'
+          (90a35b7)
+
+2021-12-06 Robert Tari
+
+        * .build.yml: Build libayatana-common with ENABLE_LOMIRI_FEATURES
+          (d1846af)
+
+2021-11-23 phlostically
+
+        * Translated using Weblate (Esperanto) (557c622)
+
+2021-11-22 phlostically
+
+        * Translated using Weblate (Esperanto) (73b0304)
+
+2021-11-18 phlostically
+
+        * Translated using Weblate (Esperanto) (b6c6f09)
+
+2021-11-16 Phil Clifford
+
+        * Translated using Weblate (Gaelic) (e859bac)
+
 2021-11-17 Mike Gabriel
 
-        * release 0.9.0 (HEAD -> main, tag: 0.9.0)
+        * release 0.9.0 (ae5a2da) (tag: 0.9.0)
+        * libmessaging-menu/messaging-menu.symbols: Also exclude
+          _messaging_menu_*. These are also private symbols.
+          (7c5f447)
 
 2021-11-03 ElectrifiedSpeed
 

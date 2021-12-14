@@ -1,3 +1,13 @@
+Overview of changes in ayatana-indicator-messages 21.12.0
+
+  - Upstream version bump to new release versioning scheme:
+    <year>.<month>.<revision>, where <year>.<month> will be
+    bumped in Ayatana Indicators bundle releases and <revision>
+    gets incremented with minor changeset releases.
+  - Travis CI adjustments (enable Lomiri features when building
+    on Debian).
+  - Translation updates.
+
 Overview of changes in ayatana-indicator-messages 0.9.0
 
   - Rename com.ubuntu.* to com.lomiri.*.
