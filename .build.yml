@@ -13,6 +13,7 @@ requires:
     - cmake
     - cmake-extras
     - libayatana-indicator
+    - liblomiri-url-dispatcher
     - gobject-introspection
     - gtk-doc
     - intltool
@@ -33,6 +34,7 @@ requires:
     - intltool
     - libaccountsservice-dev
     - libgirepository1.0-dev
+    - liblomiri-url-dispatcher-dev
     - valac
     - systemd
     - libgtest-dev
