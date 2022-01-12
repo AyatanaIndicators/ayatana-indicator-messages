@@ -12,14 +12,6 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     SET(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "..." FORCE)
 endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(COMPILE_FLAGS "${COMPILE_FLAGS} -Weverything")
-    set(COMPILE_FLAGS "${COMPILE_FLAGS} -Wno-c++98-compat -Wno-padded")
-    set(COMPILE_FLAGS "${COMPILE_FLAGS} -Wno-documentation")
-else()
-    set(COMPILE_FLAGS "${COMPILE_FLAGS} -Wall")
-endif()
-
 # Options
 
 option(ENABLE_TESTS "Enable all tests and checks" OFF)
@@ -34,8 +26,13 @@ else()
 endif()
 
 if(ENABLE_WERROR)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+    add_definitions("-Werror")
+endif()
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    add_definitions("-Weverything")
+else()
+    add_definitions("-Wall")
 endif()
 
 #  Check for prerequisites
