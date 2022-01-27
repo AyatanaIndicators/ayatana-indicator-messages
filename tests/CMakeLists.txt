@@ -24,7 +24,6 @@ set(
 )
 
 set_source_files_properties(${HEADERS_GEN} ${SOURCES_GEN} PROPERTIES GENERATED TRUE)
-set_source_files_properties(${HEADERS} ${SOURCES} PROPERTIES COMPILE_FLAGS ${COMPILE_FLAGS})
 add_library("indicator-messages-service" STATIC ${HEADERS} ${HEADERS_GEN} ${SOURCES} ${SOURCES_GEN})
 target_include_directories("indicator-messages-service" PUBLIC ${PROJECT_DEPS_INCLUDE_DIRS})
 target_compile_definitions("indicator-messages-service" PUBLIC G_LOG_DOMAIN="Ayatana-Indicator-Messages")
@@ -32,17 +31,21 @@ target_link_libraries("indicator-messages-service")
 
 # test-gactionmuxer
 
-set_source_files_properties(gtest-menuitems.cpp PROPERTIES COMPILE_FLAGS ${COMPILE_FLAGS})
 add_executable("test-gactionmuxer" test-gactionmuxer.cpp)
 target_link_options("test-gactionmuxer" PRIVATE -no-pie)
 target_include_directories("test-gactionmuxer" PUBLIC ${PROJECT_DEPS_INCLUDE_DIRS} "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries("test-gactionmuxer" "indicator-messages-service" ${PROJECT_DEPS_LIBRARIES} ${GTEST_LIBRARIES} ${GTEST_BOTH_LIBRARIES} ${GMOCK_LIBRARIES})
-if (ENABLE_COVERAGE)
-    target_link_libraries("test-gactionmuxer" "-lgcov")
-endif()
 add_test("test-gactionmuxer" "test-gactionmuxer")
 add_dependencies("test-gactionmuxer" "indicator-messages-service")
 set(COVERAGE_TEST_TARGETS ${COVERAGE_TEST_TARGETS} "test-gactionmuxer" PARENT_SCOPE)
+
+if (ENABLE_COVERAGE)
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        target_link_libraries("test-gactionmuxer" "--coverage")
+    else()
+        target_link_libraries("test-gactionmuxer" "-lgcov")
+    endif()
+endif()
 
 # gschemas.compiled
 
@@ -55,7 +58,6 @@ add_custom_target("gschemas-compiled" ALL DEPENDS gschemas.compiled)
 # indicator-test
 
 pkg_check_modules(DBUSTEST REQUIRED dbustest-1)
-set_source_files_properties(indicator-test.cpp PROPERTIES COMPILE_FLAGS ${COMPILE_FLAGS})
 add_executable("indicator-test" indicator-test.cpp)
 target_link_options("indicator-test" PRIVATE -no-pie)
 target_include_directories("indicator-test" PUBLIC ${PROJECT_DEPS_INCLUDE_DIRS} ${DBUSTEST_INCLUDE_DIRS} "${CMAKE_SOURCE_DIR}/libmessaging-menu")

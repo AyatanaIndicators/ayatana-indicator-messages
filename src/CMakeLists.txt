@@ -36,7 +36,6 @@ set(
     messages-service.c
 )
 
-set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS ${COMPILE_FLAGS})
 add_executable("ayatana-indicator-messages-service" ${SOURCES} ${SOURCES_GEN})
 target_compile_definitions(
     "ayatana-indicator-messages-service" PUBLIC

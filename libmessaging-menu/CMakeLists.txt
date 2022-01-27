@@ -26,7 +26,6 @@ set(
 )
 
 set_source_files_properties(${SOURCES_GEN} PROPERTIES GENERATED TRUE)
-set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS ${COMPILE_FLAGS})
 add_library("messaging-menu" SHARED ${SOURCES} ${SOURCES_GEN})
 set_target_properties("messaging-menu" PROPERTIES VERSION 0.0.0 SOVERSION 0)
 target_include_directories("messaging-menu" PUBLIC ${PROJECT_DEPS_INCLUDE_DIRS} "${CMAKE_BINARY_DIR}/src")
