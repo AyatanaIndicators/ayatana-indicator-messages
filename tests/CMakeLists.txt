@@ -27,7 +27,7 @@ set_source_files_properties(${HEADERS_GEN} ${SOURCES_GEN} PROPERTIES GENERATED T
 add_library("indicator-messages-service" STATIC ${HEADERS} ${HEADERS_GEN} ${SOURCES} ${SOURCES_GEN})
 target_include_directories("indicator-messages-service" PUBLIC ${PROJECT_DEPS_INCLUDE_DIRS})
 target_compile_definitions("indicator-messages-service" PUBLIC G_LOG_DOMAIN="Ayatana-Indicator-Messages")
-target_link_libraries("indicator-messages-service")
+add_dependencies("indicator-messages-service" "ayatana-indicator-messages-service")
 
 # test-gactionmuxer
 
