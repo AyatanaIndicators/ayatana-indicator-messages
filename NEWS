@@ -1,3 +1,8 @@
+Overview of changes in ayatana-indicator-messages 22.2.0
+
+  - tests/CMakeLists.txt: Fix potential multicore compile error.
+  - Clean up compilation flags.
+
 Overview of changes in ayatana-indicator-messages 21.12.0
 
   - Upstream version bump to new release versioning scheme:
