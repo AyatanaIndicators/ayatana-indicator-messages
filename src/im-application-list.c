@@ -256,6 +256,7 @@ im_application_list_update_root_action (ImApplicationList *list)
 
   /* title */
   g_variant_builder_add (&builder, "{sv}", "title", g_variant_new_string (_("Notifications")));
+  g_variant_builder_add (&builder, "{sv}", "tooltip", g_variant_new_string (_("Quick access to newly received messages")));
 
   /* accessible description */
   g_variant_builder_open(&builder, G_VARIANT_TYPE_DICT_ENTRY);
