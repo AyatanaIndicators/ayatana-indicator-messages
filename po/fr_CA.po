@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-28 20:22+0200\n"
+"POT-Creation-Date: 2022-09-05 13:28+0200\n"
 "PO-Revision-Date: 2020-12-31 03:29+0000\n"
 "Last-Translator: J. Lavoie <j.lavoie@net-c.ca>\n"
-"Language-Team: French (Canada) <https://hosted.weblate.org/projects/"
-"ayatana-indicators/messages-applet/fr_CA/>\n"
+"Language-Team: French (Canada) <https://hosted.weblate.org/projects/ayatana-"
+"indicators/messages-applet/fr_CA/>\n"
 "Language: fr_CA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,7 +21,8 @@ msgstr ""
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
-msgstr "Liste des applications qui sont affichées dans le menu de la messagerie"
+msgstr ""
+"Liste des applications qui sont affichées dans le menu de la messagerie"
 
 #: ../data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
@@ -43,6 +44,10 @@ msgstr "Messages"
 #: ../src/im-application-list.c:258
 msgid "Notifications"
 msgstr "Notifications"
+
+#: ../src/im-application-list.c:259
+msgid "Quick access to newly received messages"
+msgstr ""
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"

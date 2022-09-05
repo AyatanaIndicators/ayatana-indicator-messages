@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-28 20:22+0200\n"
+"POT-Creation-Date: 2022-09-05 13:28+0200\n"
 "PO-Revision-Date: 2019-01-12 12:06+0000\n"
 "Last-Translator: Louies <louies0623@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
@@ -42,6 +42,10 @@ msgstr "訊息"
 #: ../src/im-application-list.c:258
 msgid "Notifications"
 msgstr "通知"
+
+#: ../src/im-application-list.c:259
+msgid "Quick access to newly received messages"
+msgstr ""
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"

@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-28 20:22+0200\n"
+"POT-Creation-Date: 2022-09-05 13:28+0200\n"
 "PO-Revision-Date: 2019-10-08 16:58+0000\n"
 "Last-Translator: Mateusz Rumiński <matt.ruminski@protonmail.com>\n"
-"Language-Team: Polish <https://hosted.weblate.org/projects/"
-"ayatana-indicators/messages-applet/pl/>\n"
+"Language-Team: Polish <https://hosted.weblate.org/projects/ayatana-"
+"indicators/messages-applet/pl/>\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -44,6 +44,10 @@ msgstr "Wiadomości"
 #: ../src/im-application-list.c:258
 msgid "Notifications"
 msgstr "Powiadomienia"
+
+#: ../src/im-application-list.c:259
+msgid "Quick access to newly received messages"
+msgstr ""
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"

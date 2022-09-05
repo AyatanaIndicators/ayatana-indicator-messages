@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-28 20:22+0200\n"
+"POT-Creation-Date: 2022-09-05 13:28+0200\n"
 "PO-Revision-Date: 2020-06-15 04:41+0000\n"
 "Last-Translator: MarongHappy <daemul72@gmail.com>\n"
-"Language-Team: Korean <https://hosted.weblate.org/projects/"
-"ayatana-indicators/messages-applet/ko/>\n"
+"Language-Team: Korean <https://hosted.weblate.org/projects/ayatana-"
+"indicators/messages-applet/ko/>\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -27,7 +27,9 @@ msgstr "메시징 메뉴에 표시되는 응용프로그램 목록"
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
-msgstr "이 목록의 데스크톱 파일 ID에 해당하는 응용프로그램이 메시징 메뉴에 표시됩니다."
+msgstr ""
+"이 목록의 데스크톱 파일 ID에 해당하는 응용프로그램이 메시징 메뉴에 표시됩니"
+"다."
 
 #: ../src/im-application-list.c:231
 msgid "New Messages"
@@ -41,6 +43,10 @@ msgstr "메시지"
 #: ../src/im-application-list.c:258
 msgid "Notifications"
 msgstr "알림"
+
+#: ../src/im-application-list.c:259
+msgid "Quick access to newly received messages"
+msgstr ""
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"

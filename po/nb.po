@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-28 20:22+0200\n"
+"POT-Creation-Date: 2022-09-05 13:28+0200\n"
 "PO-Revision-Date: 20.9.01-01 07:22+0000\n"
 "Last-Translator: Petter Reinholdtsen <pere-weblate@hungry.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/ayatana-"
@@ -44,6 +44,10 @@ msgstr "Meldinger"
 #: ../src/im-application-list.c:258
 msgid "Notifications"
 msgstr "Merknader"
+
+#: ../src/im-application-list.c:259
+msgid "Quick access to newly received messages"
+msgstr ""
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"

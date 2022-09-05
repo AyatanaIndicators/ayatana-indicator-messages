@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-28 20:22+0200\n"
+"POT-Creation-Date: 2022-09-05 13:28+0200\n"
 "PO-Revision-Date: 2020-09-05 07:36+0000\n"
 "Last-Translator: antuketot76 <antuketot76@protonmail.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/ayatana-indicators/"
@@ -42,6 +42,10 @@ msgstr "Mesej"
 #: ../src/im-application-list.c:258
 msgid "Notifications"
 msgstr "Notifikasi"
+
+#: ../src/im-application-list.c:259
+msgid "Quick access to newly received messages"
+msgstr ""
 
 #: ../src/im-desktop-menu.c:67
 msgid "Available"
