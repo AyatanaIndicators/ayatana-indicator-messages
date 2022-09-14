@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-05 13:28+0200\n"
+"POT-Creation-Date: 2022-09-14 08:47+0200\n"
 "PO-Revision-Date: 2020-02-10 13:50+0000\n"
 "Last-Translator: THANOS SIOURDAKIS <siourdakisthanos@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/ayatana-indicators/"
@@ -19,11 +19,11 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 3.11-dev\n"
 
-#: ../data/org.ayatana.indicator.messages.gschema.xml:1
+#: data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
 msgstr "Λίστα εφαρμογών που εμφανίζονται εις το κατάλογο μηνυμάτων"
 
-#: ../data/org.ayatana.indicator.messages.gschema.xml:2
+#: data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
@@ -31,47 +31,47 @@ msgstr ""
 "Οι εφαρμογές που αντιστοιχούν στα αναγνωριστικά αρχείων της επιφάνειας "
 "εργασίας σε αυτήν τη λίστα εμφανίζονται στο μενού μηνυμάτων."
 
-#: ../src/im-application-list.c:231
+#: src/im-application-list.c:231
 msgid "New Messages"
 msgstr "Νέα μηνύματα"
 
-#: ../src/im-application-list.c:235
+#: src/im-application-list.c:235
 msgid "Messages"
 msgstr "Μηνύματα"
 
 #. title
-#: ../src/im-application-list.c:258
+#: src/im-application-list.c:258
 msgid "Notifications"
 msgstr "Ειδοποιήσεις"
 
-#: ../src/im-application-list.c:259
+#: src/im-application-list.c:259
 msgid "Quick access to newly received messages"
 msgstr ""
 
-#: ../src/im-desktop-menu.c:67
+#: src/im-desktop-menu.c:67
 msgid "Available"
 msgstr "Διαθέσιμος"
 
-#: ../src/im-desktop-menu.c:68
+#: src/im-desktop-menu.c:68
 msgid "Away"
 msgstr "Μακριά"
 
-#: ../src/im-desktop-menu.c:69
+#: src/im-desktop-menu.c:69
 msgid "Busy"
 msgstr "Απασχολημένο"
 
-#: ../src/im-desktop-menu.c:70
+#: src/im-desktop-menu.c:70
 msgid "Invisible"
 msgstr "Εμφανές"
 
-#: ../src/im-desktop-menu.c:71
+#: src/im-desktop-menu.c:71
 msgid "Offline"
 msgstr "Εκτός σύνδεσης"
 
-#: ../src/im-desktop-menu.c:367
+#: src/im-desktop-menu.c:367
 msgid "Clear"
 msgstr "Σαφές"
 
-#: ../src/im-phone-menu.c:76
+#: src/im-phone-menu.c:76
 msgid "Clear All"
 msgstr "Όλα σαφή"

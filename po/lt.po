@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-05 13:28+0200\n"
+"POT-Creation-Date: 2022-09-14 08:47+0200\n"
 "PO-Revision-Date: 2022-09-08 18:19+0000\n"
 "Last-Translator: Moo <hazap@hotmail.com>\n"
-"Language-Team: Lithuanian <https://hosted.weblate.org/projects/"
-"ayatana-indicators/messages-applet/lt/>\n"
+"Language-Team: Lithuanian <https://hosted.weblate.org/projects/ayatana-"
+"indicators/messages-applet/lt/>\n"
 "Language: lt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,11 +21,11 @@ msgstr ""
 "1 : 2);\n"
 "X-Generator: Weblate 4.14.1-dev\n"
 
-#: ../data/org.ayatana.indicator.messages.gschema.xml:1
+#: data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
 msgstr "Sąrašas programų, kurios yra rodomos susirašinėjimo meniu"
 
-#: ../data/org.ayatana.indicator.messages.gschema.xml:2
+#: data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
@@ -33,47 +33,47 @@ msgstr ""
 "Programos, kurios šiame sąraše atitinka darbalaukio faile esančius ID, bus "
 "rodomos susirašinėjimo meniu."
 
-#: ../src/im-application-list.c:231
+#: src/im-application-list.c:231
 msgid "New Messages"
 msgstr "Naujos žinutės"
 
-#: ../src/im-application-list.c:235
+#: src/im-application-list.c:235
 msgid "Messages"
 msgstr "Žinutės"
 
 #. title
-#: ../src/im-application-list.c:258
+#: src/im-application-list.c:258
 msgid "Notifications"
 msgstr "Pranešimai"
 
-#: ../src/im-application-list.c:259
+#: src/im-application-list.c:259
 msgid "Quick access to newly received messages"
 msgstr "Greita prieiga prie naujai gautų žinučių"
 
-#: ../src/im-desktop-menu.c:67
+#: src/im-desktop-menu.c:67
 msgid "Available"
 msgstr "Pasiekiamas"
 
-#: ../src/im-desktop-menu.c:68
+#: src/im-desktop-menu.c:68
 msgid "Away"
 msgstr "Pasišalinęs"
 
-#: ../src/im-desktop-menu.c:69
+#: src/im-desktop-menu.c:69
 msgid "Busy"
 msgstr "Užsiėmęs"
 
-#: ../src/im-desktop-menu.c:70
+#: src/im-desktop-menu.c:70
 msgid "Invisible"
 msgstr "Nematomas"
 
-#: ../src/im-desktop-menu.c:71
+#: src/im-desktop-menu.c:71
 msgid "Offline"
 msgstr "Atsijungęs"
 
-#: ../src/im-desktop-menu.c:367
+#: src/im-desktop-menu.c:367
 msgid "Clear"
 msgstr "Išvalyti"
 
-#: ../src/im-phone-menu.c:76
+#: src/im-phone-menu.c:76
 msgid "Clear All"
 msgstr "Išvalyti viską"

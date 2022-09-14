@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-05 13:28+0200\n"
+"POT-Creation-Date: 2022-09-14 08:47+0200\n"
 "PO-Revision-Date: 2020-05-25 05:41+0000\n"
 "Last-Translator: wdggg <wdggg7@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
@@ -19,57 +19,57 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 4.1-dev\n"
 
-#: ../data/org.ayatana.indicator.messages.gschema.xml:1
+#: data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
 msgstr "消息菜单中显示的应用程序列表"
 
-#: ../data/org.ayatana.indicator.messages.gschema.xml:2
+#: data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
 msgstr "桌面文件ID相对应的应用程序已显示在消息菜单中."
 
-#: ../src/im-application-list.c:231
+#: src/im-application-list.c:231
 msgid "New Messages"
 msgstr "新的信息"
 
-#: ../src/im-application-list.c:235
+#: src/im-application-list.c:235
 msgid "Messages"
 msgstr "信息"
 
 #. title
-#: ../src/im-application-list.c:258
+#: src/im-application-list.c:258
 msgid "Notifications"
 msgstr "通知"
 
-#: ../src/im-application-list.c:259
+#: src/im-application-list.c:259
 msgid "Quick access to newly received messages"
 msgstr ""
 
-#: ../src/im-desktop-menu.c:67
+#: src/im-desktop-menu.c:67
 msgid "Available"
 msgstr "在线"
 
-#: ../src/im-desktop-menu.c:68
+#: src/im-desktop-menu.c:68
 msgid "Away"
 msgstr "离开"
 
-#: ../src/im-desktop-menu.c:69
+#: src/im-desktop-menu.c:69
 msgid "Busy"
 msgstr "忙"
 
-#: ../src/im-desktop-menu.c:70
+#: src/im-desktop-menu.c:70
 msgid "Invisible"
 msgstr "隐身"
 
-#: ../src/im-desktop-menu.c:71
+#: src/im-desktop-menu.c:71
 msgid "Offline"
 msgstr "不在线"
 
-#: ../src/im-desktop-menu.c:367
+#: src/im-desktop-menu.c:367
 msgid "Clear"
 msgstr "清除"
 
-#: ../src/im-phone-menu.c:76
+#: src/im-phone-menu.c:76
 msgid "Clear All"
 msgstr "清除所有"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-05 13:28+0200\n"
+"POT-Creation-Date: 2022-09-14 08:47+0200\n"
 "PO-Revision-Date: 2020-10-26 13:13+0000\n"
 "Last-Translator: Michele <miguel2000@livecom.it>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/ayatana-"
@@ -19,11 +19,11 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 4.3.2-dev\n"
 
-#: ../data/org.ayatana.indicator.messages.gschema.xml:1
+#: data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
 msgstr "Lista delle applicazioni che sono visualizzate nel menu dei messaggi"
 
-#: ../data/org.ayatana.indicator.messages.gschema.xml:2
+#: data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
@@ -31,47 +31,47 @@ msgstr ""
 "Le applicazioni corrispondenti agli ID dei file desktop in questo elenco "
 "sono visualizzate nel menu di messaggistica."
 
-#: ../src/im-application-list.c:231
+#: src/im-application-list.c:231
 msgid "New Messages"
 msgstr "Nuovi messaggi"
 
-#: ../src/im-application-list.c:235
+#: src/im-application-list.c:235
 msgid "Messages"
 msgstr "Messaggi"
 
 #. title
-#: ../src/im-application-list.c:258
+#: src/im-application-list.c:258
 msgid "Notifications"
 msgstr "Notifiche"
 
-#: ../src/im-application-list.c:259
+#: src/im-application-list.c:259
 msgid "Quick access to newly received messages"
 msgstr ""
 
-#: ../src/im-desktop-menu.c:67
+#: src/im-desktop-menu.c:67
 msgid "Available"
 msgstr "Disponibile"
 
-#: ../src/im-desktop-menu.c:68
+#: src/im-desktop-menu.c:68
 msgid "Away"
 msgstr "Assente"
 
-#: ../src/im-desktop-menu.c:69
+#: src/im-desktop-menu.c:69
 msgid "Busy"
 msgstr "Occupato/a"
 
-#: ../src/im-desktop-menu.c:70
+#: src/im-desktop-menu.c:70
 msgid "Invisible"
 msgstr "Invisibile"
 
-#: ../src/im-desktop-menu.c:71
+#: src/im-desktop-menu.c:71
 msgid "Offline"
 msgstr "Non in linea"
 
-#: ../src/im-desktop-menu.c:367
+#: src/im-desktop-menu.c:367
 msgid "Clear"
 msgstr "Pulisci"
 
-#: ../src/im-phone-menu.c:76
+#: src/im-phone-menu.c:76
 msgid "Clear All"
 msgstr "Cancella tutto"
