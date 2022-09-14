@@ -1,3 +1,9 @@
+Overview of changes in ayatana-indicator-messages 22.9.0
+
+  - Add tooltip support.
+  - Drop duplicate COPYING.GPLv3 file.
+  - Translation updates.
+
 Overview of changes in ayatana-indicator-messages 22.2.0
 
   - tests/CMakeLists.txt: Fix potential multicore compile error.

@@ -1,6 +1,78 @@
+2022-09-14 Mike Gabriel
+
+        * release 22.9.0 (HEAD -> main, tag: 22.9.0)
+
+2022-09-14 Milan Korecky
+
+        * Translated using Weblate (Czech) (84f9be6)
+
+2022-09-14 Mike Gabriel
+
+        * po/*.po{,t}: Translation strings update (esp. source file
+          references). (5f4ac0d)
+        * update-po{,t}.sh: Also catch multi-file source file references.
+          (a6fd689)
+
+2022-09-12 Robert Tari
+
+        * Merge branch 'sunweaver-pr/beautify-paths-in-pot-file' (00b4f21)
+
+2022-09-11 Mike Gabriel
+
+        * po/ayatana-indicator-messages.pot: Update file. (fecf9a6)
+        * update-po{,t}.sh: Omit ../ at beginning of file names in .pot file.
+          (cd37133)
+
+2022-09-07 Quentin PAGÈS
+
+        * Translated using Weblate (Occitan) (e60ed83)
+
+2022-09-07 Moo
+
+        * Translated using Weblate (Lithuanian) (2eb2cd1)
+
+2022-09-06 Wellington Terumi Uemura
+
+        * Translated using Weblate (Portuguese (Brazil)) (dccdc62)
+
+2022-09-05 Yaron Shahrabani
+
+        * Translated using Weblate (Hebrew) (ddef094)
+
+2022-09-05 Mike Gabriel
+
+        * Translated using Weblate (German) (c2d8f01)
+        * po/*.po{,t}: Translation strings update. (7e0f287)
+        * update-po{,t}.sh: Update script to CMake port of this project.
+          (3fbace0)
+
+2022-09-02 Robert Tari
+
+        * Merge branch 'sunweaver-pr/tooltip-support' (e19755a)
+
+2022-08-03 Robert Tari
+
+        * tests/indicator-test.cpp: Adjust tests to use tooltips (b9dad15)
+
+2022-07-22 Mike Gabriel
+
+        * src/im-application-list.c: Add tooltip support. (b7eafa5)
+
+2022-04-23 Sergii Horichenko
+
+        * Translated using Weblate (Ukrainian) (e1d6d84)
+
+2022-04-01 Robert Tari
+
+        * Merge branch 'sunweaver-pr/drop-extra-copying-file' (41ad200)
+
+2022-04-01 Mike Gabriel
+
+        * COPYING.GPLv3: Drop file. Duplicate of COPYING file. (769eeac)
+
 2022-02-17 Mike Gabriel
 
-        * release 22.2.0 (HEAD -> main, tag: 22.2.0)
+        * release 22.2.0 (81d79bd) (tag: 22.2.0)
 
 2022-02-08 Mike Gabriel
 
