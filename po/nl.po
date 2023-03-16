@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-09-14 08:47+0200\n"
-"PO-Revision-Date: 2020-01-19 14:21+0000\n"
-"Last-Translator: Heimen Stoffels <vistausss@outlook.com>\n"
+"PO-Revision-Date: 2023-03-17 11:41+0000\n"
+"Last-Translator: Heimen Stoffels <vistausss@fastmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/ayatana-indicators/"
 "messages-applet/nl/>\n"
 "Language: nl\n"
@@ -17,19 +17,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10.2\n"
+"X-Generator: Weblate 4.16.2-dev\n"
 
 #: data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
-msgstr "Lijst met toepassingen die worden getoond in het berichtmenu"
+msgstr "Lijst met programma's die worden getoond in het berichtmenu"
 
 #: data/org.ayatana.indicator.messages.gschema.xml:2
 msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
 msgstr ""
-"Toepassingen die overeenkomen met de id's van desktopbestanden op deze lijst "
-"worden getoond in het berichtmenu."
+"Programma's die overeenkomen met de id's van desktopbestanden op deze lijst "
+"worden in het berichtmenu getoond."
 
 #: src/im-application-list.c:231
 msgid "New Messages"
@@ -46,7 +46,7 @@ msgstr "Meldingen"
 
 #: src/im-application-list.c:259
 msgid "Quick access to newly received messages"
-msgstr ""
+msgstr "Snelle toegang tot nieuwe ontvangen berichten"
 
 #: src/im-desktop-menu.c:67
 msgid "Available"
