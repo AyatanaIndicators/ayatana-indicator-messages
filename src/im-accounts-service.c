@@ -56,6 +56,7 @@ im_accounts_service_init (ImAccountsService *self)
     priv->cancel = g_cancellable_new();
 
     priv->user_manager = act_user_manager_get_default();
+    g_signal_connect(priv->user_manager, "user-added", G_CALLBACK(user_changed), self);
     g_signal_connect(priv->user_manager, "user-changed", G_CALLBACK(user_changed), self);
     g_signal_connect(priv->user_manager, "notify::is-loaded", G_CALLBACK(on_user_manager_loaded), self);
 
