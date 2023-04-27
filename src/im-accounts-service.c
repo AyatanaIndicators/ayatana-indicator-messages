@@ -56,6 +56,7 @@ im_accounts_service_init (ImAccountsService *self)
     priv->cancel = g_cancellable_new();
 
     priv->user_manager = act_user_manager_get_default();
+    g_signal_connect(priv->user_manager, "user-added", G_CALLBACK(user_changed), self);
     g_signal_connect(priv->user_manager, "user-changed", G_CALLBACK(user_changed), self);
     g_signal_connect(priv->user_manager, "notify::is-loaded", G_CALLBACK(on_user_manager_loaded), self);
 
@@ -103,6 +104,10 @@ user_changed (ActUserManager * manager, ActUser * user, gpointer user_data)
     /* Clear old proxies */
     g_clear_object(&priv->touch_settings);
 
+    g_cancellable_cancel(priv->cancel);
+    g_clear_object(&priv->cancel);
+    priv->cancel = g_cancellable_new();
+
     /* Start getting a new proxy */
     g_dbus_proxy_new_for_bus(G_BUS_TYPE_SYSTEM,
         G_DBUS_PROXY_FLAGS_NONE,
@@ -123,7 +128,10 @@ security_privacy_ready (GObject * obj, GAsyncResult * res, gpointer user_data)
     GDBusProxy * proxy = g_dbus_proxy_new_for_bus_finish(res, &error);
 
     if (error != NULL) {
-        g_warning("Unable to get a proxy on accounts service for touch settings: %s", error->message);
+        if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+            g_warning("Unable to get a proxy on accounts service for touch settings: %s",
+                      error->message);
+        }
         g_error_free(error);
         return;
     }
