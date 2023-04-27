@@ -149,7 +149,6 @@ on_user_manager_loaded (ActUserManager * manager, GParamSpec * pspect, gpointer 
     user = act_user_manager_get_user(priv->user_manager, g_get_user_name());
     if (user != NULL) {
         user_changed(priv->user_manager, user, user_data);
-        g_object_unref(user);
     }
 }
 
