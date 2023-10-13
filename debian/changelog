@@ -1,3 +1,10 @@
+ayatana-indicator-messages (23.10.0-0) unstable; urgency=medium
+
+  * Upstream-provided Debian package for ayatana-indicator-messages.
+    See upstream ChangeLog for recent changes.
+
+ -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Fri, 13 Oct 2023 08:15:19 +0200
+
 ayatana-indicator-messages (22.9.0-0) unstable; urgency=medium
 
   * Upstream-provided Debian package for ayatana-indicator-messages.
