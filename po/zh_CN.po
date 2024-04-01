@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-09-14 08:47+0200\n"
-"PO-Revision-Date: 2020-05-25 05:41+0000\n"
-"Last-Translator: wdggg <wdggg7@gmail.com>\n"
+"PO-Revision-Date: 2024-04-01 22:37+0000\n"
+"Last-Translator: 复予 <clonewith@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "ayatana-indicators/messages-applet/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 #: data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
@@ -35,7 +35,7 @@ msgstr "新的信息"
 
 #: src/im-application-list.c:235
 msgid "Messages"
-msgstr "信息"
+msgstr "消息"
 
 #. title
 #: src/im-application-list.c:258
@@ -44,7 +44,7 @@ msgstr "通知"
 
 #: src/im-application-list.c:259
 msgid "Quick access to newly received messages"
-msgstr ""
+msgstr "快速查看新接收的消息"
 
 #: src/im-desktop-menu.c:67
 msgid "Available"
@@ -64,7 +64,7 @@ msgstr "隐身"
 
 #: src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr "不在线"
+msgstr "离线"
 
 #: src/im-desktop-menu.c:367
 msgid "Clear"
