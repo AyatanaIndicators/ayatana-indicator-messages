@@ -4,7 +4,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Globals
 
-set(PROJECT_VERSION "23.10.0")
+set(PROJECT_VERSION "24.5.0")
 set(PACKAGE ${CMAKE_PROJECT_NAME})
 set(GETTEXT_PACKAGE "ayatana-indicator-messages")
 

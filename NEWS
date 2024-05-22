@@ -1,3 +1,9 @@
+Overview of changes in ayatana-indicator-messages 24.5.0
+
+  - data/ayatana-indicator-messages.service.in: Become part of
+    lomiri-indicators.target.
+  - Translation updates.
+
 Overview of changes in ayatana-indicator-messages 23.10.0
 
   - account-service: Do not unref UserManager owned user.
