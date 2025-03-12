@@ -32,7 +32,6 @@ add_dependencies("indicator-messages-service" "ayatana-indicator-messages-servic
 # test-gactionmuxer
 
 add_executable("test-gactionmuxer" test-gactionmuxer.cpp)
-target_link_options("test-gactionmuxer" PRIVATE -no-pie)
 target_include_directories("test-gactionmuxer" PUBLIC ${PROJECT_DEPS_INCLUDE_DIRS} "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries("test-gactionmuxer" "indicator-messages-service" ${PROJECT_DEPS_LIBRARIES} ${GTEST_LIBRARIES} ${GTEST_BOTH_LIBRARIES} ${GMOCK_LIBRARIES})
 add_test("test-gactionmuxer" "test-gactionmuxer")
@@ -59,7 +58,6 @@ add_custom_target("gschemas-compiled" ALL DEPENDS gschemas.compiled)
 
 pkg_check_modules(DBUSTEST REQUIRED dbustest-1)
 add_executable("indicator-test" indicator-test.cpp)
-target_link_options("indicator-test" PRIVATE -no-pie)
 target_include_directories("indicator-test" PUBLIC ${PROJECT_DEPS_INCLUDE_DIRS} ${DBUSTEST_INCLUDE_DIRS} "${CMAKE_SOURCE_DIR}/libmessaging-menu")
 target_link_libraries("indicator-test" "messaging-menu" ${PROJECT_DEPS_LIBRARIES} ${DBUSTEST_LIBRARIES} ${GTEST_LIBRARIES} ${GTEST_BOTH_LIBRARIES} ${GMOCK_LIBRARIES})
 target_compile_definitions(
