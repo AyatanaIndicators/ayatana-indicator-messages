@@ -1,6 +1,24 @@
+2025-03-12 Mike Gabriel
+
+        * release 24.5.1 (HEAD -> main, tag: 24.5.1)
+        * Merge branch 'OPNA2608-fix/PIE-building' (f04d14d7)
+
+2025-01-11 OPNA2608
+
+        * tests/CMakeLists.txt: Drop hardcoded -no-pie linker flags
+          (316457cf)
+
+2024-11-08 தமிழ்நேரம்
+
+        * Translated using Weblate (Tamil) (db8e5282)
+
+2024-09-27 Remus-Gabriel Chelu
+
+        * Translated using Weblate (Romanian) (0dcd409f)
+
 2024-05-22 Mike Gabriel
 
-        * release 24.5.0 (HEAD -> main, tag: 24.5.0)
+        * release 24.5.0 (a828bf23) (tag: 24.5.0)
 
 2024-05-21 Robert Tari
 

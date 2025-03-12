@@ -1,3 +1,8 @@
+Overview of changes in ayatana-indicator-messages 24.5.1
+
+  - tests/CMakeLists.txt: Drop hardcoded -no-pie linker flags
+  - Translation updates.
+
 Overview of changes in ayatana-indicator-messages 24.5.0
 
   - data/ayatana-indicator-messages.service.in: Become part of
