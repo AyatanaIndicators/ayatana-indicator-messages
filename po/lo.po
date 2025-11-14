@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-09-14 08:47+0200\n"
-"PO-Revision-Date: 2023-04-21 15:53+0000\n"
-"Last-Translator: Vilakone Thammavong <vilakone.thammavong@foodpanda.la>\n"
+"PO-Revision-Date: 2025-11-15 03:51+0000\n"
+"Last-Translator: BoneNI <bounkirdni@gmail.com>\n"
 "Language-Team: Lao <https://hosted.weblate.org/projects/ayatana-indicators/"
 "messages-applet/lo/>\n"
 "Language: lo\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 #: data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
@@ -68,7 +68,7 @@ msgstr ""
 
 #: src/im-desktop-menu.c:367
 msgid "Clear"
-msgstr ""
+msgstr "ລ້າງອອກ"
 
 #: src/im-phone-menu.c:76
 msgid "Clear All"
