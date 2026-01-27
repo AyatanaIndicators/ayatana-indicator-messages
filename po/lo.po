@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-09-14 08:47+0200\n"
-"PO-Revision-Date: 2025-11-15 03:51+0000\n"
+"PO-Revision-Date: 2026-01-28 00:35+0000\n"
 "Last-Translator: BoneNI <bounkirdni@gmail.com>\n"
 "Language-Team: Lao <https://hosted.weblate.org/projects/ayatana-indicators/"
 "messages-applet/lo/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
@@ -28,43 +28,44 @@ msgid ""
 "Applications corresponding to the desktop file IDs in this list are shown in "
 "the messaging menu."
 msgstr ""
+"ແອັບພລິເຄຊັນທີ່ກົງກັບໄອດີຂອງໄຟລ໌ເດັສທອບໃນລາຍຊື່ນີ້ ຈະຖືກສະແດງຢູ່ໃນເມນູຂໍ້ຄວາມ."
 
 #: src/im-application-list.c:231
 msgid "New Messages"
-msgstr ""
+msgstr "ຂໍ້ຄວາມໃໝ່"
 
 #: src/im-application-list.c:235
 msgid "Messages"
-msgstr ""
+msgstr "ຂໍ້ຄວາມ"
 
 #. title
 #: src/im-application-list.c:258
 msgid "Notifications"
-msgstr ""
+msgstr "ການແຈ້ງເຕືອນ"
 
 #: src/im-application-list.c:259
 msgid "Quick access to newly received messages"
-msgstr ""
+msgstr "ເຂົ້າເຖິງຂໍ້ຄວາມທີ່ໄດ້ຮັບໃໝ່ຢ່າງວ່ອງໄວ"
 
 #: src/im-desktop-menu.c:67
 msgid "Available"
-msgstr ""
+msgstr "ພ້ອມໃຊ້ງານ"
 
 #: src/im-desktop-menu.c:68
 msgid "Away"
-msgstr ""
+msgstr "ບໍ່ຢູ່"
 
 #: src/im-desktop-menu.c:69
 msgid "Busy"
-msgstr ""
+msgstr "ບໍ່ຫວ່າງ"
 
 #: src/im-desktop-menu.c:70
 msgid "Invisible"
-msgstr ""
+msgstr "ເຊື່ອງສະຖານະ"
 
 #: src/im-desktop-menu.c:71
 msgid "Offline"
-msgstr ""
+msgstr "ບໍ່ໄດ້ເຊື່ອມຕໍ່"
 
 #: src/im-desktop-menu.c:367
 msgid "Clear"
@@ -72,4 +73,4 @@ msgstr "ລ້າງອອກ"
 
 #: src/im-phone-menu.c:76
 msgid "Clear All"
-msgstr ""
+msgstr "ລ້າງທັງໝົດ"
