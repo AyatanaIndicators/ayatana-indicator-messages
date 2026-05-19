@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-09-14 08:47+0200\n"
-"PO-Revision-Date: 2026-02-17 12:09+0000\n"
+"PO-Revision-Date: 2026-05-20 02:11+0000\n"
 "Last-Translator: Arif Budiman <arifpedia@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/ayatana-"
 "indicators/messages-applet/id/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 #: data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
@@ -40,7 +40,7 @@ msgstr "Pesan"
 #. title
 #: src/im-application-list.c:258
 msgid "Notifications"
-msgstr "Pemberitahuan"
+msgstr "Notifikasi"
 
 #: src/im-application-list.c:259
 msgid "Quick access to newly received messages"
@@ -68,7 +68,7 @@ msgstr "Luring"
 
 #: src/im-desktop-menu.c:367
 msgid "Clear"
-msgstr "Hapus"
+msgstr "Bersihkan"
 
 #: src/im-phone-menu.c:76
 msgid "Clear All"
