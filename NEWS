@@ -1,3 +1,8 @@
+Overview of changes in ayatana-indicator-messages 24.5.2
+
+  - Translation updates (thanks to all contributors on
+    hosted.weblate.org).
+
 Overview of changes in ayatana-indicator-messages 24.5.1
 
   - tests/CMakeLists.txt: Drop hardcoded -no-pie linker flags
