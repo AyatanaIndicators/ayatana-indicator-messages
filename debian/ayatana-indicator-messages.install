@@ -1,7 +1,9 @@
+#!/usr/bin/dh-exec
+
+etc/xdg/autostart
+[linux-any] usr/lib/systemd
 usr/libexec/ayatana-indicator-messages/ayatana-indicator-messages-service
-usr/lib/systemd
 usr/share/ayatana/indicators
 usr/share/glib-2.0
 usr/share/icons
 usr/share/locale
-etc/xdg/autostart
