@@ -1,34 +1,23 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: ayatana-indicator-messages
-Upstream-Contact: Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
 Source: https://github.com/AyatanaIndicators/ayatana-indicator-messages
+Upstream-Name: ayatana-indicator-messages
 
-Files: po/*.po
- po/ayatana-indicator-messages.pot
-Copyright: 2017, THE PACKAGE'S COPYRIGHT HOLDER
-  YEAR, THE PACKAGE'S COPYRIGHT HOLDER
-License: GPL-3
-
-Files: cmake/FindGObjectIntrospection.cmake
- cmake/UseGObjectIntrospection.cmake
-Copyright: 2010, Pino Toscano, <pino@kde.org>
-License: BSD-3-clause
-
-Files:cmake/FindVala.cmake
-      cmake/UseVala.cmake
-Copyright: 2011, Přemysl Janouch
-License: BSD-2-clause
-
-Files: AUTHORS
+Files: .build.yml
+ .travis.yml
+ AUTHORS
  ChangeLog
- README
+ CMakeLists.txt
+ INSTALL.md
  NEWS
  NEWS.Canonical
+ README
+ README.md
  cmake/GdbusCodegen.cmake
  common/org.ayatana.indicator.messages.application.xml
  common/org.ayatana.indicator.messages.service.xml
- data/ayatana-indicator-messages.conf.in
+ data/CMakeLists.txt
  data/ayatana-indicator-messages.desktop.in
+ data/ayatana-indicator-messages.service.in
  data/icons/16x16/categories/applications-chat-panel.png
  data/icons/16x16/categories/applications-email-panel.png
  data/icons/16x16/categories/applications-microblogging-panel.png
@@ -56,23 +45,32 @@ Files: AUTHORS
  data/icons/scalable/status/indicator-messages.svg
  data/org.ayatana.indicator.messages
  data/org.ayatana.indicator.messages.gschema.xml
+ doc/CMakeLists.txt
+ doc/reference/CMakeLists.txt
  doc/reference/messaging-menu-docs.xml.in
  doc/reference/messaging-menu-overrides.txt
  doc/reference/messaging-menu-sections.txt
  doc/reference/messaging-menu.types
+ libmessaging-menu/CMakeLists.txt
  libmessaging-menu/client-example.py
  libmessaging-menu/messaging-menu.pc.in
+ libmessaging-menu/messaging-menu.symbols
+ po/CMakeLists.txt
  po/LINGUAS
  po/POTFILES.in
+ src/CMakeLists.txt
+ tests/CMakeLists.txt
  tests/applications/test.desktop
  tests/applications/test2.desktop
  tests/indicator-messages-service-activate.build.sh
  tests/manual
  tests/test-client.py
-Copyright: 2009-2015, Canonical Ltd.
+Copyright: 2010-2015, Canonical Ltd.
+  2021, Robert Tari
 License: GPL-3
 Comment:
- Using same license and copyright as found in code file headers.
+ Assuming same license and copyright holdership as found in the
+ project files containing a license header.
 
 Files: libmessaging-menu/messaging-menu-app.c
  libmessaging-menu/messaging-menu-app.h
@@ -84,7 +82,6 @@ Files: libmessaging-menu/messaging-menu-app.c
  src/gactionmuxer.h
  src/gsettingsstrv.c
  src/gsettingsstrv.h
- src/im-accounts-service.c
  src/im-accounts-service.h
  src/im-application-list.c
  src/im-application-list.h
@@ -94,13 +91,9 @@ Files: libmessaging-menu/messaging-menu-app.c
  src/im-menu.h
  src/im-phone-menu.c
  src/im-phone-menu.h
- src/indicator-desktop-shortcuts.c
  src/indicator-desktop-shortcuts.h
- src/messages-service.c
- tests/accounts-service-mock.h
  tests/indicator-fixture.h
  tests/indicator-messages-service-activate.c
- tests/indicator-test.cpp
  tests/test-gactionmuxer.cpp
 Copyright: 2009, Canonical Ltd.
   2010, Canonical Ltd.
@@ -108,30 +101,93 @@ Copyright: 2009, Canonical Ltd.
   2012-2013, Canonical Ltd.
   2013, Canonical Ltd.
   2014, Canonical Ltd.
-  2015, Canonical Ltd.
 License: GPL-3
 
-Files: CMakeLists.txt
- data/CMakeLists.txt
- doc/CMakeLists.txt
- doc/reference/CMakeLists.txt
- libmessaging-menu/CMakeLists.txt
- po/CMakeLists.txt
- src/CMakeLists.txt
- tests/CMakeLists.txt
- update-po.sh
+Files: po/*.po
+ po/ayatana-indicator-messages.pot
+Copyright: 2017, THE PACKAGE'S COPYRIGHT HOLDER
+  YEAR, THE PACKAGE'S COPYRIGHT HOLDER
+License: GPL-3
+
+Files: src/im-accounts-service.c
+ src/indicator-desktop-shortcuts.c
+ src/messages-service.c
+ tests/accounts-service-mock.h
+ tests/indicator-test.cpp
+Copyright: 2010, Canonical Ltd.
+  2012, Canonical Ltd.
+  2014, Canonical Ltd.
+  2015, Canonical Ltd.
+  2021, Robert Tari
+  2021-2022, Robert Tari
+License: GPL-3
+
+Files: update-po.sh
  update-pot.sh
 Copyright: 2017, Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
-  Copyright: 2021, Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
 License: GPL-3
+
+Files: cmake/FindVala.cmake
+Copyright: 2011, Přemysl Janouch
+License: BSD-2-clause
+
+Files: cmake/FindGObjectIntrospection.cmake
+Copyright: 2010, Pino Toscano <pino@kde.org>
+License: BSD-3-clause
 
 Files: debian/*
 Copyright: 2009-2010, Evgeni Golov <evgeni@debian.org>
   2009-2010, Ted Gould <ted@canonical.com>, Canonical Ltd.
   2009-2010, Sebastien Bacher <seb128@ubuntu.com>
   2009-2010, Ken VanDine <ken.vandine@canonical.com>
-  2017, Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+  2017-2025, Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
 License: GPL-3
+
+License: BSD-2-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ .
+     * Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+     * Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+ OF SUCH DAMAGE.
+
+License: BSD-3-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. The name of the author may not be used to endorse or promote products
+    derived from this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 License: GPL-3
  This package is free software; you can redistribute it and/or modify
@@ -148,9 +204,3 @@ License: GPL-3
  .
  On Debian systems, the complete text of the GNU General
  Public License version 3 can be found in "/usr/share/common-licenses/GPL-3".
-
-License: FSF~All-permissive
- Copying and distribution of this file, with or without modification, are
- permitted in any medium without royalty provided the copyright notice
- and this notice are preserved. This file is offered as-is, without any
- warranty.
