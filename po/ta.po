@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-09-14 08:47+0200\n"
-"PO-Revision-Date: 2026-09-09 04:51+0000\n"
+"PO-Revision-Date: 2026-09-28 09:51+0000\n"
 "Last-Translator: Alagirisamy Rengaraj <radhaalagirisamy@gmail.com>\n"
 "Language-Team: Tamil <https://hosted.weblate.org/projects/ayatana-indicators/"
 "messages-applet/ta/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.9.1\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
 #: data/org.ayatana.indicator.messages.gschema.xml:1
 msgid "List of applications that are shown in the messaging menu"
@@ -50,7 +50,7 @@ msgstr "புதிதாக பெறப்பட்ட செய்திக�
 
 #: src/im-desktop-menu.c:67
 msgid "Available"
-msgstr "இருப்புள்ளது"
+msgstr "கிடைக்கிறது"
 
 #: src/im-desktop-menu.c:68
 msgid "Away"
@@ -58,7 +58,7 @@ msgstr "அப்பால்"
 
 #: src/im-desktop-menu.c:69
 msgid "Busy"
-msgstr "மும்முரம்"
+msgstr "மும்முறம்"
 
 #: src/im-desktop-menu.c:70
 msgid "Invisible"
