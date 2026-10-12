@@ -3,30 +3,26 @@
 export DPKG_GENSYMBOLS_CHECK_LEVEL=4
 
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-DPKG_EXPORT_BUILDFLAGS = 1
-include /usr/share/dpkg/buildflags.mk
-
-DEB_CMAKE_EXTRA_FLAGS = \
-    -DENABLE_TESTS=ON \
-    -DENABLE_COVERAGE=OFF \
-    $(NULL)
 
 %:
-	dh $@ --with gir,systemd
+	dh $@
 
 override_dh_auto_configure:
-	dh_auto_configure -- $(DEB_CMAKE_EXTRA_FLAGS)
+	dh_auto_configure -- \
+		-DENABLE_TESTS=$(if $(filter nocheck,$(DEB_BUILD_OPTIONS)),OFF,ON) \
+		-DENABLE_COVERAGE=OFF \
 
 override_dh_install:
 	find debian/tmp/usr/lib -name *.la -delete
 	dh_install
+	# move gtk-doc folder to /usr/share/doc/<pkg>/
+	mkdir -p debian/libmessaging-menu-dev/usr/share/doc/libmessaging-menu-dev/
+	mv debian/libmessaging-menu-dev/usr/share/gtk-doc/html/messaging-menu debian/libmessaging-menu-dev/usr/share/doc/libmessaging-menu-dev/
+	mv debian/libmessaging-menu-dev/usr/share/doc/libmessaging-menu-dev/messaging-menu/ debian/libmessaging-menu-dev/usr/share/doc/libmessaging-menu-dev/html
+	ln -s ../../doc/libmessaging-menu-dev/html debian/libmessaging-menu-dev/usr/share/gtk-doc/html/messaging-menu
 
-override_dh_missing:
-	dh_missing --fail-missing
-
-# Hack as it seems it's not possible to easy run that under dbus-test-runner
-override_dh_auto_test:
-	env -u LD_PRELOAD dh_auto_test
+override_dh_installchangelogs:
+	dh_installchangelogs NEWS
 
 get-orig-source:
 	uscan --noconf --force-download --rename --download-current-version --destdir=..

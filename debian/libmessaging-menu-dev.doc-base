@@ -1,0 +1,9 @@
+Document: libmessaging-menu-dev
+Title: Programming interface of the MessagingMenu implementation
+Author: Canonical Ltd.
+Abstract: API documentation of MessagingMenu
+Section: Programming/C
+
+Format: HTML
+Index: /usr/share/doc/libmessaging-menu-dev/html/index.html
+Files: /usr/share/doc/libmessaging-menu-dev/html/
